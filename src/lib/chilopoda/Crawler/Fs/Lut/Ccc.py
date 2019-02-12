@@ -18,6 +18,9 @@ class Ccc(Lut):
         """
         Test if the path holder contains a lut file.
         """
+        if not super(Ccc, cls).test(pathHolder, parentCrawler, ignoreExt=True):
+            return False
+
         return pathHolder.ext() in ['ccc', 'cc']
 
     def __parseXML(self):

@@ -18,6 +18,9 @@ class Cdl(Lut):
         """
         Test if the path holder contains a cdl file.
         """
+        if not super(Cdl, cls).test(pathHolder, parentCrawler, ignoreExt=True):
+            return False
+
         return pathHolder.ext() == 'cdl'
 
     def __parseXML(self):

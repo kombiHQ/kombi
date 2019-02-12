@@ -26,11 +26,14 @@ class Xml(Ascii):
         return self.__runQueryTag(tag, ignoreNameSpace)
 
     @classmethod
-    def test(cls, pathHolder, parentCrawler):
+    def test(cls, pathHolder, parentCrawler, ignoreExt=False):
         """
         Test if the path holder contains a xml file.
         """
-        return pathHolder.ext() == 'xml'
+        if not super(Xml, cls).test(pathHolder, parentCrawler):
+            return False
+
+        return ignoreExt or pathHolder.ext() == 'xml'
 
     def __runQueryTag(self, tag, ignoreNameSpace, root=None):
         """
