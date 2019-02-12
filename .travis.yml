@@ -8,12 +8,12 @@ addons:
   apt:
    sources:
      - ubuntu-toolchain-r-test
-     - sourceline: 'ppa:jonathonf/ffmpeg-3'
    packages:
      - python-openimageio
      - cmake
      - make
-     - ffmpeg
-# command to run tests
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then wget https://launchpad.net/~mc3man/+archive/ubuntu/trusty-media/+files/ffmpeg_3.3.3~trusty2_amd64.deb ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo dpkg -i ffmpeg_3.3.3~trusty2_amd64.deb ; fi
 script:
   - ./runtests
