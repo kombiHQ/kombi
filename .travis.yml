@@ -2,9 +2,13 @@ language: python
 python:
   - "2.7"
   - "3.6"
-# command to install dependencies
-before_install:
-  - sudo apt-get install -y python-openimageio cmake make ffmpeg 
+sources:
+  - ubuntu-toolchain-r-test
+packages:
+  - python-openimageio
+  - cmake
+  - make
+  - ffmpeg
 # command to run tests
 script:
   - ./runtests
