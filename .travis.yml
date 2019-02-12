@@ -8,6 +8,7 @@ addons:
   apt:
    sources:
      - ubuntu-toolchain-r-test
+     - sourceline: 'ppa:jonathonf/ffmpeg-3'
    packages:
      - python-openimageio
      - cmake
