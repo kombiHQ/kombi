@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# running lint
+pylama src/lib/chilopoda, src/lib/chilopodaqt src/bin tests

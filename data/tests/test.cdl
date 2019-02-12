@@ -1,0 +1,35 @@
+<ColorDecisionList xmlns="urn:ASC:CDL:v1.01">
+    <Description>CDL description 1</Description>
+    <InputDescription>CDL Input Desc Text</InputDescription>
+    <Description>CDL description 2</Description>
+    <ColorDecision>
+        <Description>CD description 1</Description>
+        <InputDescription>CD Input Desc Text</InputDescription>
+        <Description>CD description 2</Description>
+        <MediaRef ref="/best/path/ever.dpx"/>
+        <Description>CD description 3</Description>
+        <ColorCorrection id="014_xf_seqGrade_v01">
+            <Description>CC description 1</Description>
+            <InputDescription>Input Desc Text</InputDescription>
+            <Description>CC description 2</Description>
+            <SOPNode>
+                <Description>Sop description 1</Description>
+                <Description>Sop description 2</Description>
+                <Slope>1.014 1.0104 0.62</Slope>
+                <Offset>-0.00315 -0.00124 0.3103</Offset>
+                <Power>1.0 0.9983 1.0</Power>
+                <Description>Sop description 3</Description>
+            </SOPNode>
+            <Description>CC description 3</Description>
+            <SATNode>
+                <Description>Sat description 1</Description>
+                <Saturation>1.09</Saturation>
+                <Description>Sat description 2</Description>
+            </SATNode>
+            <Description>CC description 4</Description>
+            <ViewingDescription>Viewing Desc Text</ViewingDescription>
+            <Description>CC description 5</Description>
+        </ColorCorrection>
+        <ViewingDescription>CD WOOD VIEWER!? ////</ViewingDescription>
+    </ColorDecision>
+</ColorDecisionList>

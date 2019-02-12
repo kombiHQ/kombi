@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# showing help
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+  echo "$(basename "$0") [-h] -- Runs the installation:
+    -h/--help   show this help text
+    --central   installs as central release (under IMMUPIPE_CENTRAL_ROOT). Otherwise, if not supplied installs under IMMUPIPE_DEV_ROOT (default)
+    --clean     purges the data used for building both central and development releases"
+  exit 0
+fi
+
+# purging caches
+if [[ $* == *--clean* ]]; then
+  if [[ -d "build-central" ]]; then
+    rm -r "build-central"
+  fi
+
+  if [[ -d "build-dev" ]]; then
+    rm -r "build-dev"
+  fi
+  exit 0
+fi
+
+# reading info.json
+name=$(grep -Po "\"name\": *\K\"[^\"]*\"" info.json | cut -d '"' -f 2)
+version=$(grep -Po "\"version\": *\K\"[^\"]*\"" info.json | cut -d '"' -f 2)
+if [[ -z "$name" || -z "$version" ]]; then
+  echo "Error, missing name or version from info.json"
+  exit 1
+fi
+targetSuffixPath="apps/$name/$version"
+
+# central release
+if [[ $* == *--central* ]]; then
+  # making sure IMMUPIPE_CENTRAL_ROOT is defined
+  if [[ -z $IMMUPIPE_CENTRAL_ROOT ]]; then
+    echo "IMMUPIPE_CENTRAL_ROOT is not defined"
+    exit 1
+  fi
+
+  # showing a prompt confirmation to avoid mistakes
+  read -r -p "Are you sure you want to run the central release? [y/N] " response
+  if [[ "$response" =~ ^(yes|y)$ ]]; then
+
+    # preparing build
+    if [[ ! -d "build-central" ]]; then
+      mkdir "build-central"
+    fi
+    cd "build-central"
+
+    # running installation
+    target="$IMMUPIPE_CENTRAL_ROOT/$targetSuffixPath"
+    if ! [[ -e "$target" ]]; then
+      make clean
+      cmake -DCMAKE_BUILD_TYPE="release" -DCMAKE_INSTALL_PREFIX="$target" .. && make all install
+    else
+      echo "Cannot override an existent central release: $target"
+      exit 1
+    fi
+  fi
+
+# development release
+else
+
+  # making sure IMMUPIPE_DEV_ROOT is defined
+  if [[ -z $IMMUPIPE_DEV_ROOT ]]; then
+    echo "IMMUPIPE_DEV_ROOT is not defined"
+    exit 1
+  fi
+
+  # preparing build
+  if [[ ! -d "build-dev" ]]; then
+    mkdir "build-dev"
+  fi
+  cd "build-dev"
+
+  # running installation
+  cmake -DCMAKE_BUILD_TYPE="dev" -DCMAKE_INSTALL_PREFIX="$IMMUPIPE_DEV_ROOT/$targetSuffixPath" .. && make all install
+fi

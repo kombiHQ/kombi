@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# current dir
+currentDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# library dir
+libraryDir="$(dirname $currentDir)/lib"
+export PYTHONPATH="$libraryDir:$PYTHONPATH"
+
+# figuring out which python is going to be used for the
+# execution
+if [[ -z "$CHILOPODA_PYTHON_EXECUTABLE" ]]; then
+  export CHILOPODA_PYTHON_EXECUTABLE="python"
+fi
+
+# executing GUI
+$CHILOPODA_PYTHON_EXECUTABLE $currentDir/chilopoda-gui.py "$@"

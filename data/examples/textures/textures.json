@@ -1,0 +1,32 @@
+{
+  "scripts": [
+    "*/*.py"
+  ],
+  "vars": {
+    "prefix": "/tmp",
+    "job": "RND",
+    "__uiHintSourceColumns": [
+      "assetName",
+      "mapType",
+      "variant"
+    ]
+  },
+  "tasks": [
+    {
+      "run": "createTextureVersion",
+      "options": {
+        "maketxArgs": "--oiio --colorconvert sRGB linear"
+      },
+      "metadata": {
+        "match.types": [
+          "texture"
+        ],
+        "wrapper.name": "python",
+        "wrapper.options": {
+          "user": ""
+        }
+      },
+      "target": "{prefix}/{job}/assets/{assetName}/publish/texture/{variant}/(newver <parent>)"
+    }
+  ]
+}

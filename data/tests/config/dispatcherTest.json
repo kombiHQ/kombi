@@ -1,0 +1,44 @@
+{
+  "scripts": [
+    "*/*.py"
+  ],
+  "vars": {
+  },
+  "tasks": [
+    {
+      "run": "copy",
+      "options": {
+        "testOption": "{temporaryDir}",
+        "testExpr": "(min 2 6)"
+      },
+      "target": "{temporaryDir}/{baseName}",
+      "metadata": {
+        "match.types": [
+          "exr"
+        ],
+        "match.vars": {
+          "imageType": [
+            "sequence"
+          ]
+        }
+      },
+      "tasks": [
+        {
+          "run": "sequenceThumbnail",
+          "target": "{temporaryDir}/{name}.jpg",
+          "metadata": {
+            "match.types": [
+              "testCrawler"
+            ],
+            "match.vars": {
+              "imageType": [
+                "sequence"
+              ],
+              "testVariable": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

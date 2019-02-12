@@ -1,0 +1,66 @@
+{
+  "scripts": [
+    "*/*.py"
+  ],
+  "vars": {
+    "prefix": "/tmp/data/job",
+    "job": "RND",
+    "__uiHintSourceColumns": [
+      "assetName",
+      "step",
+      "variant",
+      "pass"
+    ]
+  },
+  "tasks":
+  [
+    {
+      "run": "createTurntableVersion",
+      "metadata": {
+        "match.types": [
+          "turntable"
+        ],
+        "wrapper.name": "python"
+      },
+      "target": "{prefix}/{job}/assets/{assetName}/publish/{step}/{variant}/(newver <parent>)",
+      "tasks":
+      [
+        {
+          "run": "nukeTemplate",
+          "options": {
+            "topLeft": "{assetName}-{variant}",
+            "topRight": "(yyyy)(mm)(dd)",
+            "notes": "",
+            "videocodec": "",
+            "bottomLeft": "{pass}, {versionName}",
+            "template": "{prefix}/{job}/config/chilopoda/mediaDelivery/templates/template.nk",
+            "enableSlate": 0,
+            "enableColorSpace": 0,
+            "enableReformat": 0,
+            "enableTimecode": 1
+          },
+          "target": "{dataPath}/{name}.mov",
+          "metadata": {
+            "match.types": [
+              "exr"
+            ],
+            "match.vars": {
+              "imageType": [
+                "sequence"
+              ]
+            },
+            "wrapper.name": "python"
+          },
+          "tasks": [
+            {
+              "run": "appendToVersion",
+              "metadata": {
+                "wrapper.name": "python"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
