@@ -190,7 +190,7 @@ class VarExtractor(object):
 
     def valuePattern(self):
         """
-        Return the valuePattern.
+        Return the value pattern.
         """
         return self.__valuePattern
 
@@ -323,6 +323,8 @@ class VarExtractor(object):
         finalValue = self.__toValue(
             valueType,
             self.__value[valueCurrentIndex: valueCurrentIndex + varValueSize],
+            index,
+            valueCurrentIndex + varValueSize - 1,
         )
 
         # assigning variable
@@ -331,15 +333,26 @@ class VarExtractor(object):
 
         return valueCurrentIndex
 
-    @classmethod
-    def __toValue(cls, valueType, value):
+    def __toValue(self, valueType, value, index, valueIndex):
         """
         Return the value for the variable.
         """
-        if valueType.lower() == 'i':
-            return int(value)
-        elif valueType.lower() == 'f':
-            return float(value)
+        if valueType.lower() in ('i', 'f'):
+            result = None
+            try:
+                if valueType.lower() == 'i':
+                    result = int(value)
+                else:
+                    result = float(value)
+            except ValueError:
+                raise VarExtractorNotMatchingCharError(
+                    "Cannot cast value '{}' to numeric value".format(value),
+                    self.__value,
+                    self.__valuePattern,
+                    valueIndex,
+                    index
+                )
+            return result
         elif valueType == 'S':
             return value.upper()
         elif valueType == 's':

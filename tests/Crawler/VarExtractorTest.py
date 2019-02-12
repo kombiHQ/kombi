@@ -6,9 +6,9 @@ from chilopoda.Crawler.VarExtractor import VarExtractor, VarExtractorNotMatching
 class VarExtractorTest(BaseTestCase):
     """Test for var extractor."""
 
-    def testExtractingVars(self):
+    def testExtractingVarsFromPro(self):
         """
-        Test extracting variables.
+        Test extracting variables from project pro.
         """
         varExtractor = VarExtractor(
             "PRO_ABC_D-E-F_FOO_V0001.0001.png",
@@ -31,6 +31,31 @@ class VarExtractorTest(BaseTestCase):
         for varName, varValue in checkData.items():
             self.assertEqual(varValue, varExtractor.var(varName))
 
+    def testExtractingVarsFromFoo(self):
+        """
+        Test extracting variables from project foo.
+        """
+        varExtractor = VarExtractor(
+            "foo_abc_def_v002.000001.exr",
+            "{job:3}_{seq:3}_{shot:3}_v{version:3i}.######.{ext}"
+        )
+
+        checkData = OrderedDict()
+        checkData['job'] = 'foo'
+        checkData['seq'] = 'abc'
+        checkData['shot'] = 'def'
+        checkData['version'] = 2
+        checkData['ext'] = 'exr'
+
+        self.assertTrue(varExtractor.match())
+        self.assertListEqual(
+            varExtractor.varNames(),
+            list(checkData.keys())
+        )
+
+        for varName, varValue in checkData.items():
+            self.assertEqual(varValue, varExtractor.var(varName))
+
     def testNotMatchingChar(self):
         """
         Test not matching char error.
@@ -38,6 +63,22 @@ class VarExtractorTest(BaseTestCase):
         varExtractor = VarExtractor(
             "PRO_ABC_D-E-F_FOO_V0001.0001.png",
             "{job:3}_{seq:3}_*_{plateName}_aV{version:4i}.####.{ext}"
+        )
+
+        self.assertFalse(varExtractor.match())
+
+        self.assertIsInstance(
+            varExtractor.error(),
+            VarExtractorNotMatchingCharError
+        )
+
+    def testNotMatchingCharNumericCastError(self):
+        """
+        Test not matching char error by failing to cast to a numeric value.
+        """
+        varExtractor = VarExtractor(
+            "foo_abc_def_v001.000001.exr",
+            "{job:3}_{seq:3}_{shot:3}_v{version:4i}.######.exr"
         )
 
         self.assertFalse(varExtractor.match())
