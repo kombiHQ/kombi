@@ -3,13 +3,16 @@ language: python
 python:
   - "2.7"
   - "3.6"
-sources:
-  - ubuntu-toolchain-r-test
-packages:
-  - python-openimageio
-  - cmake
-  - make
-  - ffmpeg
+# Add-ons: specify apt packages for Linux
+addons:
+  apt:
+   sources:
+     - ubuntu-toolchain-r-test
+   packages:
+     - python-openimageio
+     - cmake
+     - make
+     - ffmpeg
 # command to run tests
 script:
   - ./runtests
