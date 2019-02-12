@@ -6,7 +6,11 @@ python:
 # Add-ons: specify apt packages for Linux
 addons:
   apt:
-    update: true
+   update: true
+   packages:
+     - python-openimageio
+     - cmake
+     - make
    sources:
      - ubuntu-toolchain-r-test
 before_install:
