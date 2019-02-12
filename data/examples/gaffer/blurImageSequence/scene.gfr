@@ -1,0 +1,49 @@
+import Gaffer
+import GafferDispatch
+import GafferImage
+import IECore
+
+Gaffer.Metadata.registerNodeValue( parent, "serialiser:milestoneVersion", 0, persistent=False )
+Gaffer.Metadata.registerNodeValue( parent, "serialiser:majorVersion", 40, persistent=False )
+Gaffer.Metadata.registerNodeValue( parent, "serialiser:minorVersion", 0, persistent=False )
+Gaffer.Metadata.registerNodeValue( parent, "serialiser:patchVersion", 0, persistent=False )
+
+__children = {}
+
+parent["variables"].addChild( Gaffer.CompoundDataPlug.MemberPlug( "imageCataloguePort", flags = Gaffer.Plug.Flags.Default | Gaffer.Plug.Flags.Dynamic, ) )
+parent["variables"]["imageCataloguePort"].addChild( Gaffer.StringPlug( "name", defaultValue = 'image:catalogue:port', flags = Gaffer.Plug.Flags.Default | Gaffer.Plug.Flags.Dynamic, ) )
+parent["variables"]["imageCataloguePort"].addChild( Gaffer.IntPlug( "value", defaultValue = 0, flags = Gaffer.Plug.Flags.Default | Gaffer.Plug.Flags.Dynamic, ) )
+parent["variables"]["imageCataloguePort"]["value"].setValue( 37563 )
+parent["variables"].addChild( Gaffer.CompoundDataPlug.MemberPlug( "projectName", flags = Gaffer.Plug.Flags.Default | Gaffer.Plug.Flags.Dynamic, ) )
+parent["variables"]["projectName"].addChild( Gaffer.StringPlug( "name", defaultValue = 'project:name', flags = Gaffer.Plug.Flags.Default | Gaffer.Plug.Flags.Dynamic, ) )
+parent["variables"]["projectName"].addChild( Gaffer.StringPlug( "value", defaultValue = 'default', flags = Gaffer.Plug.Flags.Default | Gaffer.Plug.Flags.Dynamic, ) )
+parent["variables"].addChild( Gaffer.CompoundDataPlug.MemberPlug( "projectRootDirectory", flags = Gaffer.Plug.Flags.Default | Gaffer.Plug.Flags.Dynamic, ) )
+parent["variables"]["projectRootDirectory"].addChild( Gaffer.StringPlug( "name", defaultValue = 'project:rootDirectory', flags = Gaffer.Plug.Flags.Default | Gaffer.Plug.Flags.Dynamic, ) )
+parent["variables"]["projectRootDirectory"].addChild( Gaffer.StringPlug( "value", defaultValue = '$HOME/gaffer/projects/${project:name}', flags = Gaffer.Plug.Flags.Default | Gaffer.Plug.Flags.Dynamic, ) )
+__children["defaultFormat"] = GafferImage.FormatPlug( "defaultFormat", defaultValue = GafferImage.Format( 1920, 1080, 1.000 ), flags = Gaffer.Plug.Flags.Default | Gaffer.Plug.Flags.Dynamic, )
+parent.addChild( __children["defaultFormat"] )
+__children["ImageReader"] = GafferImage.ImageReader( "ImageReader" )
+parent.addChild( __children["ImageReader"] )
+__children["ImageReader"]["fileName"].setValue( '${sourceFile}' )
+__children["ImageReader"].addChild( Gaffer.V2fPlug( "__uiPosition", defaultValue = IECore.V2f( 0, 0 ), flags = Gaffer.Plug.Flags.Default | Gaffer.Plug.Flags.Dynamic, ) )
+__children["ImageReader"]["__uiPosition"].setValue( IECore.V2f( -4.74734688, 16.7631168 ) )
+__children["ImageWriter"] = GafferImage.ImageWriter( "ImageWriter" )
+parent.addChild( __children["ImageWriter"] )
+__children["ImageWriter"]["fileName"].setValue( '${targetFile}' )
+__children["ImageWriter"].addChild( Gaffer.V2fPlug( "__uiPosition", defaultValue = IECore.V2f( 0, 0 ), flags = Gaffer.Plug.Flags.Default | Gaffer.Plug.Flags.Dynamic, ) )
+__children["ImageWriter"]["__uiPosition"].setValue( IECore.V2f( 7.32003117, -1.73552179 ) )
+__children["Blur"] = GafferImage.Blur( "Blur" )
+parent.addChild( __children["Blur"] )
+__children["Blur"]["radius"]["x"].setValue( 12.489999771118164 )
+__children["Blur"].addChild( Gaffer.V2fPlug( "__uiPosition", defaultValue = IECore.V2f( 0, 0 ), flags = Gaffer.Plug.Flags.Default | Gaffer.Plug.Flags.Dynamic, ) )
+__children["Blur"]["__uiPosition"].setValue( IECore.V2f( 1.96071243, 6.42854071 ) )
+Gaffer.Metadata.registerPlugValue( parent["variables"]["imageCataloguePort"], 'readOnly', True )
+parent["variables"]["projectName"]["name"].setFlags( Gaffer.Plug.Flags.ReadOnly, True )
+parent["variables"]["projectRootDirectory"]["name"].setFlags( Gaffer.Plug.Flags.ReadOnly, True )
+__children["ImageWriter"]["in"].setInput( __children["Blur"]["out"] )
+__children["Blur"]["in"].setInput( __children["ImageReader"]["out"] )
+__children["Blur"]["radius"]["y"].setInput( __children["Blur"]["radius"]["x"] )
+
+
+del __children
+

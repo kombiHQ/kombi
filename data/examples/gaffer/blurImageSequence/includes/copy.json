@@ -1,0 +1,9 @@
+{
+    "run": "link",
+    "metadata": {
+        "match.types": [
+            "mov"
+        ]
+    },
+    "target": "(dirname {fullPath})/{name}_2.{ext}"
+}

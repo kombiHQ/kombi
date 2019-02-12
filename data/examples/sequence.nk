@@ -1,0 +1,113 @@
+#! /home/paulon/dev/upipe/apps/nuke/11.1v3/bin/linux/libnuke-11.1.3.so -nx
+#write_info Write1 file:"/home/paulon/dev/chilopoda/data/examples/sequence.%04d.exr" format:"1920 1080 1" chans:":rgba.red:rgba.green:rgba.blue:" framerange:"1 100" fps:"0" colorspace:"default (linear)" datatype:"16 bit half" transfer:"unknown" views:"main" colorManagement:"Nuke"
+version 11.1 v3
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="0" y="20" w="1920" h="1035" maximized="1" screen="0">
+        <splitter orientation="1">
+            <split size="40"/>
+            <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                <page id="Toolbar.1"/>
+            </dock>
+            <split size="1257" stretch="1"/>
+            <splitter orientation="2">
+                <split size="578"/>
+                <dock id="" activePageId="Viewer.1">
+                    <page id="Viewer.1"/>
+                </dock>
+                <split size="407"/>
+                <dock id="" activePageId="DAG.1" focus="true">
+                    <page id="DAG.1"/>
+                    <page id="Curve Editor.1"/>
+                    <page id="DopeSheet.1"/>
+                </dock>
+            </splitter>
+            <split size="615"/>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"/>
+                <page id="uk.co.thefoundry.backgroundrenderview.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name /home/paulon/dev/chilopoda/data/examples/sequence.nk
+ frame 24
+ format "2048 1556 0 0 2048 1556 1 2K_Super_35(full-ap)"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ colorManagement Nuke
+ workingSpaceLUT linear
+ monitorLut sRGB
+ int8Lut sRGB
+ int16Lut sRGB
+ logLut Cineon
+ floatLut linear
+}
+Read {
+ inputs 0
+ file /home/paulon/dev/chilopoda/data/ui/icons/chilopoda.png
+ format "392 392 0 0 392 392 1 "
+ origset true
+ name Read1
+ xpos -322
+ ypos -163
+}
+Transform {
+ translate {{curve x1 -120 x6 390 x12 1250 x17 390 x20 -1030 x24 -40} {curve x1 -200 x6 860 x12 1240 x17 -170 x20 -920 x24 -1290}}
+ rotate {{curve x1 0 x6 33 x12 33 x17 -44.9296875 x20 -135 x24 -135}}
+ scale {{curve x1 1 x6 1 x12 1 x17 1 x20 1 x24 1.58}}
+ skewX {{curve x1 0 x6 0 x12 0 x17 0 x20 0 x24 0}}
+ skewY {{curve x1 0 x6 0 x12 0 x17 0 x20 0 x24 0}}
+ center {{curve x1 1024 x6 1024 x12 1024 x17 1024 x20 1024 x24 1024} {curve x1 778 x6 778 x12 778 x17 778 x20 778 x24 778}}
+ invert_matrix {{curve x1 0}}
+ clamp {{curve x1 0}}
+ black_outside {{curve x1 1}}
+ motionblur {{curve x1 0}}
+ shutter {{curve x1 0.5}}
+ shuttercustomoffset {{curve x1 0}}
+ name Transform1
+ xpos -237
+ ypos -74
+}
+ColorBars {
+ inputs 0
+ format "1920 1080 0 0 1920 1080 1 HD_1080"
+ name ColorBars1
+ xpos -503
+ ypos -99
+}
+Merge2 {
+ inputs 2
+ name Merge1
+ xpos -394
+ ypos -72
+}
+Reformat {
+ format "1920 1080 0 0 1920 1080 1 HD_1080"
+ name Reformat1
+ xpos -301
+ ypos 47
+}
+set N27777e0 [stack 0]
+Viewer {
+ frame 24
+ frame_range 1-100
+ frame_range_lock true
+ name Viewer1
+ xpos -40
+ ypos -10
+}
+push $N27777e0
+Write {
+ file /home/paulon/dev/chilopoda/data/examples/sequence.%04d.exr
+ file_type exr
+ last 24
+ use_limit true
+ version 2
+ name Write1
+ xpos -208
+ ypos 102
+}
