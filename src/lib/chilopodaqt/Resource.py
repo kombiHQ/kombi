@@ -39,6 +39,7 @@ class Resource(object):
                 cls.__cache["pixmap"][key] = cls.__cache["pixmap"][key].scaled(
                     width,
                     height,
+                    QtCore.Qt.IgnoreAspectRatio,
                     QtCore.Qt.SmoothTransformation
                 )
 
