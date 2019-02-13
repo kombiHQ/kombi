@@ -8,7 +8,8 @@
       "job",
       "seq",
       "shot"
-    ]
+    ],
+    "prefix": "/tmp"
   },
   "tasks": [
     {
@@ -23,7 +24,7 @@
           ]
         }
       },
-      "target": "/tmp/jobs/{job}/seq/{seq}/shot/{shot}/delivery/(yyyy)(mm)(dd)/{name}/{width}x{height}_{ext}/{job}_{shot}_{seq}_(queryplatename {filePath})_(queryvendorver {filePath}).(pad {frame} 4).png"
+      "target": "{prefix}/jobs/{job}/seq/{seq}/shot/{shot}/delivery/(yyyy)(mm)(dd)/{name}/{width}x{height}_{ext}/{job}_{shot}_{seq}_(queryplatename {filePath})_(queryvendorver {filePath}).(pad {frame} 4).png"
     }
   ]
 }
