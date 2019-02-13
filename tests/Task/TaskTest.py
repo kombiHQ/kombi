@@ -15,7 +15,7 @@ from chilopoda.Crawler import Crawler
 class TaskTest(BaseTestCase):
     """Test for tasks."""
 
-    __jsonConfig = os.path.join(BaseTestCase.dataDirectory(), 'config', 'test.json')
+    __jsonConfig = os.path.join(BaseTestCase.dataTestsDirectory(), 'config', 'test.json')
 
     def testTaskRegistration(self):
         """
@@ -107,7 +107,7 @@ class TaskTest(BaseTestCase):
         Test that cloning tasks works properly.
         """
         dummyTask = Task.create('sequenceThumbnail')
-        crawlers = FsPath.createFromPath(BaseTestCase.dataDirectory()).glob(['exr'])
+        crawlers = FsPath.createFromPath(BaseTestCase.dataTestsDirectory()).glob(['exr'])
         for crawler in crawlers:
             target = '{}_target'.format(crawler.var('name'))
             dummyTask.add(crawler, target)
@@ -178,11 +178,11 @@ class TaskTest(BaseTestCase):
         Task.register("dummy", DummyTask)
 
         dummyTask = Task.create('dummy')
-        crawlers = FsPath.createFromPath(BaseTestCase.dataDirectory()).glob(['mov'])
+        crawlers = FsPath.createFromPath(BaseTestCase.dataTestsDirectory()).glob(['mov'])
         targetPaths = []
         for crawler in crawlers:
             target = '{}_target.mov'.format(crawler.var('name'))
-            targetPath = os.path.join(BaseTestCase.dataDirectory(), target)
+            targetPath = os.path.join(BaseTestCase.dataTestsDirectory(), target)
             targetPaths.append(targetPath)
             crawler.setVar('contextVarTest', 1, True)
             dummyTask.add(crawler, targetPath)
@@ -208,11 +208,11 @@ class TaskTest(BaseTestCase):
         Task.register("dummy", DummyTask)
 
         dummyTask = Task.create('dummy')
-        crawlers = FsPath.createFromPath(BaseTestCase.dataDirectory()).glob(['mov'])
+        crawlers = FsPath.createFromPath(BaseTestCase.dataTestsDirectory()).glob(['mov'])
         targetPaths = []
         for crawler in crawlers:
             target = '{}_target.mov'.format(crawler.var('name'))
-            targetPath = os.path.join(BaseTestCase.dataDirectory(), target)
+            targetPath = os.path.join(BaseTestCase.dataTestsDirectory(), target)
             targetPaths.append(targetPath)
             dummyTask.add(crawler, targetPath)
         jsonResult = dummyTask.toJson()
@@ -234,7 +234,7 @@ class TaskTest(BaseTestCase):
         """
         taskHolderLoader = TaskHolderLoader()
         taskHolderLoader.loadFromFile(self.__jsonConfig)
-        crawlers = FsPath.createFromPath(BaseTestCase.dataDirectory()).glob()
+        crawlers = FsPath.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
 
         createdCrawlers = []
         for taskHolder in taskHolderLoader.taskHolders():

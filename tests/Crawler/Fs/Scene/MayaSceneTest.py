@@ -10,8 +10,8 @@ from chilopoda.Crawler.Fs.Scene import Scene
 class MayaSceneTest(BaseTestCase):
     """Test Maya Scene crawler."""
 
-    __maFile = os.path.join(BaseTestCase.dataDirectory(), "test.ma")
-    __mbFile = os.path.join(BaseTestCase.dataDirectory(), "test.mb")
+    __maFile = os.path.join(BaseTestCase.dataTestsDirectory(), "test.ma")
+    __mbFile = os.path.join(BaseTestCase.dataTestsDirectory(), "test.mb")
 
     def testMayaSceneCrawler(self):
         """

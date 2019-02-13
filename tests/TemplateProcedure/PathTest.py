@@ -8,7 +8,7 @@ class PathTest(BaseTestCase):
     """Test Path template procedures."""
 
     __path = "/test/path/example.ext"
-    __testRFindPath = os.path.join(BaseTestCase.dataDirectory(), 'config', 'test.json')
+    __testRFindPath = os.path.join(BaseTestCase.dataTestsDirectory(), 'config', 'test.json')
 
     def testDirname(self):
         """
@@ -36,15 +36,15 @@ class PathTest(BaseTestCase):
         Test that the rfind procedure works properly.
         """
         result = Template.runProcedure('rfindpath', 'test.txt', self.__testRFindPath)
-        testPath = os.path.join(BaseTestCase.dataDirectory(), 'test.txt')
+        testPath = os.path.join(BaseTestCase.dataTestsDirectory(), 'test.txt')
         self.assertEqual(result, testPath)
 
     def testFindPath(self):
         """
         Test that the find procedure works properly.
         """
-        result = Template.runProcedure("findpath", 'TestCrawler.py', BaseTestCase.dataDirectory())
-        testPath = os.path.join(BaseTestCase.dataDirectory(), 'config', 'crawlers', 'TestCrawler.py')
+        result = Template.runProcedure("findpath", 'TestCrawler.py', BaseTestCase.dataTestsDirectory())
+        testPath = os.path.join(BaseTestCase.dataTestsDirectory(), 'config', 'crawlers', 'TestCrawler.py')
         self.assertEqual(result, testPath)
 
     def testRegistration(self):

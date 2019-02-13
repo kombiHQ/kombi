@@ -13,7 +13,7 @@ from chilopoda.Crawler.Crawler import CrawlerInvalidTagError
 class FsPathTest(BaseTestCase):
     """Test Directory crawler."""
 
-    __dir = os.path.join(BaseTestCase.dataDirectory(), "glob")
+    __dir = os.path.join(BaseTestCase.dataTestsDirectory(), "glob")
     __turntableFile = os.path.join(__dir, "images", "RND_ass_lookdev_default_beauty_tt.1001.exr")
     __shotRenderFile = os.path.join(__dir, "images", "RND-TST-SHT_lighting_beauty_sr.1001.exr")
 

@@ -7,7 +7,7 @@ from chilopoda.Crawler.Fs.Ascii import Xml
 class XmlTest(BaseTestCase):
     """Test Xml crawler."""
 
-    __xmlFile = os.path.join(BaseTestCase.dataDirectory(), "test.xml")
+    __xmlFile = os.path.join(BaseTestCase.dataTestsDirectory(), "test.xml")
 
     def testXmlCrawler(self):
         """

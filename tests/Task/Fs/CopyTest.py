@@ -8,7 +8,7 @@ from chilopoda.Crawler.Fs.Image import Exr
 class CopyTest(BaseTestCase):
     """Test Copy task."""
 
-    __sourcePath = os.path.join(BaseTestCase.dataDirectory(), "test.exr")
+    __sourcePath = os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")
     __targetPath = os.path.join(BaseTestCase.tempDirectory(), "copyTest.exr")
 
     def testCopy(self):

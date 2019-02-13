@@ -8,7 +8,7 @@ from chilopoda.Crawler.Fs.Render import ShotRender
 class ShotRenderTest(BaseTestCase):
     """Test ShotRender crawler."""
 
-    __exrFile = os.path.join(BaseTestCase.dataDirectory(), "RND-TST-SHT_lighting_beauty_sr.1001.exr")
+    __exrFile = os.path.join(BaseTestCase.dataTestsDirectory(), "RND-TST-SHT_lighting_beauty_sr.1001.exr")
 
     def testShotRenderCrawler(self):
         """

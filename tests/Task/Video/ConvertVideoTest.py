@@ -7,7 +7,7 @@ from chilopoda.Crawler.Fs import FsPath
 class ConvertVideoTest(BaseTestCase):
     """Test ConvertVideo task."""
 
-    __sourcePath = os.path.join(BaseTestCase.dataDirectory(), "videoNoTimeCode.mov")
+    __sourcePath = os.path.join(BaseTestCase.dataTestsDirectory(), "videoNoTimeCode.mov")
     __targetPath = os.path.join(BaseTestCase.tempDirectory(), "testToDelete.mov")
 
     def testConvertVideo(self):

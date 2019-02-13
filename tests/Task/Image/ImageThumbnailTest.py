@@ -7,8 +7,8 @@ from chilopoda.Crawler.Fs import FsPath
 class ImageThumbnailTest(BaseTestCase):
     """Test ImageThumbnail task."""
 
-    __sourcePath = os.path.join(BaseTestCase.dataDirectory(), "test.dpx")
-    __testPath = os.path.join(BaseTestCase.dataDirectory(), "thumbnailImage.jpg")
+    __sourcePath = os.path.join(BaseTestCase.dataTestsDirectory(), "test.dpx")
+    __testPath = os.path.join(BaseTestCase.dataTestsDirectory(), "thumbnailImage.jpg")
     __targetPath = os.path.join(BaseTestCase.tempDirectory(), "testToDelete.jpg")
 
     def testImageThumbnail(self):

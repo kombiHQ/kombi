@@ -9,9 +9,9 @@ from chilopoda.Task.Fs.Checksum import ChecksumMatchError
 class ChecksumTest(BaseTestCase):
     """Test Checksum task."""
 
-    __sourcePath = os.path.join(BaseTestCase.dataDirectory(), "test.exr")
+    __sourcePath = os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")
     __targetPath = os.path.join(BaseTestCase.tempDirectory(), "testCopy.exr")
-    __otherPath = os.path.join(BaseTestCase.dataDirectory(), "RND_ass_lookdev_default_beauty_tt.1001.exr")
+    __otherPath = os.path.join(BaseTestCase.dataTestsDirectory(), "RND_ass_lookdev_default_beauty_tt.1001.exr")
 
     @classmethod
     def setUpClass(cls):

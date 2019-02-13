@@ -8,7 +8,7 @@ from chilopoda.Crawler.Fs import FsPath
 class ChmodTest(BaseTestCase):
     """Test Chmod task."""
 
-    __dir = os.path.join(BaseTestCase.dataDirectory(), "glob")
+    __dir = os.path.join(BaseTestCase.dataTestsDirectory(), "glob")
     __path = os.path.join(__dir, "images", "RND_ass_lookdev_default_beauty_tt.1001.exr")
 
     @unittest.skipIf(sys.platform.startswith("win"), "not supported on windows")
@@ -51,7 +51,7 @@ class ChmodTest(BaseTestCase):
         """
         Test that hardlinks are skipped when running the chmod task.
         """
-        link = os.path.join(self.dataDirectory(), 'symlink.exr')
+        link = os.path.join(self.dataTestsDirectory(), 'symlink.exr')
         os.symlink(self.__path, link)
         self.assertEqual(self.__getPermission(link), '664')
         self.assertTrue(os.path.islink(link))

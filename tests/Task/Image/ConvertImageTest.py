@@ -12,7 +12,7 @@ class ConvertImageTest(BaseTestCase):
     checksum test here.
     """
 
-    __sourcePath = os.path.join(BaseTestCase.dataDirectory(), "test.exr")
+    __sourcePath = os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")
     __targetPath = os.path.join(BaseTestCase.tempDirectory(), "testToDelete.jpg")
 
     def testConvertImage(self):

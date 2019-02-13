@@ -8,7 +8,7 @@ from chilopoda.Crawler.Fs.Image import Jpg
 class JpgTest(BaseTestCase):
     """Test Jpg crawler."""
 
-    __jpgFile = os.path.join(BaseTestCase.dataDirectory(), "test.jpg")
+    __jpgFile = os.path.join(BaseTestCase.dataTestsDirectory(), "test.jpg")
 
     def testJpgCrawler(self):
         """

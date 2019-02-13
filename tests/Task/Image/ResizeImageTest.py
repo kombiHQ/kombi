@@ -7,8 +7,8 @@ from chilopoda.Crawler.Fs import FsPath
 class ResizeImageTest(BaseTestCase):
     """Test ResizeImage task."""
 
-    __sourcePath = os.path.join(BaseTestCase.dataDirectory(), "testSeq.0001.exr")
-    __testPath = os.path.join(BaseTestCase.dataDirectory(), "resizeImage.jpg")
+    __sourcePath = os.path.join(BaseTestCase.dataTestsDirectory(), "testSeq.0001.exr")
+    __testPath = os.path.join(BaseTestCase.dataTestsDirectory(), "resizeImage.jpg")
     __targetPath = os.path.join(BaseTestCase.tempDirectory(), "testToDelete.jpg")
 
     def testResizeImage(self):

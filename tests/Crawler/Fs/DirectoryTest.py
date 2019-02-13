@@ -8,7 +8,7 @@ from chilopoda.Crawler.Fs import Directory
 class DirectoryTest(BaseTestCase):
     """Test Directory crawler."""
 
-    __dir = os.path.join(BaseTestCase.dataDirectory(), "640x480")
+    __dir = os.path.join(BaseTestCase.dataTestsDirectory(), "640x480")
 
     def testDirectoryCrawler(self):
         """
@@ -36,7 +36,7 @@ class DirectoryTest(BaseTestCase):
         """
         Test to show that file names with illegal characters are skipped.
         """
-        crawler = Crawler.create(PathHolder(self.dataDirectory()))
+        crawler = Crawler.create(PathHolder(self.dataTestsDirectory()))
         crawlerPaths = map(lambda x: x.var("filePath"), crawler.children())
         self.assertNotIn(os.path.join(self.__dir, "bad file.txt"), crawlerPaths)
 

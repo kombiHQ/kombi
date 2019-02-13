@@ -8,7 +8,7 @@ from chilopoda.Crawler.Fs.Render import Turntable
 class TurntableTest(BaseTestCase):
     """Test Turntable crawler."""
 
-    __exrFile = os.path.join(BaseTestCase.dataDirectory(), "RND_ass_lookdev_default_beauty_tt.1001.exr")
+    __exrFile = os.path.join(BaseTestCase.dataTestsDirectory(), "RND_ass_lookdev_default_beauty_tt.1001.exr")
 
     def testTurntableCrawler(self):
         """

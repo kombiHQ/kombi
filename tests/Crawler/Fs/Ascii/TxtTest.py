@@ -8,7 +8,7 @@ from chilopoda.Crawler.Fs.Ascii import Txt
 class TxtTest(BaseTestCase):
     """Test Txt crawler."""
 
-    __txtFile = os.path.join(BaseTestCase.dataDirectory(), "test.txt")
+    __txtFile = os.path.join(BaseTestCase.dataTestsDirectory(), "test.txt")
 
     def testTxtCrawler(self):
         """

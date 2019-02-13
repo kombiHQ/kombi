@@ -10,7 +10,7 @@ from chilopoda.Crawler.Fs import FsPath
 class LinkTest(BaseTestCase):
     """Test link task."""
 
-    __sourcePath = os.path.join(BaseTestCase.dataDirectory(), "test.exr")
+    __sourcePath = os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")
     __targetPath = os.path.join(BaseTestCase.tempDirectory(), "test.exr")
     __targetSymlinkPath = os.path.join(BaseTestCase.tempDirectory(), "test_symlink.exr")
     __targetHardlinkPath = os.path.join(BaseTestCase.tempDirectory(), "test_hardlink.exr")

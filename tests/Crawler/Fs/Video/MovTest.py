@@ -8,8 +8,8 @@ from chilopoda.Crawler.Fs.Video import Mov
 class MovTest(BaseTestCase):
     """Test Texture crawler."""
 
-    __movFile = os.path.join(BaseTestCase.dataDirectory(), "video.mov")
-    __movNoTimecodeFile = os.path.join(BaseTestCase.dataDirectory(), "videoNoTimeCode.mov")
+    __movFile = os.path.join(BaseTestCase.dataTestsDirectory(), "video.mov")
+    __movNoTimecodeFile = os.path.join(BaseTestCase.dataTestsDirectory(), "videoNoTimeCode.mov")
 
     def testMovCrawler(self):
         """
