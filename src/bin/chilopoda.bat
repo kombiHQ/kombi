@@ -1,4 +1,6 @@
 @ECHO OFF
+@title=Chilopoda Output
+cd %~dp0
 REM rem library
 pushd ..
 set PYTHONPATH=%CD%\lib;%PYTHONPATH%
@@ -11,5 +13,4 @@ IF "%CHILOPODA_PYTHON_EXECUTABLE%"=="" (
 )
 
 REM executing GUI
-%CHILOPODA_PYTHON_EXECUTABLE%w %~dp0chilopoda-gui.py %*
-
+%CHILOPODA_PYTHON_EXECUTABLE% %~dp0chilopoda-gui.py %*
