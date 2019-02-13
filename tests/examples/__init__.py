@@ -1,0 +1,1 @@
+from .VendorXPlatesTest import VendorXPlatesTest
