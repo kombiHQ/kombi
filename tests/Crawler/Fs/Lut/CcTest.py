@@ -8,7 +8,7 @@ from chilopoda.Crawler.Fs.Lut import Ccc
 class CcTest(BaseTestCase):
     """Test Cc crawler."""
 
-    __ccFile = os.path.join(BaseTestCase.dataDirectory(), "test.cc")
+    __ccFile = os.path.join(BaseTestCase.dataTestsDirectory(), "test.cc")
 
     def testCcCrawler(self):
         """

@@ -8,7 +8,7 @@ from chilopoda.Crawler.Fs.Lut import Cdl
 class CdlTest(BaseTestCase):
     """Test Cdl crawler."""
 
-    __cdlFile = os.path.join(BaseTestCase.dataDirectory(), "test.cdl")
+    __cdlFile = os.path.join(BaseTestCase.dataTestsDirectory(), "test.cdl")
 
     def testCdlCrawler(self):
         """

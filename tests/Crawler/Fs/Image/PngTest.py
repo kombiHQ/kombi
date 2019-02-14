@@ -8,7 +8,7 @@ from chilopoda.Crawler.Fs.Image import Png
 class PngTest(BaseTestCase):
     """Test Exr crawler."""
 
-    __pngFile = os.path.join(BaseTestCase.dataDirectory(), "test.png")
+    __pngFile = os.path.join(BaseTestCase.dataTestsDirectory(), "test.png")
 
     def testPngCrawler(self):
         """

@@ -5,3 +5,4 @@ from . import TemplateProcedure
 from . import Task
 from . import TaskWrapper
 from . import Dispatcher
+from . import examples

@@ -10,8 +10,8 @@ from chilopoda.Resource import Resource
 class PythonTest(BaseTestCase):
     """Test python subprocess."""
 
-    __sourcePath = os.path.join(BaseTestCase.dataDirectory(), 'test.exr')
-    __taskPath = os.path.join(BaseTestCase.dataDirectory(), 'tasks', 'PythonTestTask.py')
+    __sourcePath = os.path.join(BaseTestCase.dataTestsDirectory(), 'test.exr')
+    __taskPath = os.path.join(BaseTestCase.dataTestsDirectory(), 'tasks', 'PythonTestTask.py')
 
     def testPythonMultiLevel(self):
         """

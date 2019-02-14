@@ -8,7 +8,7 @@ from chilopoda.Crawler.Fs.Render import NukeRender
 class NukeRenderTest(BaseTestCase):
     """Test NukeRender crawler."""
 
-    __exrFile = os.path.join(BaseTestCase.dataDirectory(), "RND-TST-SHT_comp_compName_output_v010_tk.1001.exr")
+    __exrFile = os.path.join(BaseTestCase.dataTestsDirectory(), "RND-TST-SHT_comp_compName_output_v010_tk.1001.exr")
 
     def testNukeRenderCrawler(self):
         """

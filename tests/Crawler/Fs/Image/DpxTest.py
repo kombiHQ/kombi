@@ -8,7 +8,7 @@ from chilopoda.Crawler.Fs.Image import Dpx
 class DpxTest(BaseTestCase):
     """Test Dpx crawler."""
 
-    __dpxFile = os.path.join(BaseTestCase.dataDirectory(), "test.dpx")
+    __dpxFile = os.path.join(BaseTestCase.dataTestsDirectory(), "test.dpx")
 
     def testDpxCrawler(self):
         """

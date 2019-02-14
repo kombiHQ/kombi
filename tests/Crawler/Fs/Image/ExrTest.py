@@ -9,9 +9,9 @@ from chilopoda.Crawler.Fs.Image import Exr
 class ExrTest(BaseTestCase):
     """Test Exr crawler."""
 
-    __exrFile = os.path.join(BaseTestCase.dataDirectory(), "test.exr")
-    __exrSeq = os.path.join(BaseTestCase.dataDirectory(), "testSeq.0001.exr")
-    __exrAmbiguousSeq = os.path.join(BaseTestCase.dataDirectory(), "test_0001.exr")
+    __exrFile = os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")
+    __exrSeq = os.path.join(BaseTestCase.dataTestsDirectory(), "testSeq.0001.exr")
+    __exrAmbiguousSeq = os.path.join(BaseTestCase.dataTestsDirectory(), "test_0001.exr")
 
     def testExrCrawler(self):
         """
@@ -19,7 +19,7 @@ class ExrTest(BaseTestCase):
         """
         crawler = Crawler.create(PathHolder(self.__exrFile))
         self.assertIsInstance(crawler, Exr)
-        crawler = Crawler.create(PathHolder(BaseTestCase.dataDirectory()))
+        crawler = Crawler.create(PathHolder(BaseTestCase.dataTestsDirectory()))
         self.assertNotIsInstance(crawler, Exr)
 
     def testExrVariables(self):
@@ -71,7 +71,7 @@ class ExrTest(BaseTestCase):
         """
         Test that an image sequence is grouped properly.
         """
-        paths = glob.glob("{}/testSeq.*.exr".format(self.dataDirectory()))
+        paths = glob.glob("{}/testSeq.*.exr".format(self.dataTestsDirectory()))
         crawlers = list(map(lambda x: Crawler.create(PathHolder(x)), paths))
         crawlers.append(Crawler.create(PathHolder(self.__exrFile)))
         grouped = Exr.group(crawlers)

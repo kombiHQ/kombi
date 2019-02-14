@@ -9,7 +9,7 @@ class ConvertTextureTest(BaseTestCase):
     Test ConvertTexture task.
     """
 
-    __sourcePath = os.path.join(BaseTestCase.dataDirectory(), "test.png")
+    __sourcePath = os.path.join(BaseTestCase.dataTestsDirectory(), "test.png")
     __targetPath = os.path.join(BaseTestCase.tempDirectory(), "testToDelete.tx")
 
     def testConvertTexture(self):

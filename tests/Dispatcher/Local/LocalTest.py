@@ -12,7 +12,7 @@ from chilopoda.Dispatcher import Dispatcher
 class LocalTest(BaseTestCase):
     """Test for the local dispatcher."""
 
-    __jsonConfig = os.path.join(BaseTestCase.dataDirectory(), 'config', 'dispatcherTest.json')
+    __jsonConfig = os.path.join(BaseTestCase.dataTestsDirectory(), 'config', 'dispatcherTest.json')
 
     def testConfig(self):
         """
@@ -20,7 +20,7 @@ class LocalTest(BaseTestCase):
         """
         taskHolderLoader = JsonLoader()
         taskHolderLoader.loadFromFile(self.__jsonConfig)
-        crawlers = FsPath.createFromPath(BaseTestCase.dataDirectory()).glob()
+        crawlers = FsPath.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
         temporaryDir = tempfile.mkdtemp()
 
         dispacher = Dispatcher.create("local")

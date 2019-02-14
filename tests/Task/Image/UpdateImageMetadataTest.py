@@ -9,7 +9,7 @@ from chilopoda.Task.Image import UpdateImageMetadata
 class UpdateImageMetadataTest(BaseTestCase):
     """Test UpdateImageMetadata task."""
 
-    __sourcePath = os.path.join(BaseTestCase.dataDirectory(), "test.exr")
+    __sourcePath = os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")
     __targetPath = os.path.join(BaseTestCase.tempDirectory(), "testToDelete.exr")
 
     def testUpdateImageMetadata(self):

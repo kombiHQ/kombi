@@ -68,4 +68,11 @@ class BaseTestCase(unittest.TestCase):
         """
         Return the directory that contains test data.
         """
-        return os.path.join(cls.__rootPath, "data", "tests")
+        return os.path.join(cls.__rootPath, "data")
+
+    @classmethod
+    def dataTestsDirectory(cls):
+        """
+        Return the directory that contains test data.
+        """
+        return os.path.join(cls.dataDirectory(), "tests")

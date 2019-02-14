@@ -8,9 +8,9 @@ from chilopoda.Crawler.Fs.Texture import Texture
 class TextureTest(BaseTestCase):
     """Test Texture crawler."""
 
-    __exrFile = os.path.join(BaseTestCase.dataDirectory(), "test_DIFF_u1_v1.exr")
-    __tifFile = os.path.join(BaseTestCase.dataDirectory(), "test_bump_1002.tif")
-    __badExrFile = os.path.join(BaseTestCase.dataDirectory(), "test_0001.exr")
+    __exrFile = os.path.join(BaseTestCase.dataTestsDirectory(), "test_DIFF_u1_v1.exr")
+    __tifFile = os.path.join(BaseTestCase.dataTestsDirectory(), "test_bump_1002.tif")
+    __badExrFile = os.path.join(BaseTestCase.dataTestsDirectory(), "test_0001.exr")
 
     def testTextureCrawler(self):
         """

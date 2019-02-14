@@ -10,8 +10,8 @@ from chilopoda.Resource import Resource
 class Python2Test(BaseTestCase):
     """Test python 2 subprocess."""
 
-    __sourcePath = os.path.join(BaseTestCase.dataDirectory(), "test.exr")
-    __taskPath = os.path.join(BaseTestCase.dataDirectory(), "tasks", "PythonMajorVerTestTask.py")
+    __sourcePath = os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")
+    __taskPath = os.path.join(BaseTestCase.dataTestsDirectory(), "tasks", "PythonMajorVerTestTask.py")
 
     @unittest.skipIf(not distutils.spawn.find_executable(TaskWrapper.create('python2').option('executableName')), "python2 is not available on search path")
     def testPython2(self):

@@ -8,7 +8,7 @@ from chilopoda.Crawler.Fs.Ascii import Json
 class JsonTest(BaseTestCase):
     """Test Json crawler."""
 
-    __jsonFile = os.path.join(BaseTestCase.dataDirectory(), "test.json")
+    __jsonFile = os.path.join(BaseTestCase.dataTestsDirectory(), "test.json")
 
     def testJsonCrawler(self):
         """

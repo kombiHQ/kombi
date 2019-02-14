@@ -311,7 +311,7 @@ class TaskHolder(object):
                             useCrawlers.append(crawler)
 
         return self.__recursiveTaskRunner(
-            self,
+            self.clone(),
             useCrawlers
         )
 

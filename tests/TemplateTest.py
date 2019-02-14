@@ -8,7 +8,7 @@ from chilopoda.Crawler.Fs import FsPath
 class TemplateTest(BaseTestCase):
     """Test Template crawler."""
 
-    __file = os.path.join(BaseTestCase.dataDirectory(), 'RND-TST-SHT_lighting_beauty_sr.1001.exr')
+    __file = os.path.join(BaseTestCase.dataTestsDirectory(), 'RND-TST-SHT_lighting_beauty_sr.1001.exr')
 
     def testTemplate(self):
         """
@@ -20,7 +20,7 @@ class TemplateTest(BaseTestCase):
         self.assertEqual(
             os.path.normpath(result),
             os.path.join(
-                BaseTestCase.dataDirectory(),
+                BaseTestCase.dataTestsDirectory(),
                 'v003',
                 'RND-TST-SHT_lighting_beauty_sr.001001.exr'
             )
@@ -71,11 +71,11 @@ class TemplateTest(BaseTestCase):
         """
         Test that the required path check works.
         """
-        value = '{}/!badPath/test.exr'.format(BaseTestCase.dataDirectory())
+        value = '{}/!badPath/test.exr'.format(BaseTestCase.dataTestsDirectory())
         self.assertRaises(TemplateRequiredPathNotFoundError, Template(value).value)
-        value = '{}/!glob'.format(BaseTestCase.dataDirectory())
+        value = '{}/!glob'.format(BaseTestCase.dataTestsDirectory())
         result = Template(value).value()
-        self.assertEqual(result, os.path.join(BaseTestCase.dataDirectory(), 'glob'))
+        self.assertEqual(result, os.path.join(BaseTestCase.dataTestsDirectory(), 'glob'))
 
     def testTemplateVariable(self):
         """
