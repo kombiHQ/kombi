@@ -1,4 +1,6 @@
 import os
+import shutil
+from datetime import datetime
 import unittest
 from ..BaseTestCase import BaseTestCase
 from chilopoda.TaskHolderLoader import TaskHolderLoader
@@ -9,8 +11,9 @@ class VendorXPlatesTest(BaseTestCase):
     """Test for the example vendor 'x' plates."""
 
     __exampleDirectory = os.path.join(BaseTestCase.dataDirectory(), 'examples', 'vendorXPlates')
-    __examplePrefixDirectory = os.path.join(BaseTestCase.tempDirectory(), 'examples', 'vendorXPlates')
-    __ingestedData = """
+    __exampleIngestionPrefixDirectory = os.path.join(BaseTestCase.tempDirectory(), 'vendorXPlatesIngestion')
+    __exampleDeliveryPrefixDirectory = os.path.join(BaseTestCase.tempDirectory(), 'vendorXPlatesDelivery')
+    __ingestedGeneratedData = """
         jobs/ant/seq/abc/shot/def/plates/bla/v001/1920x1080_exr/ant_abc_def_v001.000001.exr
         jobs/ant/seq/abc/shot/def/plates/bla/v001/960x540_exr/ant_abc_def_v001.000001.exr
         jobs/ant/seq/abc/shot/def/plates/bla/v001/960x540_jpg/ant_abc_def_v001.000001.jpg
@@ -57,6 +60,20 @@ class VendorXPlatesTest(BaseTestCase):
         jobs/foo/seq/abc/shot/def/plates/bla/v001/thumbnail.png
         jobs/foo/seq/abc/shot/def/plates/bla/v001/vendor.json
     """
+    __deliveryGeneratedData = """
+        jobs/foo/seq/abc/shot/def/delivery/<date>/foo_abc_def_v001/1920x1080_exr/foo_def_abc_bla_001.0001.png
+        jobs/foo/seq/abc/shot/def/delivery/<date>/foo_abc_def_v001/1920x1080_exr/foo_def_abc_bla_001.0002.png
+        jobs/foo/seq/abc/shot/def/delivery/<date>/foo_abc_def_v001/1920x1080_exr/foo_def_abc_bla_001.0003.png
+        jobs/foo/seq/abc/shot/def/delivery/<date>/foo_abc_def_v001/1920x1080_exr/foo_def_abc_bla_001.0004.png
+        jobs/foo/seq/abc/shot/def/delivery/<date>/foo_abc_def_v001/1920x1080_exr/foo_def_abc_bla_001.0005.png
+        jobs/foo/seq/abc/shot/def/delivery/<date>/foo_abc_def_v001/1920x1080_exr/foo_def_abc_bla_001.0006.png
+        jobs/foo/seq/abc/shot/def/delivery/<date>/foo_abc_def_v001/1920x1080_exr/foo_def_abc_bla_001.0007.png
+        jobs/foo/seq/abc/shot/def/delivery/<date>/foo_abc_def_v001/1920x1080_exr/foo_def_abc_bla_001.0008.png
+        jobs/foo/seq/abc/shot/def/delivery/<date>/foo_abc_def_v001/1920x1080_exr/foo_def_abc_bla_001.0009.png
+        jobs/foo/seq/abc/shot/def/delivery/<date>/foo_abc_def_v001/1920x1080_exr/foo_def_abc_bla_001.0010.png
+        jobs/foo/seq/abc/shot/def/delivery/<date>/foo_abc_def_v001/1920x1080_exr/foo_def_abc_bla_001.0011.png
+        jobs/foo/seq/abc/shot/def/delivery/<date>/foo_abc_def_v001/1920x1080_exr/foo_def_abc_bla_001.0012.png
+    """
 
     def testConfigurations(self):
         """
@@ -69,7 +86,7 @@ class VendorXPlatesTest(BaseTestCase):
             list(sorted(['ingestConfig.yaml', 'deliveryConfig.json']))
         )
 
-    def testIngestion(self):
+    def test01Ingestion(self):
         """
         Test the ingestion configuration.
         """
@@ -82,32 +99,68 @@ class VendorXPlatesTest(BaseTestCase):
 
         taskHolder.addVar(
             "prefix",
-            self.__examplePrefixDirectory,
+            self.__exampleIngestionPrefixDirectory,
             True
         )
 
         # loading input data for the ingestion
         crawlerGroups = Crawler.group(
             FsPath.createFromPath(
-                os.path.join(self.__exampleDirectory, 'vendorPlate')
+                os.path.join(self.__exampleDirectory, 'plates')
             ).globFromParent()
         )
 
-        crawlers = []
+        resultCrawlers = []
         for group in crawlerGroups:
             if isinstance(group[0], Crawler.registeredType('png')):
-                crawlers += taskHolder.run(group)
+                resultCrawlers += taskHolder.run(group)
 
-        targetFilePaths = list(sorted(filter(lambda x: len(x), map(lambda x: x.strip(), self.__ingestedData.split('\n')))))
-        createdFilePaths = list(sorted(map(lambda x: x.var('fullPath')[len(self.__examplePrefixDirectory) + 1:].replace('\\', '/'), crawlers)))
+        targetFilePaths = list(sorted(filter(lambda x: len(x), map(lambda x: x.strip(), self.__ingestedGeneratedData.split('\n')))))
+        createdFilePaths = list(sorted(map(lambda x: x.var('fullPath')[len(self.__exampleIngestionPrefixDirectory) + 1:].replace('\\', '/'), resultCrawlers)))
 
         self.assertListEqual(targetFilePaths, createdFilePaths)
 
-    def testDelivery(self):
+    def test02Delivery(self):
         """
-        Test that filter template in task holder.
+        Test the delivery configuration.
         """
-        pass
+        loader = TaskHolderLoader()
+        loader.loadFromDirectory(self.__exampleDirectory)
+
+        taskHolder = list(filter(lambda x: os.path.basename(x.var('contextConfig')) == 'deliveryConfig.json', loader.taskHolders()))
+        self.assertEqual(len(taskHolder), 1)
+        taskHolder = taskHolder[0]
+
+        taskHolder.addVar(
+            "prefix",
+            self.__exampleDeliveryPrefixDirectory,
+            True
+        )
+
+        # loading input data for the ingestion
+        crawlerGroups = Crawler.group(
+            FsPath.createFromPath(
+                os.path.normpath(os.path.join(self.__exampleIngestionPrefixDirectory, 'jobs/foo/seq/abc/shot/def/plates/bla/v001/1920x1080_exr'))
+            ).glob()
+        )
+
+        resultCrawlers = []
+        for group in crawlerGroups:
+            if isinstance(group[0], Crawler.registeredType('plateExr')):
+                resultCrawlers += taskHolder.run(group)
+
+        targetFilePaths = list(sorted(filter(lambda x: len(x), map(lambda x: x.strip(), self.__deliveryGeneratedData.replace('<date>', datetime.today().strftime('%Y%m%d')).split('\n')))))
+        createdFilePaths = list(sorted(map(lambda x: x.var('fullPath')[len(self.__exampleDeliveryPrefixDirectory) + 1:].replace('\\', '/'), resultCrawlers)))
+
+        self.assertListEqual(targetFilePaths, createdFilePaths)
+
+    @classmethod
+    def tearDownClass(cls):
+        """
+        Remove temporary files.
+        """
+        shutil.rmtree(cls.__exampleIngestionPrefixDirectory, ignore_errors=True)
+        shutil.rmtree(cls.__exampleDeliveryPrefixDirectory, ignore_errors=True)
 
 
 if __name__ == "__main__":
