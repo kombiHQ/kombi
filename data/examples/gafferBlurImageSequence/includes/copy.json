@@ -5,5 +5,5 @@
             "mov"
         ]
     },
-    "target": "(dirname {fullPath})/{name}_copied.{ext}"
+    "target": "(dirname {fullPath})/{name}_copy.{ext}"
 }

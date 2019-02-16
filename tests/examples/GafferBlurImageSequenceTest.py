@@ -25,7 +25,7 @@ class GafferBlurImageSequenceTest(BaseTestCase):
         gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.000011.exr
         gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.000012.exr
         gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.mov
-        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001_copied.mov
+        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001_copy.mov
     """
 
     def testLoadConfiguration(self):
