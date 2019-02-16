@@ -42,6 +42,7 @@ class GafferBlurImageSequenceTest(BaseTestCase):
             'config.json'
         )
 
+    @unittest.skipIf(not BaseTestCase.hasBin(os.environ.get('CHILOPODA_GAFFER_EXECUTABLE', 'gaffer')), 'gaffer not found in the search path')
     def testRunConfiguration(self):
         """
         Test execution of the configuration.
