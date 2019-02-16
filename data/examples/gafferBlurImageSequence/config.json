@@ -3,14 +3,15 @@
     "*/*.py"
   ],
   "vars": {
-    "__uiHintSourceColumns": []
+    "__uiHintSourceColumns": [],
+    "prefix": "/tmp"
   },
   "tasks": [
     {
       "run": "gafferScene",
       "metadata": {
         "match.types": [
-          "exr"
+          "png"
         ],
         "match.vars": {
           "imageType": [
@@ -21,7 +22,7 @@
       "options": {
         "scene": "{configDirectory}/scene.gfr"
       },
-      "target": "/tmp/gafferTest/(newver <parent> as <ver>)/{name}_<ver>.(pad {frame} 4).exr",
+      "target": "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ver>.(pad {frame} 6).exr",
       "tasks": [
         {
           "run": "ffmpeg",

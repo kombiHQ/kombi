@@ -76,3 +76,13 @@ class BaseTestCase(unittest.TestCase):
         Return the directory that contains test data.
         """
         return os.path.join(cls.dataDirectory(), "tests")
+
+    @classmethod
+    def hasBin(cls, binName):
+        """
+        Return a boolean telling if the binary is under the search path.
+        """
+        return any(
+            os.access(os.path.join(path, binName), os.X_OK)
+            for path in os.environ["PATH"].split(os.pathsep)
+        )
