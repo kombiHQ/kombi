@@ -1,2 +1,3 @@
 from .VendorXPlatesTest import VendorXPlatesTest
 from .GafferBlurImageSequenceTest import GafferBlurImageSequenceTest
+from .PublishTexturesTest import PublishTexturesTest
