@@ -21,12 +21,9 @@
         "match.types": [
           "texture"
         ],
-        "wrapper.name": "python",
-        "wrapper.options": {
-          "user": ""
-        }
+        "wrapper.name": "python"
       },
-      "target": "{prefix}/{job}/assets/{assetName}/publish/texture/{variant}/(newver <parent>)"
+      "target": "{prefix}/publishTextures/{assetName}/publish/texture/{variant}/(newver <parent>)"
     }
   ]
 }
