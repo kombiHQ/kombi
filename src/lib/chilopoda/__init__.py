@@ -7,6 +7,7 @@ from .CrawlerQuery import CrawlerQuery
 from . import TemplateProcedure
 from .CrawlerMatcher import CrawlerMatcher
 from . import Task
+from . import TaskReporter
 from . import TaskWrapper
 from .TaskHolder import TaskHolder, TaskHolderError, TaskHolderInvalidVarNameError
 from . import TaskHolderLoader
