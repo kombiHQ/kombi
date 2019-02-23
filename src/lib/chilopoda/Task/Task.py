@@ -5,6 +5,7 @@ from ..Resource import Resource
 from ..Crawler.Fs import FsPath
 from ..Crawler import Crawler
 from ..Template import Template
+from ..TaskReporter import TaskReporter
 
 # compatibility with python 2/3
 try:
@@ -34,7 +35,7 @@ class Task(object):
     A task is used to operate over file paths resolved by the template runner.
 
     Task Metadata:
-        - output.verbose: boolean used to print out the output of the task (default False)
+        - output.reporter: name of the reporter used to display the output of the task or none (empty string)
     """
 
     __registered = {}
@@ -209,13 +210,14 @@ class Task(object):
         """
         self.__crawlers.clear()
 
-    def output(self):
+    def output(self, taskReporter=None):
         """
         Perform and result a list of crawlers created by task.
         """
-        verbose = self.hasMetadata('output.verbose') and self.metadata('output.verbose')
-        if verbose:
-            sys.stdout.write('{0} output:\n'.format(self.type()))
+        reporterName = self.hasMetadata('output.reporter') and self.metadata('output.reporter')
+        reporter = None
+        if reporterName:
+            reporter = TaskReporter.create(reporterName, self.type())
 
         contextVars = {}
         for crawler in self.crawlers():
@@ -227,12 +229,8 @@ class Task(object):
 
         # Copy all context variables to output crawlers
         for outputCrawler in outputCrawlers:
-            if verbose:
-                sys.stdout.write(
-                    '  - {}\n'.format(
-                        outputCrawler
-                    )
-                )
+            if reporter:
+                reporter.addCrawler(outputCrawler)
 
             for ctxVarName in filter(lambda x: x not in outputCrawler.varNames(), contextVars):
                 outputCrawler.setVar(
@@ -241,12 +239,8 @@ class Task(object):
                     True
                 )
 
-        if verbose:
-            sys.stdout.write('done\n')
-
-        # flushing output stream
-        if verbose:
-            sys.stdout.flush()
+        if reporter:
+            reporter.display()
 
         return outputCrawlers
 

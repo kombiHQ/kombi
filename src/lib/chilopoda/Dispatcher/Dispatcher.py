@@ -19,6 +19,7 @@ class Dispatcher(object):
     """
 
     __registered = {}
+    __defaultReporter = 'detailed'
 
     def __init__(self, dispatcherType):
         """
@@ -33,12 +34,12 @@ class Dispatcher(object):
             dict(os.environ)
         )
 
-        # in case the task does not have the "output.verbose" metadata
+        # in case the task does not have the "output.reporter" metadata
         # the value of this option is assigned as metadata in the tasks
         # held by the task holder.
         self.setOption(
-            'enableVerboseOutput',
-            True
+            'defaultReporter',
+            self.__defaultReporter
         )
 
     def type(self):
@@ -101,7 +102,7 @@ class Dispatcher(object):
         clonedTaskHolder = taskHolder.clone()
 
         # setting the verbose output to the tasks in place
-        self.__setVerboseOutput(clonedTaskHolder)
+        self.__setReporter(clonedTaskHolder)
 
         clonedTaskHolder.addCrawlers(crawlers)
 
@@ -190,9 +191,9 @@ class Dispatcher(object):
             )
         return Dispatcher.__registered[dispatcherType](dispatcherType, *args, **kwargs)
 
-    def __setVerboseOutput(self, taskHolder):
+    def __setReporter(self, taskHolder):
         """
-        Assign the value held by the option "enableVerboseOutput" to the task metadata "output.verbose".
+        Assign the value held by the option "defaultReporter" to the task metadata "output.reporter".
 
         The metadata assignment is done in place. However, the input task holder is the cloned
         version from the original one.
@@ -200,13 +201,13 @@ class Dispatcher(object):
         task = taskHolder.task()
 
         # making sure the task does not have specified any information about
-        # "output.verbose"
-        if not task.hasMetadata('output.verbose'):
+        # "output.reporter"
+        if not task.hasMetadata('output.reporter'):
             task.setMetadata(
-                'output.verbose',
-                self.option('enableVerboseOutput')
+                'output.reporter',
+                self.option('defaultReporter')
             )
 
         # propagating to the sub tasks recursively
         for subtaskHolder in taskHolder.subTaskHolders():
-            self.__setVerboseOutput(subtaskHolder)
+            self.__setReporter(subtaskHolder)
