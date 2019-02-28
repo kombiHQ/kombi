@@ -1,5 +1,4 @@
 import json
-import sys
 from collections import OrderedDict
 from ..Resource import Resource
 from ..Crawler.Fs import FsPath
