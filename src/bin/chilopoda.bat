@@ -1,6 +1,6 @@
 @ECHO OFF
-@title=Chilopoda Output
 cd %~dp0
+
 REM rem library
 pushd ..
 set PYTHONPATH=%CD%\lib;%PYTHONPATH%
@@ -12,5 +12,10 @@ IF "%CHILOPODA_PYTHON_EXECUTABLE%"=="" (
     set CHILOPODA_PYTHON_EXECUTABLE=python
 )
 
+REM in case chilopoda command is not defined we run the cli
+IF "%chilopodaCommand%"=="" (
+    set chilopodaCommand="import chilopoda; chilopoda.init()"
+)
+
 REM executing GUI
-%CHILOPODA_PYTHON_EXECUTABLE% %~dp0chilopoda-gui.py %*
+%CHILOPODA_PYTHON_EXECUTABLE% -c "%chilopodaCommand%" %*
