@@ -9,7 +9,7 @@ class ConvertVideo(Task):
 
     __ffmpegExecutable = os.environ.get('CHILOPODA_FFMPEG_EXECUTABLE', 'ffmpeg')
     __defaultVideoArgs = "-vcodec h264 -pix_fmt yuvj420p"
-    __defaultAudioArgs = "-f lavfi -t 1 -i anullsrc=r=48000:cl=stereo -acodec aac"
+    __defaultAudioArgs = "-f lavfi -t 1 -i anullsrc=r=48000:cl=stereo -acodec aac -strict -2"
     __defaultBitRate = 115
 
     def __init__(self, *args, **kwargs):
