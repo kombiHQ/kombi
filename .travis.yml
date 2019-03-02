@@ -16,6 +16,8 @@ before_install:
   - sudo apt-get install cmake -y
   - sudo apt-get install ffmpeg -y
   - sudo apt-get install make -y
+  - wget -qO- https://github.com/GafferHQ/gaffer/releases/download/0.53.1.1/gaffer-0.53.1.1-linux.tar.gz | tar xvz -
+  - export PATH="gaffer-0.53.1.1-linux/bin:$PATH"
      
 script:
   - ./runtests
