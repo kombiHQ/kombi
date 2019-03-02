@@ -8,6 +8,7 @@ virtualenv:
 
 # Add-ons: specify apt packages for Linux
 before_install:
+  - sudo apt-get update --allow-unauthenticated
   - sudo add-apt-repository ppa:mc3man/bionic-media -y
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update
