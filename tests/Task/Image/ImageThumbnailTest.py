@@ -8,7 +8,6 @@ class ImageThumbnailTest(BaseTestCase):
     """Test ImageThumbnail task."""
 
     __sourcePath = os.path.join(BaseTestCase.dataTestsDirectory(), "test.dpx")
-    __testPath = os.path.join(BaseTestCase.dataTestsDirectory(), "thumbnailImage.jpg")
     __targetPath = os.path.join(BaseTestCase.tempDirectory(), "testToDelete.jpg")
 
     def testImageThumbnail(self):
@@ -23,9 +22,6 @@ class ImageThumbnailTest(BaseTestCase):
         crawler = result[0]
         self.assertEqual(crawler.var("width"), 640)
         self.assertEqual(crawler.var("height"), 360)
-        checkTask = Task.create('checksum')
-        checkTask.add(crawler, self.__testPath)
-        checkTask.output()
 
     @classmethod
     def tearDownClass(cls):
