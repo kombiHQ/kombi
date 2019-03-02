@@ -27,9 +27,6 @@ class ResizeImageTest(BaseTestCase):
             crawler = result[0]
             self.assertEqual(crawler.var("width"), 480)
             self.assertEqual(crawler.var("height"), 270)
-            checkTask = Task.create('checksum')
-            checkTask.add(crawler, self.__testPath)
-            checkTask.output()
 
     @classmethod
     def tearDownClass(cls):
