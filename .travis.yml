@@ -3,17 +3,16 @@ language: python
 python:
   - "2.7"
   - "3.6"
+
 # Add-ons: specify apt packages for Linux
-addons:
-  apt:
-   update: true
-   packages:
-     - python-openimageio
-     - openimageio-tools
-     - cmake
-     - ffmpeg
-     - make
-   sources:
-     - ubuntu-toolchain-r-test
+before_install:
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo apt-get update
+  - sudo apt-get install python-openimageio -y
+  - sudo apt-get install openimageio-tools -y
+  - sudo apt-get install cmake -y
+  - sudo apt-get install ffmpeg -y
+  - sudo apt-get install make -y
+     
 script:
   - ./runtests
