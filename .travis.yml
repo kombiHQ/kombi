@@ -14,7 +14,7 @@ before_install:
   - sudo apt-get install python-openimageio -y
   - sudo apt-get install openimageio-tools -y
   - sudo apt-get install cmake -y
-  - sudo apt-get install ffmpeg -y
+  - sudo apt-get install ffmpeg-shared -y
   - sudo apt-get install make -y
      
 script:
