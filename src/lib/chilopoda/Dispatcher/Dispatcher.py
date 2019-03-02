@@ -19,7 +19,10 @@ class Dispatcher(object):
     """
 
     __registered = {}
-    __defaultReporter = 'detailed'
+    __defaultReporter = os.environ.get(
+        'CHILOPODA_DEFAULT_REPORTER',
+        'detailed'
+    )
 
     def __init__(self, dispatcherType):
         """
