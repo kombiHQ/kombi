@@ -17,7 +17,7 @@ before_install:
   - sudo apt-get install ffmpeg -y
   - sudo apt-get install make -y
   - wget https://github.com/GafferHQ/gaffer/releases/download/0.53.1.1/gaffer-0.53.1.1-linux.tar.gz
-  - tar -zxvf gaffer-0.53.1.1-linux.tar.gz
+  - tar -zxf gaffer-0.53.1.1-linux.tar.gz
   - export PATH="gaffer-0.53.1.1-linux/bin:$PATH"
      
 script:
