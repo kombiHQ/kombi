@@ -24,7 +24,7 @@ class ConvertVideoTest(BaseTestCase):
         # from the expected size rather than a hash due metadata
         # that can vary the file size
         convertedSize = os.path.getsize(result[0].var('filePath'))
-        self.assertGreaterEqual(convertedSize, 1450000)
+        self.assertGreaterEqual(convertedSize, 1600000)
         self.assertLessEqual(convertedSize, 1450000)
 
     @classmethod
