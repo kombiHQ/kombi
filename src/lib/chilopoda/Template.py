@@ -360,7 +360,7 @@ class Template(object):
 
         # detecting variables
         for templatePart in self.inputString().split("{"):
-            if templatePart is '' or "}" not in templatePart:
+            if templatePart == '' or "}" not in templatePart:
                 continue
 
             endIndex = templatePart.find('}')
