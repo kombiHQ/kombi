@@ -1,5 +1,7 @@
 dist: bionic
 language: python
+install:
+  - pip install pylama pylama_pylint
 python:
   - "2.7"
 virtualenv:
@@ -17,3 +19,4 @@ before_install:
      
 script:
   - ./runtests
+  - ./runlint
