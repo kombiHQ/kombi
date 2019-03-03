@@ -19,7 +19,10 @@ before_install:
   - wget https://github.com/GafferHQ/gaffer/releases/download/0.53.1.1/gaffer-0.53.1.1-linux.tar.gz
   - tar -zxf gaffer-0.53.1.1-linux.tar.gz
   - export PATH="gaffer-0.53.1.1-linux/bin:$PATH"
-     
+  - export LD_LIBRARY_PATH="gaffer-0.53.1.1-linux/bin/linux/lib:$LD_LIBRARY_PATH"
+  - export QT_PLUGIN_PATH="gaffer-0.53.1.1-linux/bin/linux/qt/plugins"
+  - export PYTHONPATH="gaffer-0.53.1.1-linux/bin/linux/lib/python2.7/site-packages:$PYTHONPATH"
+
 script:
   - ./runtests
   - ./runlint
