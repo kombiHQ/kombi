@@ -22,8 +22,6 @@ before_install:
   - tar -zxf "gaffer-$GAFFER_VERSION-linux.tar.gz"
   - export PATH="gaffer-$GAFFER_VERSION-linux/bin:$PATH"
   - export LD_LIBRARY_PATH="gaffer-$GAFFER_VERSION-linux/lib:$LD_LIBRARY_PATH"
-  #- export QT_PLUGIN_PATH="gaffer-$GAFFER_VERSION-linux/qt/plugins"
-  #- export PYTHONPATH="gaffer-$GAFFER_VERSION-linux/lib/python2.7/site-packages:$PYTHONPATH"
 
 script:
   - ./runtests
