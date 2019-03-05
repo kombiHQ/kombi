@@ -1,5 +1,6 @@
 from .BaseTestCase import BaseTestCase
 from .TemplateTest import TemplateTest
+from .CliTest import CliTest
 from . import Crawler
 from . import TemplateProcedure
 from . import Task
