@@ -1,4 +1,5 @@
 import os
+import io
 import re
 import sys
 import subprocess
@@ -17,7 +18,7 @@ class ProcessExecution(object):
     # regex: any alpha numeric, underscore and dash characters are allowed.
     __validateShellArgRegex = re.compile(r"^[\w_-]*$")
 
-    def __init__(self, args, env=None, shell=True, cwd=None, redirectStderrToStdout=False):
+    def __init__(self, args, env=None, shell=True, cwd=None, stdout=sys.stdout, stderr=subprocess.STDOUT):
         """
         Create a ProcessExecution object.
 
@@ -26,14 +27,15 @@ class ProcessExecution(object):
         if env is None:
             env = dict(os.environ)
 
-        self.__stdout = []
-        self.__stderr = []
+        self.__stdoutContent = []
+        self.__stderrContent = []
         self.__shell = shell
         self.__cwd = cwd
-        self.__redirectStderrToStdout = redirectStderrToStdout
 
         self.__setArgs(args)
         self.__setEnv(env)
+        self.__setStdout(stdout)
+        self.__setStderr(stderr)
         self.__createProcess()
 
     def isShell(self):
@@ -62,15 +64,27 @@ class ProcessExecution(object):
 
     def stdout(self):
         """
-        Return a list of stdout messages.
+        Return the stdout stream.
         """
         return self.__stdout
 
-    def redirectStderrToStdout(self):
+    def stderr(self):
         """
-        Return a boolean telling if the stderr stream should be redirected to stdout.
+        Return the stderr stream.
         """
-        return self.__redirectStderrToStdout
+        return self.__stderr
+
+    def stdoutContent(self):
+        """
+        Return a list of stdout messages.
+        """
+        return self.__stdoutContent
+
+    def stderrContent(self):
+        """
+        Return a list of stderr messages.
+        """
+        return self.__stderrContent
 
     def executionSuccess(self):
         """
@@ -106,7 +120,7 @@ class ProcessExecution(object):
         # stderr queue
         stderrQueue = None
         stderrThread = None
-        if not self.redirectStderrToStdout():
+        if self.__stderr is not subprocess.STDOUT:
             stderrQueue = Queue()
             stderrThread = Thread(
                 target=self.__readStreamToQueue,
@@ -121,9 +135,13 @@ class ProcessExecution(object):
             # stdout
             stdoutValue = self.__queryStreamValueFromQueue(stdoutQueue)
             if stdoutValue is not None:
-                sys.stdout.write(stdoutValue)
-                sys.stdout.flush()
-                self.__stdout.append(stdoutValue)
+                # required for python2
+                if isinstance(self.__stdout, io.StringIO):
+                    stdoutValue = unicode(stdoutValue)
+
+                self.__stdout.write(stdoutValue)
+                self.__stdout.flush()
+                self.__stdoutContent.append(stdoutValue)
 
             # stderr
             if stderrQueue is None:
@@ -131,11 +149,27 @@ class ProcessExecution(object):
 
             stderrValue = self.__queryStreamValueFromQueue(stderrQueue)
             if stderrValue is not None:
-                sys.stderr.write(stderrValue)
-                sys.stderr.flush()
-                self.__stderr.append(stderrValue)
+                # required for python2
+                if isinstance(self.__stderr, io.StringIO):
+                    stderrValue = unicode(stderrValue)
+
+                self.__stderr.write(stderrValue)
+                self.__stderr.flush()
+                self.__stderrContent.append(stderrValue)
 
         self.__process.wait()
+
+    def __setStdout(self, stream):
+        """
+        Set the stdout stream.
+        """
+        self.__stdout = stream
+
+    def __setStderr(self, stream):
+        """
+        Set the stderr stream.
+        """
+        self.__stderr = stream
 
     def __setArgs(self, args):
         """
@@ -155,7 +189,7 @@ class ProcessExecution(object):
         """
         Create a process that later should be executed through {@link run}.
         """
-        stderrStream = subprocess.STDOUT if self.redirectStderrToStdout() else subprocess.PIPE
+        stderrStream = subprocess.STDOUT if self.__stderr is subprocess.STDOUT else subprocess.PIPE
 
         executableArgs = ' '.join(self.__sanitizeShellArgs(self.args())) if self.isShell() else self.args()
         self.__process = subprocess.Popen(

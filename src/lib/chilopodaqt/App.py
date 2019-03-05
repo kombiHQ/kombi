@@ -593,8 +593,7 @@ class App(QtWidgets.QApplication):
 
         processExecution = ProcessExecution(
             args,
-            shell=True,
-            redirectStderrToStdout=True
+            shell=True
         )
 
         processExecution.execute()

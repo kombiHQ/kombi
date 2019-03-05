@@ -106,8 +106,7 @@ class Subprocess(TaskWrapper):
                 command
             ],
             envModifier.generate(),
-            shell=True,
-            redirectStderrToStdout=True
+            shell=True
         )
 
         processExecution.execute()

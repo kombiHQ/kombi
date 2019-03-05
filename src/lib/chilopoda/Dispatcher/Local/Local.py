@@ -1,4 +1,6 @@
 import os
+import sys
+import subprocess
 import tempfile
 import threading
 from ..Dispatcher import Dispatcher, DispatcherError
@@ -49,10 +51,37 @@ class Local(Dispatcher):
         """
         super(Local, self).__init__(*args, **kwargs)
 
+        self.setStdout(sys.stdout)
+        self.setStderr(subprocess.STDOUT)
+
         self.setOption(
             "awaitExecution",
             self.__defaultAwaitExecution
         )
+
+    def setStdout(self, stream):
+        """
+        Set the stdout stream used for the process execution.
+        """
+        self.__stdout = stream
+
+    def stdout(self):
+        """
+        Return the stdout stream.
+        """
+        return self.__stdout
+
+    def setStderr(self, stream):
+        """
+        Set the stderr stream used for the process execution.
+        """
+        self.__stderr = stream
+
+    def stderr(self):
+        """
+        Return the stderr stream.
+        """
+        return self.__stderr
 
     def _perform(self, taskHolder):
         """
@@ -79,7 +108,8 @@ class Local(Dispatcher):
             ],
             self.option('env'),
             shell=True,
-            redirectStderrToStdout=True
+            stdout=self.stdout(),
+            stderr=self.stderr()
         )
 
         # executing process
