@@ -1,3 +1,4 @@
+import sys
 from .PathHolder import PathHolder
 from .ProcessExecution import ProcessExecution
 from .EnvModifier import EnvModifier, EnvModifierError, EnvModifierInvalidVarError, EnvModifierInvalidVarValueError
@@ -7,13 +8,24 @@ from .CrawlerQuery import CrawlerQuery
 from . import TemplateProcedure
 from .CrawlerMatcher import CrawlerMatcher
 from . import Task
+from . import TaskReporter
 from . import TaskWrapper
 from .TaskHolder import TaskHolder, TaskHolderError, TaskHolderInvalidVarNameError
 from . import TaskHolderLoader
 from . import Dispatcher
+from .Cli import Cli, CliError
 
 # The Resource class needs to be imported as the last one, since it's going to
 # initialize all the resources defined through the environment variable. These
 # resources can be using the modules above (that's why it needs
 # be imported as the last one).
 from .Resource import Resource, ResourceError, ResourceInvalidError
+
+# initialize cli support
+def init():
+    """
+    Initialize chilopoda cli.
+    """
+    Cli().run(
+        sys.argv[1:]
+    )

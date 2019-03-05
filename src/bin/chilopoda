@@ -7,6 +7,11 @@ currentDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 libraryDir="$(dirname $currentDir)/lib"
 export PYTHONPATH="$libraryDir:$PYTHONPATH"
 
+# in case chilopoda command is not defined we run the cli
+if [[ -z "$chilopodaCommand" ]]; then
+  chilopodaCommand="import chilopoda; chilopoda.init()"
+fi
+
 # figuring out which python is going to be used for the
 # execution
 if [[ -z "$CHILOPODA_PYTHON_EXECUTABLE" ]]; then
@@ -14,4 +19,4 @@ if [[ -z "$CHILOPODA_PYTHON_EXECUTABLE" ]]; then
 fi
 
 # executing GUI
-$CHILOPODA_PYTHON_EXECUTABLE $currentDir/chilopoda-gui.py "$@"
+$CHILOPODA_PYTHON_EXECUTABLE -c "$chilopodaCommand" "$@"
