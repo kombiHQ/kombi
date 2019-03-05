@@ -1,6 +1,8 @@
 import os
+import io
 import unittest
 import tempfile
+from fnmatch import fnmatch
 from ...BaseTestCase import BaseTestCase
 from chilopoda.Crawler.Fs import FsPath
 from chilopoda.TaskHolderLoader import JsonLoader
@@ -13,6 +15,29 @@ class LocalTest(BaseTestCase):
     """Test for the local dispatcher."""
 
     __jsonConfig = os.path.join(BaseTestCase.dataTestsDirectory(), 'config', 'dispatcherTest.json')
+    __output = """
+        copy output (execution * seconds):
+          - nukeRender(*/RND-TST-SHT_comp_compName_output_v010_tk.1001.exr)
+          - shotRender(*/RND-TST-SHT_lighting_beauty_sr.1001.exr)
+          - turntable(*/RND_ass_lookdev_default_beauty_tt.1001.exr)
+          - testCrawler(*/testSeq.0001.exr)
+          - testCrawler(*/testSeq.0002.exr)
+          - testCrawler(*/testSeq.0003.exr)
+          - testCrawler(*/testSeq.0004.exr)
+          - testCrawler(*/testSeq.0005.exr)
+          - testCrawler(*/testSeq.0006.exr)
+          - testCrawler(*/testSeq.0007.exr)
+          - testCrawler(*/testSeq.0008.exr)
+          - testCrawler(*/testSeq.0009.exr)
+          - testCrawler(*/testSeq.0010.exr)
+          - testCrawler(*/testSeq.0011.exr)
+          - testCrawler(*/testSeq.0012.exr)
+          - testCrawler(*/test_0001.exr)
+        done
+        sequenceThumbnail output (execution * seconds):
+          - jpg(*/testSeq.jpg)
+        done
+    """
 
     def testConfig(self):
         """
@@ -24,6 +49,8 @@ class LocalTest(BaseTestCase):
         temporaryDir = tempfile.mkdtemp()
 
         dispacher = Dispatcher.create("local")
+        outputStream = io.StringIO()
+        dispacher.setStdout(outputStream)
         dispacher.setOption(
             'enableVerboseOutput',
             False
@@ -48,6 +75,16 @@ class LocalTest(BaseTestCase):
 
         jpgCrawlers = list(filter(lambda x: isinstance(x, Jpg), createdCrawlers))
         self.assertEqual(len(jpgCrawlers), 1)
+
+        output = outputStream.getvalue().split("\n")
+        prefixSize = None
+        for index, line in enumerate(self.__output.split("\n")[1:-1]):
+            if prefixSize is None:
+                prefixSize = len(line) - len(line.lstrip())
+
+            line = line[prefixSize:]
+            if not fnmatch(output[index].replace('\\', '/'), line):
+                self.assertEqual(output[index], line)
 
         self.cleanup(exrCrawlers + jpgCrawlers)
 
