@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+import subprocess
 import fileinput
 from .Crawler.Fs.FsPath import FsPath
 from .Crawler.Fs.Directory import Directory
@@ -36,7 +37,7 @@ class Cli(object):
             help='path for a file or directory. If empty it uses stdin.'
         )
 
-    def run(self, args, outStream=sys.stdout):
+    def run(self, args, outStream=sys.stdout, errStream=subprocess.STDOUT):
         """
         Execute the configuration.
         """
@@ -63,11 +64,16 @@ class Cli(object):
         dispatcher = Dispatcher.create('local')
         dispatcher.setOption('defaultReporter', 'columns')
         dispatcher.setOption('awaitExecution', True)
+        dispatcher.setStdout(outStream)
+        dispatcher.setStderr(errStream)
 
         # dispatching task holders
         for taskHolder in loader.taskHolders():
             for crawlersGroup in Crawler.group(crawlers):
-                dispatcher.dispatch(taskHolder, crawlersGroup)
+                dispatcher.dispatch(
+                    taskHolder,
+                    crawlersGroup
+                )
 
     def __loadCrawlers(self, sourcePaths):
         """
@@ -86,8 +92,8 @@ class Cli(object):
         elif not sys.stdin.isatty():
             for line in fileinput.input(files=[]):
                 # in case the sdtin is reading a chilopoda
-                # output the result. It will be defined
-                # in columns (taskName, crawlerType, fullPath).
+                # output, it is defined in columns:
+                # taskName, crawlerType and fullPath.
                 outputParts = tuple(filter(lambda x: x != '', line.strip().split('\t')))
                 crawlerFullPath = outputParts[-1]
 
@@ -108,7 +114,7 @@ class Cli(object):
         else:
             raise CliError("Cannot determine source!")
 
-        # when a directory is detect as input. We glob
+        # when a directory is detected as input. We glob
         # by default. The only exception is when
         # the crawler type is defined (reading a chilopoda output)
         if globDirectoryCrawlers:
