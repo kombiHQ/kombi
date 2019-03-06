@@ -137,7 +137,7 @@ class ProcessExecution(object):
             if stdoutValue is not None:
                 # required for python2
                 if isinstance(self.__stdout, io.StringIO):
-                    stdoutValue = unicode(stdoutValue)
+                    stdoutValue = unicode(stdoutValue) if sys.version_info[0] == 2 else stdoutValue
 
                 self.__stdout.write(stdoutValue)
                 self.__stdout.flush()
@@ -151,7 +151,7 @@ class ProcessExecution(object):
             if stderrValue is not None:
                 # required for python2
                 if isinstance(self.__stderr, io.StringIO):
-                    stderrValue = unicode(stderrValue)
+                    stderrValue = unicode(stderrValue) if sys.version_info[0] == 2 else stderrValue
 
                 self.__stderr.write(stderrValue)
                 self.__stderr.flush()
