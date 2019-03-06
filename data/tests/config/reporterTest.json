@@ -1,4 +1,7 @@
 {
+  "scripts": [
+    "*/*.py"
+  ],
   "tasks": [
     {
       "run": "echoTask",
