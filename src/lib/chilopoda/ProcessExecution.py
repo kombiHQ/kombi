@@ -27,8 +27,8 @@ class ProcessExecution(object):
         if env is None:
             env = dict(os.environ)
 
-        self.__stdoutContent = []
-        self.__stderrContent = []
+        self.__stdoutContent = ''
+        self.__stderrContent = ''
         self.__shell = shell
         self.__cwd = cwd
 
@@ -76,13 +76,13 @@ class ProcessExecution(object):
 
     def stdoutContent(self):
         """
-        Return a list of stdout messages.
+        Return a string containing stdout messages.
         """
         return self.__stdoutContent
 
     def stderrContent(self):
         """
-        Return a list of stderr messages.
+        Return a string containing stderr messages.
         """
         return self.__stderrContent
 
@@ -137,11 +137,11 @@ class ProcessExecution(object):
             if stdoutValue is not None:
                 # required for python2
                 if isinstance(self.__stdout, io.StringIO):
-                    stdoutValue = unicode(stdoutValue)
+                    stdoutValue = unicode(stdoutValue) if sys.version_info[0] == 2 else stdoutValue
 
                 self.__stdout.write(stdoutValue)
                 self.__stdout.flush()
-                self.__stdoutContent.append(stdoutValue)
+                self.__stdoutContent += stdoutValue
 
             # stderr
             if stderrQueue is None:
@@ -151,11 +151,11 @@ class ProcessExecution(object):
             if stderrValue is not None:
                 # required for python2
                 if isinstance(self.__stderr, io.StringIO):
-                    stderrValue = unicode(stderrValue)
+                    stderrValue = unicode(stderrValue) if sys.version_info[0] == 2 else stderrValue
 
                 self.__stderr.write(stderrValue)
                 self.__stderr.flush()
-                self.__stderrContent.append(stderrValue)
+                self.__stderrContent += stderrValue
 
         self.__process.wait()
 

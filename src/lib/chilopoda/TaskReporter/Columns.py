@@ -29,9 +29,9 @@ class Columns(TaskReporter):
             sys.stdout.write(
                 '{}{}{}{}{}\n'.format(
                     self.taskName(),
-                    "\t" * ((taskNameWidth - self.__textColumnSize(self.taskName())) / self.__columnSize),
+                    "\t" * int((taskNameWidth - self.__textColumnSize(self.taskName())) / self.__columnSize),
                     crawler.var('type'),
-                    "\t" * ((crawlerTypeWidth - self.__textColumnSize(crawler.var('type'))) / self.__columnSize),
+                    "\t" * int((crawlerTypeWidth - self.__textColumnSize(crawler.var('type'))) / self.__columnSize),
                     crawler.var('fullPath')
                 )
             )

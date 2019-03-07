@@ -76,15 +76,16 @@ class LocalTest(BaseTestCase):
         jpgCrawlers = list(filter(lambda x: isinstance(x, Jpg), createdCrawlers))
         self.assertEqual(len(jpgCrawlers), 1)
 
-        output = outputStream.getvalue().split("\n")
+        output = outputStream.getvalue().replace('\r\n', '\n').split('\n')
         prefixSize = None
-        for index, line in enumerate(self.__output.split("\n")[1:-1]):
+        for index, line in enumerate(self.__output.split('\n')[1:-1]):
             if prefixSize is None:
                 prefixSize = len(line) - len(line.lstrip())
 
             line = line[prefixSize:]
-            if not fnmatch(output[index].replace('\\', '/'), line):
-                self.assertEqual(output[index], line)
+            outputLine = output[index].replace('\\', '/')
+            if not fnmatch(outputLine, line):
+                self.assertEqual(outputLine, line)
 
         self.cleanup(exrCrawlers + jpgCrawlers)
 

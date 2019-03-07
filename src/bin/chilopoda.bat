@@ -8,14 +8,14 @@ popd
 
 REM figuring out which python is going to be used for the
 REM execution
-IF "%CHILOPODA_PYTHON_EXECUTABLE%"=="" (
+IF [%CHILOPODA_PYTHON_EXECUTABLE%] == [] (
     set CHILOPODA_PYTHON_EXECUTABLE=python
 )
 
 REM in case chilopoda command is not defined we run the cli
-IF "%chilopodaCommand%"=="" (
+IF [%chilopodaCommand%] == [] (
     set chilopodaCommand="import chilopoda; chilopoda.init()"
 )
 
 REM executing GUI
-%CHILOPODA_PYTHON_EXECUTABLE% -c "%chilopodaCommand%" %*
+%CHILOPODA_PYTHON_EXECUTABLE% -c %chilopodaCommand% %*

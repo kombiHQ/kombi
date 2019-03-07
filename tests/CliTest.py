@@ -52,15 +52,17 @@ class CliTest(BaseTestCase):
             outStream=outputStream
         )
 
-        output = outputStream.getvalue().split("\n")
+        output = outputStream.getvalue().replace('\r\n', '\n').split('\n')[:-1]
+        output.sort()
         prefixSize = None
-        for index, line in enumerate(self.__output.split("\n")[1:-1]):
+        for index, line in enumerate(sorted(self.__output.split('\n')[1:-1])):
             if prefixSize is None:
                 prefixSize = len(line) - len(line.lstrip())
 
             line = line[prefixSize:]
-            if not fnmatch(output[index].replace('\\', '/'), line):
-                self.assertEqual(output[index], line)
+            outputLine = output[index].replace('\\', '/')
+            if not fnmatch(outputLine, line):
+                self.assertEqual(outputLine, line)
 
 
 if __name__ == "__main__":
