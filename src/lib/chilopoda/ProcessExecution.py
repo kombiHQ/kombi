@@ -27,8 +27,8 @@ class ProcessExecution(object):
         if env is None:
             env = dict(os.environ)
 
-        self.__stdoutContent = []
-        self.__stderrContent = []
+        self.__stdoutContent = ''
+        self.__stderrContent = ''
         self.__shell = shell
         self.__cwd = cwd
 
@@ -76,13 +76,13 @@ class ProcessExecution(object):
 
     def stdoutContent(self):
         """
-        Return a list of stdout messages.
+        Return a string containing stdout messages.
         """
         return self.__stdoutContent
 
     def stderrContent(self):
         """
-        Return a list of stderr messages.
+        Return a string containing stderr messages.
         """
         return self.__stderrContent
 
@@ -141,7 +141,7 @@ class ProcessExecution(object):
 
                 self.__stdout.write(stdoutValue)
                 self.__stdout.flush()
-                self.__stdoutContent.append(stdoutValue)
+                self.__stdoutContent += stdoutValue
 
             # stderr
             if stderrQueue is None:
@@ -155,7 +155,7 @@ class ProcessExecution(object):
 
                 self.__stderr.write(stderrValue)
                 self.__stderr.flush()
-                self.__stderrContent.append(stderrValue)
+                self.__stderrContent += stderrValue
 
         self.__process.wait()
 

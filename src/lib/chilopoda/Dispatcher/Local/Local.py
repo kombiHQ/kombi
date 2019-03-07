@@ -31,7 +31,9 @@ class _ProcessExecutionThread(threading.Thread):
         self.__processExecution.execute()
 
         if self.__processExecution.exitStatus():
-            raise LocalExecutionError('\n'.join(self.__processExecution.stdoutContent()))
+            raise LocalExecutionError(
+                self.__processExecution.stdoutContent()
+            )
 
 class Local(Dispatcher):
     """
@@ -116,7 +118,9 @@ class Local(Dispatcher):
         if self.option('awaitExecution'):
             processExecution.execute()
             if processExecution.exitStatus():
-                raise LocalExecutionError('\n'.join(processExecution.stdoutContent()))
+                raise LocalExecutionError(
+                    processExecution.stdoutContent()
+                )
 
         # otherwise delegating the execution to a thread
         else:

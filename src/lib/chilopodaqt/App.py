@@ -946,7 +946,7 @@ class App(QtWidgets.QApplication):
         )
 
         groupedVisibleCrawlers = Crawler.group(visibleCrawlers)
-        output = []
+        output = ''
         try:
             for crawlersGroup in groupedVisibleCrawlers:
                 for taskHolder in self.__taskHolders:
@@ -969,7 +969,7 @@ class App(QtWidgets.QApplication):
                         localDispatcher = Dispatcher.create('local')
                         localDispatcher.setOption('awaitExecution', True)
                         for processExecution in localDispatcher.dispatch(taskHolder, crawlersGroup):
-                            output += processExecution.stdout()
+                            output += processExecution.stdoutContent()
 
         except Exception as err:
             traceback.print_exc()
@@ -1001,7 +1001,7 @@ class App(QtWidgets.QApplication):
             # showing the output for local executions
             if not self.__runOnTheFarmCheckbox.checkState() == QtCore.Qt.Checked:
                 self.__outputWidget = QtWidgets.QPlainTextEdit()
-                self.__outputWidget.setPlainText(''.join(output))
+                self.__outputWidget.setPlainText(output)
                 self.__outputWidget.setWindowTitle('Output')
                 self.__outputWidget.setMinimumWidth(920)
                 self.__outputWidget.setMinimumHeight(600)
