@@ -2,9 +2,9 @@ import os
 import shutil
 import unittest
 from ..BaseTestCase import BaseTestCase
-from chilopoda.TaskHolderLoader import TaskHolderLoader
-from chilopoda.Crawler import Crawler
-from chilopoda.Crawler.Fs.FsPath import FsPath
+from kombi.TaskHolderLoader import TaskHolderLoader
+from kombi.Crawler import Crawler
+from kombi.Crawler.Fs.FsPath import FsPath
 
 class GafferBlurImageSequenceTest(BaseTestCase):
     """Test for example gaffer blur image sequence."""
@@ -42,7 +42,7 @@ class GafferBlurImageSequenceTest(BaseTestCase):
             'config.json'
         )
 
-    @unittest.skipIf(not BaseTestCase.hasBin(os.environ.get('CHILOPODA_GAFFER_EXECUTABLE', 'gaffer')), 'gaffer not found in the search path')
+    @unittest.skipIf(not BaseTestCase.hasBin(os.environ.get('KOMBI_GAFFER_EXECUTABLE', 'gaffer')), 'gaffer not found in the search path')
     def testRunConfiguration(self):
         """
         Test execution of the configuration.

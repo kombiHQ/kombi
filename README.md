@@ -1,5 +1,5 @@
-# chilopoda
+# kombi
 
-[![Build Status](https://travis-ci.org/chilopodaHQ/chilopoda.svg?branch=master)](https://travis-ci.org/chilopodaHQ/chilopoda)
+[![Build Status](https://travis-ci.org/kombiHQ/kombi.svg?branch=master)](https://travis-ci.org/kombiHQ/kombi)
 
-main chilopoda repository
+main kombi repository

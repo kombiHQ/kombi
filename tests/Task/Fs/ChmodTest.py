@@ -2,8 +2,8 @@ import unittest
 import os
 import sys
 from ...BaseTestCase import BaseTestCase
-from chilopoda.Task import Task
-from chilopoda.Crawler.Fs import FsPath
+from kombi.Task import Task
+from kombi.Crawler.Fs import FsPath
 
 class ChmodTest(BaseTestCase):
     """Test Chmod task."""

@@ -1,7 +1,7 @@
 import unittest
 import os
 from ..BaseTestCase import BaseTestCase
-from chilopoda.Template import Template
+from kombi.Template import Template
 
 class VersionTest(BaseTestCase):
     """Test Version template procedures."""

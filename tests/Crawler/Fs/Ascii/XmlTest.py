@@ -1,8 +1,8 @@
 import os
 import unittest
 from ....BaseTestCase import BaseTestCase
-from chilopoda.Crawler.Fs import FsPath
-from chilopoda.Crawler.Fs.Ascii import Xml
+from kombi.Crawler.Fs import FsPath
+from kombi.Crawler.Fs.Ascii import Xml
 
 class XmlTest(BaseTestCase):
     """Test Xml crawler."""

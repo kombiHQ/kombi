@@ -2,10 +2,10 @@ import unittest
 import os
 import distutils.spawn
 from ..BaseTestCase import BaseTestCase
-from chilopoda.Task import Task
-from chilopoda.TaskWrapper import TaskWrapper
-from chilopoda.Crawler.Fs import FsPath
-from chilopoda.Resource import Resource
+from kombi.Task import Task
+from kombi.TaskWrapper import TaskWrapper
+from kombi.Crawler.Fs import FsPath
+from kombi.Resource import Resource
 
 class Python3Test(BaseTestCase):
     """Test python 3 test subprocess."""

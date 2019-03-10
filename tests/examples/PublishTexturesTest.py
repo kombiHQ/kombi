@@ -2,9 +2,9 @@ import os
 import shutil
 import unittest
 from ..BaseTestCase import BaseTestCase
-from chilopoda.TaskHolderLoader import TaskHolderLoader
-from chilopoda.Crawler import Crawler
-from chilopoda.Crawler.Fs.FsPath import FsPath
+from kombi.TaskHolderLoader import TaskHolderLoader
+from kombi.Crawler import Crawler
+from kombi.Crawler.Fs.FsPath import FsPath
 
 class PublishTexturesTest(BaseTestCase):
     """Test for example publish textures."""
@@ -39,7 +39,7 @@ class PublishTexturesTest(BaseTestCase):
             'config.json'
         )
 
-    @unittest.skipIf(not BaseTestCase.hasBin(os.environ.get('CHILOPODA_MAKETX_EXECUTABLE', 'maketx')), 'maketx not found in the search path')
+    @unittest.skipIf(not BaseTestCase.hasBin(os.environ.get('KOMBI_MAKETX_EXECUTABLE', 'maketx')), 'maketx not found in the search path')
     def testRunConfiguration(self):
         """
         Test execution of the configuration.

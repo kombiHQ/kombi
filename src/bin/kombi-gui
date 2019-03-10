@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# current dir
+currentDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# kombi ui command
+kombiCommand="import kombiqt; kombiqt.init()"
+
+source $currentDir/kombi
+

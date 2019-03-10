@@ -1,5 +1,5 @@
-from chilopoda.Crawler.Fs.Image import Png
-from chilopoda.Crawler.VarExtractor import VarExtractor
+from kombi.Crawler.Fs.Image import Png
+from kombi.Crawler.VarExtractor import VarExtractor
 
 class VendorXPngPlate(Png):
     """

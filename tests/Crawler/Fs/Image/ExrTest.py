@@ -2,9 +2,9 @@ import os
 import unittest
 import glob
 from ....BaseTestCase import BaseTestCase
-from chilopoda.Crawler import Crawler
-from chilopoda.PathHolder import PathHolder
-from chilopoda.Crawler.Fs.Image import Exr
+from kombi.Crawler import Crawler
+from kombi.PathHolder import PathHolder
+from kombi.Crawler.Fs.Image import Exr
 
 class ExrTest(BaseTestCase):
     """Test Exr crawler."""

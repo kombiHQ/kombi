@@ -1,6 +1,6 @@
 import unittest
 from ..BaseTestCase import BaseTestCase
-from chilopoda.Template import Template
+from kombi.Template import Template
 
 class TextTest(BaseTestCase):
     """Test Text template procedures."""

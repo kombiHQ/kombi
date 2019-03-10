@@ -1,10 +1,10 @@
 import unittest
 import os
 from ...BaseTestCase import BaseTestCase
-from chilopoda.Task import Task
-from chilopoda.Crawler.Fs import FsPath
-from chilopoda.Task.Fs.Checksum import ChecksumMatchError
-from chilopoda.Task.Image import UpdateImageMetadata
+from kombi.Task import Task
+from kombi.Crawler.Fs import FsPath
+from kombi.Task.Fs.Checksum import ChecksumMatchError
+from kombi.Task.Image import UpdateImageMetadata
 
 class UpdateImageMetadataTest(BaseTestCase):
     """Test UpdateImageMetadata task."""
@@ -25,15 +25,15 @@ class UpdateImageMetadataTest(BaseTestCase):
 
         import OpenImageIO as oiio
         inputSpec = oiio.ImageInput.open(self.__targetPath).spec()
-        self.assertEqual(inputSpec.get_string_attribute("chilopoda:sourceFile"), self.__sourcePath)
+        self.assertEqual(inputSpec.get_string_attribute("kombi:sourceFile"), self.__sourcePath)
         checkTask = Task.create('checksum')
         checkTask.add(crawler, self.__sourcePath)
         self.assertRaises(ChecksumMatchError, checkTask.output)
 
         customMetadata = {"testInt": 0, "testStr": "True"}
         UpdateImageMetadata.updateDefaultMetadata(inputSpec, crawler, customMetadata)
-        self.assertEqual(inputSpec.get_int_attribute("chilopoda:testInt"), 0)
-        self.assertEqual(inputSpec.get_string_attribute("chilopoda:testStr"), "True")
+        self.assertEqual(inputSpec.get_int_attribute("kombi:testInt"), 0)
+        self.assertEqual(inputSpec.get_string_attribute("kombi:testStr"), "True")
 
     @classmethod
     def tearDownClass(cls):

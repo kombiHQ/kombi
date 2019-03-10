@@ -1,9 +1,9 @@
 import os
 import unittest
 from .BaseTestCase import BaseTestCase
-from chilopoda.Template import Template
-from chilopoda.Template import TemplateRequiredPathNotFoundError, TemplateVarNotFoundError
-from chilopoda.Crawler.Fs import FsPath
+from kombi.Template import Template
+from kombi.Template import TemplateRequiredPathNotFoundError, TemplateVarNotFoundError
+from kombi.Crawler.Fs import FsPath
 
 class TemplateTest(BaseTestCase):
     """Test Template crawler."""

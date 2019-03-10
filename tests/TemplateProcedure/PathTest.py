@@ -1,8 +1,8 @@
 import unittest
 import os
 from ..BaseTestCase import BaseTestCase
-from chilopoda.Template import Template
-from chilopoda.Template import TemplateProcedureNotFoundError
+from kombi.Template import Template
+from kombi.Template import TemplateProcedureNotFoundError
 
 class PathTest(BaseTestCase):
     """Test Path template procedures."""

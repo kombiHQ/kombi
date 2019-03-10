@@ -1,4 +1,4 @@
-from chilopoda.Task import Task
+from kombi.Task import Task
 
 class EchoTask(Task):
     """

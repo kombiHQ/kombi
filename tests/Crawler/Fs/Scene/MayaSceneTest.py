@@ -1,10 +1,10 @@
 import os
 import unittest
 from ....BaseTestCase import BaseTestCase
-from chilopoda.Crawler import Crawler
-from chilopoda.PathHolder import PathHolder
-from chilopoda.Crawler.Fs.Scene import MayaScene
-from chilopoda.Crawler.Fs.Scene import Scene
+from kombi.Crawler import Crawler
+from kombi.PathHolder import PathHolder
+from kombi.Crawler.Fs.Scene import MayaScene
+from kombi.Crawler.Fs.Scene import Scene
 
 
 class MayaSceneTest(BaseTestCase):

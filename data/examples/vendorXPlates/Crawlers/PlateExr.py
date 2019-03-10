@@ -1,5 +1,5 @@
-from chilopoda.Crawler.Fs.Image import Exr
-from chilopoda.Crawler.VarExtractor import VarExtractor
+from kombi.Crawler.Fs.Image import Exr
+from kombi.Crawler.VarExtractor import VarExtractor
 
 class PlateExr(Exr):
     """

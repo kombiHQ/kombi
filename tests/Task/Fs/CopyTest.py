@@ -1,9 +1,9 @@
 import unittest
 import os
 from ...BaseTestCase import BaseTestCase
-from chilopoda.Task import Task
-from chilopoda.Crawler.Fs import FsPath
-from chilopoda.Crawler.Fs.Image import Exr
+from kombi.Task import Task
+from kombi.Crawler.Fs import FsPath
+from kombi.Crawler.Fs.Image import Exr
 
 class CopyTest(BaseTestCase):
     """Test Copy task."""

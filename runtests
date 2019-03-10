@@ -17,13 +17,13 @@ esac
 
 # figuring out which python is going to be used for the
 # execution
-if [[ -z "$CHILOPODA_PYTHON_EXECUTABLE" ]]; then
-  export CHILOPODA_PYTHON_EXECUTABLE="python"
+if [[ -z "$KOMBI_PYTHON_EXECUTABLE" ]]; then
+  export KOMBI_PYTHON_EXECUTABLE="python"
 fi
 
 # running all tests
 if [[ "$(python --version 2>&1)" == "Python 2"* ]]; then
-  $CHILOPODA_PYTHON_EXECUTABLE -m unittest discover -p "*Test.py" -v
+  $KOMBI_PYTHON_EXECUTABLE -m unittest discover -p "*Test.py" -v
 else
-  $CHILOPODA_PYTHON_EXECUTABLE -m unittest discover -v
+  $KOMBI_PYTHON_EXECUTABLE -m unittest discover -v
 fi

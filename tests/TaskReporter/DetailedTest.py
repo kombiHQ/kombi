@@ -3,10 +3,10 @@ import io
 import unittest
 from fnmatch import fnmatch
 from ..BaseTestCase import BaseTestCase
-from chilopoda.Crawler.Fs import FsPath
-from chilopoda.TaskHolderLoader import JsonLoader
-from chilopoda.Dispatcher import Dispatcher
-from chilopoda.Resource import Resource
+from kombi.Crawler.Fs import FsPath
+from kombi.TaskHolderLoader import JsonLoader
+from kombi.Dispatcher import Dispatcher
+from kombi.Resource import Resource
 
 class DetailedTest(BaseTestCase):
     """Test for detailed task reporter."""
