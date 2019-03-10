@@ -1,9 +1,9 @@
 import os
 import unittest
 from ....BaseTestCase import BaseTestCase
-from chilopoda.Crawler import Crawler
-from chilopoda.PathHolder import PathHolder
-from chilopoda.Crawler.Fs.Video import Mov
+from kombi.Crawler import Crawler
+from kombi.PathHolder import PathHolder
+from kombi.Crawler.Fs.Video import Mov
 
 class MovTest(BaseTestCase):
     """Test Texture crawler."""

@@ -1,5 +1,5 @@
-from chilopoda.Task import Task
-from chilopoda.TaskWrapper import TaskWrapper
+from kombi.Task import Task
+from kombi.TaskWrapper import TaskWrapper
 
 class PythonTestTask(Task):
     """

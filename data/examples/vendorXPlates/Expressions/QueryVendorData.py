@@ -1,6 +1,6 @@
 import json
 import os
-from chilopoda.Template import Template
+from kombi.Template import Template
 
 def queryVendorVersion(dataFilePath):
     """

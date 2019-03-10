@@ -1,14 +1,14 @@
 import os
 import unittest
 from ...BaseTestCase import BaseTestCase
-from chilopoda.Crawler import Crawler
-from chilopoda.Crawler.Fs import FsPath
-from chilopoda.Crawler.Fs import File
-from chilopoda.PathHolder import PathHolder
-from chilopoda.Crawler.Fs.Render import ExrRender
-from chilopoda.Crawler.Fs.Image import Exr
-from chilopoda.Crawler.Crawler import CrawlerInvalidVarError
-from chilopoda.Crawler.Crawler import CrawlerInvalidTagError
+from kombi.Crawler import Crawler
+from kombi.Crawler.Fs import FsPath
+from kombi.Crawler.Fs import File
+from kombi.PathHolder import PathHolder
+from kombi.Crawler.Fs.Render import ExrRender
+from kombi.Crawler.Fs.Image import Exr
+from kombi.Crawler.Crawler import CrawlerInvalidVarError
+from kombi.Crawler.Crawler import CrawlerInvalidTagError
 
 class FsPathTest(BaseTestCase):
     """Test Directory crawler."""

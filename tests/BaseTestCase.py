@@ -7,7 +7,7 @@ import sys
 # querying root directory
 root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
-# Add chilopoda source code to python path for tests
+# Add kombi source code to python path for tests
 sourceFolder = os.path.join(root, "src", "lib")
 if not os.path.exists(sourceFolder):  # pragma: no cover
     raise Exception("Can't resolve lib location!")
@@ -15,7 +15,7 @@ if not os.path.exists(sourceFolder):  # pragma: no cover
 sys.path.insert(1, sourceFolder)
 
 class BaseTestCase(unittest.TestCase):
-    """Base class for chilopoda unit tests."""
+    """Base class for kombi unit tests."""
 
     __rootPath = root
     __tempDirectory = None
@@ -50,7 +50,7 @@ class BaseTestCase(unittest.TestCase):
     @classmethod
     def rootPath(cls):
         """
-        Return chilopoda code root path.
+        Return kombi code root path.
         """
         return cls.__rootPath
 

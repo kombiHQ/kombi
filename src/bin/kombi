@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# current dir
+currentDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# library dir
+libraryDir="$(dirname $currentDir)/lib"
+export PYTHONPATH="$libraryDir:$PYTHONPATH"
+
+# in case kombi command is not defined we run the cli
+if [[ -z "$kombiCommand" ]]; then
+  kombiCommand="import kombi; kombi.init()"
+fi
+
+# figuring out which python is going to be used for the
+# execution
+if [[ -z "$KOMBI_PYTHON_EXECUTABLE" ]]; then
+  export KOMBI_PYTHON_EXECUTABLE="python"
+fi
+
+# executing GUI
+$KOMBI_PYTHON_EXECUTABLE -c "$kombiCommand" "$@"

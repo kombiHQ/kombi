@@ -2,9 +2,9 @@ import unittest
 import os
 import shutil
 from ...BaseTestCase import BaseTestCase
-from chilopoda.Task import Task
-from chilopoda.Crawler.Fs import FsPath
-from chilopoda.Task.Fs.Checksum import ChecksumMatchError
+from kombi.Task import Task
+from kombi.Crawler.Fs import FsPath
+from kombi.Task.Fs.Checksum import ChecksumMatchError
 
 class ChecksumTest(BaseTestCase):
     """Test Checksum task."""

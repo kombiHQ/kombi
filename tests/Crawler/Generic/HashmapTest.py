@@ -1,6 +1,6 @@
 from ...BaseTestCase import BaseTestCase
-from chilopoda.Crawler import Crawler
-from chilopoda.Crawler.Generic import Hashmap
+from kombi.Crawler import Crawler
+from kombi.Crawler.Generic import Hashmap
 
 class HashmapTest(BaseTestCase):
     """Test hashmap crawler."""

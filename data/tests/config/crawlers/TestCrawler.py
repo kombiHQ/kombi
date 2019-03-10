@@ -1,6 +1,6 @@
-import chilopoda
+import kombi
 
-class TestCrawler(chilopoda.Crawler.Fs.Image.Exr):
+class TestCrawler(kombi.Crawler.Fs.Image.Exr):
     """
     Test crawler for unit tests.
     """

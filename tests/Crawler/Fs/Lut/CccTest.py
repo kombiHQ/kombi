@@ -1,9 +1,9 @@
 import os
 import unittest
 from ....BaseTestCase import BaseTestCase
-from chilopoda.Crawler.Fs import FsPath
-from chilopoda.PathHolder import PathHolder
-from chilopoda.Crawler.Fs.Lut import Ccc
+from kombi.Crawler.Fs import FsPath
+from kombi.PathHolder import PathHolder
+from kombi.Crawler.Fs.Lut import Ccc
 
 class CccTest(BaseTestCase):
     """Test Ccc crawler."""

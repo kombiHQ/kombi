@@ -3,9 +3,9 @@ import io
 import unittest
 from fnmatch import fnmatch
 from .BaseTestCase import BaseTestCase
-from chilopoda.Cli import Cli
-from chilopoda.TaskHolderLoader import JsonLoader
-from chilopoda.Resource import Resource
+from kombi.Cli import Cli
+from kombi.TaskHolderLoader import JsonLoader
+from kombi.Resource import Resource
 
 class CliTest(BaseTestCase):
     """Test for cli app."""

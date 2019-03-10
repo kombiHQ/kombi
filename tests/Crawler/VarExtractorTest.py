@@ -1,7 +1,7 @@
 import unittest
 from collections import OrderedDict
 from ..BaseTestCase import BaseTestCase
-from chilopoda.Crawler.VarExtractor import VarExtractor, VarExtractorNotMatchingCharError, VarExtractorMissingSeparatorError, VarExtractorCannotFindExpectedCharError
+from kombi.Crawler.VarExtractor import VarExtractor, VarExtractorNotMatchingCharError, VarExtractorMissingSeparatorError, VarExtractorCannotFindExpectedCharError
 
 class VarExtractorTest(BaseTestCase):
     """Test for var extractor."""

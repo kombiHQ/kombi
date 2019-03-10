@@ -4,12 +4,12 @@ import unittest
 import tempfile
 from fnmatch import fnmatch
 from ...BaseTestCase import BaseTestCase
-from chilopoda.Crawler.Fs import FsPath
-from chilopoda.TaskHolderLoader import JsonLoader
-from chilopoda.TaskWrapper import TaskWrapper
-from chilopoda.Task import Task
-from chilopoda.Crawler.Fs.Image import Jpg, Exr
-from chilopoda.Dispatcher import Dispatcher
+from kombi.Crawler.Fs import FsPath
+from kombi.TaskHolderLoader import JsonLoader
+from kombi.TaskWrapper import TaskWrapper
+from kombi.Task import Task
+from kombi.Crawler.Fs.Image import Jpg, Exr
+from kombi.Dispatcher import Dispatcher
 
 class LocalTest(BaseTestCase):
     """Test for the local dispatcher."""

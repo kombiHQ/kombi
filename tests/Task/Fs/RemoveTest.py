@@ -1,8 +1,8 @@
 import unittest
 import os
 from ...BaseTestCase import BaseTestCase
-from chilopoda.Task import Task
-from chilopoda.Crawler.Fs import FsPath
+from kombi.Task import Task
+from kombi.Crawler.Fs import FsPath
 
 class RemoveTest(BaseTestCase):
     """Test Remove task."""

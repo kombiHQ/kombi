@@ -1,16 +1,16 @@
 import os
 import unittest
 from ..BaseTestCase import BaseTestCase
-from chilopoda.Crawler.Fs import FsPath
-from chilopoda.TaskHolderLoader import TaskHolderLoader
-from chilopoda.TaskWrapper import TaskWrapper
-from chilopoda.Template import Template
-from chilopoda.Task import Task
-from chilopoda.Task.Task import TaskInvalidOptionError
-from chilopoda.Task.Task import TaskTypeNotFoundError
-from chilopoda.TaskHolder import TaskHolder, TaskHolderInvalidVarNameError
-from chilopoda.Crawler.Fs.Image import Jpg, Exr
-from chilopoda.Crawler import Crawler
+from kombi.Crawler.Fs import FsPath
+from kombi.TaskHolderLoader import TaskHolderLoader
+from kombi.TaskWrapper import TaskWrapper
+from kombi.Template import Template
+from kombi.Task import Task
+from kombi.Task.Task import TaskInvalidOptionError
+from kombi.Task.Task import TaskTypeNotFoundError
+from kombi.TaskHolder import TaskHolder, TaskHolderInvalidVarNameError
+from kombi.Crawler.Fs.Image import Jpg, Exr
+from kombi.Crawler import Crawler
 
 class TaskTest(BaseTestCase):
     """Test for tasks."""

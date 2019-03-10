@@ -3,7 +3,7 @@ import getpass
 import os
 import tempfile
 from ..BaseTestCase import BaseTestCase
-from chilopoda.Template import Template
+from kombi.Template import Template
 
 class SystemTest(BaseTestCase):
     """Test System template procedures."""

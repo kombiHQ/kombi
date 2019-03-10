@@ -3,9 +3,9 @@ import shutil
 from datetime import datetime
 import unittest
 from ..BaseTestCase import BaseTestCase
-from chilopoda.TaskHolderLoader import TaskHolderLoader
-from chilopoda.Crawler import Crawler
-from chilopoda.Crawler.Fs.FsPath import FsPath
+from kombi.TaskHolderLoader import TaskHolderLoader
+from kombi.Crawler import Crawler
+from kombi.Crawler.Fs.FsPath import FsPath
 
 class VendorXPlatesTest(BaseTestCase):
     """Test for the example vendor 'x' plates."""
