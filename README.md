@@ -1,5 +1,131 @@
-# kombi
-
+# Kombi
 [![Build Status](https://travis-ci.org/kombiHQ/kombi.svg?branch=master)](https://travis-ci.org/kombiHQ/kombi)
 
-main kombi repository
+<p align="center">
+    <img src="data/ui/icons/kombi.png" with="256" height="256"/>
+</p>
+
+Kombi is a library & tool focused in processing data across different applications.
+
+This is done by providing API that simplifies the process of grabbing whether the partial or full data generated as output by an application and use them as input to another application during the execution of nested processes.
+
+Such as during the ingestion of files, versioning data, creating different variations for the same data, (etc). Where these processes may look simple at first glance they grow in complexity overtime, making them hard to maintain specially when different applications are involved to accomplish the task.
+
+In order to avoid writing boilerplate code, Kombi provides a high-level declarative definitions that can be expressed through:
+
+### YAML
+
+<details open="1"><summary>Expand</summary>
+<p>
+
+
+```yaml
+---
+vars:
+  prefix: "/tmp"
+tasks:
+- run: gafferScene
+  metadata:
+    match.types:
+    - png
+    match.vars:
+      imageType:
+      - sequence
+  options:
+    scene: "{configDirectory}/scene.gfr"
+  target: "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ver>.(pad
+    {frame} 6).exr"
+  tasks:
+  - run: ffmpeg
+    options:
+      frameRate: 23.976
+      sourceColorSpace: bt709
+      targetColorSpace: smpte170m
+    target: "(dirname {filePath})/{name}.mov"
+```
+</p>
+</details>
+
+### TOML
+<details><summary>Expand</summary>
+<p>
+
+```toml
+[vars]
+prefix = "/tmp"
+
+[[tasks]]
+run = "gafferScene"
+target = "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ver>.(pad {frame} 6).exr"
+
+  [tasks.metadata]
+  "match.types" = [
+    "png"
+  ]
+
+    [tasks.metadata."match.vars"]
+    imageType = [
+      "sequence"
+    ]
+
+  [tasks.options]
+  scene = "{configDirectory}/scene.gfr"
+
+  [[tasks.tasks]]
+  run = "ffmpeg"
+  target = "(dirname {filePath})/{name}.mov"
+
+    [tasks.tasks.options]
+    frameRate = 23.976
+    sourceColorSpace = "bt709"
+    targetColorSpace = "smpte170m"
+```
+</details>
+
+### JSON
+<details><summary>Expand</summary>
+<p>
+
+```json
+{
+  "vars": {
+    "prefix": "/tmp"
+  },
+  "tasks": [
+    {
+      "run": "gafferScene",
+      "metadata": {
+        "match.types": [
+          "png"
+        ],
+        "match.vars": {
+          "imageType": [
+            "sequence"
+          ]
+        }
+      },
+      "options": {
+        "scene": "{configDirectory}/scene.gfr"
+      },
+      "target": "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ver>.(pad {frame} 6).exr",
+      "tasks": [
+        {
+          "run": "ffmpeg",
+          "options":{
+            "frameRate": 23.976,
+            "sourceColorSpace": "bt709",
+            "targetColorSpace": "smpte170m"
+          },
+          "target": "(dirname {filePath})/{name}.mov"
+        }
+      ]
+    }
+  ]
+}
+```
+</details>
+
+### GAFFER (node-based)
+```
+coming soon
+```
