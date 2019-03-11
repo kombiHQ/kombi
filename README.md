@@ -11,7 +11,7 @@ This is done by providing API that simplifies the process of grabbing whether th
 
 Such as during the ingestion of files, versioning data, creating different variations for the same data, (etc). Where these processes may look simple at first glance they grow in complexity overtime, making them hard to maintain specially when different applications are involved to accomplish the task.
 
-In order to avoid writing boilerplate code, Kombi provides a high-level declarative definitions that can be expressed through:
+In order to avoid writing boilerplate code, Kombi provides high-level declarative definitions that can be expressed through:
 
 ### YAML
 
