@@ -129,3 +129,20 @@ target = "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ve
 ```
 coming soon
 ```
+
+### Supported systems
+- LINUX
+- windows
+
+### Requirements
+- CMAKE 2.8+
+- PYTHON 3.5+/2.7+
+- OPEN IMAGE OI 1.7+
+
+### Optional
+- OPEN COLOR IO
+- GAFFER
+- FFMPEG
+- PYSIDE2
+- nuke
+- maya
