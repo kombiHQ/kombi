@@ -33,8 +33,7 @@ tasks:
       - sequence
   options:
     scene: "{configDirectory}/scene.gfr"
-  target: "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ver>.(pad
-    {frame} 6).exr"
+  target: "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ver>.(pad {frame} 6).exr"
   tasks:
   - run: ffmpeg
     options:
