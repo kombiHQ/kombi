@@ -146,5 +146,14 @@ coming soon
 - nuke
 - maya
 
+## Installing
+```bash
+cd <SRC_LOCATION>
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=<TARGET_LOCATION> -G "Unix Makefiles" ..
+make all install
+```
+
 ## Licensing
 Kombi is free software; you can redistribute it and/or modify it under the terms of the MIT License
