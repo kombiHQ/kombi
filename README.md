@@ -129,7 +129,7 @@ target = "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ve
 coming soon
 ```
 
-### Supported systems
+### Supported platforms
 - LINUX
 - windows
 
