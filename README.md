@@ -155,5 +155,18 @@ cmake -DCMAKE_INSTALL_PREFIX=<TARGET_LOCATION> -G "Unix Makefiles" ..
 make all install
 ```
 
+## Running 
+The launchers are provided inside of the "bin" directory found inside of the installation.
+
+Kombi command-line:
+```bash
+kombi --help
+```
+
+Kombi graphical user interface (requires Qt5/PySide2):
+```bash
+kombi-gui
+```
+
 ## Licensing
 Kombi is free software; you can redistribute it and/or modify it under the terms of the MIT License
