@@ -161,7 +161,9 @@ Kombi command-line:
 kombi --help
 ```
 
-Kombi graphical user interface (requires Qt5/PySide2):
+Kombi file picker tool (requires Qt and PySide):
+<img src="data/doc/kombi-gui-screenshot.png"/>
+
 ```bash
 kombi-gui
 ```
