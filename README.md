@@ -126,7 +126,7 @@ coming soon
 ```
 
 ### Supported platforms
-- LINUX :heart:
+- LINUX
 - windows
 
 ### Requirements
