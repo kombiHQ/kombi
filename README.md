@@ -120,7 +120,7 @@ target = "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ve
 ```
 </details>
 
-### GAFFER (node-based)
+### Gaffer (node-based)
 ```
 coming soon
 ```
