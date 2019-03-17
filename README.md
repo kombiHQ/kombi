@@ -135,13 +135,13 @@ coming soon
 - OPEN IMAGE OI 1.7+
 
 ### Optional
-- OPEN COLOR IO
-- GAFFER
-- FFMPEG
-- QT5
-- PYSIDE2
-- nuke
-- maya
+- OPEN COLOR IO 1.0+
+- GAFFER 0.53+
+- FFMPEG 3.0+
+- QT 5.0+
+- PYSIDE 2.0+
+- nuke 9.0+
+- maya 2016+
 
 ## Installing
 ```bash
