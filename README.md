@@ -162,11 +162,10 @@ kombi --help
 ```
 
 Kombi file picker tool (requires Qt and PySide):
-<img src="data/doc/kombi-gui-screenshot.png"/>
-
 ```bash
 kombi-gui
 ```
+<img src="data/doc/kombi-gui-screenshot.png"/>
 
 ## Licensing
 Kombi is free software; you can redistribute it and/or modify it under the terms of the MIT License
