@@ -120,10 +120,18 @@ target = "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ve
 ```
 </details>
 
-### Gaffer (node-based)
+<details><summary>PYTHON</summary>
+<p>
+
+</details>
+
+<details><summary>GAFFER (node-based)</summary>
+<p>
+
 ```
 coming soon
 ```
+</details>
 
 ### Supported platforms
 - LINUX
