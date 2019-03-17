@@ -144,7 +144,7 @@ coming soon
 - maya 2016+
 
 ## Installing
-> For windows users please make sure you have `make` available (among other posix tools used for development): [cygwin](https://www.cygwin.com)
+> For windows users please make sure you have `make` available. I recommend to use [cygwin](https://www.cygwin.com) (you are going to need the posix tools for development)
 ```bash
 cd <SRC_LOCATION>
 mkdir build
