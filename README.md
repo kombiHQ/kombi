@@ -142,6 +142,7 @@ coming soon
 - OPEN COLOR IO
 - GAFFER
 - FFMPEG
+- QT5
 - PYSIDE2
 - nuke
 - maya
