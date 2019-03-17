@@ -9,7 +9,7 @@ Kombi is a library & tool focused in processing data across different applicatio
 
 This is done by providing an API that simplifies the process of grabbing whether the partial or full data generated as output by a task (application/library) and use them as input to another task during the execution of nested tasks.
 
-Such as during the ingestion of files, versioning data, creating different variations for the same data, (etc). Where these processes may look simple at first glance they grow in complexity overtime, making them hard to maintain specially when different applications are involved to accomplish the task.
+Such as during the ingestion of files, versioning data, creating different variations for the same data, (etc). Where these processes may look simple at first glance they grow in complexity overtime, making them hard to maintain specially when different applications/libraries are involved to accomplish it.
 
 In order to avoid writing boilerplate code, Kombi provides high-level declarative definitions that can be expressed through:
 
