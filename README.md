@@ -13,9 +13,7 @@ Such as during the ingestion of files, versioning data, creating different varia
 
 In order to avoid writing boilerplate code, Kombi provides high-level declarative definitions that can be expressed through:
 
-### YAML
-
-<details open="1"><summary>Expand</summary>
+<details open="1"><summary>YAML</summary>
 <p>
 
 
@@ -45,8 +43,7 @@ tasks:
 </p>
 </details>
 
-### TOML
-<details><summary>Expand</summary>
+<details><summary>TOML</summary>
 <p>
 
 ```toml
@@ -81,8 +78,7 @@ target = "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ve
 ```
 </details>
 
-### JSON
-<details><summary>Expand</summary>
+<details><summary>JSON</summary>
 <p>
 
 ```json
