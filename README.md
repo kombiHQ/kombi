@@ -5,7 +5,7 @@
     <img src="data/ui/icons/kombi.png" with="256" height="256"/>
 </p>
 
-Kombi is a library & tool focused in processing data across different applications and libraries.
+Kombi is a library & application focused in processing data across different applications and libraries.
 
 This is done by providing an API that simplifies the process of grabbing whether a partial or full data generated as output of a task (application/library) and use them subsequently as input of sub tasks, and so on.
 
@@ -119,6 +119,8 @@ target = "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ve
 }
 ```
 </details>
+
+Also you can run Kombi from
 
 <details><summary>PYTHON</summary>
 <p>
