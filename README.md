@@ -157,6 +157,15 @@ coming soon
 - maya 2016+
 
 ## Installing
+
+Ubuntu and derivatives:
+```bash
+pip install PySide2
+apt-get install python-openimageio
+apt-get install python-pyopencolorio
+apt-get install ffmpeg
+```
+
 > For windows users please make sure you have `make` available. It can be done through [cygwin](https://www.cygwin.com) (you are going to need the posix tools for development in Kombi).
 ```bash
 cd <SRC_LOCATION>
