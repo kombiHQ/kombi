@@ -143,18 +143,19 @@ coming soon
 - windows
 
 ### Requirements
-- CMake 2.8+
-- Python 3.5+/2.7+
-- Open Image OI 1.7+
 
-#### Optional
-- Open color IO 1.0+
-- Gaffer 0.53+
-- FFmpeg 3.0+
-- Qt 5.0+
-- PySide 2.0+
-- nuke 9.0+
-- maya 2016+
+Name | Version | Required
+--- | --- | ---
+CMake | 2.8+ | YES
+Python | 3.5+/2.7+ | YES
+Open Image OI | 1.7+ | YES
+Open color IO | 1.0+ | NO
+Gaffer | 0.53+ | NO
+FFmpeg | 3.0+ | NO
+Qt | 5.0+ |  NO
+PySide | 2.0+ | NO
+nuke | 9.0+ | NO
+maya | 2016+ | NO
 
 ## Installing
 
