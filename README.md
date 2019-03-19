@@ -186,7 +186,7 @@ windows:
 - [Python 3.6](https://www.python.org/downloads)
 - [FFmpeg](https://ffmpeg.org)
 - [PySide2](https://pypi.org/project/PySide2)
-- [Open Image IO](https://www.lfd.uci.edu/~gohlke/pythonlibs/#openimageio) [Unofficial windows binary]
+- [Open Image IO](https://www.lfd.uci.edu/~gohlke/pythonlibs/#openimageio) (Unofficial windows binary)
 
 ### Building Kombi
 
