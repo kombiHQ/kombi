@@ -139,20 +139,20 @@ coming soon
 </details>
 
 ### Supported platforms
-- LINUX
+- Linux
 - windows
 
 ### Requirements
-- CMAKE 2.8+
-- PYTHON 3.5+/2.7+
-- OPEN IMAGE OI 1.7+
+- CMake 2.8+
+- Python 3.5+/2.7+
+- Open Image OI 1.7+
 
 ### Optional
-- OPEN COLOR IO 1.0+
-- GAFFER 0.53+
-- FFMPEG 3.0+
-- QT 5.0+
-- PYSIDE 2.0+
+- Open color IO 1.0+
+- Gaffer 0.53+
+- FFmpeg 3.0+
+- Qt 5.0+
+- PySide 2.0+
 - nuke 9.0+
 - maya 2016+
 
