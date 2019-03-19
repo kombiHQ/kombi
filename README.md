@@ -161,9 +161,16 @@ coming soon
 Ubuntu and derivatives:
 ```bash
 pip install PySide2
-apt-get install python-openimageio
-apt-get install python-pyopencolorio
+apt-get install python-openimageio openimageio-tools
+apt-get install python-pyopencolorio 
 apt-get install ffmpeg
+```
+
+CentOS (requires EPEL):
+```bash
+pip install PySide2
+yum install python-OpenImageIO OpenImageIO-utils
+yum install ffmpeg
 ```
 
 > For windows users please make sure you have `make` available. It can be done through [cygwin](https://www.cygwin.com) (you are going to need the posix tools for development in Kombi).
