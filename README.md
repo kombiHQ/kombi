@@ -162,6 +162,9 @@ Make sure you have the dependencies used by this project on your system (In case
 
 ### Installing dependencies
 
+<details><summary>Linux</summary>
+<p>
+
 #### Ubuntu and derivatives:
 ```bash
 pip install PySide2
@@ -178,8 +181,11 @@ yum install make cmake
 yum install python-OpenImageIO OpenImageIO-utils
 yum install ffmpeg
 ```
+</details>
 
-#### windows:
+<details><summary>windows</summary>
+<p>
+
 > For windows users please make sure you have `make` available. It can be done through Cygwin (you are going to need the posix tools for development in Kombi).
 
 - [Cygwin](https://www.cygwin.com)
@@ -187,6 +193,8 @@ yum install ffmpeg
 - [FFmpeg](https://ffmpeg.org)
 - [PySide2](https://pypi.org/project/PySide2)
 - [Open Image IO](https://www.lfd.uci.edu/~gohlke/pythonlibs/#openimageio) (Unofficial windows binary)
+
+</details>
 
 ### Building Kombi
 
