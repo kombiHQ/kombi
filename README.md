@@ -180,7 +180,13 @@ yum install ffmpeg
 ```
 
 windows:
-> For windows users please make sure you have `make` available. It can be done through [cygwin](https://www.cygwin.com) (you are going to need the posix tools for development in Kombi).
+> For windows users please make sure you have `make` available. It can be done through Cygwin (you are going to need the posix tools for development in Kombi).
+
+- [Cygwin](https://www.cygwin.com)
+- [Python 3.6](https://www.python.org/downloads)
+- [FFmpeg](https://ffmpeg.org)
+- [PySide2](https://pypi.org/project/PySide2)
+- [Open Image IO](https://www.lfd.uci.edu/~gohlke/pythonlibs/#openimageio)
 
 ### Building Kombi
 
