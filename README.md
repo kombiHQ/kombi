@@ -158,7 +158,9 @@ coming soon
 
 ## Installing
 
-Make sure you have the dependencies used by this project on your system (In case you are building the dependencies manually skip the steps below)
+Make sure you have the dependencies used by this project on your system (In case you are building the dependencies manually skip the step below):
+
+### Installing dependencies
 
 Ubuntu and derivatives:
 ```bash
@@ -180,6 +182,7 @@ yum install ffmpeg
 windows:
 > For windows users please make sure you have `make` available. It can be done through [cygwin](https://www.cygwin.com) (you are going to need the posix tools for development in Kombi).
 
+### Building Kombi
 
 ```bash
 cd <SRC_LOCATION>
