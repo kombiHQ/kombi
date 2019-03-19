@@ -142,7 +142,7 @@ coming soon
 - Linux
 - windows
 
-### Requirements
+### Dependencies
 
 Name | Version | Required
 --- | --- | ---
