@@ -147,7 +147,7 @@ coming soon
 - Python 3.5+/2.7+
 - Open Image OI 1.7+
 
-### Optional
+#### Optional
 - Open color IO 1.0+
 - Gaffer 0.53+
 - FFmpeg 3.0+
