@@ -141,6 +141,7 @@ coming soon
 ### Supported platforms
 - Linux
 - windows
+> Although running on MacOS is possible, I don't have an Apple machine to test Kombi and officially support it.
 
 ### Dependencies
 
