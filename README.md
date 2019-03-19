@@ -159,7 +159,7 @@ maya | 2016+ | NO
 
 ## Installing
 
-Make sure you have the dependencies used by this project on your system (In case you are building the dependencies manually skip the step below):
+Make sure you have the required dependencies used by this project on your system (In case you are building the dependencies manually skip the step below):
 
 ### Installing dependencies
 
