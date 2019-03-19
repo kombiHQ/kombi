@@ -171,7 +171,7 @@ apt-get install python-pyopencolorio
 apt-get install ffmpeg
 ```
 
-CentOS (requires EPEL):
+CentOS/Fedora (requires EPEL):
 ```bash
 pip install PySide2
 yum install make cmake
