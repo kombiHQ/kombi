@@ -159,7 +159,7 @@ PySide | 2.0+ | NO
 nuke | 9.0+ | NO
 maya | 2016+ | NO
 
-## Installing
+## Installation
 
 Make sure you have the dependencies used by this project on your system (In case you are building the dependencies manually skip the step below):
 
