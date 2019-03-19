@@ -148,8 +148,8 @@ Name | Version | Required
 --- | --- | ---
 CMake | 2.8+ | YES
 Python | 3.5+/2.7+ | YES
-Open Image OI | 1.7+ | YES
-Open color IO | 1.0+ | NO
+Open Image IO | 1.7+ | YES
+Open Color IO | 1.0+ | NO
 Gaffer | 0.53+ | NO
 FFmpeg | 3.0+ | NO
 Qt | 5.0+ |  NO
