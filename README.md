@@ -162,7 +162,7 @@ Make sure you have the dependencies used by this project on your system (In case
 
 ### Installing dependencies
 
-Ubuntu and derivatives:
+#### Ubuntu and derivatives:
 ```bash
 pip install PySide2
 apt-get install make cmake
@@ -171,7 +171,7 @@ apt-get install python-pyopencolorio
 apt-get install ffmpeg
 ```
 
-CentOS/Fedora (requires EPEL):
+#### CentOS/Fedora (requires EPEL):
 ```bash
 pip install PySide2
 yum install make cmake
@@ -179,7 +179,7 @@ yum install python-OpenImageIO OpenImageIO-utils
 yum install ffmpeg
 ```
 
-windows:
+#### windows:
 > For windows users please make sure you have `make` available. It can be done through Cygwin (you are going to need the posix tools for development in Kombi).
 
 - [Cygwin](https://www.cygwin.com)
