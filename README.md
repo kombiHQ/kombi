@@ -162,7 +162,7 @@ maya | 2016+
 
 In case you are building the dependencies manually skip the step below:
 
-### Installing dependencies
+### Install dependencies
 
 <details><summary>Linux</summary>
 <p>
