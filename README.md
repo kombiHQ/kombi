@@ -197,7 +197,7 @@ yum install ffmpeg
 
 </details>
 
-#### Download and unzip the release
+### Download and unzip the release
 ```
 # TODO
 ```
