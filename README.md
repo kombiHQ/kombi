@@ -148,8 +148,6 @@ coming soon
 Name | Version | Required
 --- | --- | ---
 Python | 3.5+/2.7+ | YES
-CMake | 2.8+ | YES (only for development)
-Make | 3.0+ | YES (only for development)
 Open Image IO | 1.7+ | NO
 Open Color IO | 1.0+ | NO
 Gaffer | 0.53+ | NO
@@ -158,6 +156,12 @@ Qt | 5.0+ |  NO
 PySide | 2.0+ | NO
 nuke | 9.0+ | NO
 maya | 2016+ | NO
+
+### Development dependencies
+Name | Version 
+--- | --- 
+CMake | 2.8+
+Make | 3.0+
 
 ## Installation
 
