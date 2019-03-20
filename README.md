@@ -159,12 +159,6 @@ PySide | 2.0+
 nuke | 9.0+
 maya | 2016+
 
-### Development dependencies
-Name | Version 
---- | --- 
-CMake | 2.8+
-Make | 3.0+
-
 ## Installation
 
 Make sure you have the dependencies used by this project on your system (In case you are building the dependencies manually skip the step below):
@@ -195,8 +189,6 @@ yum install ffmpeg
 <details><summary>windows</summary>
 <p>
 
-> For windows users please make sure you have `make` available. It can be done through Cygwin (you are going to need the posix tools for development in Kombi).
-
 - [Cygwin](https://www.cygwin.com)
 - [Python 3.6](https://www.python.org/downloads)
 - [FFmpeg](https://ffmpeg.org)
@@ -205,7 +197,28 @@ yum install ffmpeg
 
 </details>
 
-### Building Kombi
+### Building Kombi for development
+
+#### Dependencies
+Name | Version 
+--- | --- 
+CMake | 2.8+
+Make | 3.0+
+
+#### Running tests
+```bash
+cd <SRC_LOCATION>
+./runtests
+```
+
+#### Running linters
+```bash
+cd <SRC_LOCATION>
+./runlint
+```
+
+#### Building Kombi
+> For windows users please make sure you have `make` & `bash` available. It can be done through [Cygwin](https://www.cygwin.com).
 
 ```bash
 cd <SRC_LOCATION>
