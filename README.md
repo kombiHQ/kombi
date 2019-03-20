@@ -145,17 +145,17 @@ coming soon
 
 ### Dependencies
 
-Name | Version | Required
+Name | Version | 
 --- | --- | ---
-Python | 3.5+/2.7+ | YES
-Open Image IO | 1.7+ | NO
-Open Color IO | 1.0+ | NO
-Gaffer | 0.53+ | NO
-FFmpeg | 3.0+ | NO
-Qt | 5.0+ |  NO
-PySide | 2.0+ | NO
-nuke | 9.0+ | NO
-maya | 2016+ | NO
+Python | 3.5+/2.7+ | Required
+Open Image IO | 1.7+ | Optional
+Open Color IO | 1.0+ | Optional
+Gaffer | 0.53+ | Optional
+FFmpeg | 3.0+ | Optional
+Qt | 5.0+ |  Optional
+PySide | 2.0+ | Optional
+nuke | 9.0+ | Optional
+maya | 2016+ | Optional
 
 ### Development dependencies
 Name | Version 
