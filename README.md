@@ -149,7 +149,6 @@ Python 3.5+/2.7+
 ### Optional dependencies
 Name | Version
 --- | ---
-Python | 3.5+/2.7+
 Open Image IO | 1.7+
 Open Color IO | 1.0+
 Gaffer | 0.53+
