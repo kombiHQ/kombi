@@ -143,19 +143,21 @@ coming soon
 - windows
 > Although running on mac os is possible, I don't have an apple machine for troubleshooting Kombi and officially support it on mac os.
 
-### Dependencies
+### Requirement
+Python 3.5+/2.7+ 
 
-Name | Version | Dependency Type
---- | --- | ---
-Python | 3.5+/2.7+ | Required
-Open Image IO | 1.7+ | Optional
-Open Color IO | 1.0+ | Optional
-Gaffer | 0.53+ | Optional
-FFmpeg | 3.0+ | Optional
-Qt | 5.0+ | Optional
-PySide | 2.0+ | Optional
-nuke | 9.0+ | Optional
-maya | 2016+ | Optional
+### Optional Dependencies
+Name | Version
+--- | ---
+Python | 3.5+/2.7+
+Open Image IO | 1.7+
+Open Color IO | 1.0+
+Gaffer | 0.53+
+FFmpeg | 3.0+
+Qt | 5.0+
+PySide | 2.0+
+nuke | 9.0+
+maya | 2016+
 
 ### Development dependencies
 Name | Version 
