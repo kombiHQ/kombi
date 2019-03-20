@@ -147,9 +147,9 @@ coming soon
 
 Name | Version | Required
 --- | --- | ---
-CMake | 2.8+ | YES
-Make | 3.0+ | YES
 Python | 3.5+/2.7+ | YES
+CMake | 2.8+ | YES (only for development)
+Make | 3.0+ | YES (only for development)
 Open Image IO | 1.7+ | NO
 Open Color IO | 1.0+ | NO
 Gaffer | 0.53+ | NO
