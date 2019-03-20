@@ -214,6 +214,7 @@ Name | Version
 --- | --- 
 CMake | 2.8+
 Make | 3.0+
+Pylama | 7.0+
 
 #### Running tests
 ```bash
