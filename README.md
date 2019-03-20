@@ -146,7 +146,7 @@ coming soon
 ### Requirement
 Python 3.5+/2.7+ 
 
-### Optional Dependencies
+### Optional dependencies
 Name | Version
 --- | ---
 Python | 3.5+/2.7+
