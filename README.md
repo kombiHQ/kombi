@@ -198,6 +198,7 @@ yum install ffmpeg
 </details>
 
 ### Building Kombi for development
+> For windows users please make sure you have `make` & `bash` available on your system. It can be done through [Cygwin](https://www.cygwin.com).
 
 <details><summary>Details</summary>
 <p>
@@ -221,7 +222,6 @@ cd <SRC_LOCATION>
 ```
 
 #### Building Kombi
-> For windows users please make sure you have `make` & `bash` available. It can be done through [Cygwin](https://www.cygwin.com).
 
 ```bash
 cd <SRC_LOCATION>
