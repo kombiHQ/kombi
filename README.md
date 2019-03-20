@@ -197,7 +197,7 @@ yum install ffmpeg
 
 </details>
 
-### Building Kombi for development
+## Building Kombi for development
 
 <details><summary>Details</summary>
 <p>
