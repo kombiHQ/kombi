@@ -197,6 +197,11 @@ yum install ffmpeg
 
 </details>
 
+#### Download and unzip the release
+```
+# TODO
+```
+
 ## Building Kombi for development
 
 <details><summary>Details</summary>
