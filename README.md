@@ -199,6 +199,9 @@ yum install ffmpeg
 
 ### Building Kombi for development
 
+<details><summary>Details</summary>
+<p>
+
 #### Dependencies
 Name | Version 
 --- | --- 
@@ -227,6 +230,8 @@ cd build
 cmake -DCMAKE_INSTALL_PREFIX=<TARGET_LOCATION> -G "Unix Makefiles" ..
 make all install
 ```
+
+</details>
 
 ## Running 
 The launchers are provided inside of the "bin" directory found inside of the installation.
