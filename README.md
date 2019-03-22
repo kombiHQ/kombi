@@ -5,7 +5,7 @@
     <img src="data/ui/icons/kombi.png" with="256" height="256"/>
 </p>
 
-Kombi is a library & application focused in processing data across different applications and libraries.
+Kombi is a application/library focused in processing data across different applications and libraries.
 
 Such as during image & video processing, ingestion of files, versioning data, (etc). Where these processes may look simple at first glance they grow in complexity overtime, making them hard to maintain specially when different applications/libraries are involved.
 
