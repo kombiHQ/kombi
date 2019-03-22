@@ -153,8 +153,7 @@ Open Image IO (python bindings) | 1.7+
 Open Color IO (python bindings) | 1.0+
 Gaffer | 0.53+
 FFmpeg | 3.0+
-Qt | 5.0+
-PySide (python bindings) | 2.0+
+Qt/PySide | 2.0+
 nuke | 9.0+
 maya | 2016+
 
