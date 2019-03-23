@@ -145,8 +145,8 @@ Python 3.5+/2.7+
 ### Optional Dependencies
 Name | Version
 --- | ---
-Open Image IO (python bindings/binary tools) | 1.7+
-Open Color IO (python bindings) | 1.0+
+Open Image IO (including python bindings/binary tools) | 1.7+
+Open Color IO (including python bindings) | 1.0+
 Gaffer | 0.53+
 PySide | 2.0+
 FFmpeg | 3.0+
