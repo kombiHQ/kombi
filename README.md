@@ -142,20 +142,17 @@ coming soon
 ### Requirement
 Python 3.5+/2.7+ 
 
-### Optional Dependencies
+### Optional Dependencies/Integrations
 Name | Version
 --- | ---
-PySide | 2.0+
-
-### Optional Integrations
-Name | Version
---- | ---
-Open Image IO (python bindings) | 1.7+
+Open Image IO (python bindings/binary tools) | 1.7+
 Open Color IO (python bindings) | 1.0+
 Gaffer | 0.53+
+PySide | 2.0+
 FFmpeg | 3.0+
 nuke | 9.0+
 maya | 2016+
+deadline | 9.0+
 
 ## Installation
 
@@ -246,7 +243,7 @@ Kombi command-line:
 kombi --help
 ```
 
-Kombi file picker tool (PySide2):
+Kombi file picker tool (requires PySide2):
 ```bash
 kombi-gui
 ```
