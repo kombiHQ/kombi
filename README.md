@@ -142,7 +142,7 @@ coming soon
 ### Requirement
 Python 3.5+/2.7+ 
 
-### Optional Dependencies/Integrations
+### Optional Dependencies
 Name | Version
 --- | ---
 Open Image IO (python bindings/binary tools) | 1.7+
