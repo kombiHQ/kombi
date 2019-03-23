@@ -5,15 +5,11 @@
     <img src="data/ui/icons/kombi.png" with="256" height="256"/>
 </p>
 
-Kombi is focused in processing data across different applications and libraries.
-
-Such as image/video processing, ingestion of files, versioning data, (etc). Where these processes may look simple at first glance they grow in complexity overtime, becoming hard to maintain specially when different applications/libraries are involved to accomplish the goal.
-
-This is done by providing an API that simplifies the process of grabbing whether a partial or full data generated as output of a task (application/library) and use them subsequently as input of sub tasks, and so on.
+Kombi is focused in processing data across different applications and libraries. Such as image/video processing, ingestion of files, versioning data, (etc). This is done by providing an API that simplifies the process of grabbing whether a partial or full data generated as output of a task (application/library) and use them subsequently as input of sub tasks, and so on.
 
 In order to avoid writing boilerplate code, Kombi provides high-level declarative definitions that can be expressed through:
 
-<details open="1"><summary>YAML</summary>
+<details><summary>YAML</summary>
 <p>
 
 
