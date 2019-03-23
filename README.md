@@ -151,7 +151,7 @@ Name | Version
 --- | ---
 PySide | 2.0+
 
-### Optional Ingrations
+### Optional Integrations
 Name | Version
 --- | ---
 Open Image IO (python bindings) | 1.7+
