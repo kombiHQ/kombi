@@ -7,7 +7,7 @@
 
 Kombi is focused in processing data across different applications and libraries.
 
-Such as image/video processing, ingestion of files, versioning data, (etc). Where these processes may look simple at first glance they grow in complexity overtime, making them hard to maintain specially when different applications/libraries are involved.
+Such as image/video processing, ingestion of files, versioning data, (etc). Where these processes may look simple at first glance they may grow in complexity overtime, becoming hard to maintain specially when different applications/libraries are involved.
 
 This is done by providing an API that simplifies the process of grabbing whether a partial or full data generated as output of a task (application/library) and use them subsequently as input of sub tasks, and so on.
 
