@@ -5,7 +5,7 @@
     <img src="data/ui/icons/kombi.png" with="256" height="256"/>
 </p>
 
-Kombi is focused on processing data across different applications and libraries, such as during image/video processing, ingesting files, versioning data, (etc). This is done by providing tasks which are used to wrap the execution of applications/libraries in a common generic way that simplifies the process of defining the specification used for the execution and, how the data is passed along (whether using partial or full output from a task as input of a sub-task, and so on).
+Kombi is focused on processing data across different applications and libraries, such as during image/video processing, ingesting files, versioning data, (etc). This is done by providing tasks which are used to wrap the execution of applications/libraries in a common generic way that simplifies the process of defining specifications used during the execution of tasks and, making easy to grab whether partial or full output from a task and use it as input of a sub-tasks, and so on.
 
 Tasks can be expressed through declarative definitions, making it very convenient for prototyping and simplifying the maintainability by reducing the need for writing boilerplate code.
 
