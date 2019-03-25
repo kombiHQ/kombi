@@ -7,7 +7,7 @@
 
 Kombi is focused on processing data across different applications and libraries, such as during image/video processing, ingesting files, versioning data, (etc). This is done by providing tasks which are used to wrap the execution of applications/libraries in a common generic way that simplifies the process of defining a specification for a task and how the data is passed along (whether using partial or full output from a task as input of sub tasks, and so on).
 
-The tasks can be expressed through declarative definitions, making it very convenient for prototyping and simplifying the maintainability by reducing the need for writing boilerplate code.
+Tasks can be expressed through declarative definitions, making it very convenient for prototyping and simplifying the maintainability by reducing the need for writing boilerplate code.
 
 It can be done through:
 
