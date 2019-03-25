@@ -7,7 +7,7 @@
 
 Kombi is focused in processing data across different applications and libraries. Such as during image/video processing, ingesting files, versioning data, (etc). This is done by providing tasks which are used to wrap the execution of applications/libraries in a common generic way that simplifies the process of whether using a partial or full output of a task as input of sub tasks (and so on). The tasks can be expressed through declarive definitons, making it very convinent for prototyping and reducing the complexilty by minimizing the need for writing boilerplate code.
 
-In order to avoid writing boilerplate code, Kombi provides high-level declarative definitions that can be expressed through:
+It can be done through:
 
 <details><summary>YAML</summary>
 <p>
