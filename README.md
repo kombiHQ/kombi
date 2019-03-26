@@ -7,7 +7,7 @@
 
 Kombi is focused on processing data across different applications and libraries, such as during image/video processing, ingesting files, versioning data, (etc). This is done by providing tasks which are used to wrap the execution of applications/libraries in a common generic interface that simplifies the process of defining specifications, dealing with file system operations, splitting the processing and, providing interoperability across different applications.
 
-By using Kombi through declarative definitions, it can speed-up prototyping and simplify the maintainability by reducing the need for writing boilerplate code. This can be done through:
+You can use Kombi through declarative definitions that speed-up prototyping and simplify the maintainability by reducing the need for writing boilerplate code:
 
 <details><summary>YAML</summary>
 <p>
