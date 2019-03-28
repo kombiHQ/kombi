@@ -5,7 +5,7 @@
     <img src="data/ui/icons/kombi.png" with="256" height="256"/>
 </p>
 
-Kombi provides tasks which are used to wrap the execution of applications/libraries in a common generic interface that simplifies the process of defining specifications, dealing with file system operations, splitting the processing and, providing interoperability across different applications. Such as during image/video processing, ingesting files, versioning data, etc.
+Kombi provides tasks which are used to wrap the execution of applications/libraries in a common generic interface focusing in simplifying the process of defining specifications, dealing with file system operations, splitting the processing and, providing interoperability across different applications. Such as during image/video processing, ingesting files, versioning data, etc.
 
 You can use Kombi through declarative definitions that speed-up prototyping and simplify the maintainability by reducing the need for writing boilerplate code:
 
