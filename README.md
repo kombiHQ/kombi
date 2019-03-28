@@ -9,7 +9,7 @@ Kombi wraps the execution of applications/libraries in a common generic interfac
 
 For instance, during image/video processing, ingesting files, versioning data...
 
-You can use Kombi through declarative definitions that speed-up prototyping and simplify the maintainability by reducing the need for writing boilerplate code:
+You can use Kombi through declarative definitions to speed-up prototyping and simplify the maintainability, by reducing the need for writing boilerplate code:
 
 <details><summary>YAML</summary>
 <p>
