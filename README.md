@@ -151,7 +151,7 @@ Open Image IO (including python bindings/binary tools) | 1.7+
 Open Color IO (including python bindings) | 1.0+
 Gaffer | 0.53+
 PySide | 2.0+
-FFmpeg | 3.0+
+FFmpeg (including ffprobe) | 3.0+
 nuke | 9.0+
 maya | 2016+
 deadline | 9.0+
