@@ -165,7 +165,7 @@ In case you are building the dependencies manually skip the step below:
 <details><summary>Linux</summary>
 <p>
 
-#### Ubuntu and derivatives:
+#### Ubuntu 18.04 (bionic) and derivatives:
 ```bash
 pip install PySide2
 apt-get install make cmake
