@@ -118,7 +118,7 @@ target = "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ve
 ```
 </details>
 
-Additionally you can run Kombi from
+Additionally you can run Kombi from:
 
 <details><summary>Python</summary>
 <p>
