@@ -249,7 +249,7 @@ Kombi file picker tool (requires PySide2):
 ```bash
 kombi-gui
 ```
-<img src="data/doc/kombi-gui-screenshot.png"/>
+<img src="data/doc/kombi-gui-screenshot.png?v=2"/>
 
 ## Licensing
 Kombi is free software; you can redistribute it and/or modify it under the terms of the MIT License
