@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/kombiHQ/kombi.svg?branch=master)](https://travis-ci.org/kombiHQ/kombi)
 
 <p align="center">
-    <img src="data/ui/icons/kombi.png" with="256" height="256"/>
+    <img src="data/ui/icons/kombi.png?v=2" with="256" height="256"/>
 </p>
 
 Kombi wraps the execution of applications/libraries into a generic interface focused in simplifying the process of passing data between executions, defining the options/settings for the executions, dealing with common file system operations, splitting the processing and, providing interoperability across different applications.
