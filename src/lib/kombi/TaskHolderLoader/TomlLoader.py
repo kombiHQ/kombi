@@ -1,5 +1,10 @@
 from .PythonLoader import PythonLoader
-from kombithirdparty import pytoml
+
+# in case pytoml is not available importing from third-party
+try:
+    import pytoml
+except ImportError:
+    from kombithirdparty import pytoml
 
 class TomlLoader(PythonLoader):
     """

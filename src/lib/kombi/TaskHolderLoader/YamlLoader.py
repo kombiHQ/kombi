@@ -1,5 +1,10 @@
 from .PythonLoader import PythonLoader
-from kombithirdparty import yaml
+
+# in case yaml is not available importing from third-party
+try:
+    import yaml
+except ImportError:
+    from kombithirdparty import yaml
 
 class YamlLoader(PythonLoader):
     """
