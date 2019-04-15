@@ -5,7 +5,7 @@
     <img src="data/ui/icons/kombi.png?v=2" with="512" height="512"/>
 </p>
 
-Kombi wraps the execution of applications/libraries into a generic interface focused in simplifying the process of passing data between executions, defining the options/settings for the executions, dealing with common file system operations, splitting the processing and, providing interoperability across different applications.
+Kombi provides an API to encapsulate the execution of applications/libraries into a generic interface focused in simplifying the process of passing data between executions, defining the options/settings for the executions, dealing with common file system operations, splitting the processing and, providing interoperability across different applications.
 
 For instance, during image/video processing, ingesting files, versioning data...
 
