@@ -12,6 +12,13 @@ class TextTest(BaseTestCase):
         result = Template.runProcedure("upper", "boop")
         self.assertEqual(result, "BOOP")
 
+    def testConcat(self):
+        """
+        Test that concat procedure works properly.
+        """
+        result = Template.runProcedure("concat", "BOOP", " ", "FOO")
+        self.assertEqual(result, "BOOP FOO")
+
     def testLower(self):
         """
         Test that the lower procedure works properly.

@@ -2,7 +2,7 @@ from ..Template import Template
 
 class _Text(object):
     """
-    Basic image sequence functions.
+    Basic text functions.
     """
 
     @staticmethod
@@ -11,6 +11,13 @@ class _Text(object):
         Return string converted to upper case.
         """
         return str(string).upper()
+
+    @staticmethod
+    def concat(*args):
+        """
+        Return a concatenated string.
+        """
+        return ''.join(args)
 
     @staticmethod
     def lower(string):
@@ -38,6 +45,18 @@ class _Text(object):
 Template.registerProcedure(
     'upper',
     _Text.upper
+)
+
+# concatenate
+Template.registerProcedure(
+    'concat',
+    _Text.concat
+)
+
+# lower case
+Template.registerProcedure(
+    'lower',
+    _Text.lower
 )
 
 # lower case
