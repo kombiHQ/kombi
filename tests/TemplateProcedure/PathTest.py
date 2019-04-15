@@ -64,7 +64,7 @@ class PathTest(BaseTestCase):
         """
         Test that running a procedure through string parsing works.
         """
-        result = Template.evalProcedure("dirname {}".format(self.__path))
+        result = Template.evalProcedure("(dirname {})".format(self.__path))
         self.assertEqual(result, "/test/path")
         self.assertRaises(AssertionError, Template.evalProcedure, True)
 
