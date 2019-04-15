@@ -5,7 +5,7 @@
     <img src="data/ui/icons/kombi.png?v=2" with="512" height="512"/>
 </p>
 
-Kombi provides an API focused in describing and performing executions (applications, libraries, scripts...). This project aim to simplify the process of defining nested executions, passing data across the executions, handling options/settings for the executions, dealing with common file system operations, splitting the processing and, providing interoperability across different applications.
+Kombi provides an API focused in describing and performing executions (applications, libraries, scripts...). This project aims to simplify the process of defining nested executions, passing data across the executions, handling options/settings for the executions, dealing with common file system operations, splitting the processing and, providing interoperability across different applications.
 
 For instance, during image/video processing, ingesting files, versioning data...
 
