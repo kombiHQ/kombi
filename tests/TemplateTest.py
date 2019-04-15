@@ -10,6 +10,82 @@ class TemplateTest(BaseTestCase):
 
     __file = os.path.join(BaseTestCase.dataTestsDirectory(), 'RND-TST-SHT_lighting_beauty_sr.1001.exr')
 
+    def testNestProcedureTemplateSimple(self):
+        """
+        Test simple nested procedures in the template.
+        """
+        crawler = FsPath.createFromPath(self.__file)
+        value = "/a/b/c/(dirname(dirname '/d/e/f'))/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
+        result = Template(value).valueFromCrawler(crawler)
+        self.assertEqual(
+            os.path.normpath(result),
+            os.path.normpath('/a/b/c/d/v001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
+        )
+
+    def testNestProcedureTemplateSimpleWithQuote(self):
+        """
+        Test simple nested procedures in the template.
+        """
+        crawler = FsPath.createFromPath(self.__file)
+        value = "/a/b/c/(concat '(teste(bla - blaa))' '_foo')/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
+        result = Template(value).valueFromCrawler(crawler)
+        self.assertEqual(
+            os.path.normpath(result),
+            os.path.normpath('/a/b/c/(teste(bla - blaa))_foo/v001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
+        )
+
+    def testNestProcedureTemplateMultiple(self):
+        """
+        Test multiple nested procedures in the template.
+        """
+        crawler = FsPath.createFromPath(self.__file)
+        value = "/a/b/c/(concat (dirname(dirname (dirname '/d/e/f/g'))) '_' (dirname (dirname {var})))/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
+        result = Template(value).valueFromCrawler(
+            crawler,
+            extraVars={
+                'var': 'h/j/l'
+            }
+        )
+        self.assertEqual(
+            os.path.normpath(result),
+            os.path.normpath('/a/b/c/d_h/v001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
+        )
+
+    def testNestProcedureTemplateMultipleAssignToken(self):
+        """
+        Test multiple nested procedures by assigning the result to a token in the template.
+        """
+        crawler = FsPath.createFromPath(self.__file)
+        value = "/a/b/c/(concat (dirname(dirname (dirname '/d/e/f/g'))) '_' (dirname (dirname {var})) as <result>)/(newver <parent>)/(concat <result> '_' 'foo')/{name}.(pad {frame} 6).{ext}"
+        result = Template(value).valueFromCrawler(
+            crawler,
+            extraVars={
+                'var': 'h/j/l'
+            }
+        )
+        self.assertEqual(
+            os.path.normpath(result),
+            os.path.normpath('/a/b/c/d_h/v001/d_h_foo/RND-TST-SHT_lighting_beauty_sr.001001.exr')
+        )
+
+    def testNestProcedureTemplateArithmetic(self):
+        """
+        Test arithmetic nested procedures in the template.
+        """
+        crawler = FsPath.createFromPath(self.__file)
+        value = "/a/b/c/({a} + (sum {b} 2))/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
+        result = Template(value).valueFromCrawler(
+            crawler,
+            extraVars={
+                'a': 2,
+                'b': 3
+            }
+        )
+        self.assertEqual(
+            os.path.normpath(result),
+            os.path.normpath('/a/b/c/7/v001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
+        )
+
     def testTemplate(self):
         """
         Test that the Template works properly.

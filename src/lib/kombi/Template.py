@@ -28,13 +28,16 @@ class Template(object):
     A template string can be represented using crawler variables using the syntax
     {crawlerVariable}. Procedures can be used through the syntax (myprocedure),
     arguments can be passed to procedures for instance (myprocedure {crawlerVariable})
-    where the arguments must be separated by space like in bash:
+    where the arguments must be separated by space:
         "/tmp/{myVariable}/(myprocedure {myVariable} 'second arg' 3)"
+
+    It supports calling procedures from inside of procedures. For instance:
+        "/tmp/{myVariable}/(myprocedure (nestedprocedure {myVariable}) 'second arg' 3)"
 
     Arithmetic operations are supported like procedures using the syntax (4 + 1), for instance:
         "/tmp/(2 + 3)/({width} + 10 as <finalwidth>)/file_<finalwidth>.exr"
 
-    Also, template engine provides special tokens designed to help with
+    Also, template engine provides special tokens designed specially to help with
     path manipulation:
 
     /! - Means the directory must exist for instance:
@@ -51,7 +54,7 @@ class Template(object):
     """
 
     __argsGroupRegex = r"'(?:''|[^']+)'|(?:[^' ]+)"
-    __arithmeticOperatorsRegex = r"^[0-9+\-*\/\ \.'(\)]*$"
+    __arithmeticOperatorsRegex = r"^[0-9+\-*\/\.'(\)]*$"
     __registeredProcedures = {}
 
     def __init__(self, inputString=""):
@@ -175,16 +178,21 @@ class Template(object):
         # executing procedure
         return str(cls.__registeredProcedures[procedureName](*args))
 
-    @classmethod
+    @classmethod # noqa: C901
     def evalProcedure(cls, procedure):
         """
         Parse and run a procedure.
 
         A procedure must be a string describing the procedure name
         as first token and the arguments that should be passed to it
-        separated by space (aka bash), for instance:
-            "myprocedure 'arg 1' arg2"
-            "1 + 2"
+        separated by space, for instance:
+            "(myProcedureA 'arg 1' arg2)"
+            "(1 + 2)"
+
+        You can call nested procedures by defining the procedures as
+        as argument of the procedure you want to call the nested procedure.
+        Make sure the nested proceures are surrounded by parentheses.
+            "(myProcedureA 'arg 1' (myProcedureB 'arg 2' (myProcedureC 'arg 3')))"
 
         The arguments are always parsed as string, and they should be
         handled per procedure callable bases.
@@ -192,8 +200,52 @@ class Template(object):
         assert isinstance(procedure, basestring), \
             "Invalid procedure type!"
 
+        assert procedure.startswith("(") and procedure.endswith(")"), \
+            "Cannot parse procedure, it needs to be defined under: ()"
+
+        procedure = procedure[1:-1]
+
+        fullResolved = ''
+        insideProcedure = []
+        insideQuote = False
+        previousChar = None
+        start = None
+        for i, char in enumerate(procedure):
+
+            if insideQuote and char == "'":
+                if not insideProcedure:
+                    fullResolved += char
+                if previousChar != "\\":
+                    insideQuote = False
+
+            elif not insideQuote and char == "'":
+                if not insideProcedure:
+                    fullResolved += char
+                insideQuote = True
+
+            elif not insideQuote and char == '(':
+                if char not in insideProcedure:
+                    start = i
+                insideProcedure.append(char)
+
+            elif not insideQuote and char == ')':
+                insideProcedure.pop()
+                if not insideProcedure:
+                    fullResolved += " '{}' ".format(
+                        cls.evalProcedure(
+                            procedure[start: i + 1]
+                        ).replace("'", "\\'")
+                    )
+
+            elif len(insideProcedure) == 0:
+                fullResolved += char
+
+            previousChar = char
+
+        procedure = fullResolved
+
         # executing arithmetic operations
-        if re.match(cls.__arithmeticOperatorsRegex, procedure):
+        if re.match(cls.__arithmeticOperatorsRegex, procedure.replace(' ', '')):
             return str(int(eval(procedure.replace("'", ""))))
 
         # converting all the escaped single quoted to a special token
@@ -207,7 +259,10 @@ class Template(object):
         # restoring single quoted to the arguments
         procedureArgs = list(map(lambda x: x.replace(singleQuoteId, "'"), procedureArgs))
 
-        return cls.runProcedure(procedureName, *procedureArgs)
+        return cls.runProcedure(
+            procedureName,
+            *procedureArgs
+        )
 
     def __processTemplateRequiredLevels(self, finalResolvedTemplate):
         """
@@ -244,10 +299,10 @@ class Template(object):
         tokens[requiredLevelToken] = "/!"
         resolvedTemplate = resolvedTemplate.replace(tokens[requiredLevelToken], requiredLevelToken)
 
-        for templatePart in resolvedTemplate.split("("):
+        for templatePart, isProcedure in self.__templateParts(resolvedTemplate):
 
-            endIndex = templatePart.find(')')
-            if endIndex != -1:
+            if isProcedure:
+                endIndex = templatePart.rfind(')')
                 assignResultToToken = None
 
                 # processing the procedure only when it has not been
@@ -257,13 +312,13 @@ class Template(object):
                 # default behaviour should be to always cache it (never change it)
                 # otherwise it could side effect for instance in template procedures
                 # that create new versions...
-                rawTemplateProcedure = templatePart[:endIndex]
+                rawTemplateProcedure = templatePart
 
                 # checking of the result is going to be assigned to a token
-                tokenAssignmentRegex = re.search(r" as <.*>(\s*|)$", rawTemplateProcedure.lower())
+                tokenAssignmentRegex = re.search(r" as <.*>(\s*|)$", rawTemplateProcedure.lower()[:-1])
                 if tokenAssignmentRegex:
-                    assignResultToToken = rawTemplateProcedure[tokenAssignmentRegex.start() + 4:].rstrip()
-                    rawTemplateProcedure = rawTemplateProcedure[:tokenAssignmentRegex.start()]
+                    assignResultToToken = rawTemplateProcedure[tokenAssignmentRegex.start() + 4:-1].rstrip()
+                    rawTemplateProcedure = rawTemplateProcedure[:tokenAssignmentRegex.start()] + ')'
 
                 # this is a special token that allows to pass the parent path
                 # to a procedure, replacing it with the parent path at this point.
@@ -367,6 +422,55 @@ class Template(object):
             result.add(templatePart[:endIndex])
 
         self.__varNames = list(result)
+
+    @classmethod # noqa: C901
+    def __templateParts(cls, template):
+        """
+        Return list by splitting the template in parts.
+        """
+        parts = []
+        inBetween = ''
+        insideProcedure = []
+        insideQuote = False
+        previousChar = None
+        start = None
+        for i, char in enumerate(template):
+
+            if insideQuote and char == "'":
+                if previousChar != "\\":
+                    insideQuote = False
+
+            elif not insideQuote and char == "'":
+                insideQuote = True
+
+            elif not insideQuote and char == '(':
+                if inBetween:
+                    parts.append(
+                        (inBetween, False)
+                    )
+                inBetween = ''
+                if char not in insideProcedure:
+                    start = i
+                insideProcedure.append(char)
+
+            elif not insideQuote and char == ')':
+                insideProcedure.pop()
+                if not insideProcedure:
+                    parts.append(
+                        (template[start: i + 1], True)
+                    )
+
+            elif not insideProcedure:
+                inBetween += char
+
+            previousChar = char
+
+        if inBetween:
+            parts.append(
+                (inBetween, False)
+            )
+
+        return parts
 
     @classmethod
     def __generatePlaceHolderId(cls):
