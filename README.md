@@ -5,7 +5,7 @@
     <img src="data/ui/icons/kombi.png?v=2" with="512" height="512"/>
 </p>
 
-Kombi is focused in describing and performing executions (applications, libraries, evaluations...). It works by providing an API that simplifies the process of describing nested executions, passing data across the executions, handling options/settings for the executions, dealing with common file system operations, splitting the processing and, providing interoperability across different applications.
+Kombi is focused in describing, wrapping and performing executions (applications, libraries, evaluations...). It works by providing an API that simplifies the process of describing nested executions, passing data across the executions, handling options/settings for the executions, dealing with common file system operations, splitting the processing and, providing interoperability across different applications.
 
 For instance, during image/video processing, ingesting files, versioning data...
 
