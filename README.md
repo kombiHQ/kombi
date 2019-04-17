@@ -7,7 +7,7 @@
 
 Kombi is focused in describing, combining and performing evaluations. These evalutions can be used to wrap executables, arbitrary python implementations. It works by providing an API that simplifies the process of describing nested evaluations, passing data across the evaluations, handling options/settings for the evaluations, dealing with path manipulation/file system operations, splitting the processing and, providing interoperability across different applications.
 
-For instance, during image/video processing, ingesting files, versioning data (etc)
+For instance, during image/video processing, ingesting files, versioning data (etc).
 
 You can use Kombi through declarative definitions to speed-up prototyping and simplify the maintainability, by reducing the need for writing boilerplate code:
 
