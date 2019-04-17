@@ -5,7 +5,7 @@
     <img src="data/ui/icons/kombi.png?v=2" with="512" height="512"/>
 </p>
 
-Kombi is focused in describing, combining and performing evaluations. These evalutions can be used to wrap from executables to arbitrary python implementations by providing an API that simplifies the process of describing nested evaluations, passing data across evaluations, handling options/settings for the evaluations, dealing with path manipulation/file system operations, splitting the processing and, providing interoperability across different applications.
+Kombi is focused in describing, combining and performing evaluations. These evalutions can be used to wrap from executables to arbitrary python implementations. It works by providing an API that simplifies the process of describing nested evaluations, passing data across evaluations, handling options/settings for the evaluations, dealing with path manipulation/file system operations, splitting the processing and, providing interoperability across different applications.
 
 For instance, during image/video processing, ingesting files, versioning data (etc).
 
