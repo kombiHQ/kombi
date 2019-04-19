@@ -7,9 +7,9 @@
 
 Kombi is focused in describing and performing tasks. These tasks can be used to wrap from executables to arbitrary python implementations. It works by providing an API that simplifies the process of describing nested tasks, passing data across tasks, handling settings for the tasks, dealing with path manipulation/file system operations, splitting the processing and, providing interoperability across different applications bundled with python.
 
-For instance, during image/video processing, ingesting files, versioning data (etc).
+You may want to use this project in situations where you need to combine serveral different executables/API's. For instance, during image/video processing, ingesting files, versioning data (etc).
 
-You can use Kombi through declarative definitions to speed-up prototyping and simplify the maintainability, by reducing the need for writing boilerplate code:
+Kombi can be used through declarative definitions to speed-up prototyping and simplify the maintainability, by reducing the need for writing boilerplate code:
 
 <details><summary>YAML</summary>
 <p>
