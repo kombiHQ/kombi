@@ -5,7 +5,7 @@
     <img src="data/ui/icons/kombi.png?v=2" with="512" height="512"/>
 </p>
 
-Kombi is focused in describing and performing tasks. These tasks can be used to wrap from executables to arbitrary python implementations. It works by providing an API that simplifies the process of describing nested tasks, passing data across tasks, handling settings for the tasks, dealing with path manipulation/file system operations, splitting the processing and, providing interoperability across different applications bundled with python.
+Kombi is focused in describing and performing tasks. These tasks can be used to wrap from executables to arbitrary python implementations. It works by providing an API that simplifies the process of describing nested tasks, passing data across tasks, handling settings for the tasks, dealing with common path manipulation/file system operations, splitting the processing and, providing interoperability across different applications bundled with python.
 
 You may find this project useful in situations where you need to combine serveral different executables/API's. For instance, during image/video processing, ingestion of files, creating/versioning data (etc).
 
