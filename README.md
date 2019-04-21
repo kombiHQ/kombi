@@ -11,7 +11,7 @@ You may find this project useful in situations where you need to combine servera
 
 Kombi can be used through declarative definitions to speed-up prototyping and simplify the maintainability, by reducing the need for writing boilerplate code:
 
-<details><summary>YAML</summary>
+<details open="true"><summary>YAML</summary>
 <p>
 
 
