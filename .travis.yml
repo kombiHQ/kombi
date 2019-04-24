@@ -4,8 +4,8 @@ env:
 install:
   - pip install pylama
 
-matrix:
-  include:
+matrix: 
+  include: 
   - os: linux
   dist: bionic
   python:
