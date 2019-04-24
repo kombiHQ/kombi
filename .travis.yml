@@ -27,7 +27,7 @@ matrix:
       - export LD_LIBRARY_PATH="gaffer-$GAFFER_VERSION-linux/lib:$LD_LIBRARY_PATH"
 
   - os: linux
-    dist: bionic
+    dist: disco
     python:
       - "3"
     virtualenv:
