@@ -9,7 +9,7 @@ matrix:
   - os: linux
     dist: bionic
     python:
-      - "2"
+      - "2.7"
     virtualenv:
       system_site_packages: true
     # Add-ons: specify apt packages for Linux
@@ -29,7 +29,7 @@ matrix:
   - os: linux
     dist: disco
     python:
-      - "3"
+      - "3.7"
     virtualenv:
       system_site_packages: true
     # Add-ons: specify apt packages for Linux
