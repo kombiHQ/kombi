@@ -4,47 +4,47 @@ env:
 install:
   - pip install pylama
 
-matrix: 
-  include: 
+matrix:
+  include:
   - os: linux
-  dist: bionic
-  python:
-    - "2"
-  virtualenv:
-    system_site_packages: true
-  # Add-ons: specify apt packages for Linux
-  before_install:
-    - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-    - sudo apt-get update
-    - sudo apt-get install python-openimageio -y
-    - sudo apt-get install openimageio-tools -y
-    - sudo apt-get install cmake -y
-    - sudo apt-get install ffmpeg -y
-    - sudo apt-get install make -y
-    - wget "https://github.com/GafferHQ/gaffer/releases/download/$GAFFER_VERSION/gaffer-$GAFFER_VERSION-linux.tar.gz"
-    - tar -zxf "gaffer-$GAFFER_VERSION-linux.tar.gz"
-    - export PATH="gaffer-$GAFFER_VERSION-linux/bin:$PATH"
-    - export LD_LIBRARY_PATH="gaffer-$GAFFER_VERSION-linux/lib:$LD_LIBRARY_PATH"
+    dist: bionic
+    python:
+      - "2"
+    virtualenv:
+      system_site_packages: true
+    # Add-ons: specify apt packages for Linux
+    before_install:
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo apt-get update
+      - sudo apt-get install python-openimageio -y
+      - sudo apt-get install openimageio-tools -y
+      - sudo apt-get install cmake -y
+      - sudo apt-get install ffmpeg -y
+      - sudo apt-get install make -y
+      - wget "https://github.com/GafferHQ/gaffer/releases/download/$GAFFER_VERSION/gaffer-$GAFFER_VERSION-linux.tar.gz"
+      - tar -zxf "gaffer-$GAFFER_VERSION-linux.tar.gz"
+      - export PATH="gaffer-$GAFFER_VERSION-linux/bin:$PATH"
+      - export LD_LIBRARY_PATH="gaffer-$GAFFER_VERSION-linux/lib:$LD_LIBRARY_PATH"
 
   - os: linux
-  dist: bionic
-  python:
-    - "3"
-  virtualenv:
-    system_site_packages: true
-  # Add-ons: specify apt packages for Linux
-  before_install:
-    - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-    - sudo apt-get update
-    - sudo apt-get install python3-openimageio -y
-    - sudo apt-get install openimageio-tools -y
-    - sudo apt-get install cmake -y
-    - sudo apt-get install ffmpeg -y
-    - sudo apt-get install make -y
-    - wget "https://github.com/GafferHQ/gaffer/releases/download/$GAFFER_VERSION/gaffer-$GAFFER_VERSION-linux.tar.gz"
-    - tar -zxf "gaffer-$GAFFER_VERSION-linux.tar.gz"
-    - export PATH="gaffer-$GAFFER_VERSION-linux/bin:$PATH"
-    - export LD_LIBRARY_PATH="gaffer-$GAFFER_VERSION-linux/lib:$LD_LIBRARY_PATH"
+    dist: bionic
+    python:
+      - "3"
+    virtualenv:
+      system_site_packages: true
+    # Add-ons: specify apt packages for Linux
+    before_install:
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo apt-get update
+      - sudo apt-get install python3-openimageio -y
+      - sudo apt-get install openimageio-tools -y
+      - sudo apt-get install cmake -y
+      - sudo apt-get install ffmpeg -y
+      - sudo apt-get install make -y
+      - wget "https://github.com/GafferHQ/gaffer/releases/download/$GAFFER_VERSION/gaffer-$GAFFER_VERSION-linux.tar.gz"
+      - tar -zxf "gaffer-$GAFFER_VERSION-linux.tar.gz"
+      - export PATH="gaffer-$GAFFER_VERSION-linux/bin:$PATH"
+      - export LD_LIBRARY_PATH="gaffer-$GAFFER_VERSION-linux/lib:$LD_LIBRARY_PATH"
 
 script:
   - ./runtests
