@@ -8,8 +8,7 @@ matrix:
   include:
   - os: linux
     dist: bionic
-    python:
-      - "2.7"
+    python: 2.7
     virtualenv:
       system_site_packages: true
     # Add-ons: specify apt packages for Linux
@@ -28,8 +27,7 @@ matrix:
 
   - os: linux
     dist: disco
-    python:
-      - "3.7"
+    python: 3.7
     # Add-ons: specify apt packages for Linux
     before_install:
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
