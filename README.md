@@ -138,8 +138,8 @@ coming soon
 
 ### Supported platforms
 - Linux
+- Mac OS
 - windows
-> mac os: Although running it on mac os is possible, I don't have an apple machine for troubleshooting and officially support it on this system.
 
 ### Requirement
 Python 3.5+/2.7+ 
