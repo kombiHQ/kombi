@@ -4,7 +4,7 @@ from ...BaseTestCase import BaseTestCase
 from kombi.Crawler import Crawler
 from kombi.Crawler.Fs import FsPath
 from kombi.Crawler.Fs import File
-from kombi.PathHolder import PathHolder
+from kombi.Crawler.PathHolder import PathHolder
 from kombi.Crawler.Fs.Render import ExrRender
 from kombi.Crawler.Fs.Image import Exr
 from kombi.Crawler.Crawler import CrawlerInvalidVarError

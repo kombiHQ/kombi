@@ -10,8 +10,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from kombi.Dispatcher import Dispatcher
 from kombi.ProcessExecution import ProcessExecution
 from kombi.TaskHolderLoader import TaskHolderLoader
-from kombi.Crawler import Crawler
-from kombi.PathHolder import PathHolder
+from kombi.Crawler import Crawler, PathHolder
 from .Resource import Resource
 from .Style import Style
 

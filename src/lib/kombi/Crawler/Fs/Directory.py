@@ -1,8 +1,7 @@
 import os
 import re
 from .FsPath import FsPath
-from ...PathHolder import PathHolder
-from ..Crawler import Crawler
+from .. import Crawler, PathHolder
 
 class Directory(FsPath):
     """

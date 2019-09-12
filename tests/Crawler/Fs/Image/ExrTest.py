@@ -3,7 +3,7 @@ import unittest
 import glob
 from ....BaseTestCase import BaseTestCase
 from kombi.Crawler import Crawler
-from kombi.PathHolder import PathHolder
+from kombi.Crawler.PathHolder import PathHolder
 from kombi.Crawler.Fs.Image import Exr
 
 class ExrTest(BaseTestCase):
