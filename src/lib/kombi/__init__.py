@@ -1,5 +1,4 @@
 import sys
-from .PathHolder import PathHolder
 from .ProcessExecution import ProcessExecution
 from .EnvModifier import EnvModifier, EnvModifierError, EnvModifierInvalidVarError, EnvModifierInvalidVarValueError
 from . import Crawler

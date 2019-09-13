@@ -2,7 +2,7 @@ import os
 import unittest
 from ....BaseTestCase import BaseTestCase
 from kombi.Crawler.Fs import FsPath
-from kombi.PathHolder import PathHolder
+from kombi.Crawler.PathHolder import PathHolder
 from kombi.Crawler.Fs.Lut import Cdl
 
 class CdlTest(BaseTestCase):

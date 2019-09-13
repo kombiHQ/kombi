@@ -1,6 +1,5 @@
 import os
-from ..Crawler import Crawler
-from ...PathHolder import PathHolder
+from .. import Crawler, PathHolder
 
 # compatibility with python 2/3
 try:

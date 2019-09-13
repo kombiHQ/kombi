@@ -2,7 +2,7 @@ import os
 import unittest
 from ....BaseTestCase import BaseTestCase
 from kombi.Crawler import Crawler
-from kombi.PathHolder import PathHolder
+from kombi.Crawler.PathHolder import PathHolder
 from kombi.Crawler.Fs.Image import Png
 
 class PngTest(BaseTestCase):
