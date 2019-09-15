@@ -1,6 +1,12 @@
 from ..Task import Task
 from ...Crawler import Crawler
 
+# compatibility with python 2/3
+try:
+    basestring
+except NameError:
+    basestring = str
+
 class GafferScene(Task):
     """
     Executes a gaffer scene by triggering the task nodes.

@@ -2,10 +2,12 @@ from ..Task import Task
 from ...Crawler import Crawler
 from ...Crawler.Fs import FsPath
 
+# compatibility with python 2/3
 try:
     from StringIO import StringIO  # python 2
 except ImportError:
     from io import StringIO  # python 3
+    basestring = str
 
 class NukeScene(Task):
     """
