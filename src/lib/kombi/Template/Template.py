@@ -1,7 +1,7 @@
 import re
 import os
 import uuid
-from .Crawler import CrawlerInvalidVarError
+from ..Crawler import CrawlerInvalidVarError
 
 # compatibility with python 2/3
 try:

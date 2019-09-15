@@ -2,9 +2,8 @@ import sys
 from .ProcessExecution import ProcessExecution
 from .EnvModifier import EnvModifier, EnvModifierError, EnvModifierInvalidVarError, EnvModifierInvalidVarValueError
 from . import Crawler
-from .Template import Template, TemplateError, TemplateVarNotFoundError, TemplateRequiredPathNotFoundError, TemplateProcedureNotFoundError
+from . import Template
 from .CrawlerQuery import CrawlerQuery
-from . import TemplateProcedure
 from .CrawlerMatcher import CrawlerMatcher
 from . import Task
 from . import TaskReporter

@@ -1,6 +1,6 @@
 import unittest
 import os
-from ..BaseTestCase import BaseTestCase
+from ...BaseTestCase import BaseTestCase
 from kombi.Template import Template
 from kombi.Template import TemplateProcedureNotFoundError
 
