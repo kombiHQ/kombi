@@ -1,15 +1,15 @@
 import os
 import glob
-from ..Task import Task
-from ..Template import Template
-from ..TaskHolder import TaskHolder
-from ..Resource import Resource
-from .TaskHolderLoader import TaskHolderLoader, TaskHolderLoaderError
+from ...Task import Task
+from ...Template import Template
+from ...TaskHolder import TaskHolder
+from ...Resource import Resource
+from .Loader import Loader, LoaderError
 
-class PythonLoaderContentError(TaskHolderLoaderError):
+class PythonLoaderContentError(LoaderError):
     """Python Loader Content Error."""
 
-class PythonLoader(TaskHolderLoader):
+class PythonLoader(Loader):
     """
     Loads configuration from json files.
     """

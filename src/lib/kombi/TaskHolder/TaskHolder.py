@@ -1,11 +1,11 @@
 import os
 import json
-from .Crawler import Crawler
-from .Task import Task
-from .TaskWrapper import TaskWrapper
-from .Template import Template
-from .CrawlerMatcher import CrawlerMatcher
-from .CrawlerQuery import CrawlerQuery
+from ..Crawler import Crawler
+from ..Task import Task
+from ..TaskWrapper import TaskWrapper
+from ..Template import Template
+from ..CrawlerMatcher import CrawlerMatcher
+from ..CrawlerQuery import CrawlerQuery
 
 class TaskHolderError(Exception):
     """Task holder error."""

@@ -7,9 +7,9 @@ import traceback
 import platform
 from collections import OrderedDict
 from PySide2 import QtCore, QtGui, QtWidgets
-from kombi.Dispatcher import Dispatcher
 from kombi.ProcessExecution import ProcessExecution
-from kombi.TaskHolderLoader import TaskHolderLoader
+from kombi.TaskHolder.Loader import Loader
+from kombi.TaskHolder import Dispatcher
 from kombi.Crawler import Crawler, PathHolder
 from .Resource import Resource
 from .Style import Style
@@ -67,7 +67,7 @@ class App(QtWidgets.QApplication):
                 return
 
         # collecting task holders from the directory
-        taskHolderLoader = TaskHolderLoader()
+        taskHolderLoader = Loader()
         try:
             taskHolderLoader.loadFromDirectory(self.__configurationDirectory)
         except Exception as err:
@@ -1120,7 +1120,7 @@ class App(QtWidgets.QApplication):
         if selectedIndexes:
             value = selectedIndexes[0].data(0)
 
-            if os.path.splitext(str(value))[-1][1:] in TaskHolderLoader.registeredNames():
+            if os.path.splitext(str(value))[-1][1:] in Loader.registeredNames():
                 menu = QtWidgets.QMenu(self.__main)
                 action = menu.addAction('Show Config')
                 action.triggered.connect(functools.partial(self.__launchDefaultApp, value))

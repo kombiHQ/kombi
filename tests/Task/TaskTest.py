@@ -2,7 +2,7 @@ import os
 import unittest
 from ..BaseTestCase import BaseTestCase
 from kombi.Crawler.Fs import FsPath
-from kombi.TaskHolderLoader import TaskHolderLoader
+from kombi.TaskHolder.Loader import Loader
 from kombi.TaskWrapper import TaskWrapper
 from kombi.Template import Template
 from kombi.Task import Task
@@ -143,7 +143,7 @@ class TaskTest(BaseTestCase):
         class MyClawler(Crawler):
             pass
 
-        taskHolderLoader = TaskHolderLoader()
+        taskHolderLoader = Loader()
         taskHolderLoader.loadFromFile(self.__jsonConfig)
         dummyCrawler = MyClawler('dummy')
         dummyCrawler.setVar('testCustomVar', 'testValue')
@@ -232,7 +232,7 @@ class TaskTest(BaseTestCase):
         """
         Test that you can run tasks through a config file properly.
         """
-        taskHolderLoader = TaskHolderLoader()
+        taskHolderLoader = Loader()
         taskHolderLoader.loadFromFile(self.__jsonConfig)
         crawlers = FsPath.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
 

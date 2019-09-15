@@ -2,7 +2,7 @@ import os
 import shutil
 import unittest
 from ..BaseTestCase import BaseTestCase
-from kombi.TaskHolderLoader import TaskHolderLoader
+from kombi.TaskHolder.Loader import Loader
 from kombi.Crawler import Crawler
 from kombi.Crawler.Fs.FsPath import FsPath
 
@@ -29,7 +29,7 @@ class PublishTexturesTest(BaseTestCase):
         """
         Test if the task holder loader can find the configurations under the directory.
         """
-        loader = TaskHolderLoader()
+        loader = Loader()
         loader.loadFromDirectory(self.__exampleDirectory)
 
         self.assertEqual(len(loader.taskHolders()), 1)
@@ -44,7 +44,7 @@ class PublishTexturesTest(BaseTestCase):
         """
         Test execution of the configuration.
         """
-        loader = TaskHolderLoader()
+        loader = Loader()
         loader.loadFromDirectory(self.__exampleDirectory)
 
         self.assertEqual(len(loader.taskHolders()), 1)

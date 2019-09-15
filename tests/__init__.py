@@ -5,5 +5,5 @@ from . import Template
 from . import Task
 from . import TaskReporter
 from . import TaskWrapper
-from . import Dispatcher
+from . import TaskHolder
 from . import examples

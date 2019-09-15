@@ -8,9 +8,7 @@ from .CrawlerMatcher import CrawlerMatcher
 from . import Task
 from . import TaskReporter
 from . import TaskWrapper
-from .TaskHolder import TaskHolder, TaskHolderError, TaskHolderInvalidVarNameError
-from . import TaskHolderLoader
-from . import Dispatcher
+from . import TaskHolder
 from .Cli import Cli, CliError
 
 # The Resource class needs to be imported as the last one, since it's going to
