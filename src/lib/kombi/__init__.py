@@ -3,8 +3,6 @@ from .ProcessExecution import ProcessExecution
 from .EnvModifier import EnvModifier, EnvModifierError, EnvModifierInvalidVarError, EnvModifierInvalidVarValueError
 from . import Crawler
 from . import Template
-from .CrawlerQuery import CrawlerQuery
-from .CrawlerMatcher import CrawlerMatcher
 from . import Task
 from . import TaskReporter
 from . import TaskWrapper

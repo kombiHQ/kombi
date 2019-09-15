@@ -1,9 +1,9 @@
 from fnmatch import fnmatch
 from .Crawler import Crawler
 
-class CrawlerMatcher(object):
+class Matcher(object):
     """
-    Used to check if a crawler meets the specification of the matcher.
+    Utility class used to check if a crawler matches the types and variables.
     """
 
     def __init__(self, matchTypes=[], matchVars={}):

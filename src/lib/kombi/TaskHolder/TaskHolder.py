@@ -1,11 +1,11 @@
 import os
 import json
+from collections import OrderedDict
 from ..Crawler import Crawler
 from ..Task import Task
 from ..TaskWrapper import TaskWrapper
 from ..Template import Template
-from ..CrawlerMatcher import CrawlerMatcher
-from ..CrawlerQuery import CrawlerQuery
+from ..Crawler import Matcher
 
 class TaskHolderError(Exception):
     """Task holder error."""
@@ -65,8 +65,8 @@ class TaskHolder(object):
         if task.hasMetadata('match.vars'):
             matchVars = task.metadata('match.vars')
 
-        crawlerMatcher = CrawlerMatcher(matchTypes, matchVars)
-        self.__setCrawlerMatcher(crawlerMatcher)
+        matcher = Matcher(matchTypes, matchVars)
+        self.__setMatcher(matcher)
 
         # creating task wrapper
         taskWrapperName = "default"
@@ -84,13 +84,7 @@ class TaskHolder(object):
                 optionValue
             )
         self.__setTaskWrapper(taskWrapper)
-
         self.__vars = {}
-        self.__query = CrawlerQuery(
-            self.crawlerMatcher(),
-            self.targetTemplate(),
-            self.filterTemplate()
-        )
 
     def setStatus(self, status):
         """
@@ -235,11 +229,11 @@ class TaskHolder(object):
                 filePath
             )
 
-    def crawlerMatcher(self):
+    def matcher(self):
         """
         Return the crawler matcher associated with the task holder.
         """
-        return self.__crawlerMatcher
+        return self.__matcher
 
     def addSubTaskHolder(self, taskHolder):
         """
@@ -264,12 +258,25 @@ class TaskHolder(object):
 
     def query(self, crawlers):
         """
-        Query crawlers that meet the specification.
+        Return a dict containing the matched crawler as key and resolved template as value.
         """
-        return self.__query.query(
-            crawlers,
-            self.__vars
-        )
+        validCrawlers = {}
+        for crawler in crawlers:
+            if self.matcher().match(crawler):
+                filterTemplateValue = self.filterTemplate().valueFromCrawler(crawler, self.__vars)
+
+                # if the value of the filter is 0 or false the crawler is ignored
+                if str(filterTemplateValue).lower() in ['false', '0']:
+                    continue
+
+                validCrawlers[crawler] = self.targetTemplate().valueFromCrawler(crawler, self.__vars)
+
+        # sorting result
+        result = OrderedDict()
+        for crawler, filePath in sorted(validCrawlers.items(), key=lambda x: (x[1], x[0].var('fullPath'))):
+            result[crawler] = filePath
+
+        return result
 
     def toJson(self, includeSubTaskHolders=True):
         """
@@ -307,7 +314,7 @@ class TaskHolder(object):
 
                         # the imported crawlers need to be validated
                         # by the crawler matcher
-                        if self.crawlerMatcher().match(crawler):
+                        if self.matcher().match(crawler):
                             useCrawlers.append(crawler)
 
         return self.__recursiveTaskRunner(
@@ -324,13 +331,13 @@ class TaskHolder(object):
 
         return cls.__loadTaskHolder(contents)
 
-    def __setCrawlerMatcher(self, crawlerMatcher):
+    def __setMatcher(self, matcher):
         """
         Associate a crawler matcher with the task holder.
         """
-        assert isinstance(crawlerMatcher, CrawlerMatcher), \
-            "Invalid CrawlerMatcher type"
-        self.__crawlerMatcher = crawlerMatcher
+        assert isinstance(matcher, Matcher), \
+            "Invalid Matcher type"
+        self.__matcher = matcher
 
     def __setTargetTemplate(self, targetTemplate):
         """

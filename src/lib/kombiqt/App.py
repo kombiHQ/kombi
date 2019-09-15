@@ -126,7 +126,7 @@ class App(QtWidgets.QApplication):
         # we want to list in the interface only the crawler types used by the main tasks
         filterTypes = []
         for taskHolder in self.__taskHolders:
-            matchTypes = taskHolder.crawlerMatcher().matchTypes()
+            matchTypes = taskHolder.matcher().matchTypes()
 
             # if there is a task holder that does not have any type specified to it, then we display all crawlers by
             # passing an empty list to the filter
@@ -134,7 +134,7 @@ class App(QtWidgets.QApplication):
                 filterTypes = []
                 break
 
-            filterTypes += taskHolder.crawlerMatcher().matchTypes()
+            filterTypes += taskHolder.matcher().matchTypes()
 
         # globbing crawlers
         crawlerList = []
@@ -151,7 +151,7 @@ class App(QtWidgets.QApplication):
                 if crawlerFound in crawlerList:
                     continue
 
-                if taskHolder.crawlerMatcher().match(crawlerFound):
+                if taskHolder.matcher().match(crawlerFound):
                     crawlerList.append(crawlerFound)
 
         # sorting result by name
