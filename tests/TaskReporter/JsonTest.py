@@ -4,8 +4,8 @@ import unittest
 from fnmatch import fnmatch
 from ..BaseTestCase import BaseTestCase
 from kombi.Crawler.Fs import FsPath
-from kombi.TaskHolderLoader import JsonLoader
-from kombi.Dispatcher import Dispatcher
+from kombi.TaskHolder.Loader import JsonLoader
+from kombi.TaskHolder.Dispatcher import Dispatcher
 from kombi.Resource import Resource
 
 class JsonTest(BaseTestCase):

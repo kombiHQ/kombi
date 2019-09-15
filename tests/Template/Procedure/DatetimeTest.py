@@ -1,5 +1,5 @@
 import unittest
-from ..BaseTestCase import BaseTestCase
+from ...BaseTestCase import BaseTestCase
 from kombi.Template import Template
 
 class DatetimeTest(BaseTestCase):

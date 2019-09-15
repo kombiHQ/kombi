@@ -4,7 +4,7 @@ import unittest
 from fnmatch import fnmatch
 from .BaseTestCase import BaseTestCase
 from kombi.Cli import Cli
-from kombi.TaskHolderLoader import JsonLoader
+from kombi.TaskHolder.Loader import JsonLoader
 from kombi.Resource import Resource
 
 class CliTest(BaseTestCase):

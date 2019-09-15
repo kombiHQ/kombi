@@ -3,7 +3,7 @@ import shutil
 from datetime import datetime
 import unittest
 from ..BaseTestCase import BaseTestCase
-from kombi.TaskHolderLoader import TaskHolderLoader
+from kombi.TaskHolder.Loader import Loader
 from kombi.Crawler import Crawler
 from kombi.Crawler.Fs.FsPath import FsPath
 
@@ -79,7 +79,7 @@ class VendorXPlatesTest(BaseTestCase):
         """
         Test if the task holder loader can find the configurations under the directory.
         """
-        loader = TaskHolderLoader()
+        loader = Loader()
         loader.loadFromDirectory(self.__exampleDirectory)
         self.assertListEqual(
             list(sorted(map(lambda x: os.path.basename(x.var('contextConfig')), loader.taskHolders()))),
@@ -90,7 +90,7 @@ class VendorXPlatesTest(BaseTestCase):
         """
         Test the ingestion configuration.
         """
-        loader = TaskHolderLoader()
+        loader = Loader()
         loader.loadFromDirectory(self.__exampleDirectory)
 
         taskHolder = list(filter(lambda x: os.path.basename(x.var('contextConfig')) == 'ingestConfig.yaml', loader.taskHolders()))
@@ -124,7 +124,7 @@ class VendorXPlatesTest(BaseTestCase):
         """
         Test the delivery configuration.
         """
-        loader = TaskHolderLoader()
+        loader = Loader()
         loader.loadFromDirectory(self.__exampleDirectory)
 
         taskHolder = list(filter(lambda x: os.path.basename(x.var('contextConfig')) == 'deliveryConfig.json', loader.taskHolders()))

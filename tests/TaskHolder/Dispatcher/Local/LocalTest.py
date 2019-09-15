@@ -3,13 +3,13 @@ import io
 import unittest
 import tempfile
 from fnmatch import fnmatch
-from ...BaseTestCase import BaseTestCase
+from ....BaseTestCase import BaseTestCase
 from kombi.Crawler.Fs import FsPath
-from kombi.TaskHolderLoader import JsonLoader
+from kombi.TaskHolder.Loader import JsonLoader
 from kombi.TaskWrapper import TaskWrapper
 from kombi.Task import Task
 from kombi.Crawler.Fs.Image import Jpg, Exr
-from kombi.Dispatcher import Dispatcher
+from kombi.TaskHolder.Dispatcher import Dispatcher
 
 class LocalTest(BaseTestCase):
     """Test for the local dispatcher."""

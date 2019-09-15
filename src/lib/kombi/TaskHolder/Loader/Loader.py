@@ -2,16 +2,16 @@ import os
 import uuid
 from ..TaskHolder import TaskHolder
 
-class TaskHolderLoaderError(Exception):
+class LoaderError(Exception):
     """Task Holder Loader Error."""
 
-class TaskHolderLoaderNotRegisteredError(TaskHolderLoaderError):
+class LoaderNotRegisteredError(LoaderError):
     """Task Holder Loader Not Registered Error."""
 
-class TaskHolderLoaderInvalidConfigError(TaskHolderLoaderError):
+class LoaderInvalidConfigError(LoaderError):
     """Task Holder Loader Invalid Config Error."""
 
-class TaskHolderLoader(object):
+class Loader(object):
     """
     Abstracted task holders loader.
     """
@@ -30,7 +30,7 @@ class TaskHolderLoader(object):
         """
         # making sure it is a valid directory
         if not (os.path.exists(directory) and os.path.isdir(directory)):
-            raise TaskHolderLoaderInvalidConfigError(
+            raise LoaderInvalidConfigError(
                 'Invalid directory "{0}"!'.format(directory)
             )
 
@@ -51,14 +51,14 @@ class TaskHolderLoader(object):
         """
         # making sure it's a valid file
         if not (os.path.exists(filePath) and os.path.isfile(filePath)):
-            raise TaskHolderLoaderInvalidConfigError(
+            raise LoaderInvalidConfigError(
                 'Invalid file "{0}"!'.format(filePath)
             )
 
         # checking if we have a loader for the file
         ext = os.path.splitext(filePath)[-1][1:]
         if ext not in self.registeredNames():
-            raise TaskHolderLoaderInvalidConfigError(
+            raise LoaderInvalidConfigError(
                 "Cannot find a loader for: {}".format(filePath)
             )
 
@@ -75,7 +75,7 @@ class TaskHolderLoader(object):
                     }
                 )
             except Exception as err:
-                raise TaskHolderLoaderInvalidConfigError(
+                raise LoaderInvalidConfigError(
                     '{}\n ^--- {} while loading file: {}'.format(
                         str(err),
                         err.__class__.__name__,
@@ -119,31 +119,31 @@ class TaskHolderLoader(object):
         """
         Register a task holder loader type.
         """
-        assert issubclass(taskHolderLoader, TaskHolderLoader), \
+        assert issubclass(taskHolderLoader, Loader), \
             "Invalid task holder loader class!"
 
-        TaskHolderLoader.__registered[name] = taskHolderLoader
+        Loader.__registered[name] = taskHolderLoader
 
     @staticmethod
     def registeredNames():
         """
         Return a list of registered task holder loaders.
         """
-        return list(TaskHolderLoader.__registered.keys())
+        return list(Loader.__registered.keys())
 
     @staticmethod
     def create(taskHolderLoaderName, *args, **kwargs):
         """
         Create a task holder loader object.
         """
-        if taskHolderLoaderName not in TaskHolderLoader.__registered:
-            raise TaskHolderLoaderNotRegisteredError(
+        if taskHolderLoaderName not in Loader.__registered:
+            raise LoaderNotRegisteredError(
                 'Task holder loader is not registered: "{0}"'.format(
                     taskHolderLoaderName
                 )
             )
 
-        return TaskHolderLoader.__registered[taskHolderLoaderName](
+        return Loader.__registered[taskHolderLoaderName](
             *args,
             **kwargs
         )

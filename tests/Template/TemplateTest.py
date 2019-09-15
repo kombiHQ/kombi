@@ -1,6 +1,6 @@
 import os
 import unittest
-from .BaseTestCase import BaseTestCase
+from ..BaseTestCase import BaseTestCase
 from kombi.Template import Template
 from kombi.Template import TemplateRequiredPathNotFoundError, TemplateVarNotFoundError
 from kombi.Crawler.Fs import FsPath

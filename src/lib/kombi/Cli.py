@@ -6,8 +6,8 @@ import fileinput
 from .Crawler.Fs.FsPath import FsPath
 from .Crawler.Fs.Directory import Directory
 from .Crawler import Crawler
-from .TaskHolderLoader import TaskHolderLoader
-from .Dispatcher import Dispatcher
+from .TaskHolder.Loader import Loader
+from .TaskHolder.Dispatcher import Dispatcher
 
 class CliError(Exception):
     """Cli Error."""
@@ -43,7 +43,7 @@ class Cli(object):
         """
         parseArgs = self.__parser.parse_args(args)
 
-        loader = TaskHolderLoader()
+        loader = Loader()
 
         # loading configuration
         if os.path.isfile(parseArgs.config):

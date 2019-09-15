@@ -2,7 +2,7 @@ import unittest
 import getpass
 import os
 import tempfile
-from ..BaseTestCase import BaseTestCase
+from ...BaseTestCase import BaseTestCase
 from kombi.Template import Template
 
 class SystemTest(BaseTestCase):
