@@ -5,8 +5,10 @@ import sys
 import subprocess
 from threading import Thread
 
+# compatibility with python 2/3
 try:
     from queue import Queue, Empty  # python 3
+    unicode = str
 except ImportError:
     from Queue import Queue, Empty  # python 2
 
