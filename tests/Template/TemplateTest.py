@@ -3,7 +3,7 @@ import unittest
 from ..BaseTestCase import BaseTestCase
 from kombi.Template import Template
 from kombi.Template import TemplateRequiredPathNotFoundError, TemplateVarNotFoundError
-from kombi.Crawler.Fs import FsPathCrawler
+from kombi.Crawler.Fs import FsCrawler
 
 class TemplateTest(BaseTestCase):
     """Test Template crawler."""
@@ -14,7 +14,7 @@ class TemplateTest(BaseTestCase):
         """
         Test simple nested procedures in the template.
         """
-        crawler = FsPathCrawler.createFromPath(self.__file)
+        crawler = FsCrawler.createFromPath(self.__file)
         value = "/a/b/c/(dirname(dirname '/d/e/f'))/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
         result = Template(value).valueFromCrawler(crawler)
         self.assertEqual(
@@ -26,7 +26,7 @@ class TemplateTest(BaseTestCase):
         """
         Test simple nested procedures in the template.
         """
-        crawler = FsPathCrawler.createFromPath(self.__file)
+        crawler = FsCrawler.createFromPath(self.__file)
         value = "/a/b/c/(concat '(teste(bla - blaa))' '_foo')/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
         result = Template(value).valueFromCrawler(crawler)
         self.assertEqual(
@@ -38,7 +38,7 @@ class TemplateTest(BaseTestCase):
         """
         Test multiple nested procedures in the template.
         """
-        crawler = FsPathCrawler.createFromPath(self.__file)
+        crawler = FsCrawler.createFromPath(self.__file)
         value = "/a/b/c/(concat (dirname(dirname (dirname '/d/e/f/g'))) '_' (dirname (dirname {var})))/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
         result = Template(value).valueFromCrawler(
             crawler,
@@ -55,7 +55,7 @@ class TemplateTest(BaseTestCase):
         """
         Test multiple nested procedures by assigning the result to a token in the template.
         """
-        crawler = FsPathCrawler.createFromPath(self.__file)
+        crawler = FsCrawler.createFromPath(self.__file)
         value = "/a/b/c/(concat (dirname(dirname (dirname '/d/e/f/g'))) '_' (dirname (dirname {var})) as <result>)/(newver <parent>)/(concat <result> '_' 'foo')/{name}.(pad {frame} 6).{ext}"
         result = Template(value).valueFromCrawler(
             crawler,
@@ -72,7 +72,7 @@ class TemplateTest(BaseTestCase):
         """
         Test arithmetic nested procedures in the template.
         """
-        crawler = FsPathCrawler.createFromPath(self.__file)
+        crawler = FsCrawler.createFromPath(self.__file)
         value = "/a/b/c/({a} + (sum {b} 2))/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
         result = Template(value).valueFromCrawler(
             crawler,
@@ -90,7 +90,7 @@ class TemplateTest(BaseTestCase):
         """
         Test that the Template works properly.
         """
-        crawler = FsPathCrawler.createFromPath(self.__file)
+        crawler = FsCrawler.createFromPath(self.__file)
         value = '(dirname {filePath})/(newver <parent>)/{name}.(pad {frame} 6).{ext}'
         result = Template(value).valueFromCrawler(crawler)
         self.assertEqual(

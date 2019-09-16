@@ -1,7 +1,7 @@
 import os
 import unittest
 from ....BaseTestCase import BaseTestCase
-from kombi.Crawler.Fs import FsPathCrawler
+from kombi.Crawler.Fs import FsCrawler
 from kombi.Crawler.PathHolder import PathHolder
 from kombi.Crawler.Fs.Lut import CccCrawler
 
@@ -14,14 +14,14 @@ class CcCrawlerTest(BaseTestCase):
         """
         Test that the Cc crawler test works properly.
         """
-        crawler = FsPathCrawler.create(PathHolder(self.__ccFile))
+        crawler = FsCrawler.create(PathHolder(self.__ccFile))
         self.assertIsInstance(crawler, CccCrawler)
 
     def testCcVariables(self):
         """
         Test that variables are set properly.
         """
-        crawler = FsPathCrawler.create(PathHolder(self.__ccFile))
+        crawler = FsCrawler.create(PathHolder(self.__ccFile))
         self.assertEqual(crawler.var("type"), "cc")
         self.assertEqual(crawler.var("category"), "lut")
         self.assertEqual(crawler.var("slope"), [1.1, 1.2, 1.3])

@@ -4,7 +4,7 @@ import unittest
 from ..BaseTestCase import BaseTestCase
 from kombi.TaskHolder.Loader import Loader
 from kombi.Crawler import Crawler
-from kombi.Crawler.Fs.FsPathCrawler import FsPathCrawler
+from kombi.Crawler.Fs.FsCrawler import FsCrawler
 
 class GafferBlurImageSequenceTest(BaseTestCase):
     """Test for example gaffer blur image sequence."""
@@ -62,7 +62,7 @@ class GafferBlurImageSequenceTest(BaseTestCase):
 
         # loading input data for the execution
         crawlerGroups = Crawler.group(
-            FsPathCrawler.createFromPath(
+            FsCrawler.createFromPath(
                 os.path.join(self.__exampleDirectory, 'imageSequence')
             ).globFromParent()
         )

@@ -4,7 +4,7 @@ import unittest
 import tempfile
 from fnmatch import fnmatch
 from ....BaseTestCase import BaseTestCase
-from kombi.Crawler.Fs import FsPathCrawler
+from kombi.Crawler.Fs import FsCrawler
 from kombi.TaskHolder.Loader import JsonLoader
 from kombi.TaskWrapper import TaskWrapper
 from kombi.Task import Task
@@ -45,7 +45,7 @@ class LocalTest(BaseTestCase):
         """
         taskHolderLoader = JsonLoader()
         taskHolderLoader.loadFromFile(self.__jsonConfig)
-        crawlers = FsPathCrawler.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
+        crawlers = FsCrawler.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
         temporaryDir = tempfile.mkdtemp()
 
         dispacher = Dispatcher.create("local")
@@ -69,7 +69,7 @@ class LocalTest(BaseTestCase):
             )
             dispacher.dispatch(taskHolder, crawlers)
 
-        createdCrawlers = FsPathCrawler.createFromPath(temporaryDir).glob()
+        createdCrawlers = FsCrawler.createFromPath(temporaryDir).glob()
         exrCrawlers = list(filter(lambda x: isinstance(x, ExrCrawler), createdCrawlers))
         self.assertEqual(len(exrCrawlers), 16)
 

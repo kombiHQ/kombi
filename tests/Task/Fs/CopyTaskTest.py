@@ -2,7 +2,7 @@ import unittest
 import os
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.Crawler.Fs import FsPathCrawler
+from kombi.Crawler.Fs import FsCrawler
 from kombi.Crawler.Fs.Image import ExrCrawler
 
 class CopyTaskTest(BaseTestCase):
@@ -15,7 +15,7 @@ class CopyTaskTest(BaseTestCase):
         """
         Test that the copy task works properly.
         """
-        crawler = FsPathCrawler.createFromPath(self.__sourcePath)
+        crawler = FsCrawler.createFromPath(self.__sourcePath)
         copyTask = Task.create('copy')
         copyTask.add(crawler, self.__targetPath)
         result = copyTask.output()

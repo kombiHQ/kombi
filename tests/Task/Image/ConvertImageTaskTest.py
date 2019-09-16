@@ -2,7 +2,7 @@ import os
 import unittest
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.Crawler.Fs import FsPathCrawler
+from kombi.Crawler.Fs import FsCrawler
 
 class ConvertImageTaskTest(BaseTestCase):
     """
@@ -19,7 +19,7 @@ class ConvertImageTaskTest(BaseTestCase):
         """
         Test that the ConvertImage task works properly.
         """
-        crawler = FsPathCrawler.createFromPath(self.__sourcePath)
+        crawler = FsCrawler.createFromPath(self.__sourcePath)
         convertTask = Task.create('convertImage')
         convertTask.add(crawler, self.__targetPath)
         result = convertTask.output()

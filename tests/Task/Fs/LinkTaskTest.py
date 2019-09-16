@@ -5,7 +5,7 @@ import unittest
 import platform
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.Crawler.Fs import FsPathCrawler
+from kombi.Crawler.Fs import FsCrawler
 
 class LinkTaskTest(BaseTestCase):
     """Test link task."""
@@ -29,7 +29,7 @@ class LinkTaskTest(BaseTestCase):
         """
         Test that symlink support in link task works properly.
         """
-        crawler = FsPathCrawler.createFromPath(self.__targetPath)
+        crawler = FsCrawler.createFromPath(self.__targetPath)
 
         linkTask = Task.create('link')
         linkTask.setOption('type', 'symlink')
@@ -55,7 +55,7 @@ class LinkTaskTest(BaseTestCase):
         """
         Test that hardlink support in link task works properly.
         """
-        crawler = FsPathCrawler.createFromPath(self.__targetPath)
+        crawler = FsCrawler.createFromPath(self.__targetPath)
 
         linkTask = Task.create('link')
         linkTask.setOption('type', 'hardlink')

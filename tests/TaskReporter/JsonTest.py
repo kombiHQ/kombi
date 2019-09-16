@@ -3,7 +3,7 @@ import io
 import unittest
 from fnmatch import fnmatch
 from ..BaseTestCase import BaseTestCase
-from kombi.Crawler.Fs import FsPathCrawler
+from kombi.Crawler.Fs import FsCrawler
 from kombi.TaskHolder.Loader import JsonLoader
 from kombi.TaskHolder.Dispatcher import Dispatcher
 from kombi.Resource import Resource
@@ -105,7 +105,7 @@ class JsonTest(BaseTestCase):
 
         taskHolderLoader = JsonLoader()
         taskHolderLoader.loadFromFile(self.__jsonConfig)
-        crawlers = FsPathCrawler.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
+        crawlers = FsCrawler.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
 
         dispacher = Dispatcher.create('local')
         dispacher.setOption('defaultReporter', 'json')

@@ -4,7 +4,7 @@ import OpenImageIO
 from ..BaseTestCase import BaseTestCase
 from kombi.Task import Task
 from kombi.TaskWrapper import TaskWrapper
-from kombi.Crawler.Fs import FsPathCrawler
+from kombi.Crawler.Fs import FsCrawler
 from kombi.Resource import Resource
 
 class PythonTaskWrapperTest(BaseTestCase):
@@ -19,7 +19,7 @@ class PythonTaskWrapperTest(BaseTestCase):
         """
         resource = Resource.get()
         resource.load(self.__taskPath)
-        crawler = FsPathCrawler.createFromPath(self.__sourcePath)
+        crawler = FsCrawler.createFromPath(self.__sourcePath)
         dummyTask = Task.create('pythonTestTask')
         dummyTask.add(crawler)
         dummyTask.setOption("runPython", True)
@@ -35,7 +35,7 @@ class PythonTaskWrapperTest(BaseTestCase):
         """
         resource = Resource.get()
         resource.load(self.__taskPath)
-        crawler = FsPathCrawler.createFromPath(self.__sourcePath)
+        crawler = FsCrawler.createFromPath(self.__sourcePath)
         dummyTask = Task.create('pythonTestTask')
         dummyTask.add(crawler)
         dummyTask.setOption("runPython", False)

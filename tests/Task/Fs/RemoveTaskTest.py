@@ -2,7 +2,7 @@ import unittest
 import os
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.Crawler.Fs import FsPathCrawler
+from kombi.Crawler.Fs import FsCrawler
 
 class RemoveTaskTest(BaseTestCase):
     """Test Remove task."""
@@ -20,7 +20,7 @@ class RemoveTaskTest(BaseTestCase):
         """
         Test that the remove task works properly.
         """
-        crawler = FsPathCrawler.createFromPath(self.__path)
+        crawler = FsCrawler.createFromPath(self.__path)
         removeTask = Task.create('remove')
         removeTask.add(crawler, self.__path)
         result = removeTask.output()

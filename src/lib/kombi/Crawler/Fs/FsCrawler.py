@@ -7,7 +7,7 @@ try:
 except NameError:
     basestring = str
 
-class FsPathCrawler(Crawler):
+class FsCrawler(Crawler):
     """
     Abstracted file system Path.
     """
@@ -21,7 +21,7 @@ class FsPathCrawler(Crawler):
         else:
             pathHolder = filePathOrPathHolder
 
-        super(FsPathCrawler, self).__init__(pathHolder.baseName(), parentCrawler)
+        super(FsCrawler, self).__init__(pathHolder.baseName(), parentCrawler)
 
         self.__setPathHolder(pathHolder)
         self.setVar('filePath', pathHolder.path())
@@ -48,7 +48,7 @@ class FsPathCrawler(Crawler):
         Filter result list by exact crawler type (str) or class type (includes derived classes).
         """
         parentPath = os.path.dirname(self.var("filePath"))
-        return FsPathCrawler.createFromPath(parentPath).glob(filterTypes, useCache)
+        return FsCrawler.createFromPath(parentPath).glob(filterTypes, useCache)
 
     @classmethod
     def test(cls, data=None, parentCrawler=None):
@@ -63,7 +63,7 @@ class FsPathCrawler(Crawler):
         Create a crawler directly from a path string.
         """
         if crawlerType:
-            crawlerClass = FsPathCrawler.registeredType(crawlerType)
+            crawlerClass = FsCrawler.registeredType(crawlerType)
             assert crawlerClass, "Invalid crawler type {} for {}".format(crawlerType, fullPath)
 
             result = crawlerClass(PathHolder(fullPath), parentCrawler)
@@ -71,7 +71,7 @@ class FsPathCrawler(Crawler):
 
             return result
         else:
-            return FsPathCrawler.create(PathHolder(fullPath), parentCrawler)
+            return FsCrawler.create(PathHolder(fullPath), parentCrawler)
 
     def __setPathHolder(self, pathHolder):
         """

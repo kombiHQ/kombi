@@ -2,7 +2,7 @@ import unittest
 import os
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.Crawler.Fs import FsPathCrawler
+from kombi.Crawler.Fs import FsCrawler
 
 class ImageThumbnailTaskTest(BaseTestCase):
     """Test ImageThumbnail task."""
@@ -14,7 +14,7 @@ class ImageThumbnailTaskTest(BaseTestCase):
         """
         Test that the ImageThumbnail task works properly.
         """
-        crawler = FsPathCrawler.createFromPath(self.__sourcePath)
+        crawler = FsCrawler.createFromPath(self.__sourcePath)
         thumbnailTask = Task.create('imageThumbnail')
         thumbnailTask.add(crawler, self.__targetPath)
         result = thumbnailTask.output()

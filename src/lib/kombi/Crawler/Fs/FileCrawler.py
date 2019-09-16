@@ -1,7 +1,7 @@
-from .FsPathCrawler import FsPathCrawler
+from .FsCrawler import FsCrawler
 from ..Crawler import Crawler
 
-class FileCrawler(FsPathCrawler):
+class FileCrawler(FsCrawler):
     """
     File crawler.
     """

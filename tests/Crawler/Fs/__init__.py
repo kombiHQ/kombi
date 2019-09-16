@@ -6,4 +6,4 @@ from . import Scene
 from . import Texture
 from . import Video
 from .DirectoryCrawlerTest import DirectoryCrawlerTest
-from .FsPathCrawlerTest import FsPathCrawlerTest
+from .FsCrawlerTest import FsCrawlerTest

@@ -1,7 +1,7 @@
 import json
 from collections import OrderedDict
 from ..Resource import Resource
-from ..Crawler.Fs import FsPathCrawler
+from ..Crawler.Fs import FsCrawler
 from ..Crawler import Crawler
 from ..Template import Template
 from ..TaskReporter import TaskReporter
@@ -392,4 +392,4 @@ class Task(object):
             if filePath and filePath not in filePaths:
                 filePaths.append(filePath)
 
-        return list(map(FsPathCrawler.createFromPath, filePaths))
+        return list(map(FsCrawler.createFromPath, filePaths))

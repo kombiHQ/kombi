@@ -2,7 +2,7 @@ import unittest
 import os
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.Crawler.Fs import FsPathCrawler
+from kombi.Crawler.Fs import FsCrawler
 from kombi.Task.Fs.ChecksumTask import ChecksumTaskMatchError
 from kombi.Task.Image import UpdateImageMetadataTask
 
@@ -16,7 +16,7 @@ class UpdateImageMetadataTaskTest(BaseTestCase):
         """
         Test that the UpdateImageMetadata task works properly.
         """
-        crawler = FsPathCrawler.createFromPath(self.__sourcePath)
+        crawler = FsCrawler.createFromPath(self.__sourcePath)
         updateTask = Task.create('updateImageMetadata')
         updateTask.add(crawler, self.__targetPath)
         result = updateTask.output()

@@ -5,7 +5,7 @@ import unittest
 from ..BaseTestCase import BaseTestCase
 from kombi.TaskHolder.Loader import Loader
 from kombi.Crawler import Crawler
-from kombi.Crawler.Fs.FsPathCrawler import FsPathCrawler
+from kombi.Crawler.Fs.FsCrawler import FsCrawler
 
 class VendorXPlatesTest(BaseTestCase):
     """Test for the example vendor 'x' plates."""
@@ -105,7 +105,7 @@ class VendorXPlatesTest(BaseTestCase):
 
         # loading input data for the ingestion
         crawlerGroups = Crawler.group(
-            FsPathCrawler.createFromPath(
+            FsCrawler.createFromPath(
                 os.path.join(self.__exampleDirectory, 'plates')
             ).globFromParent()
         )
@@ -139,7 +139,7 @@ class VendorXPlatesTest(BaseTestCase):
 
         # loading input data for the ingestion
         crawlerGroups = Crawler.group(
-            FsPathCrawler.createFromPath(
+            FsCrawler.createFromPath(
                 os.path.normpath(os.path.join(self.__exampleIngestionPrefixDirectory, 'jobs/foo/seq/abc/shot/def/plates/bla/v001/1920x1080_exr'))
             ).glob()
         )

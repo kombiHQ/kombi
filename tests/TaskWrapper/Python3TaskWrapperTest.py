@@ -4,7 +4,7 @@ import distutils.spawn
 from ..BaseTestCase import BaseTestCase
 from kombi.Task import Task
 from kombi.TaskWrapper import TaskWrapper
-from kombi.Crawler.Fs import FsPathCrawler
+from kombi.Crawler.Fs import FsCrawler
 from kombi.Resource import Resource
 
 class Python3TaskWrapperTest(BaseTestCase):
@@ -20,7 +20,7 @@ class Python3TaskWrapperTest(BaseTestCase):
         """
         resource = Resource.get()
         resource.load(self.__taskPath)
-        crawler = FsPathCrawler.createFromPath(self.__sourcePath)
+        crawler = FsCrawler.createFromPath(self.__sourcePath)
         dummyTask = Task.create('pythonMajorVerTestTask')
         dummyTask.add(crawler)
 

@@ -2,7 +2,7 @@ import unittest
 import os
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.Crawler.Fs import FsPathCrawler
+from kombi.Crawler.Fs import FsCrawler
 
 class ResizeImageTaskTest(BaseTestCase):
     """Test ResizeImage task."""
@@ -14,7 +14,7 @@ class ResizeImageTaskTest(BaseTestCase):
         """
         Test that the ResizeImage task works properly.
         """
-        crawler = FsPathCrawler.createFromPath(self.__sourcePath)
+        crawler = FsCrawler.createFromPath(self.__sourcePath)
         resizeTask = Task.create('resizeImage')
         resizeTask.add(crawler, self.__targetPath)
         resizeTask.setOption("width", "480")

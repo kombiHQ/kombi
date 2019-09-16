@@ -1,5 +1,5 @@
 import os
-from ...Crawler.Fs import FsPathCrawler
+from ...Crawler.Fs import FsCrawler
 from ...Crawler import Crawler
 from ...Crawler.Fs.Scene import SceneCrawler
 from ..Task import Task
@@ -30,7 +30,7 @@ class CreateRenderVersionTask(CreateIncrementalVersionTask):
             self.addFile(targetFile)
 
             # Crawl from source directory for scenes to save along with data
-            crawler = FsPathCrawler.createFromPath(crawler.var('sourceDirectory'))
+            crawler = FsCrawler.createFromPath(crawler.var('sourceDirectory'))
             sceneCrawlers = crawler.glob([SceneCrawler])
             for sceneCrawler in sceneCrawlers:
                 sourceScenes.add(sceneCrawler.var('filePath'))

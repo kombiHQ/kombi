@@ -1,4 +1,4 @@
-from .FsPathCrawler import FsPathCrawler
+from .FsCrawler import FsCrawler
 from .FileCrawler import FileCrawler
 from .DirectoryCrawler import DirectoryCrawler
 

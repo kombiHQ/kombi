@@ -1,9 +1,9 @@
 import os
 import re
-from .FsPathCrawler import FsPathCrawler
+from .FsCrawler import FsCrawler
 from .. import Crawler, PathHolder
 
-class DirectoryCrawler(FsPathCrawler):
+class DirectoryCrawler(FsCrawler):
     """
     Directory crawler.
     """

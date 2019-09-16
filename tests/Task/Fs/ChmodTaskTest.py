@@ -3,7 +3,7 @@ import os
 import sys
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.Crawler.Fs import FsPathCrawler
+from kombi.Crawler.Fs import FsCrawler
 
 class ChmodTaskTest(BaseTestCase):
     """Test Chmod task."""
@@ -16,7 +16,7 @@ class ChmodTaskTest(BaseTestCase):
         """
         Test that the chmod task works properly on a file.
         """
-        crawler = FsPathCrawler.createFromPath(self.__path)
+        crawler = FsCrawler.createFromPath(self.__path)
         chmodTask = Task.create('chmod')
         chmodTask.add(crawler, self.__path)
         for permission in ["644", "444", "744", "664"]:
@@ -32,8 +32,8 @@ class ChmodTaskTest(BaseTestCase):
         """
         Test that the chmod task works properly on a directory.
         """
-        crawler = FsPathCrawler.createFromPath(self.__dir)
-        fileCrawler = FsPathCrawler.createFromPath(self.__path)
+        crawler = FsCrawler.createFromPath(self.__dir)
+        fileCrawler = FsCrawler.createFromPath(self.__path)
         chmodTask = Task.create('chmod')
         chmodTask.add(crawler, self.__dir)
         chmodTask.add(fileCrawler, self.__dir)
@@ -55,7 +55,7 @@ class ChmodTaskTest(BaseTestCase):
         os.symlink(self.__path, link)
         self.assertEqual(self.__getPermission(link), '664')
         self.assertTrue(os.path.islink(link))
-        crawler = FsPathCrawler.createFromPath(link)
+        crawler = FsCrawler.createFromPath(link)
         chmodTask = Task.create('chmod')
         chmodTask.add(crawler, link)
         chmodTask.setOption('directoryMode', '775')

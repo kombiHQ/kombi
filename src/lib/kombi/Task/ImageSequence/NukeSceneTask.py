@@ -1,6 +1,6 @@
 from ..Task import Task
 from ...Crawler import Crawler
-from ...Crawler.Fs import FsPathCrawler
+from ...Crawler.Fs import FsCrawler
 
 # compatibility with python 2/3
 try:
@@ -103,7 +103,7 @@ class NukeSceneTask(Task):
                 else:
                     createdFiles.append(currentFile)
 
-        return list(map(FsPathCrawler.createFromPath, createdFiles))
+        return list(map(FsCrawler.createFromPath, createdFiles))
 
 
 # registering task

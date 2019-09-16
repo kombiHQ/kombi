@@ -2,7 +2,7 @@ import os
 import unittest
 from ...BaseTestCase import BaseTestCase
 from kombi.Crawler import Crawler
-from kombi.Crawler.Fs import FsPathCrawler
+from kombi.Crawler.Fs import FsCrawler
 from kombi.Crawler.Fs import FileCrawler
 from kombi.Crawler.PathHolder import PathHolder
 from kombi.Crawler.Fs.Render import ExrRenderCrawler
@@ -10,7 +10,7 @@ from kombi.Crawler.Fs.Image import ExrCrawler
 from kombi.Crawler.Crawler import CrawlerInvalidVarError
 from kombi.Crawler.Crawler import CrawlerInvalidTagError
 
-class FsPathCrawlerTest(BaseTestCase):
+class FsCrawlerTest(BaseTestCase):
     """Test Directory crawler."""
 
     __dir = os.path.join(BaseTestCase.dataTestsDirectory(), "glob")
@@ -22,12 +22,12 @@ class FsPathCrawlerTest(BaseTestCase):
         Test that the fs crawler test works.
         """
         pathHolder = PathHolder(self.__dir)
-        self.assertTrue(FsPathCrawler.test(pathHolder, None))
+        self.assertTrue(FsCrawler.test(pathHolder, None))
 
         notAPathHolder = {}
-        self.assertFalse(FsPathCrawler.test(notAPathHolder, None))
+        self.assertFalse(FsCrawler.test(notAPathHolder, None))
 
-    def testFsPathCrawlerGlob(self):
+    def testFsCrawlerGlob(self):
         """
         Test the glob functionality.
         """
@@ -92,7 +92,7 @@ class FsPathCrawlerTest(BaseTestCase):
         Crawler.register("dummy", DummyCrawler)
         self.assertIn("dummy", Crawler.registeredNames())
         self.assertIn(DummyCrawler, Crawler.registeredSubclasses("file"))
-        self.assertIn(DummyCrawler, Crawler.registeredSubclasses(FsPathCrawler))
+        self.assertIn(DummyCrawler, Crawler.registeredSubclasses(FsCrawler))
 
     def testCrawlerClone(self):
         """
@@ -119,7 +119,7 @@ class FsPathCrawlerTest(BaseTestCase):
         """
         Test that you can create a crawler with a specific type.
         """
-        crawler = FsPathCrawler.createFromPath(self.__turntableFile, "exr")
+        crawler = FsCrawler.createFromPath(self.__turntableFile, "exr")
         self.assertIsInstance(crawler, ExrCrawler)
 
     def testPathHolder(self):

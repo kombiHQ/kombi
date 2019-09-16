@@ -1,6 +1,6 @@
 import csv
 import os
-from ...Crawler.Fs import FsPathCrawler
+from ...Crawler.Fs import FsCrawler
 from ...Crawler.Fs.Image import ImageCrawler
 from ...Crawler.Fs.Video import VideoCrawler
 from ..Task import Task
@@ -33,7 +33,7 @@ class SubmissionSheetTask(Task):
 
         internalDeliveryFolder = os.path.dirname(jsonCrawler.var('filePath'))
         self.__clientDeliveryPath = os.path.join(internalDeliveryFolder, jsonCrawler.var('name'))
-        crawler = FsPathCrawler.createFromPath(self.__clientDeliveryPath)
+        crawler = FsCrawler.createFromPath(self.__clientDeliveryPath)
         # Add rows for all images found first, so the resolution and other info is added in priority
         for crawler in crawler.glob(filterTypes=[ImageCrawler]):
             self.__setRow(crawler)

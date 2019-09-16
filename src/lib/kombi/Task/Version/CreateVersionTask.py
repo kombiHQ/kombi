@@ -1,7 +1,7 @@
 import os
 import time
 from ..Task import Task
-from ...Crawler.Fs import FsPathCrawler
+from ...Crawler.Fs import FsCrawler
 from .CreateDataTask import CreateDataTask
 
 class CreateVersionTask(CreateDataTask):
@@ -73,12 +73,12 @@ class CreateVersionTask(CreateDataTask):
         super(CreateVersionTask, self)._perform()
 
         # Find all the crawlers for data that was created for this version
-        crawler = FsPathCrawler.createFromPath(self.dataPath())
+        crawler = FsCrawler.createFromPath(self.dataPath())
         dataCrawlers = crawler.glob()
 
         # Add json files
         for jsonFile in ["info.json", "data.json", "env.json"]:
-            dataCrawlers.append(FsPathCrawler.createFromPath(os.path.join(self.versionPath(), jsonFile)))
+            dataCrawlers.append(FsCrawler.createFromPath(os.path.join(self.versionPath(), jsonFile)))
 
         # Add context variables so subsequent tasks get them
         for crawler in dataCrawlers:
