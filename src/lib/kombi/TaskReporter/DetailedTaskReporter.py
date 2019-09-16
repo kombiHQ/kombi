@@ -1,7 +1,7 @@
 import sys
 from .TaskReporter import TaskReporter
 
-class Detailed(TaskReporter):
+class DetailedTaskReporter(TaskReporter):
     """
     Implements a detailed task reporter.
     """
@@ -30,5 +30,5 @@ class Detailed(TaskReporter):
 # registering reporter
 TaskReporter.register(
     'detailed',
-    Detailed
+    DetailedTaskReporter
 )

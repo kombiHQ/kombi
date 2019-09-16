@@ -8,7 +8,7 @@ from kombi.TaskHolder.Loader import JsonLoader
 from kombi.TaskHolder.Dispatcher import Dispatcher
 from kombi.Resource import Resource
 
-class JsonTest(BaseTestCase):
+class JsonTaskReporterTest(BaseTestCase):
     """Test for json task reporter."""
 
     __jsonConfig = os.path.join(BaseTestCase.dataTestsDirectory(), 'config', 'reporterTest.json')

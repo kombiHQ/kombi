@@ -8,33 +8,29 @@ from kombi.TaskHolder.Loader import JsonLoader
 from kombi.TaskHolder.Dispatcher import Dispatcher
 from kombi.Resource import Resource
 
-class DetailedTest(BaseTestCase):
-    """Test for detailed task reporter."""
+class ColumnsTaskReporterTest(BaseTestCase):
+    """Test for column task reporter."""
 
     __jsonConfig = os.path.join(BaseTestCase.dataTestsDirectory(), 'config', 'reporterTest.json')
     __taskPath = os.path.join(BaseTestCase.dataTestsDirectory(), 'tasks', 'EchoTask.py')
     __output = """
-        echoTask output (execution * seconds):
-          - nukeRender(*/RND-TST-SHT_comp_compName_output_v010_tk.1001.exr)
-          - shotRender(*/RND-TST-SHT_lighting_beauty_sr.1001.exr)
-          - turntable(*/RND_ass_lookdev_default_beauty_tt.1001.exr)
-          - testCrawler(*/testSeq.0001.exr)
-          - testCrawler(*/testSeq.0002.exr)
-          - testCrawler(*/testSeq.0003.exr)
-          - testCrawler(*/testSeq.0004.exr)
-          - testCrawler(*/testSeq.0005.exr)
-          - testCrawler(*/testSeq.0006.exr)
-          - testCrawler(*/testSeq.0007.exr)
-          - testCrawler(*/testSeq.0008.exr)
-          - testCrawler(*/testSeq.0009.exr)
-          - testCrawler(*/testSeq.0010.exr)
-          - testCrawler(*/testSeq.0011.exr)
-          - testCrawler(*/testSeq.0012.exr)
-          - testCrawler(*/test_0001.exr)
-        done
-        echoTask output (execution * seconds):
-          - jpg(*/testSeq.jpg)
-        done
+        echoTask\t\tnukeRender\t\t*/RND-TST-SHT_comp_compName_output_v010_tk.1001.exr
+        echoTask\t\tshotRender\t\t*/RND-TST-SHT_lighting_beauty_sr.1001.exr
+        echoTask\t\tturntable\t\t*/RND_ass_lookdev_default_beauty_tt.1001.exr
+        echoTask\t\ttestCrawler\t\t*/testSeq.0001.exr
+        echoTask\t\ttestCrawler\t\t*/testSeq.0002.exr
+        echoTask\t\ttestCrawler\t\t*/testSeq.0003.exr
+        echoTask\t\ttestCrawler\t\t*/testSeq.0004.exr
+        echoTask\t\ttestCrawler\t\t*/testSeq.0005.exr
+        echoTask\t\ttestCrawler\t\t*/testSeq.0006.exr
+        echoTask\t\ttestCrawler\t\t*/testSeq.0007.exr
+        echoTask\t\ttestCrawler\t\t*/testSeq.0008.exr
+        echoTask\t\ttestCrawler\t\t*/testSeq.0009.exr
+        echoTask\t\ttestCrawler\t\t*/testSeq.0010.exr
+        echoTask\t\ttestCrawler\t\t*/testSeq.0011.exr
+        echoTask\t\ttestCrawler\t\t*/testSeq.0012.exr
+        echoTask\t\ttestCrawler\t\t*/test_0001.exr
+        echoTask\t\tjpg\t\t\t*/testSeq.jpg
     """
 
     def testReport(self):
@@ -49,7 +45,7 @@ class DetailedTest(BaseTestCase):
         crawlers = FsCrawler.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
 
         dispacher = Dispatcher.create('local')
-        dispacher.setOption('defaultReporter', 'detailed')
+        dispacher.setOption('defaultReporter', 'columns')
         outputStream = io.StringIO()
         dispacher.setStdout(outputStream)
         dispacher.setOption(

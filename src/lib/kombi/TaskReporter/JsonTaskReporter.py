@@ -2,7 +2,7 @@ import sys
 import json
 from .TaskReporter import TaskReporter
 
-class Json(TaskReporter):
+class JsonTaskReporter(TaskReporter):
     """
     Implements a json task reporter.
     """
@@ -39,5 +39,5 @@ class Json(TaskReporter):
 # registering reporter
 TaskReporter.register(
     'json',
-    Json
+    JsonTaskReporter
 )

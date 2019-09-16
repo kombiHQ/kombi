@@ -1,3 +1,3 @@
-from .ColumnsTest import ColumnsTest
-from .DetailedTest import DetailedTest
-from .JsonTest import JsonTest
+from .ColumnsTaskReporterTest import ColumnsTaskReporterTest
+from .DetailedTaskReporterTest import DetailedTaskReporterTest
+from .JsonTaskReporterTest import JsonTaskReporterTest

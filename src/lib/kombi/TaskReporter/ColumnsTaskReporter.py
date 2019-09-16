@@ -1,7 +1,7 @@
 import sys
 from .TaskReporter import TaskReporter
 
-class Columns(TaskReporter):
+class ColumnsTaskReporter(TaskReporter):
     """
     Implements columns task reporter.
     """
@@ -47,5 +47,5 @@ class Columns(TaskReporter):
 # registering reporter
 TaskReporter.register(
     'columns',
-    Columns
+    ColumnsTaskReporter
 )
