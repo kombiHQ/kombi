@@ -1,3 +1,3 @@
-from .NukeRenderTest import NukeRenderTest
-from .ShotRenderTest import ShotRenderTest
-from .TurntableTest import TurntableTest
+from .NukeRenderCrawlerTest import NukeRenderCrawlerTest
+from .ShotRenderCrawlerTest import ShotRenderCrawlerTest
+from .TurntableCrawlerTest import TurntableCrawlerTest

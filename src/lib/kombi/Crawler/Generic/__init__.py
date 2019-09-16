@@ -1,1 +1,2 @@
-from .Hashmap import Hashmap
+from .HashmapCrawler import HashmapCrawler
+

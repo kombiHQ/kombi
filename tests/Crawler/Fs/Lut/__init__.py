@@ -1,3 +1,3 @@
-from .CccTest import CccTest
-from .CdlTest import CdlTest
-from .CcTest import CcTest
+from .CccCrawlerTest import CccCrawlerTest
+from .CdlCrawlerTest import CdlCrawlerTest
+from .CcCrawlerTest import CcCrawlerTest

@@ -1,3 +1,3 @@
-from .PythonTest import PythonTest
-from .Python2Test import Python2Test
-from .Python3Test import Python3Test
+from .PythonTaskWrapperTest import PythonTaskWrapperTest
+from .Python2TaskWrapperTest import Python2TaskWrapperTest
+from .Python3TaskWrapperTest import Python3TaskWrapperTest

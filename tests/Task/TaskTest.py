@@ -1,7 +1,7 @@
 import os
 import unittest
 from ..BaseTestCase import BaseTestCase
-from kombi.Crawler.Fs import FsPath
+from kombi.Crawler.Fs import FsPathCrawler
 from kombi.TaskHolder.Loader import Loader
 from kombi.TaskWrapper import TaskWrapper
 from kombi.Template import Template
@@ -9,7 +9,7 @@ from kombi.Task import Task
 from kombi.Task.Task import TaskInvalidOptionError
 from kombi.Task.Task import TaskTypeNotFoundError
 from kombi.TaskHolder import TaskHolder, TaskHolderInvalidVarNameError
-from kombi.Crawler.Fs.Image import Jpg, Exr
+from kombi.Crawler.Fs.Image import JpgCrawler, ExrCrawler
 from kombi.Crawler import Crawler
 
 class TaskTest(BaseTestCase):
@@ -31,7 +31,7 @@ class TaskTest(BaseTestCase):
         """
         Test that filter template in task holder.
         """
-        crawlers = [FsPath.createFromPath(self.__jsonConfig)]
+        crawlers = [FsPathCrawler.createFromPath(self.__jsonConfig)]
 
         for filterOption in ['0', 'false', 'False']:
             dummyTask = Task.create('checksum')
@@ -43,7 +43,7 @@ class TaskTest(BaseTestCase):
         """
         Test that filter template should not be applied.
         """
-        crawlers = [FsPath.createFromPath(self.__jsonConfig)]
+        crawlers = [FsPathCrawler.createFromPath(self.__jsonConfig)]
 
         for filterOption in ['randomStr', '']:
             dummyTask = Task.create('checksum')
@@ -57,7 +57,7 @@ class TaskTest(BaseTestCase):
         Test execute status in the task holder.
         """
         dummyTask = Task.create('checksum')
-        crawlers = [FsPath.createFromPath(self.__jsonConfig)]
+        crawlers = [FsPathCrawler.createFromPath(self.__jsonConfig)]
 
         taskHolder = TaskHolder(dummyTask, Template("{filePath}"))
         dummyTask2 = Task.create('checksum')
@@ -71,7 +71,7 @@ class TaskTest(BaseTestCase):
         Test bypass status in the task holder.
         """
         dummyTask = Task.create('checksum')
-        crawlers = [FsPath.createFromPath(self.__jsonConfig)]
+        crawlers = [FsPathCrawler.createFromPath(self.__jsonConfig)]
 
         taskHolder = TaskHolder(dummyTask, Template("{filePath}"))
         dummyTask2 = Task.create('checksum')
@@ -87,7 +87,7 @@ class TaskTest(BaseTestCase):
         Test ignore status in the task holder.
         """
         dummyTask = Task.create('checksum')
-        crawlers = [FsPath.createFromPath(self.__jsonConfig)]
+        crawlers = [FsPathCrawler.createFromPath(self.__jsonConfig)]
 
         taskHolder = TaskHolder(dummyTask, Template("{filePath}"))
         taskHolder.setStatus("ignore")
@@ -107,7 +107,7 @@ class TaskTest(BaseTestCase):
         Test that cloning tasks works properly.
         """
         dummyTask = Task.create('sequenceThumbnail')
-        crawlers = FsPath.createFromPath(BaseTestCase.dataTestsDirectory()).glob(['exr'])
+        crawlers = FsPathCrawler.createFromPath(BaseTestCase.dataTestsDirectory()).glob(['exr'])
         for crawler in crawlers:
             target = '{}_target'.format(crawler.var('name'))
             dummyTask.add(crawler, target)
@@ -178,7 +178,7 @@ class TaskTest(BaseTestCase):
         Task.register("dummy", DummyTask)
 
         dummyTask = Task.create('dummy')
-        crawlers = FsPath.createFromPath(BaseTestCase.dataTestsDirectory()).glob(['mov'])
+        crawlers = FsPathCrawler.createFromPath(BaseTestCase.dataTestsDirectory()).glob(['mov'])
         targetPaths = []
         for crawler in crawlers:
             target = '{}_target.mov'.format(crawler.var('name'))
@@ -208,7 +208,7 @@ class TaskTest(BaseTestCase):
         Task.register("dummy", DummyTask)
 
         dummyTask = Task.create('dummy')
-        crawlers = FsPath.createFromPath(BaseTestCase.dataTestsDirectory()).glob(['mov'])
+        crawlers = FsPathCrawler.createFromPath(BaseTestCase.dataTestsDirectory()).glob(['mov'])
         targetPaths = []
         for crawler in crawlers:
             target = '{}_target.mov'.format(crawler.var('name'))
@@ -234,7 +234,7 @@ class TaskTest(BaseTestCase):
         """
         taskHolderLoader = Loader()
         taskHolderLoader.loadFromFile(self.__jsonConfig)
-        crawlers = FsPath.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
+        crawlers = FsPathCrawler.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
 
         createdCrawlers = []
         for taskHolder in taskHolderLoader.taskHolders():
@@ -243,10 +243,10 @@ class TaskTest(BaseTestCase):
             self.assertRaises(TaskHolderInvalidVarNameError, taskHolder.var, 'badVar')
             createdCrawlers += taskHolder.run(crawlers)
 
-        exrCrawlers = list(filter(lambda x: isinstance(x, Exr), createdCrawlers))
+        exrCrawlers = list(filter(lambda x: isinstance(x, ExrCrawler), createdCrawlers))
         self.assertEqual(len(exrCrawlers), 16)
 
-        jpgCrawlers = list(filter(lambda x: isinstance(x, Jpg), createdCrawlers))
+        jpgCrawlers = list(filter(lambda x: isinstance(x, JpgCrawler), createdCrawlers))
         self.assertEqual(len(jpgCrawlers), 1)
 
         self.cleanup(exrCrawlers + jpgCrawlers)

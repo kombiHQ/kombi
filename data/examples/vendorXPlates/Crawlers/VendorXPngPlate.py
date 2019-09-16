@@ -1,7 +1,7 @@
-from kombi.Crawler.Fs.Image import Png
+from kombi.Crawler.Fs.Image import PngCrawler
 from kombi.Crawler.VarExtractor import VarExtractor
 
-class VendorXPngPlate(Png):
+class VendorXPngPlate(PngCrawler):
     """
     Implements a custom vendor "X" png plate crawler.
     """
@@ -49,7 +49,7 @@ class VendorXPngPlate(Png):
 
 
 # registering crawler
-Png.register(
+PngCrawler.register(
     'vendorXPngPlate',
     VendorXPngPlate
 )

@@ -4,11 +4,11 @@ import unittest
 import tempfile
 from fnmatch import fnmatch
 from ....BaseTestCase import BaseTestCase
-from kombi.Crawler.Fs import FsPath
+from kombi.Crawler.Fs import FsPathCrawler
 from kombi.TaskHolder.Loader import JsonLoader
 from kombi.TaskWrapper import TaskWrapper
 from kombi.Task import Task
-from kombi.Crawler.Fs.Image import Jpg, Exr
+from kombi.Crawler.Fs.Image import JpgCrawler, ExrCrawler
 from kombi.TaskHolder.Dispatcher import Dispatcher
 
 class LocalTest(BaseTestCase):
@@ -45,7 +45,7 @@ class LocalTest(BaseTestCase):
         """
         taskHolderLoader = JsonLoader()
         taskHolderLoader.loadFromFile(self.__jsonConfig)
-        crawlers = FsPath.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
+        crawlers = FsPathCrawler.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
         temporaryDir = tempfile.mkdtemp()
 
         dispacher = Dispatcher.create("local")
@@ -69,11 +69,11 @@ class LocalTest(BaseTestCase):
             )
             dispacher.dispatch(taskHolder, crawlers)
 
-        createdCrawlers = FsPath.createFromPath(temporaryDir).glob()
-        exrCrawlers = list(filter(lambda x: isinstance(x, Exr), createdCrawlers))
+        createdCrawlers = FsPathCrawler.createFromPath(temporaryDir).glob()
+        exrCrawlers = list(filter(lambda x: isinstance(x, ExrCrawler), createdCrawlers))
         self.assertEqual(len(exrCrawlers), 16)
 
-        jpgCrawlers = list(filter(lambda x: isinstance(x, Jpg), createdCrawlers))
+        jpgCrawlers = list(filter(lambda x: isinstance(x, JpgCrawler), createdCrawlers))
         self.assertEqual(len(jpgCrawlers), 1)
 
         output = outputStream.getvalue().replace('\r\n', '\n').split('\n')

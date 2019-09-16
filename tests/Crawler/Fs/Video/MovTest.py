@@ -3,7 +3,7 @@ import unittest
 from ....BaseTestCase import BaseTestCase
 from kombi.Crawler import Crawler
 from kombi.Crawler.PathHolder import PathHolder
-from kombi.Crawler.Fs.Video import Mov
+from kombi.Crawler.Fs.Video import MovCrawler
 
 class MovTest(BaseTestCase):
     """Test Texture crawler."""
@@ -16,7 +16,7 @@ class MovTest(BaseTestCase):
         Test that the Mov crawler test works properly.
         """
         crawler = Crawler.create(PathHolder(self.__movFile))
-        self.assertIsInstance(crawler, Mov)
+        self.assertIsInstance(crawler, MovCrawler)
 
     def testMovVariables(self):
         """

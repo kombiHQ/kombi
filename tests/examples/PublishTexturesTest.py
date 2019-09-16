@@ -4,7 +4,7 @@ import unittest
 from ..BaseTestCase import BaseTestCase
 from kombi.TaskHolder.Loader import Loader
 from kombi.Crawler import Crawler
-from kombi.Crawler.Fs.FsPath import FsPath
+from kombi.Crawler.Fs.FsPathCrawler import FsPathCrawler
 
 class PublishTexturesTest(BaseTestCase):
     """Test for example publish textures."""
@@ -59,7 +59,7 @@ class PublishTexturesTest(BaseTestCase):
 
         # loading input data for the execution
         crawlerGroups = Crawler.group(
-            FsPath.createFromPath(
+            FsPathCrawler.createFromPath(
                 os.path.join(self.__exampleDirectory, 'textures')
             ).globFromParent()
         )

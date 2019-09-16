@@ -1,8 +1,8 @@
-from .UpdateImageMetadata import UpdateImageMetadata
-from .ConvertImage import ConvertImage
-from .Ocio import Ocio, OcioConfigurationError
-from .ResizeImage import ResizeImage
-from .ImageThumbnail import ImageThumbnail
-from .ColorTransformation import ColorTransformation
-from .ConvertTexture import ConvertTexture
-from .FileColorTransformation import FileColorTransformation
+from .UpdateImageMetadataTask import UpdateImageMetadataTask
+from .ConvertImageTask import ConvertImageTask
+from .OcioTask import OcioTask, OcioTaskConfigurationError
+from .ResizeImageTask import ResizeImageTask
+from .ImageThumbnailTask import ImageThumbnailTask
+from .ColorTransformationTask import ColorTransformationTask
+from .ConvertTextureTask import ConvertTextureTask
+from .FileColorTransformationTask import FileColorTransformationTask

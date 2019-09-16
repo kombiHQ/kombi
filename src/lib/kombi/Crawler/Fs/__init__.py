@@ -1,6 +1,6 @@
-from .FsPath import FsPath
-from .File import File
-from .Directory import Directory
+from .FsPathCrawler import FsPathCrawler
+from .FileCrawler import FileCrawler
+from .DirectoryCrawler import DirectoryCrawler
 
 from . import Image
 from . import Lut

@@ -1,1 +1,1 @@
-from .MayaSceneTest import MayaSceneTest
+from .MayaSceneCrawlerTest import MayaSceneCrawlerTest

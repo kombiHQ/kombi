@@ -1,3 +1,3 @@
-from .JsonTest import JsonTest
-from .TxtTest import TxtTest
-from .XmlTest import XmlTest
+from .JsonCrawlerTest import JsonCrawlerTest
+from .TxtCrawlerTest import TxtCrawlerTest
+from .XmlCrawlerTest import XmlCrawlerTest

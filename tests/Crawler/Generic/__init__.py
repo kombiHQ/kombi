@@ -1,1 +1,1 @@
-from .HashmapTest import HashmapTest
+from .HashmapCrawlerTest import HashmapCrawlerTest

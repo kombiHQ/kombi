@@ -5,5 +5,5 @@ from . import Render
 from . import Scene
 from . import Texture
 from . import Video
-from .DirectoryTest import DirectoryTest
-from .FsPathTest import FsPathTest
+from .DirectoryCrawlerTest import DirectoryCrawlerTest
+from .FsPathCrawlerTest import FsPathCrawlerTest
