@@ -205,7 +205,7 @@ yum install ffmpeg
 <details><summary>Details</summary>
 <p>
     
-> For windows users please make sure you have the posix tools available on your system. It can be done through [Cygwin](https://www.cygwin.com).
+> For windows users please make sure you have the posix tools available on your system. It can be done through [Cygwin](https://www.cygwin.com) (During the intallation make sure to select `cmake` and `make` under `Devel` category).
 
 #### Dependencies
 Name | Version 
