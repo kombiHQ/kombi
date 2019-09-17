@@ -1,7 +1,9 @@
 {
+  # additional scripts
   "scripts": [
     "*/*.py"
   ],
+  # additional variables
   "vars": {
     "prefix": "/tmp",
     "job": "RND",

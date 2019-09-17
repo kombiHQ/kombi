@@ -36,7 +36,7 @@ class PublishTexturesTest(BaseTestCase):
 
         self.assertEqual(
             os.path.basename(loader.taskHolders()[0].var('contextConfig')),
-            'config.json'
+            'config.hjson'
         )
 
     @unittest.skipIf(not BaseTestCase.hasBin(os.environ.get('KOMBI_MAKETX_EXECUTABLE', 'maketx')), 'maketx not found in the search path')
