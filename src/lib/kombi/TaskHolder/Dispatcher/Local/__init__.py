@@ -1,1 +1,1 @@
-from .Local import Local, LocalExecutionError
+from .LocalDispatcher import LocalDispatcher, LocalDispatcherExecutionError

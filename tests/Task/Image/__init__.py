@@ -1,5 +1,0 @@
-from .ConvertImageTest import ConvertImageTest
-from .ConvertTextureTest import ConvertTextureTest
-from .ImageThumbnailTest import ImageThumbnailTest
-from .ResizeImageTest import ResizeImageTest
-from .UpdateImageMetadataTest import UpdateImageMetadataTest

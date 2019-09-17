@@ -3,8 +3,8 @@ import sys
 import argparse
 import subprocess
 import fileinput
-from .Crawler.Fs.FsPath import FsPath
-from .Crawler.Fs.Directory import Directory
+from .Crawler.Fs.FsCrawler import FsCrawler
+from .Crawler.Fs.DirectoryCrawler import DirectoryCrawler
 from .Crawler import Crawler
 from .TaskHolder.Loader import Loader
 from .TaskHolder.Dispatcher import Dispatcher
@@ -85,7 +85,7 @@ class Cli(object):
         # source through argument
         if sourcePaths:
             for sourcePath in sourcePaths:
-                crawler = FsPath.createFromPath(sourcePath)
+                crawler = FsCrawler.createFromPath(sourcePath)
                 crawlers.append(crawler)
 
         # source through stdin
@@ -101,14 +101,14 @@ class Cli(object):
                 crawler = None
                 if len(outputParts) == 3:
                     globDirectoryCrawlers = False
-                    crawler = FsPath.createFromPath(
+                    crawler = FsCrawler.createFromPath(
                         crawlerFullPath,
                         outputParts[1]
                     )
 
                 # otherwise when stdin is reading a list of paths
                 else:
-                    crawler = FsPath.createFromPath(crawlerFullPath)
+                    crawler = FsCrawler.createFromPath(crawlerFullPath)
 
                 crawlers.append(crawler)
         else:
@@ -119,7 +119,7 @@ class Cli(object):
         # the crawler type is defined (reading a kombi output)
         if globDirectoryCrawlers:
             for crawler in list(crawlers):
-                if isinstance(crawler, Directory):
+                if isinstance(crawler, DirectoryCrawler):
                     crawlers += crawler.glob()
 
         return crawlers

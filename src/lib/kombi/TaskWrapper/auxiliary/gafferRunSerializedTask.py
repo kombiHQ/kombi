@@ -5,4 +5,4 @@ import Gaffer # noqa: w0611
 import kombi
 
 # running serialized task
-kombi.TaskWrapper.Subprocess.runSerializedTask()
+kombi.TaskWrapper.SubprocessTaskWrapper.runSerializedTask()

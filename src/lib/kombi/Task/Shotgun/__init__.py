@@ -1,1 +1,1 @@
-from .SGPublish import SGPublish
+from .SGPublishTask import SGPublishTask

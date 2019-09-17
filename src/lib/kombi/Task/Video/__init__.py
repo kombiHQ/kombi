@@ -1,1 +1,1 @@
-from .ConvertVideo import ConvertVideo
+from .ConvertVideoTask import ConvertVideoTask

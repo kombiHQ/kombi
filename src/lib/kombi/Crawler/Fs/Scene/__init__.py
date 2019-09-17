@@ -1,2 +1,2 @@
-from .Scene import Scene
-from .MayaScene import MayaScene
+from .SceneCrawler import SceneCrawler
+from .MayaSceneCrawler import MayaSceneCrawler

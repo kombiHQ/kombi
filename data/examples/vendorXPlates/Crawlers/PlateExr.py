@@ -1,7 +1,7 @@
-from kombi.Crawler.Fs.Image import Exr
+from kombi.Crawler.Fs.Image import ExrCrawler
 from kombi.Crawler.VarExtractor import VarExtractor
 
-class PlateExr(Exr):
+class PlateExr(ExrCrawler):
     """
     Implements an internal exr plate.
     """
@@ -36,7 +36,7 @@ class PlateExr(Exr):
 
 
 # registering crawler
-Exr.register(
+ExrCrawler.register(
     'plateExr',
     PlateExr
 )

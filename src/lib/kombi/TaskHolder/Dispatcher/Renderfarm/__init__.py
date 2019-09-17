@@ -1,3 +1,3 @@
-from . import RenderfarmJob
-from .Renderfarm import Renderfarm
-from .Deadline import Deadline, DeadlineCommandError
+from . import Job
+from .RenderfarmDispatcher import RenderfarmDispatcher
+from .DeadlineDispatcher import DeadlineDispatcher, DeadlineDispatcherCommandError

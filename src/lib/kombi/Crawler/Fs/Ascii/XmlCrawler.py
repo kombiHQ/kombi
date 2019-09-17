@@ -1,0 +1,77 @@
+import xml.etree.ElementTree as ElementTree
+from .AsciiCrawler import AsciiCrawler
+
+class XmlCrawler(AsciiCrawler):
+    """
+    Xml crawler.
+    """
+
+    def __init__(self, *args, **kwargs):
+        """
+        Constructor.
+        """
+        super(XmlCrawler, self).__init__(*args, **kwargs)
+
+        self.__cache = {}
+
+    def queryTag(self, tag, ignoreNameSpace=True):
+        """
+        Query the values that are related to the specified tag.
+
+        :param tag: The tag to search over the xml
+        :type tag: str
+        :param ignoreNameSpace: Flag to ignore the xml namespace
+        :type ignoreNameSpace: boolean
+        """
+        return self.__runQueryTag(tag, ignoreNameSpace)
+
+    @classmethod
+    def test(cls, pathHolder, parentCrawler, ignoreExt=False):
+        """
+        Test if the path holder contains a xml file.
+        """
+        if not super(XmlCrawler, cls).test(pathHolder, parentCrawler):
+            return False
+
+        return ignoreExt or pathHolder.ext() == 'xml'
+
+    def __runQueryTag(self, tag, ignoreNameSpace, root=None):
+        """
+        Run the recursion on the xml tree.
+
+        :param tag: The tag to search over the xml
+        :type tag: str
+        :param ignoreNameSpace: Flag to ignore the xml namespace
+        :type ignoreNameSpace: boolean
+        :param root: A element tree from the xml
+        :type root: xml.etree.ElementTree
+        """
+        firstCall = False
+
+        if root is None:
+            firstCall = True
+            filePath = self.var('filePath')
+
+            if filePath not in self.__cache:
+                self.__cache[filePath] = ElementTree.parse(filePath).getroot()
+            root = self.__cache[filePath]
+
+        xmlTag = root.tag.split('}')[-1] if ignoreNameSpace else root.tag
+        if tag == xmlTag:
+            return (root.text, root.attrib)
+
+        children = list(root)
+        for child in children:
+            result = self.__runQueryTag(tag, ignoreNameSpace, child)
+            if result:
+                return result
+
+        if firstCall:
+            raise ValueError('No tag with the name "{}" was found'.format(tag))
+
+
+# registration
+XmlCrawler.register(
+    'xml',
+    XmlCrawler
+)

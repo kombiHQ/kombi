@@ -1,1 +1,1 @@
-from .Texture import Texture
+from .TextureCrawler import TextureCrawler

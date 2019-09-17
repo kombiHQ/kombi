@@ -1,6 +1,6 @@
-from .Image import Image
-from .Oiio import Oiio, OiioReadFileError
-from .Exr import Exr
-from .Dpx import Dpx
-from .Jpg import Jpg
-from .Png import Png
+from .ImageCrawler import ImageCrawler
+from .OiioCrawler import OiioCrawler, OiioCrawlerReadFileError
+from .ExrCrawler import ExrCrawler
+from .DpxCrawler import DpxCrawler
+from .JpgCrawler import JpgCrawler
+from .PngCrawler import PngCrawler

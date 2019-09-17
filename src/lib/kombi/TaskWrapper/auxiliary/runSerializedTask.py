@@ -1,4 +1,4 @@
 import kombi
 
 # running serialized task
-kombi.TaskWrapper.Subprocess.runSerializedTask()
+kombi.TaskWrapper.SubprocessTaskWrapper.runSerializedTask()

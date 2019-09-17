@@ -1,2 +1,2 @@
-from .Video import Video
-from .Mov import Mov
+from .VideoCrawler import VideoCrawler
+from .MovCrawler import MovCrawler

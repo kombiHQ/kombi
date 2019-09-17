@@ -1,1 +1,0 @@
-from .SequenceThumbnailTest import SequenceThumbnailTest

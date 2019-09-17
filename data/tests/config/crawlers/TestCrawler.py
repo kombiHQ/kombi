@@ -1,6 +1,6 @@
 import kombi
 
-class TestCrawler(kombi.Crawler.Fs.Image.Exr):
+class TestCrawler(kombi.Crawler.Fs.Image.ExrCrawler):
     """
     Test crawler for unit tests.
     """

@@ -1,2 +1,2 @@
-from .MediaDelivery import MediaDelivery
-from .SubmissionSheet import SubmissionSheet
+from .MediaDeliveryTask import MediaDeliveryTask
+from .SubmissionSheetTask import SubmissionSheetTask

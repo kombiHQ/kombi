@@ -1,4 +1,4 @@
 from .TaskReporter import TaskReporter
-from .Detailed import Detailed
-from .Columns import Columns
-from .Json import Json
+from .DetailedTaskReporter import DetailedTaskReporter
+from .ColumnsTaskReporter import ColumnsTaskReporter
+from .JsonTaskReporter import JsonTaskReporter
