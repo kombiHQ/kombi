@@ -2,7 +2,7 @@ import unittest
 from ...BaseTestCase import BaseTestCase
 from kombi.Template import Template
 
-class ImageSequenceTest(BaseTestCase):
+class ImageSequenceProceduresTest(BaseTestCase):
     """Test ImageSequence template procedures."""
 
     def testPadding(self):

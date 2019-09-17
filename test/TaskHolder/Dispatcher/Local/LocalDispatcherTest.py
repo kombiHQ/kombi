@@ -11,7 +11,7 @@ from kombi.Task import Task
 from kombi.Crawler.Fs.Image import JpgCrawler, ExrCrawler
 from kombi.TaskHolder.Dispatcher import Dispatcher
 
-class LocalTest(BaseTestCase):
+class LocalDispatcherTest(BaseTestCase):
     """Test for the local dispatcher."""
 
     __jsonConfig = os.path.join(BaseTestCase.dataTestsDirectory(), 'config', 'dispatcherTest.json')

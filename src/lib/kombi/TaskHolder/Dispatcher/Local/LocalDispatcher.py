@@ -6,7 +6,7 @@ import threading
 from ..Dispatcher import Dispatcher, DispatcherError
 from ....ProcessExecution import ProcessExecution
 
-class LocalExecutionError(DispatcherError):
+class LocalDispatcherExecutionError(DispatcherError):
     """Local Execution Error."""
 
 class _ProcessExecutionThread(threading.Thread):
@@ -31,11 +31,11 @@ class _ProcessExecutionThread(threading.Thread):
         self.__processExecution.execute()
 
         if self.__processExecution.exitStatus():
-            raise LocalExecutionError(
+            raise LocalDispatcherExecutionError(
                 self.__processExecution.stdoutContent()
             )
 
-class Local(Dispatcher):
+class LocalDispatcher(Dispatcher):
     """
     Local dispatcher implementation.
 
@@ -51,7 +51,7 @@ class Local(Dispatcher):
         """
         Create a local dispatch instance.
         """
-        super(Local, self).__init__(*args, **kwargs)
+        super(LocalDispatcher, self).__init__(*args, **kwargs)
 
         self.setStdout(sys.stdout)
         self.setStderr(subprocess.STDOUT)
@@ -118,7 +118,7 @@ class Local(Dispatcher):
         if self.option('awaitExecution'):
             processExecution.execute()
             if processExecution.exitStatus():
-                raise LocalExecutionError(
+                raise LocalDispatcherExecutionError(
                     processExecution.stdoutContent()
                 )
 
@@ -167,7 +167,7 @@ class Local(Dispatcher):
 
 
 # registering dispatcher
-Local.register(
+LocalDispatcher.register(
     'local',
-    Local
+    LocalDispatcher
 )

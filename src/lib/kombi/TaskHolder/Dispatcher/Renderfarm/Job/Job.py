@@ -1,10 +1,10 @@
 from ....TaskHolder import TaskHolder
 from ...Dispatcher import DispatcherError
 
-class RenderfarmJobIdError(DispatcherError):
+class JobIdError(DispatcherError):
     """Render farm Job Id Error."""
 
-class RenderfarmJob(object):
+class Job(object):
     """
     Abstracted render farm job class.
     """
@@ -38,7 +38,7 @@ class RenderfarmJob(object):
         submitted to the farm.
         """
         if self.__jobId is None:
-            raise RenderfarmJobIdError(
+            raise JobIdError(
                 "Renderfarm job does not have any job id associated with it."
             )
 

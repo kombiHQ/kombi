@@ -1,7 +1,7 @@
-from .RenderfarmJob import RenderfarmJob
+from .Job import Job
 from .ExpandedJob import ExpandedJob
 
-class CollapsedJob(RenderfarmJob):
+class CollapsedJob(Job):
     """
     Implements a collapsed render farm job.
 

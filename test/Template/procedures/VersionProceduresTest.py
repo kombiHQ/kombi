@@ -3,7 +3,7 @@ import os
 from ...BaseTestCase import BaseTestCase
 from kombi.Template import Template
 
-class VersionTest(BaseTestCase):
+class VersionProceduresTest(BaseTestCase):
     """Test Version template procedures."""
 
     def testNewVersion(self):

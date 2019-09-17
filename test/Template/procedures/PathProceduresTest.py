@@ -4,7 +4,7 @@ from ...BaseTestCase import BaseTestCase
 from kombi.Template import Template
 from kombi.Template import TemplateProcedureNotFoundError
 
-class PathTest(BaseTestCase):
+class PathProceduresTest(BaseTestCase):
     """Test Path template procedures."""
 
     __path = "/test/path/example.ext"

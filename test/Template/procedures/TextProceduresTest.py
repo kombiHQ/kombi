@@ -2,7 +2,7 @@ import unittest
 from ...BaseTestCase import BaseTestCase
 from kombi.Template import Template
 
-class TextTest(BaseTestCase):
+class TextProceduresTest(BaseTestCase):
     """Test Text template procedures."""
 
     def testUpper(self):

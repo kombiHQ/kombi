@@ -2,7 +2,7 @@ import unittest
 from ...BaseTestCase import BaseTestCase
 from kombi.Template import Template
 
-class MathTest(BaseTestCase):
+class MathProceduresTest(BaseTestCase):
     """Test Math template procedures."""
 
     def testSum(self):

@@ -1,0 +1,7 @@
+from .DatetimeProceduresTest import DatetimeProceduresTest
+from .ImageSequenceProceduresTest import ImageSequenceProceduresTest
+from .MathProceduresTest import MathProceduresTest
+from .PathProceduresTest import PathProceduresTest
+from .SystemProceduresTest import SystemProceduresTest
+from .TextProceduresTest import TextProceduresTest
+from .VersionProceduresTest import VersionProceduresTest

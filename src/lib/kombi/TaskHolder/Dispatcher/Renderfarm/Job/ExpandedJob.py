@@ -1,8 +1,8 @@
 import os
 import uuid
-from .RenderfarmJob import RenderfarmJob
+from .Job import Job
 
-class ExpandedJob(RenderfarmJob):
+class ExpandedJob(Job):
     """
     Implements an expanded render farm job.
 

@@ -2,13 +2,13 @@ import os
 import subprocess
 import tempfile
 from ..Dispatcher import DispatcherError
-from .Renderfarm import Renderfarm
-from .RenderfarmJob import RenderfarmJob, CollapsedJob, ExpandedJob
+from .RenderfarmDispatcher import RenderfarmDispatcher
+from .Job import Job, CollapsedJob, ExpandedJob
 
-class DeadlineCommandError(DispatcherError):
+class DeadlineDispatcherCommandError(DispatcherError):
     """Deadline command error."""
 
-class Deadline(Renderfarm):
+class DeadlineDispatcher(RenderfarmDispatcher):
     """
     Deadline dispatcher implementation.
 
@@ -22,9 +22,9 @@ class Deadline(Renderfarm):
 
     def __init__(self, *args, **kwargs):
         """
-        Create a Renderfarm dispatcher object.
+        Create a RenderfarmDispatcher dispatcher object.
         """
-        super(Deadline, self).__init__(*args, **kwargs)
+        super(DeadlineDispatcher, self).__init__(*args, **kwargs)
 
         self.__lazyOptions = {}
 
@@ -65,7 +65,7 @@ class Deadline(Renderfarm):
             )
 
         # returning the value for an option
-        return super(Deadline, self).option(name, *args, **kwargs)
+        return super(DeadlineDispatcher, self).option(name, *args, **kwargs)
 
     def _addDependencyIds(self, jobId, dependencyIds):
         """
@@ -105,7 +105,7 @@ class Deadline(Renderfarm):
 
         Should return the job id created during the dispatching.
         """
-        assert isinstance(renderfarmJob, RenderfarmJob), \
+        assert isinstance(renderfarmJob, Job), \
             "Invalid RenderFarmJob type!"
 
         task = renderfarmJob.taskHolder().task()
@@ -203,7 +203,7 @@ class Deadline(Renderfarm):
             # it should contain just a single job id
             return jobId[0][len(jobIdPrefix):]
         else:
-            raise DeadlineCommandError(output)
+            raise DeadlineDispatcherCommandError(output)
 
     def __defaultJobArgs(self, task, command, jobDataFilePath):
         """
@@ -279,13 +279,13 @@ class Deadline(Renderfarm):
         output, error = process.communicate()
 
         if error:
-            raise DeadlineCommandError(error.decode("utf-8"))
+            raise DeadlineDispatcherCommandError(error.decode("utf-8"))
 
         return output.decode("utf-8")
 
 
 # registering dispatcher
-Deadline.register(
+DeadlineDispatcher.register(
     'renderFarm',
-    Deadline
+    DeadlineDispatcher
 )

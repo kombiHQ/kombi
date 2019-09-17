@@ -5,7 +5,7 @@ import tempfile
 from ...BaseTestCase import BaseTestCase
 from kombi.Template import Template
 
-class SystemTest(BaseTestCase):
+class SystemProceduresTest(BaseTestCase):
     """Test System template procedures."""
 
     def testTmp(self):

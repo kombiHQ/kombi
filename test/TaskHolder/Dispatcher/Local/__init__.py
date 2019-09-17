@@ -1,1 +1,1 @@
-from .LocalTest import LocalTest
+from .LocalDispatcherTest import LocalDispatcherTest

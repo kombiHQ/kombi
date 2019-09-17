@@ -5,9 +5,9 @@ import uuid
 from datetime import datetime
 from collections import OrderedDict
 from ..Dispatcher import Dispatcher
-from .RenderfarmJob import RenderfarmJob, ExpandedJob, CollapsedJob
+from .Job import Job, ExpandedJob, CollapsedJob
 
-class Renderfarm(Dispatcher):
+class RenderfarmDispatcher(Dispatcher):
     """
     Abstracted implementation for a renderfarm dispatcher.
 
@@ -25,7 +25,7 @@ class Renderfarm(Dispatcher):
         """
         Create a Renderfarm dispatcher object.
         """
-        super(Renderfarm, self).__init__(*args, **kwargs)
+        super(RenderfarmDispatcher, self).__init__(*args, **kwargs)
 
         assert len(self.__defaultJobTempDir), "KOMBI_TEMP_REMOTE_DIR env is not defined!"
 
@@ -117,8 +117,8 @@ class Renderfarm(Dispatcher):
         """
         Generate a file used to execute the task holder on the farm.
         """
-        assert isinstance(renderfarmJob, RenderfarmJob), \
-            "Invalid RenderfarmJob type!"
+        assert isinstance(renderfarmJob, Job), \
+            "Invalid Job type!"
 
         # in case the option "expandOnTheFarm" is enabled we need to disable that
         # otherwise, the job is going to keep re-spawning on the farm indefinitely.
