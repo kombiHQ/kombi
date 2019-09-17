@@ -9,7 +9,7 @@ from collections import OrderedDict
 from PySide2 import QtCore, QtGui, QtWidgets
 from kombi.ProcessExecution import ProcessExecution
 from kombi.TaskHolder.Loader import Loader
-from kombi.TaskHolder import Dispatcher
+from kombi.TaskHolder.Dispatcher import Dispatcher
 from kombi.Crawler import Crawler, PathHolder
 from .Resource import Resource
 from .Style import Style
