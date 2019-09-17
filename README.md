@@ -227,6 +227,7 @@ cd <SRC_LOCATION>
 ```
 
 #### Building Kombi
+> For windows users the volumes are available under `/cygdrive/<volume>` in cygwin 
 
 ```bash
 cd <SRC_LOCATION>
