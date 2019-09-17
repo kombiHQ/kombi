@@ -37,10 +37,18 @@ class UpdateImageMetadataTask(Task):
 
             # writing image with updated metadata
             outImage = oiio.ImageOutput.create(targetFilePath)
-            outImage.open(
+
+            # in case we are using an older version of oiio we need to
+            # provide an additional argument to the open
+            outImageOpenArgs = [
                 targetFilePath,
-                inputSpec,
-                oiio.ImageOutputOpenMode.Create
+                inputSpec
+            ]
+            if hasattr(oiio, 'ImageOutputOpenMode'):
+                outImageOpenArgs.append(oiio.ImageOutputOpenMode.Create)
+
+            outImage.open(
+                *outImageOpenArgs
             )
 
             outImage.copy_image(imageInput)
