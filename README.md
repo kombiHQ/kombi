@@ -205,7 +205,7 @@ yum install ffmpeg
 <details><summary>Details</summary>
 <p>
     
-> For windows users please make sure you have the posix tools available on your system. It can be done through [Cygwin](https://www.cygwin.com) (During the intallation make sure to select `cmake` and `make` under `Devel` category).
+> For windows users please make sure you have the posix tools available on your system. It can be done through [Cygwin](https://www.cygwin.com) (During the installation make sure to select `cmake` and `make` under `Devel` category).
 
 #### Dependencies
 Name | Version 
@@ -227,7 +227,7 @@ cd <SRC_LOCATION>
 ```
 
 #### Building Kombi
-> For windows users the volumes are available under `/cygdrive/<volume>` in cygwin 
+> Hint for windows users: The volumes are available under `/cygdrive/<volume>` in cygwin 
 
 ```bash
 cd <SRC_LOCATION>
