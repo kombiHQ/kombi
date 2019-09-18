@@ -949,17 +949,15 @@ class App(QtWidgets.QApplication):
         try:
             for crawlersGroup in groupedVisibleCrawlers:
                 for taskHolder in self.__taskHolders:
-
                     # run on the farm
                     if self.__runOnTheFarmCheckbox.checkState() == QtCore.Qt.Checked:
-                        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         renderFarmDispatcher = Dispatcher.create('renderFarm')
-                        label = os.path.basename(taskHolder.var('configDirectory'))
-                        label += "/"
-                        label += os.path.splitext(taskHolder.var('configName'))[0]
-                        label += date
-                        label += ": "
-                        label += crawlersGroup[0].tag('group') if 'group' in crawlersGroup[0].tagNames() else crawlersGroup[0].var('baseName')
+                        label = "{}/{}/{} [{}]".format(
+                            os.path.basename(taskHolder.var('configDirectory')),
+                            os.path.splitext(os.path.basename(taskHolder.var('contextConfig')))[0],
+                            crawlersGroup[0].tag('group') if 'group' in crawlersGroup[0].tagNames() else crawlersGroup[0].var('baseName'),
+                            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        )
                         renderFarmDispatcher.setOption('label', label)
                         renderFarmDispatcher.dispatch(taskHolder, crawlersGroup)
 
