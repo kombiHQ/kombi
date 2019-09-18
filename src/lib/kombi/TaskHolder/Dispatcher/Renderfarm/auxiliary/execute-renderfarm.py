@@ -4,9 +4,9 @@ import json
 import argparse
 from glob import glob
 from collections import OrderedDict
-from kombi.Dispatcher import Dispatcher
 from kombi.Crawler import Crawler
 from kombi.TaskHolder import TaskHolder
+from kombi.TaskHolder.Dispatcher import Dispatcher
 
 def __runCollapsed(data, taskHolder, dataJsonFile):
     """
