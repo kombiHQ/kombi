@@ -12,6 +12,13 @@ class DeadlineDispatcher(RenderfarmDispatcher):
     """
     Deadline dispatcher implementation.
 
+    Note for potential issues in deadline:
+        - Make sure the "CommandLine" plugin is enabled in deadline.
+        - The python executable called through command-line can be defined through the
+        environment variable: KOMBI_PYTHON_EXECUTABLE (when not defined it defaults
+        to python), you may need to provide the full qualified location for the python executable
+        on windows (for instance: KOMBI_PYTHON_EXECUTABLE=X:/apps/python37/python.exe).
+
     Optional options: pool, secondaryPool, group and jobFailRetryAttempts
     """
 
@@ -209,10 +216,15 @@ class DeadlineDispatcher(RenderfarmDispatcher):
         """
         Return a list containing the default job args that later are passed to deadlinecommand.
         """
+        pythonExec = os.environ.get(
+            'KOMBI_PYTHON_EXECUTABLE',
+            'python'
+        )
+
         args = [
             "-SubmitCommandLineJob",
             "-executable",
-            "python",
+            pythonExec,
             "-arguments",
             command,
             "-priority",
