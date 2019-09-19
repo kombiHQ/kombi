@@ -14,6 +14,8 @@ from .Cli import Cli, CliError
 # resources can be using the modules above (that's why it needs
 # be imported as the last one).
 from .Resource import Resource, ResourceError, ResourceInvalidError
+# loading resources by triggering the singleton
+Resource.get()
 
 # initialize cli support
 def init():
