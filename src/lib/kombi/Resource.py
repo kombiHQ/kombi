@@ -115,7 +115,3 @@ class Resource(object):
 
                     # printing the stacktrace
                     traceback.print_exc()
-
-
-# loading resources by triggering the singleton
-Resource.get()
