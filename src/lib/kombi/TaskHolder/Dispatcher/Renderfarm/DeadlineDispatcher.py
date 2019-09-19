@@ -243,8 +243,9 @@ class DeadlineDispatcher(RenderfarmDispatcher):
             "-prop",
             "IncludeEnvironment=true",
             "-prop",
-            'BatchName={}'.format(self.option('label')),
-            'Username={}'.format(kombiUser)
+            "BatchName={}".format(self.option('label')),
+            "-prop",
+            "UserName={}".format(kombiUser)
         ]
 
         # adding optional options
