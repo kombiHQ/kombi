@@ -1,5 +1,6 @@
 import os
 import json
+import getpass
 from ..TaskHolder import TaskHolder
 
 class DispatcherError(Exception):
@@ -32,9 +33,12 @@ class Dispatcher(object):
         self.__dispatcherType = dispatcherType
 
         # environment that should be used during the _perform
+        env = dict(os.environ)
+        if 'KOMBI_USER' not in env:
+            env['KOMBI_USER'] = getpass.getuser()
         self.setOption(
             'env',
-            dict(os.environ)
+            env
         )
 
         # in case the task does not have the "output.reporter" metadata
