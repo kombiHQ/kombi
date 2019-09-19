@@ -1,5 +1,6 @@
 import os
 import subprocess
+import getpass
 import tempfile
 from ..Dispatcher import DispatcherError
 from .RenderfarmDispatcher import RenderfarmDispatcher
@@ -216,10 +217,11 @@ class DeadlineDispatcher(RenderfarmDispatcher):
         """
         Return a list containing the default job args that later are passed to deadlinecommand.
         """
-        pythonExec = os.environ.get(
+        pythonExec = self.option('env').get(
             'KOMBI_PYTHON_EXECUTABLE',
             'python'
         )
+        kombiUser = self.option('env').get('KOMBI_USER', getpass.getuser())
 
         args = [
             "-SubmitCommandLineJob",
@@ -241,7 +243,8 @@ class DeadlineDispatcher(RenderfarmDispatcher):
             "-prop",
             "IncludeEnvironment=true",
             "-prop",
-            'BatchName={}'.format(self.option('label'))
+            'BatchName={}'.format(self.option('label')),
+            'Username={}'.format(kombiUser)
         ]
 
         # adding optional options
