@@ -4,6 +4,9 @@ from kombi.Crawler.VarExtractor import VarExtractor
 class PlateExr(ExrCrawler):
     """
     Implements an internal exr plate.
+
+    Alternatively you can use inline crawlers instead of this implementation,
+    please check the example: vendorXPlatesInlineCrawlers
     """
 
     # name example: "foo_abc_def.v0001.000001.exr"
