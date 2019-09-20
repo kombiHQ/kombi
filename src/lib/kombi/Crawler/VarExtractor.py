@@ -101,6 +101,8 @@ class VarExtractor(object):
 
     The variables must be enclosed inside {<NAME>}, for instance: {myVar}
 
+    {@myVar} - context variables can be defined using the prefix '@'
+
     {myVar:<SIZE>} - an optional fixed size for variable's value can be
     defined by assigning the size after the separator ":", for
     instance: {myVar:2}
@@ -133,7 +135,7 @@ class VarExtractor(object):
             PRO_ABC_DEF_FOO_V0001.0001.png
 
         Value Pattern:
-            {job:3}_{seq:3}_{shot:3}_{plateName}_V{version:4i}.####.png
+            {job:3}_{seq:3}_{shot:3}_{plateName}_V{@version:4i}.####.png
 
     You can use the method "VarExtractor.match()" to know if the extraction has
     been done successfully. For additional information about the match
@@ -149,6 +151,7 @@ class VarExtractor(object):
         self.__value = value
         self.__valuePattern = valuePattern
         self.__vars = OrderedDict()
+        self.__contextVarNames = []
         self.__error = None
 
         try:
@@ -181,6 +184,12 @@ class VarExtractor(object):
         Return the raw value.
         """
         return self.__value
+
+    def contextVarNames(self):
+        """
+        Return a list of variable names that are defined as context variables.
+        """
+        return list(self.__contextVarNames)
 
     def error(self):
         """
@@ -326,6 +335,11 @@ class VarExtractor(object):
             index,
             valueCurrentIndex + varValueSize - 1,
         )
+
+        # handling context variable
+        if currentVar[0].startswith('@'):
+            currentVar[0] = currentVar[0][1:]
+            self.__contextVarNames.append(currentVar[0])
 
         # assigning variable
         self.__vars[currentVar[0]] = finalValue

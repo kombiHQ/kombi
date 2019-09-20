@@ -93,18 +93,19 @@ class Crawler(object):
         """
         return list(self.__contextVarNames)
 
-    def assignVars(self, varExtractor, isContextVar=False):
+    def assignVars(self, varExtractor):
         """
         Assign variables from a var extractor instance.
         """
         assert isinstance(varExtractor, VarExtractor), "Invalid VarExtractor type!"
         assert varExtractor.match(), "varExtractor failed during the extraction!"
 
+        contextVarNames = varExtractor.contextVarNames()
         for varName in varExtractor.varNames():
             self.setVar(
                 varName,
                 varExtractor.var(varName),
-                isContextVar=isContextVar
+                isContextVar=(varName in contextVarNames)
             )
 
     def setVar(self, name, value, isContextVar=False):
