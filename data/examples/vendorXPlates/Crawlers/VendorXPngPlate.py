@@ -4,6 +4,9 @@ from kombi.Crawler.VarExtractor import VarExtractor
 class VendorXPngPlate(PngCrawler):
     """
     Implements a custom vendor "X" png plate crawler.
+
+    Alternatively you can use inline crawlers instead of this implementation,
+    please check the example: vendorXPlatesInlineCrawlers
     """
 
     # name example: "foo_def_abc_foo_001.0001.png"
