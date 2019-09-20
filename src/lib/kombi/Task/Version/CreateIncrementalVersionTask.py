@@ -1,6 +1,7 @@
 import os
 import json
 from ..Task import Task
+from ...Template import Template
 from ...Crawler.Fs.FsCrawler import FsCrawler
 from .CreateVersionTask import CreateVersionTask
 
@@ -44,7 +45,11 @@ class CreateIncrementalVersionTask(CreateVersionTask):
         # building the incremental version full path
         incrementalVersionPath = os.path.join(
             os.path.dirname(self.versionPath()),
-            'v{0}'.format(str(version).zfill(3))
+            Template.runProcedure(
+                "labelver",
+                version,
+                self.option('versionPattern')
+            )
         )
 
         incrementalVersionData = os.path.join(

@@ -2,6 +2,7 @@ import os
 import time
 from ..Task import Task
 from ...Crawler.Fs import FsCrawler
+from ...Template import Template
 from .CreateDataTask import CreateDataTask
 
 class CreateVersionTask(CreateDataTask):
@@ -24,6 +25,7 @@ class CreateVersionTask(CreateDataTask):
         """
         super(CreateVersionTask, self).__init__(*args, **kwargs)
 
+        self.setOption('versionPattern', '')
         self.__startTime = time.time()
         self.__loadedStaticData = False
 
@@ -121,7 +123,13 @@ class CreateVersionTask(CreateDataTask):
 
         # looking for the version based on the version folder name
         # that follows the convention "v001"
-        self.__version = int(os.path.basename(self.versionPath())[1:])
+        self.__version = int(
+            Template.runProcedure(
+                "vernumber",
+                os.path.basename(self.versionPath()),
+                self.option('versionPattern')
+            )
+        )
 
 
 # registering task
