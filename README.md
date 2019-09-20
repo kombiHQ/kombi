@@ -217,7 +217,7 @@ Pylama | 7.0+
 #### Running tests
 ```bash
 cd <SRC_LOCATION>
-./runtests
+./runtest
 ```
 
 #### Running linters
