@@ -77,7 +77,7 @@ target = "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ve
 </details>
 
 <details><summary>JSON & HJSON</summary>
-It supports both Json and Hjson (a user interface for JSON. Adds comments, makes it nicer to read and avoids comma mistakes: https://hjson.org)
+It supports both Json and Hjson (a user interface for JSON: https://hjson.org)
 <p>
 
 ```json
