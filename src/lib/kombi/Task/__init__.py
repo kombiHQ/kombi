@@ -6,3 +6,4 @@ from . import Video
 from . import Shotgun
 from . import Version
 from . import Delivery
+from . import Archive

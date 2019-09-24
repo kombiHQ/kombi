@@ -7,7 +7,7 @@ from kombi.Crawler.Fs import FsCrawler
 from kombi.Task.Fs.ChecksumTask import ChecksumTaskMatchError
 
 class ChecksumTaskTest(BaseTestCase):
-    """Test ChecksumTask task."""
+    """Test Checksum task."""
 
     __sourcePath = os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")
     __targetPath = os.path.join(BaseTestCase.tempDirectory(), "testCopy.exr")
