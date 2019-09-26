@@ -15,7 +15,6 @@ class PublishTexturesTest(BaseTestCase):
         publishTextures/test/publish/texture/default/v001/data.json
         publishTextures/test/publish/texture/default/v001/env.json
         publishTextures/test/publish/texture/default/v001/info.json
-        publishTextures/test/publish/texture/default/v001/data
         publishTextures/test/publish/texture/default/v001/data/exr
         publishTextures/test/publish/texture/default/v001/data/exr/DIFF_1001.exr
         publishTextures/test/publish/texture/default/v001/data/tif
