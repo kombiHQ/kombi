@@ -191,7 +191,7 @@ class Crawler(object):
         Filter result list by crawler type (str) or class type (both include derived classes).
         """
         if self.__globCache is None or not useCache:
-            # Recursively collect all crawlers for this path
+            # Recursively collect all children crawlers
             self.__globCache = Crawler.__collectCrawlers(self)
 
         if not filterTypes:
@@ -392,12 +392,13 @@ class Crawler(object):
         """
         Recursively collect crawlers.
         """
-        result = []
-        result.append(crawler)
+        if crawler.isLeaf():
+            return []
 
-        if not crawler.isLeaf():
-            for childCrawler in crawler.children():
-                result += Crawler.__collectCrawlers(childCrawler)
+        result = []
+        for childCrawler in crawler.children():
+            result.append(childCrawler)
+            result += Crawler.__collectCrawlers(childCrawler)
 
         return result
 

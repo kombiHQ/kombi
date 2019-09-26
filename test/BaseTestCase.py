@@ -39,9 +39,6 @@ class BaseTestCase(unittest.TestCase):
         """
         result = []
 
-        if fnmatch.fnmatch(rootDirectory, filterMask):
-            result.append(rootDirectory)
-
         for root, dirnames, filenames in os.walk(rootDirectory):
             for filename in fnmatch.filter(filenames + dirnames, filterMask):
                 result.append(os.path.join(root, filename))
