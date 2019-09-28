@@ -49,6 +49,12 @@ class Dispatcher(object):
             self.__defaultReporter
         )
 
+        # optional label that can be used by the dispatcher implementations
+        self.setOption(
+            'label',
+            ''
+        )
+
     def type(self):
         """
         Return the dispatcher type.
