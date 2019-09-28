@@ -45,7 +45,6 @@ class LocalDispatcher(Dispatcher):
     """
 
     __runningThreads = []
-    __defaultAwaitExecution = False
 
     def __init__(self, *args, **kwargs):
         """
@@ -56,10 +55,7 @@ class LocalDispatcher(Dispatcher):
         self.setStdout(sys.stdout)
         self.setStderr(subprocess.STDOUT)
 
-        self.setOption(
-            "awaitExecution",
-            self.__defaultAwaitExecution
-        )
+        self.setOption("awaitExecution", True)
 
     def setStdout(self, stream):
         """
@@ -165,9 +161,28 @@ class LocalDispatcher(Dispatcher):
 
         return temporaryFile.name
 
+class _LocalDispatcherParallel(LocalDispatcher):
+    """
+    Local dispatcher for parallel executions (defined for convenience when selecting dispatchers).
+    """
 
-# registering dispatcher
+    def __init__(self, *args, **kwargs):
+        """
+        Create a local dispatcher parallel object.
+        """
+        super(_LocalDispatcherParallel, self).__init__(*args, **kwargs)
+
+        # enabling parallel executions
+        self.setOption("awaitExecution", False)
+
+
+# registering dispatchers
 LocalDispatcher.register(
     'local',
     LocalDispatcher
+)
+
+LocalDispatcher.register(
+    'localParallel',
+    _LocalDispatcherParallel
 )
