@@ -133,7 +133,6 @@ class ProcessExecution(object):
 
         # retrieving value from queue
         while stdoutThread.is_alive() or (stderrThread is not None and stderrThread.is_alive()):
-
             # stdout
             stdoutValue = self.__queryStreamValueFromQueue(stdoutQueue)
             if stdoutValue is not None:
@@ -226,7 +225,7 @@ class ProcessExecution(object):
             pass
         else:
             if not isinstance(line, str):
-                line = line.decode("utf_8")
+                line = line.decode("utf_8", errors="ignore")
             result = line
 
         return result
