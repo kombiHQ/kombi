@@ -2,7 +2,7 @@ from .LutCrawler import LutCrawler
 
 class CccCrawler(LutCrawler):
     """
-    Parses a Ccc or a Cc file.
+    Parses a Ccc file.
     """
 
     def __init__(self, *args, **kwargs):
@@ -21,7 +21,7 @@ class CccCrawler(LutCrawler):
         if not super(CccCrawler, cls).test(pathHolder, parentCrawler, ignoreExt=True):
             return False
 
-        return pathHolder.ext() in ['ccc', 'cc']
+        return pathHolder.ext() == 'ccc'
 
     def __parseXML(self):
         """
@@ -48,11 +48,5 @@ class CccCrawler(LutCrawler):
 # registering crawler
 CccCrawler.register(
     'ccc',
-    CccCrawler
-)
-
-# registering crawler
-CccCrawler.register(
-    'cc',
     CccCrawler
 )

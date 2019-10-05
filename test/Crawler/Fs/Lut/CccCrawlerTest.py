@@ -22,7 +22,7 @@ class CccCrawlerTest(BaseTestCase):
         Test that variables are set properly.
         """
         crawler = FsCrawler.create(PathHolder(self.__cccFile))
-        self.assertEqual(crawler.var("type"), "cc")
+        self.assertEqual(crawler.var("type"), "ccc")
         self.assertEqual(crawler.var("category"), "lut")
         self.assertEqual(crawler.var("slope"), [1.1, 1.2, 1.3])
         self.assertEqual(crawler.var("offset"), [0.1, 0.2, 0.3])
