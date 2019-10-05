@@ -131,7 +131,7 @@ class NukeSceneTask(Task):
                 # creating directories if necessary
                 try:
                     os.makedirs(os.path.dirname(exportNukeScript))
-                except (IOError, OSError) as err:
+                except (IOError, OSError):
                     pass
 
                 # exporting file
