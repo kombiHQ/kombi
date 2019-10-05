@@ -323,9 +323,9 @@ class Template(object):
                 # this is a special token that allows to pass the parent path
                 # to a procedure, replacing it with the parent path at this point.
                 if not finalResolvedTemplate.endswith('/'):
-                    tokens['<parent>'] = os.path.dirname(finalResolvedTemplate.replace(requiredLevelToken, "/"))
+                    tokens['<parent>'] = os.path.dirname(finalResolvedTemplate.replace("/!", "/"))
                 else:
-                    tokens['<parent>'] = finalResolvedTemplate.replace(requiredLevelToken, "/")
+                    tokens['<parent>'] = finalResolvedTemplate.replace("/!", "/")
 
                 # replacing token values
                 templateLastPart = templatePart[endIndex + 1:]
