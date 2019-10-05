@@ -82,6 +82,17 @@ class ImageCrawler(FileCrawler):
                     self.var('ext')
                 )
             )
+
+            # sprintf group notation tag
+            self.setTag(
+                'groupSprintf',
+                '{0}{1}{2}.{3}'.format(
+                    name,
+                    frameSep,
+                    '%0{}d'.format(len(frame)),
+                    self.var('ext')
+                )
+            )
         else:
             self.setTag('image', self.pathHolder().baseName())
 
