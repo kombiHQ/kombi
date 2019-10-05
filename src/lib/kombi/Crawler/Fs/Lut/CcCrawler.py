@@ -1,15 +1,15 @@
 from .LutCrawler import LutCrawler
 
-class CccCrawler(LutCrawler):
+class CcCrawler(LutCrawler):
     """
-    Parses a Ccc file.
+    Parses a Cc file.
     """
 
     def __init__(self, *args, **kwargs):
         """
-        Create a Ccc object.
+        Create a Cc object.
         """
-        super(CccCrawler, self).__init__(*args, **kwargs)
+        super(CcCrawler, self).__init__(*args, **kwargs)
 
         self.__parseXML()
 
@@ -18,17 +18,17 @@ class CccCrawler(LutCrawler):
         """
         Test if the path holder contains a lut file.
         """
-        if not super(CccCrawler, cls).test(pathHolder, parentCrawler, ignoreExt=True):
+        if not super(CcCrawler, cls).test(pathHolder, parentCrawler, ignoreExt=True):
             return False
 
-        return pathHolder.ext() == 'ccc'
+        return pathHolder.ext() == 'cc'
 
     def __parseXML(self):
         """
         Parse the ccc file (XML file format) information and assign that to the crawler.
         """
         tags = ['Slope', 'Offset', 'Power', 'Saturation']
-        requireTags = ['ColorCorrection', 'ColorCorrectionCollection']
+        requireTags = ['ColorCorrection']
 
         # Check if the cdl have the required tags
         for tag in requireTags:
@@ -46,7 +46,7 @@ class CccCrawler(LutCrawler):
 
 
 # registering crawler
-CccCrawler.register(
-    'ccc',
-    CccCrawler
+CcCrawler.register(
+    'cc',
+    CcCrawler
 )
