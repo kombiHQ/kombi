@@ -19,9 +19,11 @@ class ShotRenderCrawler(ExrRenderCrawler):
         self.setVar('shot', parts[0], True)
         self.setVar('step', parts[1], True)
         self.setVar('pass', parts[2], True)
-        self.setVar('renderName', '{}-{}'.format(
-            self.var('step'),
-            self.var('pass')
+        self.setVar(
+            'renderName',
+            '{}-{}'.format(
+                self.var('step'),
+                self.var('pass')
             ),
             True
         )

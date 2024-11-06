@@ -1,0 +1,40 @@
+{
+  "scripts": [
+    "*/*.py"
+  ],
+  "vars": {
+    "__uiHintSourceColumns": [
+      "type",
+      "job",
+      "seq",
+      "shot"
+    ],
+    "prefix": "/tmp"
+  },
+  "tasks": [
+    {
+      "run": "loadImageMetadata",
+      "options": {
+        "_testing": "*testing",
+        "_bla": "*prefix:testing"
+      },
+      "metadata": {
+        "match.types": [
+          "exr"
+        ],
+        "match.vars": {
+          "imageType": [
+            "sequence"
+          ]
+        }
+      },
+      "tasks": [
+        {
+          "run": "copy",
+          "target": "/tmp/testing_{_testing}.{frame}.{ext}"
+        }
+      ]
+    }
+  ]
+}
+

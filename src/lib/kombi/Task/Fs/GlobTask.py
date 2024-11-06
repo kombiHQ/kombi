@@ -1,12 +1,6 @@
-import sys
 from ..Task import Task
 from ...Crawler.Fs.FsCrawler import FsCrawler
-
-# python 2 does not support recursion in the glob syntax
-if sys.version_info[0] < 3:
-    from kombithirdparty.glob2 import glob
-else:
-    from glob import glob
+from glob import glob
 
 class GlobTask(Task):
     """
@@ -40,8 +34,12 @@ class GlobTask(Task):
         """
         result = []
         alreadyAdded = set()
+        targets = set()
         for crawler in self.crawlers():
             filePath = self.target(crawler)
+            if self.option('skipDuplicated') and filePath in targets:
+                continue
+            targets.add(filePath)
 
             for resolvedFilePath in glob(filePath, recursive=True):
                 # skipping duplicated results
@@ -53,7 +51,7 @@ class GlobTask(Task):
                     FsCrawler.createFromPath(resolvedFilePath)
                 )
 
-        return result
+        return [y for x in FsCrawler.group(result) for y in x]
 
 
 # registering task

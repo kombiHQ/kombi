@@ -5,7 +5,7 @@ from ...Crawler import Crawler, VarExtractor
 from ...Template import Template
 from ...TaskHolder import TaskHolder
 from ...Resource import Resource
-from .Loader import Loader, LoaderError
+from .Loader import Loader, LoaderError, LoaderInvalidConfigError
 
 class PythonLoaderContentError(LoaderError):
     """Python Loader Content Error."""
@@ -69,6 +69,9 @@ class PythonLoader(Loader):
                 },
                 {
                     "include": "../../myTaskHolderInfo.json"
+                },
+                {
+                    "config": "../someConfigDir"
                 }
               ]
             }
@@ -130,6 +133,10 @@ class PythonLoader(Loader):
 
             taskHolderInfo = self.__expandTaskHolderInfo(taskHolderInfo, contextVars)
 
+            # loading as config
+            if self.__loadConfigs(parentTaskHolder or self, taskHolderInfo):
+                continue
+
             task = self.__parseTask(taskHolderInfo)
 
             # getting the target template
@@ -148,6 +155,9 @@ class PythonLoader(Loader):
                 filterTemplate,
                 exportTemplate
             )
+
+            # regroup tag
+            taskHolder.setRegroupTag(taskHolderInfo.get('regroupTag', ''))
 
             # loading imports
             self.__loadImports(taskHolder, taskHolderInfo)
@@ -190,7 +200,7 @@ class PythonLoader(Loader):
         importTemplates = taskHolderInfo['import']
 
         if not isinstance(importTemplates, (tuple, list)):
-            importTemplates = (importTemplates)
+            importTemplates = (importTemplates,)
 
         for importTemplate in importTemplates:
             taskHolder.addImportTemplate(
@@ -198,12 +208,36 @@ class PythonLoader(Loader):
             )
 
     @classmethod
+    def __loadConfigs(cls, taskHolder, taskHolderInfo):
+        """
+        Load configs to the task holder.
+        """
+        result = False
+        if 'config' in taskHolderInfo:
+            result = True
+            configTemplates = taskHolderInfo['config']
+
+            if not isinstance(configTemplates, (tuple, list)):
+                configTemplates = (configTemplates,)
+
+            for configTemplate in configTemplates:
+                includeLoader = Loader()
+                if os.path.isdir(configTemplate):
+                    includeLoader.loadFromDirectory(configTemplate)
+                else:
+                    includeLoader.loadFromFile(configTemplate)
+
+                for configTaskHolder in includeLoader.taskHolders():
+                    taskHolder.addSubTaskHolder(configTaskHolder)
+
+        return result
+
+    @classmethod
     def __expandTaskHolderInfo(cls, taskHolderInfo, contextVars):
         """
         Return the expanded content of a task holder that can be described using an external resource.
         """
-        # special case where configurations can be defined externally, when that
-        # is the case loading that instead
+        # special case where configurations can be defined externally
         if 'include' not in taskHolderInfo:
             return taskHolderInfo
 
@@ -228,7 +262,16 @@ class PythonLoader(Loader):
                 with open(includePath) as f:
 
                     # parsing include
-                    includeTaskHolderInfo = taskHolderLoader.parse(f.read())
+                    try:
+                        includeTaskHolderInfo = taskHolderLoader.parse(f.read())
+                    except Exception as err:
+                        raise LoaderInvalidConfigError(
+                            '{}\n ^--- {} while loading include file: {}'.format(
+                                str(err),
+                                err.__class__.__name__,
+                                includePath
+                            )
+                        )
 
                     # making sure the parsed data contains the right structure
                     if not isinstance(includeTaskHolderInfo, dict):
@@ -301,7 +344,7 @@ class PythonLoader(Loader):
             for crawlerKey, varExtractorExpression in contents['crawlers'].items():
                 parts = crawlerKey.split('<')
                 BaseCrawler = Crawler
-                if parts > 1:
+                if len(parts) > 1:
                     BaseCrawler = Crawler.registeredType(parts[1].strip())
 
                 Crawler.register(

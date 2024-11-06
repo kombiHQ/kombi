@@ -1,4 +1,4 @@
-from .CreateDataTask import CreateDataTask, CreateDataTaskFileNotUnderDataDirectoryError, CreateDataTaskMetadataNotFoundError, CreateDataTaskInvalidInfoError
+from .CreateDataTask import CreateDataTask, CreateDataTaskError, CreateDataTaskFileNotUnderDataDirectoryError, CreateDataTaskMetadataNotFoundError, CreateDataTaskInvalidInfoError
 from .CreateVersionTask import CreateVersionTask
 from .CreateTextureVersionTask import CreateTextureVersionTask
 from .CreateRenderVersionTask import CreateRenderVersionTask

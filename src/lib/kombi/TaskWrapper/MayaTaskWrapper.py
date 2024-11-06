@@ -7,8 +7,8 @@ class MayaTaskWrapper(DCCTaskWrapper):
     Performs a task inside maya.
     """
 
-    __mayaExecutable = os.environ.get(
-        'KOMBI_MAYA_EXECUTABLE',
+    __mayaBatchExecutable = os.environ.get(
+        'KOMBI_MAYA_BATCH_EXECUTABLE',
         'maya'
     )
 
@@ -16,8 +16,17 @@ class MayaTaskWrapper(DCCTaskWrapper):
         """
         For re-implementation: should return a string which is executed as subprocess.
         """
-        return '{} -batch -command "python(\\"import kombi; kombi.TaskWrapper.SubprocessTaskWrapper.runSerializedTask()\\")"'.format(
-            self.__mayaExecutable
+        dummyMayaFilePath = os.path.join(
+            os.path.dirname(
+                os.path.realpath(__file__)
+            ),
+            'auxiliary',
+            'dummy.ma'
+        )
+
+        return '{} -file "{}" -batch -command "python(\\"import kombi; kombi.TaskWrapper.SubprocessTaskWrapper.runSerializedTask()\\")"'.format(
+            self.__mayaBatchExecutable,
+            dummyMayaFilePath
         )
 
     @classmethod

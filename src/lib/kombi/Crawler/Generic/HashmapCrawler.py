@@ -80,6 +80,12 @@ class HashmapCrawler(Crawler):
         """
         return self.var('data').values()
 
+    def initializationData(self):
+        """
+        Define the data passed during the initialization of the crawler.
+        """
+        return self.var('data')
+
     @classmethod
     def test(cls, data=None, parentCrawler=None):
         """

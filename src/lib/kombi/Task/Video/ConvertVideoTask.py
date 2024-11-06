@@ -38,7 +38,7 @@ class ConvertVideoTask(Task):
             if not os.path.exists(parentDirectory):
                 try:
                     os.makedirs(parentDirectory)
-                except OSError:
+                except (IOError, OSError):
                     pass
 
             # ffmpeg command

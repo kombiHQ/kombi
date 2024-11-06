@@ -25,7 +25,8 @@ class JsonTaskReporter(TaskReporter):
                 }
             )
 
-        sys.stdout.write('{}\n'.format(
+        sys.stdout.write(
+            '{}\n'.format(
                 json.dumps(
                     result,
                     sort_keys=True,

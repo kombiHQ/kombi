@@ -1,5 +1,6 @@
 import os
 import uuid
+import traceback
 from ..TaskHolder import TaskHolder
 
 class LoaderError(Exception):
@@ -77,7 +78,7 @@ class Loader(object):
             except Exception as err:
                 raise LoaderInvalidConfigError(
                     '{}\n ^--- {} while loading file: {}'.format(
-                        str(err),
+                        traceback.format_exc(),
                         err.__class__.__name__,
                         filePath
                     )

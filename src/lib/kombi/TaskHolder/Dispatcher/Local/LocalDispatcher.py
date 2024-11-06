@@ -35,6 +35,21 @@ class _ProcessExecutionThread(threading.Thread):
                 self.__processExecution.stdoutContent()
             )
 
+
+class RuntimeDispatcher(Dispatcher):
+    """
+    Runtime dispatcher implementation.
+
+    Dispatches the task holder on the current python runtime.
+    """
+
+    def _perform(self, taskHolder):
+        """
+        Execute the dispatcher.
+        """
+        # executing run
+        return list(map(lambda x: x.var('fullPath'), taskHolder.run()))
+
 class LocalDispatcher(Dispatcher):
     """
     Local dispatcher implementation.
@@ -177,6 +192,11 @@ class _LocalDispatcherParallel(LocalDispatcher):
 
 
 # registering dispatchers
+LocalDispatcher.register(
+    'runtime',
+    RuntimeDispatcher
+)
+
 LocalDispatcher.register(
     'local',
     LocalDispatcher

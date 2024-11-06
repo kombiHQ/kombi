@@ -19,7 +19,7 @@ class RenderfarmDispatcher(Dispatcher):
     __defaultExpandOnTheFarm = False
     __defaultChunkifyOnTheFarm = False
     __defaultPriority = int(os.environ.get('KOMBI_DISPATCHER_RENDERFARM_PRIORITY', 50))
-    __defaultSplitSize = int(os.environ.get('KOMBI_DISPATCHER_RENDERFARM_SPLITSIZE', 5))
+    __defaultSplitSize = int(os.environ.get('KOMBI_DISPATCHER_RENDERFARM_SPLITSIZE', 10))
 
     def __init__(self, *args, **kwargs):
         """
@@ -37,7 +37,7 @@ class RenderfarmDispatcher(Dispatcher):
         self.setOption('expandOnTheFarm', self.__defaultExpandOnTheFarm)
         self.setOption('chunkifyOnTheFarm', self.__defaultChunkifyOnTheFarm)
 
-    def extendDependencyIds(self, jobId, dependencyIds):
+    def extendDependencyIds(self, jobId, dependencyIds, task=None):
         """
         Extend the dependencies in the input job id.
         """
@@ -45,10 +45,11 @@ class RenderfarmDispatcher(Dispatcher):
 
         self._addDependencyIds(
             jobId,
-            dependencyIds
+            dependencyIds,
+            task
         )
 
-    def _addDependencyIds(self, jobId, dependencyIds):
+    def _addDependencyIds(self, jobId, dependencyIds, task=None):
         """
         For re-implementation: Should add the dependency ids to the input job id.
 
@@ -170,6 +171,11 @@ class RenderfarmDispatcher(Dispatcher):
                 indent=4
             )
 
+        # we might need to open this file with a different
+        # user to append the output
+        # (in case the task runs a different user)
+        os.chmod(jobDataFilePath, 0o777)
+
         return jobDataFilePath
 
     def __dispatchMainTaskHolder(self, taskHolder, jobDirectory):
@@ -195,7 +201,12 @@ class RenderfarmDispatcher(Dispatcher):
         # querying all crawlers from the current task so we can re-assign them
         # back to the task in chunks (when split size is greater than 0)
         taskCrawlers = OrderedDict()
-        for crawler in task.crawlers():
+        for index, crawler in enumerate(task.crawlers()):
+            # we are adding the tag 'originalIndex' to the crawlers, so even if they get
+            # executed in chunks we can get to know their original index. Useful,
+            # when you want to executed a single operation among all chunks:
+            # if originalIndex == 0 do something...
+            crawler.setTag('originalIndex', index)
             taskCrawlers[crawler] = task.target(crawler)
 
         # we can delegate the chunkfication to the render farm dispatcher
@@ -355,7 +366,16 @@ class RenderfarmDispatcher(Dispatcher):
             os.environ.get("KOMBI_USER", getpass.getuser()),
             str(uuid.uuid4())
         )
-        os.makedirs(baseRemoteTemporaryPath)
+
+        # we need to be careful when creating this path
+        # since some levels of new directories may be shared with
+        # different users that contain a different umask
+        # (aka publishing user)
+        try:
+            originalUmask = os.umask(0)
+            os.makedirs(baseRemoteTemporaryPath, mode=0o777)
+        finally:
+            os.umask(originalUmask)
 
         return baseRemoteTemporaryPath
 

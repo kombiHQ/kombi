@@ -1,12 +1,6 @@
 import os
 from .. import Crawler, PathHolder
 
-# compatibility with python 2/3
-try:
-    basestring
-except NameError:
-    basestring = str
-
 class FsCrawler(Crawler):
     """
     Abstracted file system Path.
@@ -16,7 +10,7 @@ class FsCrawler(Crawler):
         """
         Create a crawler (use the factory function Path.create instead).
         """
-        if isinstance(filePathOrPathHolder, basestring):
+        if isinstance(filePathOrPathHolder, str):
             pathHolder = PathHolder(filePathOrPathHolder)
         else:
             pathHolder = filePathOrPathHolder

@@ -14,6 +14,8 @@ class ChmodTask(Task):
         """
         super(ChmodTask, self).__init__(*args, **kwargs)
         self.setMetadata('dispatch.split', True)
+        self.setOption('directoryMode', 777)
+        self.setOption('fileMode', 777)
 
     def _perform(self):
         """
@@ -24,7 +26,7 @@ class ChmodTask(Task):
         fileMode = int(str(self.option('fileMode')), 8)
 
         for crawler in self.crawlers():
-            filePath = self.target(crawler)
+            filePath = crawler.var('filePath')
 
             if filePath in alreadyDone:
                 continue

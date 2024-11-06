@@ -40,25 +40,6 @@ class PythonTaskWrapper(SubprocessTaskWrapper):
         )
 
 
-class _Python2TaskWrapper(PythonTaskWrapper):
-    """
-    Forces a task to be performed using python 2.
-    """
-
-    def __init__(self, *args, **kwargs):
-        """
-        Create a python 2 task wrapper object.
-        """
-        super(PythonTaskWrapper, self).__init__(*args, **kwargs)
-
-        self.setOption(
-            'executableName',
-            os.environ.get(
-                'KOMBI_PYTHON2_EXECUTABLE',
-                'python2'
-            )
-        )
-
 class _Python3TaskWrapper(PythonTaskWrapper):
     """
     Forces a task to be performed using python 3.
@@ -89,12 +70,6 @@ SubprocessTaskWrapper.register(
 SubprocessTaskWrapper.register(
     'subprocess',
     PythonTaskWrapper
-)
-
-# specific for python 2.x
-SubprocessTaskWrapper.register(
-    'python2',
-    _Python2TaskWrapper
 )
 
 # specific for python 3.x

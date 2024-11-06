@@ -36,6 +36,16 @@ class Dispatcher(object):
         env = dict(os.environ)
         if 'KOMBI_USER' not in env:
             env['KOMBI_USER'] = getpass.getuser()
+
+        # this variable may get defined automatically
+        # when launching an application bundled with python
+        # which can clash with other processes also bundled
+        # with python. Therefore, letting those apps to
+        # define it with the proper home information
+        # as they get executed.
+        if 'PYTHONHOME' in env:
+            del env['PYTHONHOME']
+
         self.setOption(
             'env',
             env

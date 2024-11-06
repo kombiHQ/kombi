@@ -11,7 +11,10 @@ class CcCrawler(LutCrawler):
         """
         super(CcCrawler, self).__init__(*args, **kwargs)
 
-        self.__parseXML()
+        try:
+            self.__parseXML()
+        except Exception as err:
+            self.setVar('error', str(err))
 
     @classmethod
     def test(cls, pathHolder, parentCrawler):

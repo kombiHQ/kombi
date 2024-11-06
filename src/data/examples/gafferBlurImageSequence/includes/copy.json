@@ -1,0 +1,9 @@
+{
+    "run": "copy",
+    "metadata": {
+        "match.types": [
+            "mov"
+        ]
+    },
+    "target": "(dirname {fullPath})/{name}_copy.{ext}"
+}

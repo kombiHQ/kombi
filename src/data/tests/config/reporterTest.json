@@ -1,0 +1,38 @@
+{
+  "scripts": [
+    "*/*.py"
+  ],
+  "tasks": [
+    {
+      "run": "echoTask",
+      "target": "(tmp)/{baseName}",
+      "metadata": {
+        "match.types": [
+          "exr"
+        ],
+        "match.vars": {
+          "imageType": [
+            "sequence"
+          ]
+        }
+      },
+      "tasks": [
+        {
+          "run": "echoTask",
+          "target": "(tmp)/{name}.jpg",
+          "metadata": {
+            "match.types": [
+              "testCrawler"
+            ],
+            "match.vars": {
+              "imageType": [
+                "sequence"
+              ],
+              "testVariable": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

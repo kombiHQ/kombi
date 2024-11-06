@@ -1,0 +1,12 @@
+{
+    "testList": [
+        1,
+        1.2,
+        "value"
+    ],
+    "testDict": {
+        "key": "value",
+        "number": 1
+    },
+    "testString": "blah"
+}

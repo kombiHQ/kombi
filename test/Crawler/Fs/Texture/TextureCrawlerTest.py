@@ -16,26 +16,26 @@ class TextureCrawlerTest(BaseTestCase):
         """
         Test that the Texture crawler test works properly.
         """
-        crawler = Crawler.create(PathHolder(self.__exrFile))
+        crawler = Crawler.registeredType('texture')(PathHolder(self.__exrFile))
         self.assertIsInstance(crawler, TextureCrawler)
-        crawler = Crawler.create(PathHolder(self.__tifFile))
+        crawler = Crawler.registeredType('texture')(PathHolder(self.__tifFile))
         self.assertIsInstance(crawler, TextureCrawler)
-        crawler = Crawler.create(PathHolder(self.__badExrFile))
-        self.assertNotIsInstance(crawler, TextureCrawler)
+        self.assertFalse(Crawler.registeredType('texture').test(PathHolder(self.__badExrFile), None, enable=True))
 
     def testTextureVariables(self):
         """
         Test that variables are set properly.
         """
-        crawler = Crawler.create(PathHolder(self.__exrFile))
-        self.assertEqual(crawler.var("type"), "texture")
+        crawler = Crawler.registeredType('texture')(PathHolder(self.__exrFile))
+        self.assertTrue(crawler.test(crawler.pathHolder(), None, enable=True))
         self.assertEqual(crawler.var("category"), "texture")
         self.assertEqual(crawler.var("assetName"), "test")
         self.assertEqual(crawler.var("mapType"), "DIFF")
         self.assertEqual(crawler.var("udim"), 1001)
         self.assertEqual(crawler.var("variant"), "default")
 
-        crawler = Crawler.create(PathHolder(self.__tifFile))
+        crawler = Crawler.registeredType('texture')(PathHolder(self.__tifFile))
+        self.assertTrue(crawler.test(crawler.pathHolder(), None, enable=True))
         self.assertEqual(crawler.var("assetName"), "test")
         self.assertEqual(crawler.var("mapType"), "BUMP")
         self.assertEqual(crawler.var("udim"), 1002)
@@ -45,7 +45,7 @@ class TextureCrawlerTest(BaseTestCase):
         """
         Test that the tags are set properly.
         """
-        crawler = Crawler.create(PathHolder(self.__exrFile))
+        crawler = Crawler.registeredType('texture')(PathHolder(self.__exrFile))
         self.assertEqual(crawler.tag("group"), "test-default")
 
 

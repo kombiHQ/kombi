@@ -61,7 +61,7 @@ class ColorTransformationTask(OcioTask):
             )
 
             # kombi metadata information
-            UpdateImageMetadataTask.updateDefaultMetadata(
+            UpdateImageMetadataTask.updateMetadata(
                 spec,
                 crawler,
                 metadata

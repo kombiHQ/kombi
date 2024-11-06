@@ -1,11 +1,11 @@
 import os
 import json
 from collections import OrderedDict
-from ..Crawler import Crawler
+from fnmatch import fnmatch
 from ..Task import Task
 from ..TaskWrapper import TaskWrapper
 from ..Template import Template
-from ..Crawler import Matcher
+from ..Crawler import Crawler, Matcher
 
 class TaskHolderError(Exception):
     """Task holder error."""
@@ -39,6 +39,7 @@ class TaskHolder(object):
         self.__subTaskHolders = []
         self.__contextVarNames = set()
         self.__importTemplates = []
+        self.__regroupTagName = ''
         self.setStatus(self.statusTypes[0])
 
         # setting target template
@@ -85,6 +86,21 @@ class TaskHolder(object):
             )
         self.__setTaskWrapper(taskWrapper)
         self.__vars = {}
+
+    def setRegroupTag(self, groupTagName):
+        """
+        Set the name of the tag used to re-group the input crawlers.
+
+        It works by splitting the task execution for each group (empty
+        string means no regroup is being associated).
+        """
+        self.__regroupTagName = groupTagName
+
+    def regroupTag(self):
+        """
+        Return the re-group tag name.
+        """
+        return self.__regroupTagName
 
     def setStatus(self, status):
         """
@@ -187,6 +203,41 @@ class TaskHolder(object):
         Return the task associated with the task holder.
         """
         return self.__task
+
+    def childTasks(self, registeredTaskType='*'):
+        """
+        Return all tasks held by the task holder (recursively).
+
+        The registered task type supports fnmatch pattern. For instance, you can use
+        it to change the options in a specific task type. Also, in case you have more
+        than one task in the result for the same registered type you could use the
+        task metadata to define an unique information in the particular task you
+        want to modify then filtering the result based on that metadata
+        information (task.hasMetadata).
+        """
+        result = []
+
+        if fnmatch(self.task().type(), registeredTaskType):
+            result.append(self.task())
+
+        for subTaskHolder in self.subTaskHolders():
+            result += subTaskHolder.childTasks(registeredTaskType)
+
+        return result
+
+    def fromTaskToTaskHolders(self, task):
+        """
+        Return the task holder for the input task.
+        """
+        result = []
+
+        if task is self.task():
+            result.append(self)
+
+        for subTaskHolder in self.subTaskHolders():
+            result += subTaskHolder.fromTaskToTaskHolders(task)
+
+        return result
 
     def addImportTemplate(self, template):
         """
@@ -407,6 +458,7 @@ class TaskHolder(object):
             'vars': taskHolderVars,
             'status': taskHolder.status(),
             'contextVarNames': taskHolder.contextVarNames(),
+            'regroupTag': taskHolder.regroupTag(),
             'task': taskHolder.task().toJson(),
             'subTaskHolders': []
         }
@@ -426,6 +478,7 @@ class TaskHolder(object):
         filterTemplate = Template(taskHolderContents['template']['filter'])
         exportTemplate = Template(taskHolderContents['template']['export'])
         importTemplates = taskHolderContents['template']['import']
+        regroupTag = taskHolderContents.get('regroupTag', '')
 
         # creating task
         task = Task.createFromJson(taskHolderContents['task'])
@@ -437,6 +490,9 @@ class TaskHolder(object):
             filterTemplate,
             exportTemplate
         )
+
+        # setting regroup tag
+        taskHolder.setRegroupTag(regroupTag)
 
         # loading import templates
         for importTemplate in importTemplates:
@@ -467,6 +523,22 @@ class TaskHolder(object):
         """
         Perform the task runner recursively.
         """
+        # when re-group tag is defined we get the input crawlers and regroup
+        # them. This is going to split the processing of the task per group
+        if taskHolder.regroupTag():
+            result = []
+            groupCrawlers = Crawler.group(crawlers, taskHolder.regroupTag())
+            for group in groupCrawlers:
+                newTaskHolder = taskHolder.clone()
+                newTaskHolder.setRegroupTag('')
+                result.extend(
+                    cls.__recursiveTaskRunner(
+                        newTaskHolder,
+                        group
+                    )
+                )
+            return result
+
         taskHolder.addCrawlers(crawlers)
         result = []
 
@@ -477,6 +549,7 @@ class TaskHolder(object):
         # bypassing task execution
         elif taskHolder.status() == 'bypass':
             taskCrawlers = taskHolder.task().crawlers()
+            result += taskCrawlers
 
         # running task through the wrapper
         else:

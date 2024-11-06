@@ -1,14 +1,9 @@
-import os
-import json
-import subprocess
 from ..FileCrawler import FileCrawler
 
 class ImageCrawler(FileCrawler):
     """
     Abstracted image crawler.
     """
-
-    __ffprobeExecutable = os.environ.get('KOMBI_FFPROBE_EXECUTABLE', 'ffprobe')
 
     def __init__(self, *args, **kwargs):
         """
@@ -35,15 +30,6 @@ class ImageCrawler(FileCrawler):
             isImageSeq = self.__isAmbiguousSequence()
 
         return isImageSeq
-
-    def var(self, name):
-        """
-        Return var value using lazy loading implementation for width and height.
-        """
-        if self.__ffprobeExecutable and name in ('width', 'height') and name not in self.varNames():
-            self.__computeWidthHeight()
-
-        return super(ImageCrawler, self).var(name)
 
     def __computeImageSequence(self):
         """
@@ -120,28 +106,3 @@ class ImageCrawler(FileCrawler):
             isImageSeq = (parts[-1].isdigit() and len(parts[-1]) >= 4)
 
         return isImageSeq
-
-    def __computeWidthHeight(self):
-        """
-        Query width and height using ffprobe and set them as crawler variables.
-        """
-        # Get width and height from movie using ffprobe
-        cmd = '{} -v quiet -print_format json -show_entries stream=height,width "{}"'.format(
-            self.__ffprobeExecutable,
-            self.var('filePath')
-        )
-
-        # calling ffprobe
-        process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            env=os.environ,
-            shell=True
-        )
-
-        # capturing the output
-        output, error = process.communicate()
-        result = json.loads(output.decode("utf-8"))
-        self.setVar('width', result['streams'][0]['width'])
-        self.setVar('height', result['streams'][0]['height'])

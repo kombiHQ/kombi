@@ -1,4 +1,5 @@
 import os
+import shutil
 import platform
 from ..Task import Task, TaskError
 
@@ -11,6 +12,7 @@ class LinkTask(Task):
     """
 
     __defaultLinkType = "hardlink"
+    __defaultCopyIfFail = True
     __kernelDll = None
 
     def __init__(self, *args, **kwargs):
@@ -20,6 +22,7 @@ class LinkTask(Task):
         super(LinkTask, self).__init__(*args, **kwargs)
 
         self.setOption('type', self.__defaultLinkType)
+        self.setOption('copyIfFail', self.__defaultCopyIfFail)
         self.setMetadata('dispatch.split', True)
         self.setMetadata('dispatch.splitSize', 20)
 
@@ -43,7 +46,7 @@ class LinkTask(Task):
             targetFilePath = filePath
 
             # Check if the target path already exists, if it is file remove it else raise an exception
-            if os.path.isfile(targetFilePath):
+            if os.path.isfile(targetFilePath) or os.path.isdir(targetFilePath) and os.path.islink(targetFilePath):
                 os.remove(targetFilePath)
             elif os.path.isdir(targetFilePath):
                 raise LinkTaskTargetDirectoryError(
@@ -51,16 +54,17 @@ class LinkTask(Task):
                 )
 
             # linking
-            if platform.system() == "Windows":
-                self.__linkOnWindows(
-                    sourceFilePath,
-                    targetFilePath
-                )
-            else:
-                self.__linkOnUnix(
-                    sourceFilePath,
-                    targetFilePath
-                )
+            try:
+                if platform.system() == "Windows":
+                    self.__linkOnWindows(sourceFilePath, targetFilePath)
+                else:
+                    self.__linkOnUnix(sourceFilePath, targetFilePath)
+            except Exception as err:
+                if not self.option('copyIfFail'):
+                    raise err
+
+                # copying the file in case it has failed to link
+                shutil.copy2(sourceFilePath, targetFilePath)
 
         # default result based on the target filePath
         return super(LinkTask, self)._perform()

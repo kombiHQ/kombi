@@ -69,6 +69,26 @@ def maximumInt(*args):
         intArgs[1]
     ))
 
+def roundNumber(number):
+    """
+    Round a float point number.
+    """
+    return int(round(float(number)))
+
+def even(number):
+    """
+    Procedure used transform the input number to an even number.
+    """
+    number = int(number)
+    return number - 1 if number % 2 else number
+
+def odd(number):
+    """
+    Procedure used transform the input number to an odd number.
+    """
+    number = int(number)
+    return number if number % 2 else number - 1
+
 def __castToInt(*args):
     """
     Cast the input args to int.
@@ -110,4 +130,22 @@ Template.registerProcedure(
 Template.registerProcedure(
     'max',
     maximumInt
+)
+
+# round
+Template.registerProcedure(
+    'round',
+    roundNumber
+)
+
+# even
+Template.registerProcedure(
+    'even',
+    even
+)
+
+# odd
+Template.registerProcedure(
+    'odd',
+    odd
 )

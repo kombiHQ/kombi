@@ -53,7 +53,7 @@ class VideoCrawler(FileCrawler):
         )
 
         # capturing the output
-        output, error = process.communicate()
+        output, _ = process.communicate()
         result = json.loads(output.decode("utf-8"))
         if "streams" in result:
             self.setVar('width', result['streams'][0]['width'])

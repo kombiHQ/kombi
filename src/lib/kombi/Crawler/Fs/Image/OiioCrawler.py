@@ -1,3 +1,6 @@
+import re
+import os
+import subprocess
 from ...Crawler import CrawlerError
 from .ImageCrawler import ImageCrawler
 
@@ -24,6 +27,11 @@ class OiioCrawler(ImageCrawler):
     Open image io crawler.
     """
 
+    __oiiotoolExecutable = os.environ.get(
+        'KOMBI_OIIOTOOL_EXECUTABLE',
+        'oiiotool'
+    )
+
     def var(self, name):
         """
         Return var value using lazy loading implementation for width and height.
@@ -48,6 +56,8 @@ class OiioCrawler(ImageCrawler):
                 self.setVar('height', spec.full_height)
 
                 imageInput.close()
+            else:
+                self.__computeWidthHeight()
 
         return super(OiioCrawler, self).var(name)
 
@@ -60,3 +70,50 @@ class OiioCrawler(ImageCrawler):
             text = str(text)
 
         return text
+
+    def __computeWidthHeight(self):
+        """
+        Query width and height using oiiotool and set them as crawler variables.
+        """
+        # Get width and height from movie using oiiotool
+        cmd = '{} --info -v "{}"'.format(
+            self.__oiiotoolExecutable,
+            self.var('filePath')
+        )
+
+        # calling oiiotool
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=os.environ,
+            shell=True
+        )
+
+        # capturing the output
+        output, error = process.communicate()
+        infoLines = output.decode('utf-8', errors='ignore').splitlines()
+        if not infoLines:
+            return
+
+        width = None
+        height = None
+
+        # by default we use the resolution provided in the second line of
+        # information of the file
+        match = re.search(':[ ]*([0-9]+)[ ]*x[ ]*([0-9]+)', infoLines[1])
+        if match:
+            width = match.group(1)
+            height = match.group(2)
+
+        # however, in case there is the display size defined we use that instead
+        for infoLine in infoLines[2:]:
+            match = re.search('full/display size:[ ]*([0-9]+)[ ]*x[ ]*([0-9]+)', infoLine)
+            if match:
+                width = match.group(1)
+                height = match.group(2)
+                break
+
+        if width is not None:
+            self.setVar('width', int(width))
+            self.setVar('height', int(height))
