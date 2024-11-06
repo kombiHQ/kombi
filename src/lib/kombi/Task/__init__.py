@@ -7,6 +7,7 @@ from . import Video
 from . import Shotgun
 from . import Version
 from . import Delivery
+from . import Archive
 from . import Render
 from . import OutputOperator
 from . import Slack
