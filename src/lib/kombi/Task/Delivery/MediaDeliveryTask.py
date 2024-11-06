@@ -1,9 +1,9 @@
 import os
 import json
 from ..Task import Task
-from ..ImageSequence import NukeSceneTask
+from ..ImageSequence import NukeTemplateTask
 
-class MediaDeliveryTask(NukeSceneTask):
+class MediaDeliveryTask(NukeTemplateTask):
     """
     Create a new media for delivery.
     """
@@ -13,7 +13,7 @@ class MediaDeliveryTask(NukeSceneTask):
         Return a json file the media under the delivery folder.
         """
         # calling the super class that knows how to produce a media
-        super(NukeSceneTask, self)._perform()
+        super(NukeTemplateTask, self)._perform()
 
         targetCrawler = self.crawlers()[0]
         mediaInfoJson = self.templateOption('mediaInfo', crawler=targetCrawler)

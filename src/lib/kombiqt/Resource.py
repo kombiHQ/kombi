@@ -1,5 +1,5 @@
 import os
-from PySide2 import QtCore, QtGui
+from Qt import QtCore, QtGui
 
 class Resource(object):
     """
@@ -61,7 +61,6 @@ class Resource(object):
                         os.path.dirname(styleSheetFile).replace('\\', '/')
                     )
                 )
-
             cls.__cache['stylesheet'] = styleSheetContents
 
         return cls.__cache['stylesheet']

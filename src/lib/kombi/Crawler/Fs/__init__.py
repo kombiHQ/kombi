@@ -5,6 +5,7 @@ from .DirectoryCrawler import DirectoryCrawler
 from . import Image
 from . import Lut
 from . import Video
+from . import Audio
 from . import Ascii
 from . import Render
 from . import Texture

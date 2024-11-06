@@ -1,11 +1,5 @@
 from .PythonLoader import PythonLoader
 
-# in case pytoml is not available importing from third-party
-try:
-    import pytoml
-except ImportError:
-    from kombithirdparty import pytoml
-
 class TomlLoader(PythonLoader):
     """
     Loads configuration from toml files.
@@ -16,6 +10,9 @@ class TomlLoader(PythonLoader):
         """
         Return parsed python data-structure from the input content.
         """
+        # third-party dependency
+        import pytoml
+
         return pytoml.loads(
             contents
         )

@@ -1,0 +1,44 @@
+{
+  "scripts": [
+    "*/*.py"
+  ],
+  "vars": {
+    "__uiHintSourceColumns": [],
+    "prefix": "/tmp"
+  },
+  "tasks": [
+    {
+      "run": "gafferScene",
+      "metadata": {
+        "match.types": [
+          "png"
+        ],
+        "match.vars": {
+          "imageType": [
+            "sequence"
+          ]
+        }
+      },
+      "options": {
+        "scene": "{configDirectory}/scene.gfr"
+      },
+      "target": "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ver>.(pad {frame} 6).exr",
+      "tasks": [
+        {
+          "run": "ffmpeg",
+          "options":{
+            "frameRate": 23.976,
+            "sourceColorSpace": "bt709",
+            "targetColorSpace": "smpte170m"
+          },
+          "target": "(dirname {filePath})/{name}.mov",
+          "tasks": [
+            {
+                "include": "./includes/copy.json"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

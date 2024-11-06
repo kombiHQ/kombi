@@ -6,20 +6,17 @@ from ..Crawler import Crawler
 from ..Template import Template
 from ..TaskReporter import TaskReporter
 
-# compatibility with python 2/3
-try:
-    basestring
-except NameError:
-    basestring = str
-
 class TaskError(Exception):
     """Task error."""
 
 class TaskTypeNotFoundError(TaskError):
     """Task type not found error."""
 
+class TaskValidationError(TaskError):
+    """Task validation error."""
+
 class TaskInvalidCrawlerError(TaskError):
-    """Task Invalid crawler Error."""
+    """Task Invalid crawler error."""
 
 class TaskInvalidOptionError(TaskError):
     """Task invalid option error."""
@@ -46,7 +43,7 @@ class Task(object):
         self.__crawlers = OrderedDict()
         self.__metadata = {}
         self.__taskType = taskType
-        self.__options = {}
+        self.__options = OrderedDict()
 
     def type(self):
         """
@@ -123,7 +120,7 @@ class Task(object):
         currentLevel = self.__metadata
         found = True
         for level in levels[:-1]:
-            if level not in currentLevel:
+            if not isinstance(currentLevel, dict) or level not in currentLevel:
                 found = False
                 break
             currentLevel = currentLevel[level]
@@ -148,13 +145,25 @@ class Task(object):
 
     def templateOption(self, name, crawler=None, extraVars={}):
         """
-        Return a value resolved by the Template module.
+        Return the resolved value of an option.
         """
-        value = self.option(name)
-        if crawler:
-            return Template(value).valueFromCrawler(crawler, extraVars)
-        else:
-            return Template(value).value(extraVars)
+        optionValue = self.option(name)
+
+        # 2d hashmap
+        if isinstance(optionValue, dict):
+            result = {}
+            for key, value in optionValue.items():
+                result[key] = self.__resolveTemplateValue(value, crawler, extraVars)
+            return result
+
+        # 2d array
+        elif isinstance(optionValue, (list, tuple)):
+            result = []
+            for value in optionValue:
+                result.append(self.__resolveTemplateValue(value, crawler, extraVars))
+            return result
+
+        return self.__resolveTemplateValue(optionValue, crawler, extraVars)
 
     def setOption(self, name, value):
         """
@@ -198,7 +207,7 @@ class Task(object):
         assert isinstance(crawler, Crawler), \
             "Invalid Crawler!"
 
-        assert isinstance(targetFilePath, basestring), \
+        assert isinstance(targetFilePath, str), \
             "targetFilePath needs to be defined as string"
 
         self.__crawlers[crawler] = targetFilePath
@@ -224,6 +233,10 @@ class Task(object):
                 if ctxVarName not in contextVars:
                     contextVars[ctxVarName] = crawler.var(ctxVarName)
 
+        # validating input
+        self.validate(self.crawlers())
+
+        # performing task
         outputCrawlers = self._perform()
 
         # Copy all context variables to output crawlers
@@ -334,7 +347,7 @@ class Task(object):
         """
         if taskType not in Task.__registered:
             raise TaskTypeNotFoundError(
-                'Task name is not registed: "{0}"'.format(
+                'Task name is not registered: "{0}"'.format(
                     taskType
                 )
             )
@@ -393,3 +406,25 @@ class Task(object):
                 filePaths.append(filePath)
 
         return list(map(FsCrawler.createFromPath, filePaths))
+
+    def validate(self, crawlers=None):
+        """
+        For re-implementation: should implement a check for the task.
+
+        This method is called right before performing the task. Also, it can be called by
+        user interfaces for validating user input (options).
+
+        In order to report a validation failure make sure to raise the exception TaskValidationError
+        with the message about the failure. Otherwise, in case of no failure then no result is needed.
+        """
+
+    def __resolveTemplateValue(self, value, crawler, extraVars):
+        """
+        Resolve the template value.
+        """
+        if not isinstance(value, str):
+            return value
+        elif crawler is not None:
+            return Template(value).valueFromCrawler(crawler, extraVars)
+
+        return Template(value).value(extraVars)

@@ -18,10 +18,12 @@ class TurntableCrawler(ExrRenderCrawler):
         self.setVar('step', parts[2], True)
         self.setVar('variant', parts[3], True)
         self.setVar('pass', parts[4], True)
-        self.setVar('renderName', '{}-{}-{}'.format(
-            self.var('assetName'),
-            self.var('variant'),
-            self.var('pass')
+        self.setVar(
+            'renderName',
+            '{}-{}-{}'.format(
+                self.var('assetName'),
+                self.var('variant'),
+                self.var('pass')
             ),
             True
         )

@@ -1,18 +1,45 @@
 import os
-from ..Task import Task
-from .UpdateImageMetadataTask import UpdateImageMetadataTask
+import multiprocessing
+
+from ..Task import Task, TaskError
 from ... import Crawler
+
+class ConvertImageTaskError(TaskError):
+    """Convert image task error."""
 
 class ConvertImageTask(Task):
     """
-    Convert the source image (from the crawler) to the target one using oiio.
+    Task used to convert an image to a different size, format and colorspace.
     """
 
     def __init__(self, *args, **kwargs):
         """
-        Create a ConvertImage task.
+        Create a resize image task.
         """
         super(ConvertImageTask, self).__init__(*args, **kwargs)
+
+        # options used for resizing (the resize happens in case
+        # the resize values are different from the original
+        # crawler values)
+        self.setOption('width', '{width}')
+        self.setOption('height', '{height}')
+        self.setOption('keepAspectRatio', False)
+
+        # options used for colorspace: Linear, sRGB (etc)
+        self.setOption('sourceColorspace', '')
+        self.setOption('targetColorspace', '')
+        self.setOption('colorConfig', '')
+
+        # option used to convert the output to specific channels aka: ('R', 'G', 'B')
+        self.setOption('convertToChannels', tuple())
+
+        # option used to tell if the convert image should fallback to the
+        # first channel when trying to convert specific channels (aka RGB)
+        self.setOption('convertToChannelsFallbackToFirstChannel', True)
+
+        # option used to convert the output to RGBA
+        self.setOption('convertToRGBA', False)
+
         self.setMetadata('dispatch.split', True)
 
     def _perform(self):
@@ -22,47 +49,106 @@ class ConvertImageTask(Task):
         import OpenImageIO as oiio
 
         for crawler in self.crawlers():
-
             targetFilePath = Crawler.Fs.Image.OiioCrawler.supportedString(
                 self.target(crawler)
             )
 
-            # trying to create the directory automatically in case it does not exist
+            # opening the source image
+            inputImageBuf = oiio.ImageBuf(
+                Crawler.Fs.Image.OiioCrawler.supportedString(
+                    crawler.var('filePath')
+                )
+            )
+
+            # output image buf
+            outImageBuf = inputImageBuf
+
+            # resizing image
+            width = int(self.templateOption('width', crawler))
+            height = int(self.templateOption('height', crawler))
+
+            if width != crawler.var('width') or height != crawler.var('height'):
+                # figuring out aspect ratio used for the resizing
+                ratio = None
+                if int(self.templateOption('keepAspectRatio', crawler)):
+                    ratio = self.__aspectRatio(
+                        crawler.var('width'),
+                        crawler.var('height'),
+                        width,
+                        height
+                    )
+
+                outImageBuf = oiio.ImageBuf(
+                    oiio.ImageSpec(
+                        int(crawler.var('width') * ratio) if ratio is not None else width,
+                        int(crawler.var('height') * ratio) if ratio is not None else height,
+                        inputImageBuf.spec().nchannels,
+                        inputImageBuf.spec().format
+                    )
+                )
+
+                oiio.ImageBufAlgo.resize(
+                    outImageBuf,
+                    inputImageBuf,
+                    roi=outImageBuf.roi,
+                    nthreads=multiprocessing.cpu_count()
+                )
+
+            # in case the convert to RGBA is enabled
+            if self.option('convertToRGBA') or self.option('convertToChannels'):
+                useChannels = []
+                requestedChannels = list(map(lambda x: str(x).upper(), ("R", "G", "B", "A") if self.option('convertToRGBA') else tuple(self.option('convertToChannels'))))
+                for channelname in inputImageBuf.spec().channelnames:
+                    if channelname.upper() in requestedChannels:
+                        useChannels.append(channelname)
+
+                if not useChannels and self.option('convertToChannelsFallbackToFirstChannel'):
+                    useChannels.append(inputImageBuf.spec().channelnames[0])
+
+                temporaryBuffer = oiio.ImageBuf()
+                oiio.ImageBufAlgo.channels(
+                    temporaryBuffer,
+                    outImageBuf,
+                    tuple(useChannels)
+                )
+                outImageBuf = temporaryBuffer
+
+            # changing colorspace
+            targetColorspace = self.templateOption('targetColorspace', crawler)
+            if targetColorspace:
+                oiio.ImageBufAlgo.colorconvert(
+                    outImageBuf,
+                    outImageBuf,
+                    self.templateOption('sourceColorspace', crawler),
+                    targetColorspace,
+                    colorconfig=self.templateOption('colorConfig', crawler)
+                )
+
+            # trying to create the directory automatically in case
+            # it does not exist
             try:
                 os.makedirs(os.path.dirname(targetFilePath))
-            except OSError:
+            except (IOError, OSError):
                 pass
 
-            # converting image using open image io
-            inputImageFilePath = Crawler.Fs.Image.OiioCrawler.supportedString(
-                crawler.var('filePath')
-            )
-            imageInput = oiio.ImageInput.open(inputImageFilePath)
-            inputSpec = imageInput.spec()
+            # saving target output image
+            if not outImageBuf.write(targetFilePath):
+                raise ConvertImageTaskError(
+                    outImageBuf.geterror()
+                )
 
-            # updating kombi metadata
-            UpdateImageMetadataTask.updateDefaultMetadata(inputSpec, crawler)
-
-            outImage = oiio.ImageOutput.create(targetFilePath)
-
-            # in case we are using an older version of oiio we need to
-            # provide an additional argument to the open
-            outImageOpenArgs = [
-                targetFilePath,
-                inputSpec
-            ]
-            if hasattr(oiio, 'ImageOutputOpenMode'):
-                outImageOpenArgs.append(oiio.ImageOutputOpenMode.Create)
-
-            outImage.open(
-                *outImageOpenArgs
-            )
-
-            outImage.copy_image(imageInput)
-            outImage.close()
-
-        # default result based on the target filePath
+        # default result based on the target file path
         return super(ConvertImageTask, self)._perform()
+
+    def __aspectRatio(self, currentWidth, currentHeigth, newWidth, newHeight):
+        """
+        Return the aspect ratio used for resizing.
+        """
+        ratioWidth = newWidth / float(currentWidth)
+        ratioHeight = newHeight / float(currentHeigth)
+
+        # smaller ratio will ensure that the image fits in the view
+        return ratioWidth if ratioWidth < ratioHeight else ratioHeight
 
 
 # registering task

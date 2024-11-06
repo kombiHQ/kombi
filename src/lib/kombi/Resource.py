@@ -79,7 +79,17 @@ class Resource(object):
         try:
             with open(filePath) as f:
                 code = compile(f.read(), filePath, 'exec')
-                exec(code, globals())
+
+                # we are going to provide a custom
+                # globals for each resource during
+                # the execution. This is necessary
+                # to make sure that when we call __file__
+                # it will return the resource full
+                # path (rather than the current file)
+                resGlobals = dict(globals())
+                resGlobals['__file__'] = filePath
+
+                exec(code, resGlobals)
         except Exception as err:
             sys.stderr.write(
                 'Kombi error on loading resource: {}\n'.format(

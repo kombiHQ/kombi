@@ -1,12 +1,6 @@
 import os
 from collections import OrderedDict
 
-# compatibility with python 2/3
-try:
-    basestring
-except NameError:
-    basestring = str
-
 class EnvModifierError(Exception):
     """Env modifier error."""
 
@@ -276,7 +270,7 @@ class EnvModifier(object):
         """
         result = []
 
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             result.append(value)
         elif isinstance(value, list):
             result = value

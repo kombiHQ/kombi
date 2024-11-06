@@ -5,3 +5,4 @@ from .MayaTaskWrapper import MayaTaskWrapper
 from .NukeTaskWrapper import NukeTaskWrapper
 from .GafferTaskWrapper import GafferTaskWrapper
 from .PythonTaskWrapper import PythonTaskWrapper
+from .HoudiniTaskWrapper import HoudiniTaskWrapper

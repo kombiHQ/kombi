@@ -12,7 +12,7 @@ class CreateTextureVersionTask(CreateIncrementalVersionTask):
         Create a texture version.
         """
         super(CreateTextureVersionTask, self).__init__(*args, **kwargs)
-        self.setOption('maketxArgs', "-v -u --unpremult --oiio")
+        self.setOption('maketxArgs', '-v -u --unpremult --oiio')
 
     def _perform(self):
         """
@@ -38,7 +38,7 @@ class CreateTextureVersionTask(CreateIncrementalVersionTask):
                 self.option('maketxArgs')
             )
 
-            textureTxTargetLocation = self.__computeTextureTargetLocation(crawler, "tx")
+            textureTxTargetLocation = self.__computeTextureTargetLocation(crawler, 'tx')
             convertTexureTask.add(crawler, textureTxTargetLocation)
             convertTexureTask.output()
 

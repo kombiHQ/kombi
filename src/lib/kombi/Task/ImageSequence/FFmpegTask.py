@@ -13,10 +13,6 @@ class FFmpegTask(Task):
     """
 
     __ffmpegExecutable = os.environ.get('KOMBI_FFMPEG_EXECUTABLE', 'ffmpeg')
-    __defaultScale = 1.0
-    __defaultVideoCodec = "libx264"
-    __defaultPixelFormat = "yuvj420p"
-    __defaultBitRate = 115
 
     def __init__(self, *args, **kwargs):
         """
@@ -24,10 +20,14 @@ class FFmpegTask(Task):
         """
         super(FFmpegTask, self).__init__(*args, **kwargs)
 
-        self.setOption('scale', self.__defaultScale)
-        self.setOption('videoCodec', self.__defaultVideoCodec)
-        self.setOption('pixelFormat', self.__defaultPixelFormat)
-        self.setOption('bitRate', self.__defaultBitRate)
+        self.setOption('width', "(even {width})")
+        self.setOption('height', "(even {height})")
+        self.setOption('videoCodec', "libx264")
+        self.setOption('pixelFormat', "yuvj420p")
+        self.setOption('bitRate', 115)
+        self.setOption('sourceColorSpace', "linear")
+        self.setOption('targetColorSpace', "bt709")
+        self.setOption('frameRate', 23.976)
 
     def _perform(self):
         """
@@ -125,9 +125,10 @@ class FFmpegTask(Task):
             '-pix_fmt {0}'.format(
                 self.option('pixelFormat')
             ),
-            # scale (default 1.0)
-            '-vf scale=iw*{0}:ih*{0}'.format(
-                self.option('scale')
+            # resolution
+            '-vf scale={0}:{1}'.format(
+                self.templateOption('width', crawler),
+                self.templateOption('height', crawler)
             ),
             # target mov file
             '-y "{0}"'.format(
@@ -142,11 +143,18 @@ class FFmpegTask(Task):
         )
 
         # calling ffmpeg
+        env = dict(os.environ)
+        if 'PYTHONHOME' in env:
+            del env['PYTHONHOME']
+
+        if 'LD_LIBRARY_PATH' in env:
+            del env['LD_LIBRARY_PATH']
+
         process = subprocess.Popen(
             ffmpegCommand,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            env=os.environ,
+            env=env,
             shell=True
         )
 

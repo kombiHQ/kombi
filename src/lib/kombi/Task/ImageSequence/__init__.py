@@ -1,4 +1,9 @@
 from .FFmpegTask import FFmpegTask
 from .SequenceThumbnailTask import SequenceThumbnailTask
 from .GafferSceneTask import GafferSceneTask
-from .NukeSceneTask import NukeSceneTask
+from .NukeTemplateTask import NukeTemplateTask
+from .RenumberSequenceTask import RenumberSequenceTask
+from .SliceSequenceTask import SliceSequenceTask
+from .SequenceInfoTask import SequenceInfoTask
+from .ModifyOutputTask import ModifyOutputTask
+from .CheckSequenceTask import CheckSequenceTask, CheckSequenceTaskError, CheckSequenceTaskTotalFramesError, CheckSequenceTaskMissingFrameError, CheckSequenceTaskMinimumFramesError, CheckSequenceTaskRequiredMetadataError, CheckSequenceTaskMinimumFileSizeError

@@ -28,65 +28,100 @@ def __runCollapsed(data, taskHolder, dataJsonFile):
     if os.path.exists(jobProcessedFilePath):
         sys.stdout.write("Job has been already processed, skipping it.\n")
         return
-    # otherwise we "touch" a file used in the future to tell the job has been
-    # already processed
-    else:
-        open(jobProcessedFilePath, 'a').close()
 
-    # looking for its own job id on the farm, this information
-    # is going to be used to include the expanded jobs
-    # as dependency of the job itself.
-    jobIdFilePath = "{}_jobId.{ext}".format(
-        name,
-        ext=ext[1:]
-    )
+    # "touching" a file used in the future to tell the job has been
+    # processed
+    open(jobProcessedFilePath, 'a').close()
 
-    mainJobId = None
-    if os.path.exists(jobIdFilePath):
-        with open(jobIdFilePath) as jsonFile:
-            mainJobId = json.load(jsonFile)["id"]
+    # this is an optimization to avoid any processing
+    # for a task holder with the status "ignore". We can
+    # safely return right here. Since there is nothing
+    # to be done
+    if taskHolder.status() == "ignore":
+        return
 
-    # looking for a task that has been chunkfied on the farm
-    if len(data['taskInputFilePaths']) == 1 and not os.path.exists(data['taskInputFilePaths'][0]):
-        nameParts = os.path.splitext(data['taskInputFilePaths'][0])
-
-        taskInputFilePaths = glob(
-            "{}_range_*_*.{ext}".format(nameParts[0], ext=nameParts[1][1:])
+    try:
+        # looking for its own job id on the farm, this information
+        # is going to be used to include the expanded jobs
+        # as dependency of the job itself.
+        jobIdFilePath = "{}_jobId.{ext}".format(
+            name,
+            ext=ext[1:]
         )
 
-        # since the range is padded by sorting them it is going to
-        # provide the proper order that the crawlers should be loaded
-        taskInputFilePaths.sort()
-    else:
-        taskInputFilePaths = data['taskInputFilePaths']
+        mainJobId = None
+        if os.path.exists(jobIdFilePath):
+            with open(jobIdFilePath) as jsonFile:
+                mainJobId = json.load(jsonFile)["id"]
 
-    # loading input crawlers
-    crawlers = []
-    for taskInputFilePath in taskInputFilePaths:
-        with open(taskInputFilePath) as jsonFile:
-            serializedCrawlers = json.load(jsonFile)
-            crawlers += list(map(lambda x: Crawler.createFromJson(x), serializedCrawlers))
+        # looking for a task that has been chunkfied on the farm
+        if len(data['taskInputFilePaths']) == 1 and not os.path.exists(data['taskInputFilePaths'][0]):
+            nameParts = os.path.splitext(data['taskInputFilePaths'][0])
 
-    dispatcher = Dispatcher.createFromJson(data['dispatcher'])
-    dispatchedIds = dispatcher.dispatch(
-        taskHolder,
-        crawlers
-    )
+            taskInputFilePaths = glob(
+                "{}_range_*_*.{ext}".format(nameParts[0], ext=nameParts[1][1:])
+            )
 
-    # since this job can be used as dependency of other jobs
-    # we need to include the dispatched jobs as dependencies
-    # of itself. Also, the implementation of "extendDependencyIds"
-    # may need to mark the mainJobId as pending status again
-    # in case your renderfarm manager does not do that
-    # automatically. In case your renderfarm manager executes the
-    # main job again (when all the new dependencies are completed)
-    # the dispatcher is going to ignore the second execution
-    # automatically.
-    if mainJobId is not None:
-        dispatcher.extendDependencyIds(
-            mainJobId,
-            dispatchedIds
-        )
+            # since the range is padded by sorting them it is going to
+            # provide the proper order that the crawlers should be loaded
+            taskInputFilePaths.sort()
+        else:
+            taskInputFilePaths = data['taskInputFilePaths']
+
+        # loading input crawlers
+        crawlers = []
+        for taskInputFilePath in taskInputFilePaths:
+            with open(taskInputFilePath) as jsonFile:
+                serializedCrawlers = json.load(jsonFile)
+                crawlers += list(map(lambda x: Crawler.createFromJson(x), serializedCrawlers))
+
+        dispatcher = Dispatcher.createFromJson(data['dispatcher'])
+
+        # in case of re-group tag we are going to split in multiple
+        # dispatchers
+        dispatchedIds = []
+        if taskHolder.regroupTag():
+            crawlerGroups = Crawler.group(crawlers, taskHolder.regroupTag())
+            modifiedTaskHolder = taskHolder.clone()
+
+            # since we don't want the task holder to split over again we
+            # need to reset this information in the modified task holder
+            modifiedTaskHolder.setRegroupTag('')
+            for crawlerGroup in crawlerGroups:
+                dispatchedIds.extend(
+                    dispatcher.dispatch(
+                        modifiedTaskHolder.clone(),
+                        crawlerGroup
+                    )
+                )
+        # otherwise, it passes all crawlers to the task holder (default)
+        else:
+            dispatchedIds.extend(
+                dispatcher.dispatch(
+                    taskHolder,
+                    crawlers
+                )
+            )
+
+        # since this job can be used as dependency of other jobs
+        # we need to include the dispatched jobs as dependencies
+        # of itself. Also, the implementation of "extendDependencyIds"
+        # may need to mark the mainJobId as pending status again
+        # in case your renderfarm manager does not do that
+        # automatically. In case your renderfarm manager executes the
+        # main job again (when all the new dependencies are completed)
+        # the dispatcher is going to ignore the second execution
+        # automatically.
+        if mainJobId is not None:
+            dispatcher.extendDependencyIds(
+                mainJobId,
+                dispatchedIds,
+                taskHolder.task()
+            )
+    except Exception as err:
+        if os.path.exists(jobProcessedFilePath):
+            os.remove(jobProcessedFilePath)
+        raise err
 
 def __runExpanded(data, taskHolder, rangeStart, rangeEnd):
     """

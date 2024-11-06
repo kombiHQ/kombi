@@ -1,4 +1,4 @@
-from PySide2 import QtCore, QtGui, QtWidgets
+from Qt import QtCore, QtGui, QtWidgets
 from .Resource import Resource
 
 class Style(object):
@@ -7,20 +7,23 @@ class Style(object):
     """
 
     @classmethod
-    def apply(cls, widget):
+    def apply(cls, widget, style=True, font=True, palette=True, styleSheet=True):
         """
         Apply the default stylesheet to the interface.
         """
-        widget.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
+        if style:
+            widget.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
 
-        cls.__applyFont(widget)
+        if font:
+            cls.__applyFont(widget)
 
-        # modify palette to dark
-        cls.__applyPalette(widget)
+        if palette:
+            cls.__applyPalette(widget)
 
-        widget.setStyleSheet(
-            Resource.stylesheet()
-        )
+        if styleSheet:
+            widget.setStyleSheet(
+                Resource.stylesheet()
+            )
 
     @classmethod
     def __applyFont(cls, widget):
@@ -28,7 +31,6 @@ class Style(object):
         Apply the default font.
         """
         defaultFont = QtWidgets.QApplication.font()
-        defaultFont.setPointSize(defaultFont.pointSize() + 2.0)
         widget.setFont(defaultFont)
 
     @classmethod
@@ -37,6 +39,7 @@ class Style(object):
         Apply the palette to the widget.
         """
         darkPalette = QtGui.QPalette()
+
         darkPalette.setColor(
             QtGui.QPalette.Window,
             QtGui.QColor(53, 53, 53)

@@ -14,7 +14,7 @@ class ConvertTextureTask(Task):
         Create a texture version.
         """
         super(ConvertTextureTask, self).__init__(*args, **kwargs)
-        self.setOption('maketxArgs', "-v -u --unpremult --oiio")
+        self.setOption('maketxArgs', "-v -u --checknan --unpremult --oiio")
         self.setMetadata('dispatch.split', True)
 
     def _perform(self):
@@ -32,15 +32,22 @@ class ConvertTextureTask(Task):
                 except OSError:
                     pass
 
+            # to avoid clashing with the python used
+            # for maketx
+            env = dict(os.environ)
+            if 'PYTHONHOME' in env:
+                del env['PYTHONHOME']
+
             # computing a mipmap version for the texture
             subprocess.call(
                 '{} {} -o "{}" "{}"'.format(
                     self.__maketxExecutable,
-                    self.option("maketxArgs"),
+                    self.option('maketxArgs'),
                     targetFilePath,
                     crawler.var('filePath')
                 ),
-                shell=True
+                shell=True,
+                env=env
             )
 
         return super(ConvertTextureTask, self)._perform()

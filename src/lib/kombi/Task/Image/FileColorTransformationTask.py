@@ -44,10 +44,10 @@ class FileColorTransformationTask(OcioTask):
 
             # adding lut transform
             groupTransform.push_back(
-                 ocio.FileTransform(
+                ocio.FileTransform(
                     lut,
                     interpolation=ocio.Constants.INTERP_LINEAR
-                 )
+                )
             )
 
             # source image
@@ -81,7 +81,7 @@ class FileColorTransformationTask(OcioTask):
             targetImage = oiio.ImageOutput.create(targetFilePath)
 
             # kombi metadata information
-            UpdateImageMetadataTask.updateDefaultMetadata(
+            UpdateImageMetadataTask.updateMetadata(
                 spec,
                 crawler,
                 metadata

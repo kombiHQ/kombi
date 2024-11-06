@@ -1,33 +1,47 @@
 import os
-import getpass
-import tempfile
-from ..Task import Task
-from ...TaskWrapper import TaskWrapper
-from ...Crawler import Crawler
-from ...Crawler.Fs.FsCrawler import FsCrawler
-from ...Crawler.Fs.Image import ImageCrawler
+import sys
+import json
+from datetime import datetime
+from ..External.ExternalTask import ExternalTask
+from ...Crawler.Fs.Video import VideoCrawler
 
-class SGPublishTask(Task):
+class SGPublishTask(ExternalTask):
     """
-    Generic Shotgun publish task for data created by the CreateVersion task.
+    Generic shotgun version publishing task.
     """
 
-    __shotgunUrl = os.environ.get('KOMBI_SHOTGUN_URL', '')
-    __shotgunScriptName = os.environ.get('KOMBI_SHOTGUN_SCRIPTNAME', '')
-    __shotgunApiKey = os.environ.get('KOMBI_SHOTGUN_APIKEY', '')
+    __shotgunToken = os.environ.get('KOMBI_SHOTGUN_TOKEN')
+    __shotgunUrl = os.environ.get('KOMBI_SHOTGUN_URL')
+    __shotgunUser = os.environ.get('KOMBI_SHOTGUN_USER', '(env KOMBI_USER)')
+    __shotgunScriptName = os.environ.get('KOMBI_SHOTGUN_SCRIPTNAME')
 
     def __init__(self, *args, **kwargs):
         """
-        Create a RenderPublish object.
+        Create a shotgun output task.
         """
         super(SGPublishTask, self).__init__(*args, **kwargs)
+        self.setOption('user', self.__shotgunUser)
+        self.setOption('shotgunVersionTrackFile', '')
+        self.setOption('shotgunTask', '')
+        self.setOption('addForInternalReview', False)
+        self.setOption('outputType', 'internal')
+        self.setOption('displayPath', '{name}')
+        self.setOption('versionType', '')
+        self.setOption('department', '{department}')
+        self.setOption('comment', '')
+        self.setOption('pathToFrames', '')
+        self.setOption('thumbnail', '')
 
-        # setting default options
-        self.setOption("url", self.__shotgunUrl)
-        self.setOption("scriptName", self.__shotgunScriptName)
-        self.setOption("apiKey", self.__shotgunApiKey)
+        self.setMetadata(
+            'ui.options.addForInternalReview',
+            {
+                'main': True,
+                'label': 'Add For Internal Review (Shotgun)'
+            }
+        )
 
-        self.__publishData = {}
+        self.setMetadata('wrapper.name', 'python')
+        self.setMetadata('wrapper.options', {})
 
     def _perform(self):
         """
@@ -35,210 +49,183 @@ class SGPublishTask(Task):
         """
         import shotgun_api3
 
-        # creating a singleton session object
+        crawler = self.crawlers()[0]
+        userName = self.templateOption('user', crawler)
+        outputType = self.templateOption('outputType', crawler)
+        comment = self.templateOption('comment', crawler)
+
         sg = shotgun_api3.Shotgun(
-            self.option('url'),
-            script_name=self.option('scriptName'),
-            api_key=self.option('apiKey')
+            self.__shotgunUrl,
+            script_name=self.__shotgunScriptName,
+            api_key=self.__shotgunToken
         )
 
-        # Source crawler is a json crawler that points to published data
-        sourceCrawler = self.crawlers()[0]
-        filePath = self.target(sourceCrawler) if self.target(sourceCrawler) else sourceCrawler.var('filePath')
+        taskValue = self.templateOption('shotgunTask', crawler)
+        filters = []
+        if taskValue:
+            if taskValue.isdigit():
+                taskValue = int(taskValue)
+            elif "#Task_" in taskValue:
+                taskValue = int(taskValue.split("#Task_")[-1])
+            else:
+                taskValue = int(taskValue.split("/Task/")[-1])
 
-        self.__publishData["path"] = {"local_path": filePath}
-        self.__publishData["description"] = self.templateOption('comment', crawler=sourceCrawler)
-        self.__publishData["version_number"] = sourceCrawler.var('version')
-
-        if "_sgTask" in sourceCrawler.varNames():
-            self.__publishData["task"] = sourceCrawler.var("_sgTask")
-
-        publishName = self.templateOption('publishName', crawler=sourceCrawler)
-        self.__publishData["name"] = publishName
-        self.__publishData["code"] = publishName
-
-        self.__linkData(sg)
-        self.__sgFileType(sg)
-        self.__sgUser(sg)
-
-        sgPublishFile = sg.create("PublishedFile", self.__publishData)
-        self.__makeThumbnail(sgPublishFile, sg)
-        self.__makeDaily(sgPublishFile, sg)
-
-        # this task does not return any crawlers as result
-        return []
-
-    def __linkData(self, sg):
-        """
-        Find the data that needs to be linked to the publish in Shotgun.
-        """
-        sourceCrawler = self.crawlers()[0]
-
-        project = sg.find_one('Project', [['name', 'is', sourceCrawler.var('job')]])
-        self.__publishData['project'] = project
-
-        if "shot" in sourceCrawler.varNames() or "assetName" in sourceCrawler.varNames():
-            varName = "shot" if "shot" in sourceCrawler.varNames() else "assetName"
-            varType = "Shot" if "shot" in sourceCrawler.varNames() else "Asset"
+            task = sg.find_one(
+                'Task',
+                [
+                    ['id', 'is', taskValue]
+                ],
+                ['project', 'entity', 'step']
+            )
+            shotOrAsset = task['entity']
+            department = task['step']['name']
+        else:
+            job = crawler.var('job')
+            episode = crawler.var('episode') if 'episode' in crawler.varNames() and crawler.var('episode') else None
+            seq = crawler.var('seq')
+            shot = crawler.var('shot')
+            department = self.templateOption('department', crawler)
 
             filters = [
-                ['code', 'is', sourceCrawler.var(varName)],
-                ['project', 'is', project]
+                ['project.Project.name', 'is', job],
+                ['code', 'is', shot]
             ]
-            entityData = sg.find(varType, filters)
-            if len(entityData) != 1:
-                raise Exception(
-                    "[SGPublish] Cannot find unique {} {} in project {}. Skip Publish.".format(
-                        varName,
-                        sourceCrawler.var(varName),
-                        sourceCrawler.var('job')
-                    )
+
+            if seq != 'asset':
+                filters.append(
+                    ['sg_sequence', 'name_is', seq]
                 )
-            self.__publishData['entity'] = entityData[0]
-        else:
-            self.__publishData['entity'] = project
 
-    def __sgFileType(self, sg):
-        """
-        Find the shotgun file type for the publish. Create it in Shotgun if it does not already exist.
-        """
-        publishedFileType = self.option('publishedFileType')
-        sgFileType = sg.find_one('PublishedFileType', filters=[["code", "is", publishedFileType]])
-        if not sgFileType:
-            # create a published file type on the fly
-            sgFileType = sg.create("PublishedFileType", {"code": publishedFileType})
-        self.__publishData["published_file_type"] = sgFileType
+                if episode:
+                    filters.append(
+                        ['sg_sequence.Sequence.episode', 'name_is', episode]
+                    )
 
-    def __sgUser(self, sg):
-        """
-        Find the shotgun user information for the publish.
-        """
-        fields = ["id", "type", "email", "login", "name", "image"]
-        user = os.environ.get("KOMBI_USER", getpass.getuser()),
-        self.__publishData["created_by"] = sg.find_one("HumanUser", filters=[["login", "is", user]], fields=fields)
+            # finding task
+            shotOrAsset = sg.find_one('Asset' if seq == 'asset' else 'Shot', filters, ['code'])
+            if not shotOrAsset:
+                sys.stdout.write('Could not find shotOrAsset:\n{}\n'.format(filters))
+                return []
 
-    def __makeThumbnail(self, sgPublishFile, sg):
-        """
-        Create a temporary thumbnail using images found in data to load as publish thumbnail in shotgun.
-        """
-        createThumbnail = False
-        sourceCrawler = self.crawlers()[0]
-        if "thumbnailFile" in self.optionNames():
-            thumbnailFilePath = self.templateOption('thumbnailFile', crawler=sourceCrawler)
-        else:
-            # Look for an image sequence to create a thumbnail. If multiple sequences found, using the first one.
-            createThumbnail = True
-            imageCrawlers = sourceCrawler.globFromParent(filterTypes=[ImageCrawler])
-            if not imageCrawlers:
-                # No images anywhere in the publish, nothing to use as a thumbnail
-                return
-            groups = Crawler.group(filter(lambda x: x.isSequence(), imageCrawlers))
-            if groups:
-                targetCrawler = groups[0][int(len(groups[0]) / 2)]
-            else:
-                targetCrawler = imageCrawlers[0]
+            filters = [
+                ['project.Project.name', 'is', job],
+                ['entity', 'is', shotOrAsset]
+            ]
 
-            tempFile = tempfile.NamedTemporaryFile(
-                delete=False,
-                suffix=".jpg",
-                mode='w'
+            filters.append(
+                ['step', 'name_is', department]
             )
-            tempFile.close()
-            thumbnailFilePath = tempFile.name
-            # Remove file so the thumbnail task doesn't ask to overwrite it
-            os.unlink(thumbnailFilePath)
 
-            thumbnailTask = Task.create('imageThumbnail')
-            thumbnailTask.add(targetCrawler, thumbnailFilePath)
-            # Using python taskWrapper because the imageThumbnail task uses OIIO
-            TaskWrapper.create('python').run(thumbnailTask)
+            # finding task
+            task = sg.find_one('Task', filters, fields=['project'])
+            if not task:
+                sys.stdout.write('Could not find task:\n{}\n'.format(filters))
+                return []
 
-        if os.path.exists(thumbnailFilePath):
-            sg.upload_thumbnail("PublishedFile", sgPublishFile["id"], thumbnailFilePath)
+        filters = [
+            ['login', 'is', userName]
+        ]
+        user = sg.find_one('HumanUser', filters)
 
-        if createThumbnail:
-            # removing the temporary file
-            os.unlink(thumbnailFilePath)
+        # finding user
+        if not user:
+            sys.stdout.write('Could not find user:\n{}\n'.format(filters))
+            return []
 
-    def __makeDaily(self, sgPublishFile, sg):
-        """
-        Create a version in Shotgun for this path and linked to this publish.
-        """
-        sourceCrawler = self.crawlers()[0]
-        if 'movieFile' not in self.optionNames():
-            # No movie provided, glob for a mov
-            movCrawlers = sourceCrawler.globFromParent(filterTypes=["mov"])
-            if not movCrawlers:
-                return
-            movieFilePath = movCrawlers[0].var("filePath")
-        else:
-            movieFilePath = self.templateOption('movieFile', crawler=sourceCrawler)
-            if not movieFilePath or not os.path.exists(movieFilePath):
-                raise Exception("Movie provided for daily creation does not exist: {}".format(movieFilePath))
-
-        # create a name for the version based on the file name
-        # grab the file name, strip off extension
-        name = os.path.splitext(os.path.basename(movieFilePath))[0]
-        # do some replacements
-        name = name.replace("_", " ")
-        # and capitalize
-        name = name.capitalize()
-
-        firstFrame = None
-        lastFrame = None
-        imageSeqPath = None
-        movCrawler = FsCrawler.createFromPath(movieFilePath)
-        if firstFrame in movCrawler.varNames():
-            firstFrame = movCrawler.var('firstFrame')
-            lastFrame = movCrawler.var('lastFrame')
-
-        imageCrawlers = sourceCrawler.globFromParent(filterTypes=[ImageCrawler])
-        groups = Crawler.group(filter(lambda x: x.isSequence(), imageCrawlers))
-        if groups:
-            seqGroup = groups[0]
-            imageSeqPath = os.path.join(
-                os.path.dirname(seqGroup[0].var("filePath")),
-                '{0}.%0{1}d.{2}'.format(
-                    seqGroup[0].var('name'),
-                    seqGroup[0].var('padding'),
-                    seqGroup[0].var('ext')
-                    )
-                )
-            if firstFrame is None:
-                firstFrame = seqGroup[0].var('frame')
-                lastFrame = seqGroup[-1].var('frame')
-
-        # Create the version in Shotgun
         data = {
-            "code": name,
-            "sg_status_list": "rev",
-            "entity": self.__publishData['entity'],
-            "created_by": self.__publishData['created_by'],
-            "user": self.__publishData['created_by'],
-            "description": self.__publishData['description'],
-            "project": self.__publishData['project']
+            'project': task['project'],
+            'code': '{} {}'.format(
+                self.templateOption('versionType', crawler).capitalize(),
+                self.templateOption('displayPath', crawler)
+            ).strip(),
+            'description': comment,
+            'entity': shotOrAsset,
+            'sg_task': task,
+            'sg_department': department,
+            'user': user
         }
 
-        if firstFrame is not None and lastFrame is not None:
-            data["sg_first_frame"] = firstFrame
-            data["sg_last_frame"] = lastFrame
-            data["frame_count"] = (lastFrame - firstFrame + 1)
-            data["frame_range"] = "%s-%s" % (firstFrame, lastFrame)
-        if imageSeqPath:
-            data["sg_path_to_frames"] = imageSeqPath
+        if isinstance(crawler, VideoCrawler):
+            data['sg_path_to_movie'] = os.path.normpath(crawler.var('fullPath'))
 
-        data["published_files"] = [sgPublishFile]
-        data["sg_path_to_movie"] = movieFilePath
+        if outputType == 'client':
+            data['client_code'] = crawler.var('name')
 
-        sgVersion = sg.create("Version", data)
-        # upload files
-        sg.upload("Version", sgVersion["id"], movieFilePath, "sg_uploaded_movie")
+        versionType = ''
+        if self.option('versionType'):
+            versionType = self.templateOption(
+                'versionType',
+                crawler
+            )
+            data['sg_version_type'] = versionType
 
-        return sgVersion
+        pathToFrames = None
+        if self.option('pathToFrames'):
+            pathToFrames = self.templateOption(
+                'pathToFrames',
+                crawler
+            )
+            data['sg_path_to_frames'] = os.path.normpath(pathToFrames)
+
+        data['sg_status_list'] = 'na'
+        if self.option('addForInternalReview') and outputType != 'client':
+            data['sg_status_list'] = 'rev'
+
+        result = sg.create('Version', data)
+
+        if pathToFrames:
+            pathToFramesParts = pathToFrames.split('/')
+            if 'output' in pathToFramesParts and pathToFramesParts.index('output') + 4 < len(pathToFramesParts):
+                outputDirPath = '/'.join(pathToFramesParts[:pathToFramesParts.index('output') + 4])
+                if os.path.basename(outputDirPath).startswith('v') and os.path.basename(outputDirPath)[1:].isdigit():
+                    shotgunVersionFilePath = os.path.join(outputDirPath, 'shotgunVersionInfo.json')
+                    versionContent = {}
+
+                    try:
+                        if os.path.exists(shotgunVersionFilePath):
+                            with open(shotgunVersionFilePath) as f:
+                                versionContent = json.load(f)
+
+                        # https://yourstudio.shotgunstudio.com/detail/[Entity Type]/[Entity ID]
+                        versionContent[datetime.now().strftime("%Y-%m-%d %H:%M:%S")] = {
+                            'versionId': result['id'],
+                            'versionType': versionType,
+                            'description': result['description'],
+                            'user': userName
+                        }
+
+                        with open(shotgunVersionFilePath, 'w') as f:
+                            json.dump(versionContent, f, sort_keys=True, indent=4)
+
+                        sys.stdout.write('Updated: {}\n'.format(shotgunVersionFilePath))
+                        sys.stdout.flush()
+
+                    except Exception as err:
+                        sys.stderr.write('Error on writing shotgun file: {}\n'.format(str(err)))
+                        sys.stderr.flush()
+
+        # uploading custom thumbnail
+        if self.option('thumbnail'):
+            sg.upload_thumbnail(
+                'Version',
+                result['id'],
+                self.templateOption('thumbnail', crawler)
+            )
+
+        # uploading quicktime
+        if isinstance(crawler, VideoCrawler):
+            sg.upload(
+                'Version',
+                result['id'],
+                crawler.var('fullPath'),
+                'sg_uploaded_movie'
+            )
+
+        return []
 
 
 # registering task
-Task.register(
+ExternalTask.register(
     'sgPublish',
     SGPublishTask
 )
