@@ -1,14 +1,9 @@
 import os
+# TODO: disabled because of gaffer
 import multiprocessing
 from ...Template import Template
 from ..Task import Task
 from ... import Crawler
-
-# compatibility with python 2/3
-try:
-    basestring
-except NameError:
-    basestring = str
 
 class ResizeImageTask(Task):
     """
@@ -43,12 +38,12 @@ class ResizeImageTask(Task):
             height = self.option('height')
 
             # resolving template
-            if isinstance(width, basestring):
+            if isinstance(width, str):
                 width = int(Template(width).valueFromCrawler(
                     crawler
                 ))
 
-            if isinstance(height, basestring):
+            if isinstance(height, str):
                 height = int(Template(height).valueFromCrawler(
                     crawler
                 ))
@@ -66,7 +61,7 @@ class ResizeImageTask(Task):
             # opening the source image to generate a resized image
             inputImageBuf = oiio.ImageBuf(
                 Crawler.Fs.Image.OiioCrawler.supportedString(
-                   crawler.var('filePath')
+                    crawler.var('filePath')
                 )
             )
             inputSpec = inputImageBuf.spec()
@@ -102,9 +97,7 @@ class ResizeImageTask(Task):
                 resizedImageBuf = temporaryBuffer
 
             # saving target resized image
-            resizedImageBuf.write(
-                targetFilePath
-            )
+            resizedImageBuf.write(targetFilePath)
 
         # default result based on the target filePath
         return super(ResizeImageTask, self)._perform()

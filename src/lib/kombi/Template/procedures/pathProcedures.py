@@ -3,6 +3,7 @@ Basic path functions.
 """
 
 import os
+from glob import glob
 from ..Template import Template
 
 def dirname(string):
@@ -23,8 +24,29 @@ def basename(string):
     """
     return os.path.basename(string)
 
+def basenamewithoutext(string):
+    """
+    Return the base name from a full path without the extension.
+    """
+    return os.path.splitext(basename(string))[0]
+
+def exists(string):
+    """
+    Return if the input path exists.
+    \todo: needs test
+    """
+    return int(os.path.exists(string))
+
+def globpath(path):
+    """
+    Return the first result found by the glob or an empty string in case of no result.
+    """
+    result = glob(path)
+    return result[0] if result else ""
+
 def rfindpath(fileName, startPath, finalPath=None):
     """
+    ????? same as resolvepath under system
     Find and return a specific file.
 
     Starts from the "startPath" and it goes backwards until it finds the specified file or reaches the "finalPath".
@@ -49,6 +71,7 @@ def rfindpath(fileName, startPath, finalPath=None):
 
 def findpath(fileName, startPath):
     """
+    ????? same as resolvepath under system
     Find and return a specific file.
 
     Starts from the "startPath" and it goes forwards until it finds the specified file. If a file is not found,
@@ -81,8 +104,18 @@ def findpath(fileName, startPath):
 
 # registering template procedures
 Template.registerProcedure(
+    'glob',
+    globpath
+)
+
+Template.registerProcedure(
     'dirname',
     dirname
+)
+
+Template.registerProcedure(
+    'exists',
+    exists
 )
 
 Template.registerProcedure(
@@ -93,6 +126,11 @@ Template.registerProcedure(
 Template.registerProcedure(
     'basename',
     basename
+)
+
+Template.registerProcedure(
+    'basenamewithoutext',
+    basenamewithoutext
 )
 
 Template.registerProcedure(

@@ -1,0 +1,34 @@
+{
+  "tasks": [
+    {
+      "run": "copy",
+      "target": "(tmpdir)/{baseName}",
+      "metadata": {
+        "match.types": [
+          "exr"
+        ]
+      },
+      "tasks": [
+        {
+          "run": "sequenceThumbnail",
+          "target": "(tmpdir)/{name}.jpg",
+          "metadata": {
+            "wrapper.name": "python",
+            "wrapper.options": {
+              "user": ""
+            }
+          },
+          "tasks": [
+            {
+              "run": "copy",
+              "target": "(dirname {fullPath})/{name}_copy.{ext}",
+              "metadata": {
+                  "customId": "secondCopy"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

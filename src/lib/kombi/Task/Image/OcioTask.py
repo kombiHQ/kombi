@@ -1,7 +1,7 @@
 import os
-from ..Task import Task
+from ..Task import Task, TaskError
 
-class OcioTaskConfigurationError(Exception):
+class OcioTaskConfigurationError(TaskError):
     """Invalid OCIO configuration error."""
 
 class OcioTask(Task):

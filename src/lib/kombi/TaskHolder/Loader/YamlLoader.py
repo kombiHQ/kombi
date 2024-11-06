@@ -1,11 +1,5 @@
 from .PythonLoader import PythonLoader
 
-# in case yaml is not available importing from third-party
-try:
-    import yaml
-except ImportError:
-    from kombithirdparty import yaml
-
 class YamlLoader(PythonLoader):
     """
     Loads configuration from yaml files.
@@ -16,8 +10,12 @@ class YamlLoader(PythonLoader):
         """
         Return parsed python data-structure from the input content.
         """
+        # third-party dependency
+        import yaml
+
         return yaml.load(
-            contents
+            contents,
+            yaml.Loader
         )
 
 

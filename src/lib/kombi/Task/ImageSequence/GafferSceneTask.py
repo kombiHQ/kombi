@@ -1,13 +1,7 @@
-from ..Task import Task
+from ..External.GafferTask import GafferTask
 from ...Crawler import Crawler
 
-# compatibility with python 2/3
-try:
-    basestring
-except NameError:
-    basestring = str
-
-class GafferSceneTask(Task):
+class GafferSceneTask(GafferTask):
     """
     Executes a gaffer scene by triggering the task nodes.
 
@@ -30,9 +24,6 @@ class GafferSceneTask(Task):
         Create a gaffer template task.
         """
         super(GafferSceneTask, self).__init__(*args, **kwargs)
-
-        self.setMetadata("wrapper.name", "gaffer")
-        self.setMetadata("wrapper.options", {})
         self.setMetadata('dispatch.split', True)
 
     def _perform(self):
@@ -69,7 +60,7 @@ class GafferSceneTask(Task):
                         optionValue = self.option(optionName)
 
                         # resolving template if necessary
-                        if isinstance(optionValue, basestring):
+                        if isinstance(optionValue, str):
                             optionValue = self.templateOption(optionName, crawler)
 
                         # adding option to the context
@@ -84,7 +75,7 @@ class GafferSceneTask(Task):
 
 
 # registering task
-Task.register(
+GafferTask.register(
     'gafferScene',
     GafferSceneTask
 )

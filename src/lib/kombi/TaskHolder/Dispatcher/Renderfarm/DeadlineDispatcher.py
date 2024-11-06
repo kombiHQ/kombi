@@ -23,10 +23,11 @@ class DeadlineDispatcher(RenderfarmDispatcher):
     Optional options: pool, secondaryPool, group and jobFailRetryAttempts
     """
 
+    __deadlineCommandExecutable = os.environ.get('KOMBI_DEADLINECOMMAND_EXECUTABLE', 'deadlinecommand')
     __defaultGroup = os.environ.get('KOMBI_DISPATCHER_RENDERFARM_GROUP', '')
     __defaultPool = os.environ.get('KOMBI_DISPATCHER_RENDERFARM_POOL', '')
     __defaultSecondaryPool = os.environ.get('KOMBI_DISPATCHER_RENDERFARM_SECONDARYPOOL', '')
-    __defaultJobFailRetryAttempts = 1
+    __defaultJobFailRetryAttempts = 10
 
     def __init__(self, *args, **kwargs):
         """
@@ -34,13 +35,14 @@ class DeadlineDispatcher(RenderfarmDispatcher):
         """
         super(DeadlineDispatcher, self).__init__(*args, **kwargs)
 
-        self.__lazyOptions = {}
-
         # setting default options
         self.setOption('group', self.__defaultGroup)
         self.setOption('pool', self.__defaultPool)
         self.setOption('secondaryPool', self.__defaultSecondaryPool)
         self.setOption('jobFailRetryAttempts', self.__defaultJobFailRetryAttempts)
+
+        # additional props that can be passed to deadline
+        self.setOption('additionalProps', {})
 
         # deadline is extremely slow to submit jobs to the farm. Therefore,
         # we need to expand them inside of the farm rather than awaiting
@@ -50,6 +52,11 @@ class DeadlineDispatcher(RenderfarmDispatcher):
         # for the same performance reason above we want to let deadline to chunkify
         # the job on the farm by default
         self.setOption('chunkifyOnTheFarm', True)
+
+        # tells if the dispatcher should inheritance the priority based on the parent
+        # job (default). Disable this option when you want to ignore any current
+        # priority that has been set/overridden in the parent jobs
+        self.setOption('priorityInherintance', True)
 
     def option(self, name, *args, **kwargs):
         """
@@ -61,9 +68,9 @@ class DeadlineDispatcher(RenderfarmDispatcher):
         # computing dynamic option
         if name not in self.optionNames() and name in ['groupNames', 'poolNames']:
             if name == 'groupNames':
-                command = 'deadlinecommand GetGroupNames'
+                command = '{} GetGroupNames'.format(self.__deadlineCommandExecutable)
             else:
-                command = 'deadlinecommand GetPoolNames'
+                command = '{} GetPoolNames'.format(self.__deadlineCommandExecutable)
 
             self.setOption(
                 name,
@@ -75,18 +82,18 @@ class DeadlineDispatcher(RenderfarmDispatcher):
         # returning the value for an option
         return super(DeadlineDispatcher, self).option(name, *args, **kwargs)
 
-    def _addDependencyIds(self, jobId, dependencyIds):
+    def _addDependencyIds(self, jobId, dependencyIds, task=None):
         """
         For re-implementation: Should add the dependency ids to the input job id.
 
-        This is feature used when a collapsed job is expanded on the farm. Therefore,
+        This feature is used when a collapsed job is expanded on the farm. Therefore,
         all the jobs created by the collapsed job should be added back
         as dependency of the collapsed job itself. Also, you may need to mark
         the collapsed job as pending status again.
         """
         # getting the current job ids
         currentJobIds = self.__executeDeadlineCommand(
-            "deadlinecommand GetJobSetting {} JobDependencies".format(jobId)
+            "{} GetJobSetting {} JobDependencies".format(self.__deadlineCommandExecutable, jobId)
         )
 
         currentJobIds = currentJobIds.split(",") if len(currentJobIds) else []
@@ -96,7 +103,8 @@ class DeadlineDispatcher(RenderfarmDispatcher):
 
         # updating the job dependency ids
         currentJobIds = self.__executeDeadlineCommand(
-            "deadlinecommand SetJobSetting {} JobDependencies {}".format(
+            "{} SetJobSetting {} JobDependencies {}".format(
+                self.__deadlineCommandExecutable,
                 jobId,
                 ','.join(dependencyIds)
             )
@@ -104,8 +112,30 @@ class DeadlineDispatcher(RenderfarmDispatcher):
 
         # marking job as pending again
         self.__executeDeadlineCommand(
-            "deadlinecommand PendJob {}".format(jobId)
+            "{} PendJob {}".format(
+                self.__deadlineCommandExecutable,
+                jobId
+            )
         )
+
+        # updating original priority (since it may have been changed
+        # on the farm)
+        if self.option('priorityInherintance', task):
+            currentPriority = self.__executeDeadlineCommand(
+                "{} GetJobSetting {} Priority".format(
+                    self.__deadlineCommandExecutable,
+                    jobId
+                )
+            )
+
+            for dependencyId in dependencyIds:
+                self.__executeDeadlineCommand(
+                    "{} SetJobSetting {} Priority {}".format(
+                        self.__deadlineCommandExecutable,
+                        dependencyId,
+                        currentPriority
+                    )
+                )
 
     def _executeOnTheFarm(self, renderfarmJob, jobDataFilePath):
         """
@@ -181,25 +211,38 @@ class DeadlineDispatcher(RenderfarmDispatcher):
 
             args += [
                 "-name",
-                taskLabel
+                task.metadata('label') if task.hasMetadata('label') else taskLabel
             ]
 
-            outputDirectories = list(set(map(lambda x: os.path.dirname(task.target(x)), task.crawlers())))
-            for index, outputDirectory in enumerate(outputDirectories):
+            # adding additional props
+            hasOutputDirectory = False
+            for keyProp, valueProp in self.option('additionalProps').items():
+                if keyProp.startswith('OutputDirectory'):
+                    hasOutputDirectory = True
+
                 args += [
                     "-prop",
-                    "OutputDirectory{}={}".format(index, outputDirectory)
+                    "{}={}".format(keyProp, valueProp)
                 ]
+
+            # output directories
+            if not hasOutputDirectory:
+                outputDirectories = list(filter(lambda x: bool(x), set(map(lambda x: os.path.dirname(task.target(x)), task.crawlers()))))
+                for index, outputDirectory in enumerate(outputDirectories):
+                    args += [
+                        "-prop",
+                        "OutputDirectory{}={}".format(index, outputDirectory)
+                    ]
 
         if dependencyIds:
             args += [
                 "-prop",
-                "JobDependencies="+",".join(dependencyIds)
+                "JobDependencies=" + ",".join(dependencyIds)
             ]
 
         output = self.__executeDeadlineCommand(
             ' '.join([
-                "deadlinecommand",
+                self.__deadlineCommandExecutable,
                 self.__serializeDeadlineArgs(args, renderfarmJob.jobDirectory())
             ]),
         )
@@ -248,8 +291,8 @@ class DeadlineDispatcher(RenderfarmDispatcher):
             "UserName={}".format(kombiUser)
         ]
 
-        # adding optional options
-        for optionName in ['group', 'pool', 'secondaryPool']:
+        # adding optional props
+        for optionName in ('group', 'pool', 'secondaryPool'):
             if self.option(optionName, task):
                 args += [
                     "-prop",

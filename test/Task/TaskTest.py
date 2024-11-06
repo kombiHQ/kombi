@@ -23,8 +23,8 @@ class TaskTest(BaseTestCase):
         """
         class DummyTask(Task):
             pass
-        Task.register("dummy", DummyTask)
-        self.assertIn("dummy", Task.registeredNames())
+        Task.register('dummy', DummyTask)
+        self.assertIn('dummy', Task.registeredNames())
         self.assertRaises(TaskTypeNotFoundError, Task.create, 'badTask')
 
     def testFilterTemplateCrawlers(self):
@@ -62,7 +62,7 @@ class TaskTest(BaseTestCase):
         taskHolder = TaskHolder(dummyTask, Template("{filePath}"))
         dummyTask2 = Task.create('checksum')
         taskHolder2 = TaskHolder(dummyTask2, Template("{filePath}"))
-        taskHolder2.setStatus("execute")
+        taskHolder2.setStatus('execute')
         taskHolder.addSubTaskHolder(taskHolder2)
         self.assertEqual(len(taskHolder.run(crawlers)), len(crawlers) * 2)
 
@@ -70,17 +70,30 @@ class TaskTest(BaseTestCase):
         """
         Test bypass status in the task holder.
         """
-        dummyTask = Task.create('checksum')
+
+        class DummyMultiplyTask(Task):
+            def _perform(self):
+                """
+                Perform the task.
+                """
+                result = []
+                result.extend(self.crawlers())
+                result.extend(self.crawlers())
+                return result
+        Task.register('dummyMultiply', DummyMultiplyTask)
+
+        dummyTask = Task.create('dummyMultiply')
         crawlers = [FsCrawler.createFromPath(self.__jsonConfig)]
 
         taskHolder = TaskHolder(dummyTask, Template("{filePath}"))
-        dummyTask2 = Task.create('checksum')
+        dummyTask2 = Task.create('dummyMultiply')
         taskHolder2 = TaskHolder(dummyTask2, Template("{filePath}"))
         taskHolder.addSubTaskHolder(taskHolder2)
-        self.assertEqual(len(taskHolder.run(crawlers)), len(crawlers) * 2)
 
-        taskHolder.setStatus("bypass")
-        self.assertEqual(len(taskHolder.run(crawlers)), len(crawlers))
+        self.assertEqual(len(taskHolder.run(crawlers)), len(crawlers) * 4)
+
+        taskHolder.setStatus('bypass')
+        self.assertEqual(len(taskHolder.run(crawlers)), len(crawlers) * 3)
 
     def testIgnoreStatus(self):
         """
@@ -90,16 +103,16 @@ class TaskTest(BaseTestCase):
         crawlers = [FsCrawler.createFromPath(self.__jsonConfig)]
 
         taskHolder = TaskHolder(dummyTask, Template("{filePath}"))
-        taskHolder.setStatus("ignore")
+        taskHolder.setStatus('ignore')
 
         dummyTask2 = Task.create('checksum')
         taskHolder2 = TaskHolder(dummyTask2, Template("{filePath}"))
-        taskHolder2.setStatus("execute")
+        taskHolder2.setStatus('execute')
         taskHolder.addSubTaskHolder(taskHolder2)
         self.assertEqual(len(taskHolder.run(crawlers)), 0)
 
-        taskHolder.setStatus("execute")
-        taskHolder2.setStatus("ignore")
+        taskHolder.setStatus('execute')
+        taskHolder2.setStatus('ignore')
         self.assertEqual(len(taskHolder.run(crawlers)), len(crawlers))
 
     def testTaskClone(self):
@@ -194,7 +207,7 @@ class TaskTest(BaseTestCase):
         )
         self.assertEqual(
             list(map(lambda x: x.var('contextVarTest'), result)),
-            [1]*len(crawlers)
+            [1] * len(crawlers)
         )
         for crawler in result:
             self.assertIn('contextVarTest', crawler.contextVarNames())
@@ -205,7 +218,7 @@ class TaskTest(BaseTestCase):
         """
         class DummyTask(Task):
             pass
-        Task.register("dummy", DummyTask)
+        Task.register('dummy', DummyTask)
 
         dummyTask = Task.create('dummy')
         crawlers = FsCrawler.createFromPath(BaseTestCase.dataTestsDirectory()).glob(['mov'])
@@ -244,7 +257,7 @@ class TaskTest(BaseTestCase):
             createdCrawlers += taskHolder.run(crawlers)
 
         exrCrawlers = list(filter(lambda x: isinstance(x, ExrCrawler), createdCrawlers))
-        self.assertEqual(len(exrCrawlers), 16)
+        self.assertEqual(len(exrCrawlers), 19)
 
         jpgCrawlers = list(filter(lambda x: isinstance(x, JpgCrawler), createdCrawlers))
         self.assertEqual(len(jpgCrawlers), 1)

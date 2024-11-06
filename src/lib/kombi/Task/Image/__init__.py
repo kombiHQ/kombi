@@ -6,3 +6,5 @@ from .ImageThumbnailTask import ImageThumbnailTask
 from .ColorTransformationTask import ColorTransformationTask
 from .ConvertTextureTask import ConvertTextureTask
 from .FileColorTransformationTask import FileColorTransformationTask
+from .LoadImageMetadataTask import LoadImageMetadataTask, LoadImageMetadataTaskError, LoadImageMetadataTaskNotFoundError
+from .FrameImageTask import FrameImageTask

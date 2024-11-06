@@ -140,7 +140,7 @@ def __queryLatest(versionsPath, versionPattern):
     """
     version = 0
     patternParts = __splitVersionPattern(versionPattern)
-    versionRegEx = "^"+patternParts['prefix']+"[0-9]{"+str(len(patternParts['padding']))+",}"+patternParts['suffix']+"$"
+    versionRegEx = "^" + patternParts['prefix'] + "[0-9]{" + str(len(patternParts['padding'])) + ",}" + patternParts['suffix'] + "$"
 
     # finding the latest version
     if os.path.exists(versionsPath):

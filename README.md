@@ -76,8 +76,7 @@ target = "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ve
 ```
 </details>
 
-<details><summary>JSON & HJSON</summary>
-It supports both Json and Hjson (a user interface for JSON: https://hjson.org)
+<details><summary>JSON</summary>
 <p>
 
 ```json
@@ -152,6 +151,8 @@ Open Image IO (including python bindings/binary tools) | 1.7+
 Open Color IO (including python bindings) | 1.0+
 Gaffer | 0.53+
 PySide | 2.0+
+PyYAML | 6.0+
+Qt.py | 2.4+
 FFmpeg (including ffprobe) | 3.0+
 nuke | 9.0+
 maya | 2016+
@@ -168,19 +169,12 @@ In case you are building the dependencies manually skip the step below:
 
 #### Ubuntu 18.04 (bionic) and derivatives:
 ```bash
-pip install PySide2
+pip install PySide6
+pip install PyYAML
+pip install QtPy
 apt-get install make cmake
-apt-get install python-openimageio openimageio-tools
-apt-get install python-pyopencolorio 
+apt-get install python3-openimageio openimageio-tools
 apt-get install ffmpeg
-```
-
-#### CentOS/Fedora (requires EPEL):
-```bash
-pip install PySide2
-yum install make cmake
-yum install python-OpenImageIO OpenImageIO-utils
-yum install ffmpeg
 ```
 </details>
 
@@ -190,6 +184,8 @@ yum install ffmpeg
 - [Cygwin](https://www.cygwin.com)
 - [Python 3.6+](https://www.python.org/downloads)
 - [FFmpeg](https://ffmpeg.org)
+- [Qt.Py](https://pypi.org/project/QtPy)
+- [PyYAML](https://pypi.org/project/PyYAML)
 - [PySide2](https://pypi.org/project/PySide2)
 - [Open Image IO](https://www.lfd.uci.edu/~gohlke/pythonlibs/#openimageio) (Unofficial)
 

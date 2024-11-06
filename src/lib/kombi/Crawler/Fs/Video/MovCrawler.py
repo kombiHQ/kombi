@@ -14,8 +14,8 @@ class MovCrawler(VideoCrawler):
         """
         Return var value using lazy loading implementation for firstFrame and lastFrame.
         """
-        if self.__ffprobeExecutable and name in ('firstFrame', 'lastFrame') and name not in self.varNames():
-            self.__getFirstLastFrames()
+        if self.__ffprobeExecutable and name in ('firstFrame', 'lastFrame', 'duration', 'durationTs') and name not in self.varNames():
+            self.__lazyInfo()
 
         return super(MovCrawler, self).var(name)
 
@@ -29,12 +29,10 @@ class MovCrawler(VideoCrawler):
 
         return pathHolder.ext() == 'mov'
 
-    def __getFirstLastFrames(self):
+    def __lazyInfo(self):
         """
-        Query first frame and last frame using ffprobe and set them as crawler variables if available.
+        Query the mov info using ffprobe and set them as crawler variables if available.
         """
-        assert(self.__ffprobeExecutable)
-
         cmd = '{} -v quiet -show_streams -print_format json "{}"'.format(
             self.__ffprobeExecutable,
             self.var('filePath')
@@ -55,6 +53,9 @@ class MovCrawler(VideoCrawler):
         if "streams" not in result:
             return
 
+        self.setVar('duration', float(result['streams'][0]['duration']))
+        self.setVar('durationTs', int(result['streams'][0]['duration_ts']))
+
         tags = result['streams'][0].get("tags")
         if not tags:
             return
@@ -62,7 +63,7 @@ class MovCrawler(VideoCrawler):
         startTimecode = tags.get("timecode", "0")
         nbFrames = int(result['streams'][0]['nb_frames']) - 1
         frameRateStr = result['streams'][0]['avg_frame_rate'].split("/")
-        frameRate = int(float(frameRateStr[0])/float(frameRateStr[1]))
+        frameRate = int(float(frameRateStr[0]) / float(frameRateStr[1]))
         firstFrame = 0
         for f, t in zip((3600 * frameRate, 60 * frameRate, frameRate, 1), startTimecode.split(':')):
             firstFrame += f * int(t)

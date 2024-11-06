@@ -20,27 +20,12 @@ class BaseTestCase(unittest.TestCase):
     __rootPath = root
     __tempDirectory = None
 
-    def __init__(self, *args, **kwargs):
-        """
-        Create a test case instance.
-        """
-        super(BaseTestCase, self).__init__(*args, **kwargs)
-
-        # improving support for assertion in python2
-        if not hasattr(self, 'assertCountEqual'):
-            def __assertCountEqual(a, b):
-                self.assertEqual(len(a), len(b))
-            self.assertCountEqual = __assertCountEqual
-
     @classmethod
     def collectFiles(cls, rootDirectory, filterMask='*'):
         """
         Return a list of files located inside of the root directory (recursively).
         """
         result = []
-
-        if fnmatch.fnmatch(rootDirectory, filterMask):
-            result.append(rootDirectory)
 
         for root, dirnames, filenames in os.walk(rootDirectory):
             for filename in fnmatch.filter(filenames + dirnames, filterMask):

@@ -10,7 +10,7 @@ class HashmapCrawlerTest(BaseTestCase):
         Test hashmap creation.
         """
         hashmap = Crawler.create({})
-        assert(isinstance(hashmap, HashmapCrawler))
+        assert isinstance(hashmap, HashmapCrawler)
         self.assertEqual(len(hashmap), 0)
 
     def testData(self):

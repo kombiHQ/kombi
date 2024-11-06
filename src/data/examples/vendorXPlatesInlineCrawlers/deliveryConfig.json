@@ -1,0 +1,31 @@
+{
+  "scripts": [
+    "*/*.py"
+  ],
+  "vars": {
+    "__uiHintSourceColumns": [
+      "type",
+      "job",
+      "seq",
+      "shot"
+    ],
+    "prefix": "/tmp"
+  },
+  "tasks": [
+    {
+      "run": "convertImage",
+      "metadata": {
+        "match.types": [
+          "plateExr"
+        ],
+        "match.vars": {
+          "imageType": [
+            "sequence"
+          ]
+        }
+      },
+      "target": "{prefix}/jobs/{job}/seq/{seq}/shot/{shot}/delivery/(yyyy)(mm)(dd)/{name}/{width}x{height}_{ext}/{job}_{shot}_{seq}_(queryplatename {filePath})_(queryvendorver {filePath}).(pad {frame} 4).png"
+    }
+  ]
+}
+

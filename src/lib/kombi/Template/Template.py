@@ -3,17 +3,14 @@ import os
 import uuid
 from ..Crawler import CrawlerInvalidVarError
 
-# compatibility with python 2/3
-try:
-    basestring
-except NameError:
-    basestring = str
-
 class TemplateError(Exception):
     """Template error."""
 
 class TemplateVarNotFoundError(TemplateError):
     """Template variable not found error."""
+
+class TemplateVarCircularReferenceError(TemplateError):
+    """Template variable circular reference error."""
 
 class TemplateRequiredPathNotFoundError(TemplateError):
     """Required required path not found error."""
@@ -25,10 +22,11 @@ class Template(object):
     """
     Creates a template object based on a string defined using template syntax.
 
-    A template string can be represented using crawler variables using the syntax
+    A template string can contain crawler variables using the syntax
     {crawlerVariable}. Procedures can be used through the syntax (myprocedure),
-    arguments can be passed to procedures for instance (myprocedure {crawlerVariable})
-    where the arguments must be separated by space:
+    arguments can be passed to procedures after the procedure name,
+    for instance (myprocedure {crawlerVariable}) where the arguments must be
+    separated by space:
         "/tmp/{myVariable}/(myprocedure {myVariable} 'second arg' 3)"
 
     It supports calling procedures from inside of procedures. For instance:
@@ -75,7 +73,7 @@ class Template(object):
         """
         Set the template string.
         """
-        assert isinstance(inputString, basestring), \
+        assert isinstance(inputString, str), \
             "Invalid template string!"
 
         self.__inputString = inputString
@@ -179,7 +177,7 @@ class Template(object):
         return str(cls.__registeredProcedures[procedureName](*args))
 
     @classmethod # noqa: C901
-    def evalProcedure(cls, procedure):
+    def evalProcedure(cls, procedure, tokens=None):
         """
         Parse and run a procedure.
 
@@ -197,7 +195,7 @@ class Template(object):
         The arguments are always parsed as string, and they should be
         handled per procedure callable bases.
         """
-        assert isinstance(procedure, basestring), \
+        assert isinstance(procedure, str), \
             "Invalid procedure type!"
 
         assert procedure.startswith("(") and procedure.endswith(")"), \
@@ -206,6 +204,12 @@ class Template(object):
         procedure = procedure[1:-1]
 
         fullResolved = ''
+        if tokens is None:
+            tokens = {}
+
+        for tokenName, tokenValue in tokens.items():
+            procedure = procedure.replace(tokenName, tokenValue)
+
         insideProcedure = []
         insideQuote = False
         previousChar = None
@@ -233,7 +237,8 @@ class Template(object):
                 if not insideProcedure:
                     fullResolved += " '{}' ".format(
                         cls.evalProcedure(
-                            procedure[start: i + 1]
+                            procedure[start: i + 1],
+                            tokens
                         ).replace("'", "\\'")
                     )
 
@@ -251,18 +256,31 @@ class Template(object):
         # converting all the escaped single quoted to a special token
         singleQuoteId = cls.__generatePlaceHolderId()
         procedure = procedure.replace("\\'", singleQuoteId).strip()
-
         procedureName = procedure.split(' ')[0]
-        rawArgs = re.findall(cls.__argsGroupRegex, ' '.join(procedure.split(' ')[1:]))
+        procedureArgs = ' '.join(procedure.split(' ')[1:])
+
+        assignResultToToken = None
+        tokenAssignmentRegex = re.search(r" as <.*>(\s*|)$", procedureArgs.lower())
+        if tokenAssignmentRegex:
+            assignResultToToken = procedureArgs[tokenAssignmentRegex.start() + 4:].rstrip()
+            procedureArgs = procedureArgs[:tokenAssignmentRegex.start()]
+
+        rawArgs = re.findall(cls.__argsGroupRegex, procedureArgs)
+
         procedureArgs = list(map(lambda x: x[1:-1] if x.startswith("'") else x, rawArgs))
 
         # restoring single quoted to the arguments
         procedureArgs = list(map(lambda x: x.replace(singleQuoteId, "'"), procedureArgs))
 
-        return cls.runProcedure(
+        result = cls.runProcedure(
             procedureName,
             *procedureArgs
         )
+
+        if assignResultToToken is not None:
+            tokens[assignResultToToken] = result
+
+        return result
 
     def __processTemplateRequiredLevels(self, finalResolvedTemplate):
         """
@@ -292,6 +310,8 @@ class Template(object):
         """
         Return a resolved template by processing all variables, tokens and procedures.
         """
+        crawlerVars = self.__resolveVariables(crawlerVars)
+
         crawlerVarsEnclosing = dict(map(lambda x:  ('{' + x[0] + '}', x[1]), crawlerVars.items()))
         finalResolvedTemplate = ""
         tokens = {}
@@ -323,9 +343,9 @@ class Template(object):
                 # this is a special token that allows to pass the parent path
                 # to a procedure, replacing it with the parent path at this point.
                 if not finalResolvedTemplate.endswith('/'):
-                    tokens['<parent>'] = os.path.dirname(finalResolvedTemplate.replace(requiredLevelToken, "/"))
+                    tokens['<parent>'] = os.path.dirname(finalResolvedTemplate.replace("/!", "/"))
                 else:
-                    tokens['<parent>'] = finalResolvedTemplate.replace(requiredLevelToken, "/")
+                    tokens['<parent>'] = finalResolvedTemplate.replace("/!", "/")
 
                 # replacing token values
                 templateLastPart = templatePart[endIndex + 1:]
@@ -360,6 +380,47 @@ class Template(object):
                 finalResolvedTemplate += templatePart
 
         return finalResolvedTemplate
+
+    def __resolveVariables(self, crawlerVars):
+        """
+        Resolve crawler variables containing a value referencing another crawler variables.
+        """
+        crawlerVars = dict(crawlerVars)
+        circularReferenceKeys = []
+        unresolved = True
+        while unresolved:
+            unresolved = False
+            for mainVarName, mainVarValue in crawlerVars.items():
+                for currentVarName, currentVarValue in crawlerVars.items():
+
+                    # ignoring same variable
+                    if mainVarName == currentVarName:
+                        continue
+
+                    # checking if current value contains main variable name, if
+                    # so we replace for the value
+                    searchVarName = '{' + mainVarName + '}'
+                    if searchVarName in currentVarValue:
+                        circularReferenceKey = (mainVarName, currentVarName)
+
+                        # checking for circular references
+                        if circularReferenceKey in circularReferenceKeys:
+                            raise TemplateVarCircularReferenceError(
+                                'Found circular reference between the crawler variables: {{{0}}} and {{{1}}}'.format(
+                                    circularReferenceKey[0],
+                                    circularReferenceKey[1]
+                                )
+                            )
+                        circularReferenceKeys.append(circularReferenceKey)
+
+                        # replacing mainVariable name for its value
+                        crawlerVars[currentVarName] = currentVarValue.replace(searchVarName, mainVarValue)
+
+                        # restarting the process again until there is nothing left
+                        # to be resolved
+                        unresolved = True
+
+        return crawlerVars
 
     def __resolveData(self, template, resultData, procedure=False):
         """

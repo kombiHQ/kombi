@@ -4,12 +4,6 @@ import traceback
 from collections import OrderedDict
 from .VarExtractor import VarExtractor
 
-# compatibility with python 2/3
-try:
-    basestring
-except NameError:
-    basestring = str
-
 class CrawlerError(Exception):
     """Crawler Error."""
 
@@ -25,6 +19,52 @@ class CrawlerTestError(CrawlerError):
 class CrawlerTypeError(CrawlerError):
     """Crawler Type Error."""
 
+class CrawlerContext(object):
+    """
+    Crawler context manager.
+
+    # caching children (enabled by default)
+    with CrawlerContext():
+        # querying children for the first time.
+        for childCrawler in crawler.children():
+            print(childCrawler, id(childCrawler))
+
+        # since it's inside of the context manager
+        # it will result the same children when
+        # querying the children again.
+        for childCrawler in crawler.children():
+            print(childCrawler, id(childCrawler))
+    """
+
+    totalActiveScopes = 0
+
+    def __init__(self, cacheChildren=True):
+        """
+        Create a crawler context object.
+        """
+        self.__enableCacheChildren = cacheChildren
+
+    def __enter__(self):
+        """
+        Inside of the `with` statement we assigning a new cache.
+        """
+        if self.__enableCacheChildren:
+            CrawlerContext.totalActiveScopes += 1
+
+    def __exit__(self, *args, **kwargs):
+        """
+        Restoring the previous cache value.
+        """
+        if self.__enableCacheChildren:
+            CrawlerContext.totalActiveScopes -= 1
+
+    @classmethod
+    def isChachingChildren(cls):
+        """
+        Return a boolean telling if the children is being cached.
+        """
+        return CrawlerContext.totalActiveScopes > 0
+
 class Crawler(object):
     """
     Abstracted Crawler.
@@ -39,6 +79,7 @@ class Crawler(object):
         self.__vars = {}
         self.__tags = {}
         self.__contextVarNames = set()
+        self.__childrenCache = None
 
         # passing variables
         if parentCrawler:
@@ -60,7 +101,7 @@ class Crawler(object):
             self.setVar('fullPath', '/')
 
         self.setVar('name', name)
-        self.__globCache = None
+        self.__globCache = {}
 
     def isLeaf(self):
         """
@@ -68,18 +109,54 @@ class Crawler(object):
         """
         return True
 
+    def setChildren(self, children):
+        """
+        Set a list of children crawlers (trigged during loadFromJson).
+
+        When querying children crawlers make to sure to use CrawlerContext. Otherwise,
+        the children will be recomputed again.
+        """
+        assert not self.isLeaf(), "Can't set children in a leaf crawler!"
+        assert isinstance(children, (list, tuple)), "Invalid crawler children list!"
+
+        for crawler in children:
+            assert isinstance(crawler, Crawler), \
+                "Invalid Crawler Type"
+
+        self.__childrenCache = list(children)
+
     def children(self):
         """
         Return a list of crawlers.
         """
         assert not self.isLeaf(), "Can't compute children from a leaf crawler!"
 
+        # returning form cache
+        if CrawlerContext.isChachingChildren() and self.__childrenCache is not None:
+            return self.__childrenCache
+
+        # computing children
         result = self._computeChildren()
         for crawler in result:
             assert isinstance(crawler, Crawler), \
                 "Invalid Crawler Type"
 
+        # assigning the cache
+        if CrawlerContext.isChachingChildren():
+            self.__childrenCache = result
+        # invalidating any existing cache
+        else:
+            self.__childrenCache = None
+
         return result
+
+    def flushChildrenCache(self):
+        """
+        Flushes the cache for the children.
+
+        The cache is only enabled when using the context manager CrawlerContext.
+        """
+        self.__childrenCache = None
 
     def varNames(self):
         """
@@ -166,11 +243,22 @@ class Crawler(object):
         crawlerContents = {
             "vars": {},
             "contextVarNames": [],
-            "tags": {}
+            "tags": {},
+            "children": None,
+            "initializationData": self.initializationData()
         }
+
+        # serializing the children as well when caching is enabled
+        if not self.isLeaf() and self.__childrenCache is not None:
+            crawlerContents['children'] = []
+            for child in self.__childrenCache:
+                crawlerContents['children'].append(child.toJson())
 
         for varName in self.varNames():
             crawlerContents['vars'][varName] = self.var(varName)
+
+        assert 'type' in crawlerContents['vars'], \
+            "Missing type var, cannot serialize crawler (perhaps it was not created through Crawler.create)."
 
         for varName in self.contextVarNames():
             crawlerContents['contextVarNames'].append(varName)
@@ -184,24 +272,30 @@ class Crawler(object):
             separators=(',', ': ')
         )
 
-    def glob(self, filterTypes=[], useCache=True):
+    def initializationData(self):
         """
-        Return a list of all crawlers found recursively under this path.
+        Define the data passed during the initialization of the crawler.
+        """
+        return self.var('fullPath')
+
+    def glob(self, filterTypes=[], recursive=True, useCache=True):
+        """
+        Return a list of all crawlers under this path.
 
         Filter result list by crawler type (str) or class type (both include derived classes).
         """
-        if self.__globCache is None or not useCache:
-            # Recursively collect all crawlers for this path
-            self.__globCache = Crawler.__collectCrawlers(self)
+        cacheKey = (recursive,)
+        if cacheKey not in self.__globCache or not useCache:
+            self.__globCache[cacheKey] = Crawler.__collectCrawlers(self, recursive)
 
         if not filterTypes:
-            return self.__globCache
+            return self.__globCache[cacheKey]
 
         filteredCrawlers = set()
         for filterType in filterTypes:
             subClasses = tuple(Crawler.registeredSubclasses(filterType))
             filteredCrawlers.update(
-                filter(lambda x: isinstance(x, subClasses), self.__globCache)
+                filter(lambda x: isinstance(x, subClasses), self.__globCache[cacheKey])
             )
         return list(filteredCrawlers)
 
@@ -266,23 +360,27 @@ class Crawler(object):
                     result.setVar('type', registeredName)
                 break
 
-        assert isinstance(result, Crawler),\
+        assert isinstance(result, Crawler), \
             "Don't know how to create a crawler for \"{0}\"".format(data)
 
         return result
 
     @staticmethod
-    def register(name, crawlerClass):
+    def register(name, crawlerClass, overrideAsLatest=False):
         """
         Register a crawler type.
 
         The registration is used to tell the order that the crawler types
         are going to be tested. The test is done from the latest registrations to
         the first registrations (bottom top). The only exception is for types that
-        get overridden where the position is going to be the same.
+        get overridden where the position is going to be the same (when
+        overrideAsLatest is set to false).
         """
         assert issubclass(crawlerClass, Crawler), \
             "Invalid crawler class!"
+
+        if overrideAsLatest and name in Crawler.__registeredTypes:
+            del Crawler.__registeredTypes[name]
 
         Crawler.__registeredTypes[name] = crawlerClass
 
@@ -332,10 +430,18 @@ class Crawler(object):
         """
         contents = json.loads(jsonContents)
         crawlerType = contents["vars"]["type"]
-        fullPath = contents["vars"]["fullPath"]
+        initializationData = contents['initializationData']
 
         # creating crawler
-        crawler = Crawler.__registeredTypes[crawlerType](fullPath)
+        crawler = Crawler.__registeredTypes[crawlerType](initializationData)
+
+        # loading baked children crawlers
+        if not crawler.isLeaf() and contents['children'] is not None:
+            children = []
+            for childBakedJsonCrawler in contents['children']:
+                children.append(Crawler.createFromJson(childBakedJsonCrawler))
+
+            crawler.setChildren(children)
 
         # setting vars
         for varName, varValue in contents["vars"].items():
@@ -388,16 +494,18 @@ class Crawler(object):
         return result
 
     @staticmethod
-    def __collectCrawlers(crawler):
+    def __collectCrawlers(crawler, recursive):
         """
         Recursively collect crawlers.
         """
-        result = []
-        result.append(crawler)
+        if crawler.isLeaf():
+            return []
 
-        if not crawler.isLeaf():
-            for childCrawler in crawler.children():
-                result += Crawler.__collectCrawlers(childCrawler)
+        result = []
+        for childCrawler in crawler.children():
+            result.append(childCrawler)
+            if recursive:
+                result += Crawler.__collectCrawlers(childCrawler, True)
 
         return result
 
@@ -406,7 +514,7 @@ class Crawler(object):
         """
         Return a valid base class for the given class or class type name.
         """
-        if isinstance(baseClassOrTypeName, basestring):
+        if isinstance(baseClassOrTypeName, str):
             if baseClassOrTypeName not in Crawler.__registeredTypes:
                 raise CrawlerTypeError(
                     'Crawler name is not a registered type: {}'.format(baseClassOrTypeName)

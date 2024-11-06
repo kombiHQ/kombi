@@ -1,7 +1,0 @@
-Name: PyYAML
-Version: 3.13
-Site: https://github.com/yaml/pyyaml
-Installation: pip install --user --global-option="--without-libyaml" pyyaml
-
-
- pip install --user --global-option="--without-libyaml" -no-binary invoke invoke

@@ -15,7 +15,6 @@ class PublishTexturesTest(BaseTestCase):
         publishTextures/test/publish/texture/default/v001/data.json
         publishTextures/test/publish/texture/default/v001/env.json
         publishTextures/test/publish/texture/default/v001/info.json
-        publishTextures/test/publish/texture/default/v001/data
         publishTextures/test/publish/texture/default/v001/data/exr
         publishTextures/test/publish/texture/default/v001/data/exr/DIFF_1001.exr
         publishTextures/test/publish/texture/default/v001/data/tif
@@ -36,7 +35,7 @@ class PublishTexturesTest(BaseTestCase):
 
         self.assertEqual(
             os.path.basename(loader.taskHolders()[0].var('contextConfig')),
-            'config.hjson'
+            'config.json'
         )
 
     @unittest.skipIf(not BaseTestCase.hasBin(os.environ.get('KOMBI_MAKETX_EXECUTABLE', 'maketx')), 'maketx not found in the search path')

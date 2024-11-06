@@ -3,6 +3,21 @@ from ..Image import OiioCrawler
 class TextureCrawler(OiioCrawler):
     """
     Custom crawler used to detect textures.
+
+    This crawler is only meant to be used only as inheritance. Therefore,
+    when implementing the test call the super class passing the extra parameter
+    enable=True
+
+    ```python
+    class YourClawler(TextureCrawler):
+        @classmethod
+        def test(cls, pathHolder, parentCrawler):
+            if not super(YourClawler, cls).test(pathHolder, parentCrawler, enable=True):
+                return False
+
+            # your implementation...
+            # return True
+    ```
     """
 
     __groupTextures = True
@@ -37,10 +52,13 @@ class TextureCrawler(OiioCrawler):
             self.__updateGroupTag()
 
     @classmethod
-    def test(cls, pathHolder, parentCrawler):
+    def test(cls, pathHolder, parentCrawler, enable=False):
         """
         Test if the path holder contains a texture exr or tif file.
         """
+        if not enable:
+            return False
+
         if not super(TextureCrawler, cls).test(pathHolder, parentCrawler):
             return False
 

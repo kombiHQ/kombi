@@ -1,16 +1,9 @@
 import os
-import io
 import re
 import sys
 import subprocess
 from threading import Thread
-
-# compatibility with python 2/3
-try:
-    from queue import Queue, Empty  # python 3
-    unicode = str
-except ImportError:
-    from Queue import Queue, Empty  # python 2
+from queue import Queue, Empty
 
 class ProcessExecution(object):
     """
@@ -133,14 +126,9 @@ class ProcessExecution(object):
 
         # retrieving value from queue
         while stdoutThread.is_alive() or (stderrThread is not None and stderrThread.is_alive()):
-
             # stdout
             stdoutValue = self.__queryStreamValueFromQueue(stdoutQueue)
             if stdoutValue is not None:
-                # required for python2
-                if isinstance(self.__stdout, io.StringIO):
-                    stdoutValue = unicode(stdoutValue) if sys.version_info[0] == 2 else stdoutValue
-
                 self.__stdout.write(stdoutValue)
                 self.__stdout.flush()
                 self.__stdoutContent += stdoutValue
@@ -151,10 +139,6 @@ class ProcessExecution(object):
 
             stderrValue = self.__queryStreamValueFromQueue(stderrQueue)
             if stderrValue is not None:
-                # required for python2
-                if isinstance(self.__stderr, io.StringIO):
-                    stderrValue = unicode(stderrValue) if sys.version_info[0] == 2 else stderrValue
-
                 self.__stderr.write(stderrValue)
                 self.__stderr.flush()
                 self.__stderrContent += stderrValue
@@ -226,7 +210,7 @@ class ProcessExecution(object):
             pass
         else:
             if not isinstance(line, str):
-                line = line.decode("utf_8")
+                line = line.decode("utf_8", errors="ignore")
             result = line
 
         return result

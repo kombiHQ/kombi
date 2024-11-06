@@ -4,13 +4,16 @@ import json
 import shutil
 from ..Task import Task, TaskError
 
-class CreateDataTaskFileNotUnderDataDirectoryError(TaskError):
+class CreateDataTaskError(TaskError):
+    """Generic Create Data Task Error."""
+
+class CreateDataTaskFileNotUnderDataDirectoryError(CreateDataTaskError):
     """Create Data File Not Under Data Directory Error."""
 
-class CreateDataTaskMetadataNotFoundError(TaskError):
+class CreateDataTaskMetadataNotFoundError(CreateDataTaskError):
     """Create Data Metadata Not Found Error."""
 
-class CreateDataTaskInvalidInfoError(TaskError):
+class CreateDataTaskInvalidInfoError(CreateDataTaskError):
     """Create Data Invalid Info Error."""
 
 class CreateDataTask(Task):
