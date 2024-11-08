@@ -457,7 +457,13 @@ class RunnerWindow(QtWidgets.QMainWindow):
             self.__logo.setTextFormat(QtCore.Qt.RichText)
             self.__logo.setText(self.__customHeader)
         else:
-            self.__logo.setPixmap(Resource.pixmap("icons/header.png").scaledToHeight(64, QtCore.Qt.SmoothTransformation))
+            logoFilePath = "icons/header.png"
+            if self.__taskHolders[0].var('__uiHintLogo'):
+                logoFilePath = self.__taskHolders[0].var('__uiHintLogo')
+                if not os.path.isabs(logoFilePath):
+                    logoFilePath = os.path.realpath(os.path.join(self.__taskHolders[0].var('configDirectory'), logoFilePath))
+
+            self.__logo.setPixmap(Resource.pixmap(logoFilePath).scaledToHeight(64, QtCore.Qt.SmoothTransformation))
         self.__logo.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
 
         headerLayout.addWidget(self.__logo)
@@ -719,7 +725,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         Open the input file path in the default app.
         """
         args = []
-
         commonPaths = {}
         for filePath in filePaths:
             parentDir = os.path.dirname(filePath)
@@ -741,7 +746,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
             args += finalPaths
         # windows
         elif platform.system() == 'Windows':
-            args = ('cmd', '/C', 'start', '""', filePaths.replace("\\", "\\\\"))
+            args = ('cmd', '/C', 'start', '""', filePaths[0].replace('/', '\\').replace("\\", "\\\\"))
+            print(args)
         # macos
         elif platform.system() == 'Darwin':
             args = ('open', filePaths)

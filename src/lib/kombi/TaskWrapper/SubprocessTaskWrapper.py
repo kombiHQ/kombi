@@ -187,7 +187,7 @@ class SubprocessTaskWrapper(TaskWrapper):
                 stderr=subprocess.STDOUT,
                 env=env,
                 shell=True,
-                preexec_fn=os.setsid
+                preexec_fn=os.setsid if os.name == 'posix' else None
             )
 
             # in case the python process is terminated we want to keep

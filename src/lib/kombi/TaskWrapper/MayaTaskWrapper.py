@@ -1,4 +1,6 @@
 import os
+import sys
+import traceback
 from .TaskWrapper import TaskWrapper
 from .DCCTaskWrapper import DCCTaskWrapper
 
@@ -12,6 +14,17 @@ class MayaTaskWrapper(DCCTaskWrapper):
         'maya'
     )
 
+    def __init__(self, *args, **kwargs):
+        """
+        Create a maya task wrapper object.
+        """
+        super().__init__(*args, **kwargs)
+
+        self.setOption(
+            'batch',
+            True
+        )
+
     def _command(self):
         """
         For re-implementation: should return a string which is executed as subprocess.
@@ -24,10 +37,45 @@ class MayaTaskWrapper(DCCTaskWrapper):
             'dummy.ma'
         )
 
-        return '{} -file "{}" -batch -command "python(\\"import kombi; kombi.TaskWrapper.SubprocessTaskWrapper.runSerializedTask()\\")"'.format(
+        return '{} -file "{}"{} -command "python(\\"import kombi; kombi.TaskWrapper.MayaTaskWrapper.runSerializedTask({})\\")"'.format(
             self.__mayaBatchExecutable,
-            dummyMayaFilePath
+            dummyMayaFilePath,
+            ' -batch' if self.option('batch') else ' -nosplash',
+            int(self.option('batch'))
         )
+
+    @staticmethod
+    def runSerializedTask(isBatch=True):
+        """
+        Run a serialized task defined in the environment during SubprocessTaskWrapper._perform.
+        """
+        from maya import utils, cmds
+
+        if isBatch:
+            super(MayaTaskWrapper).runSerializedTask()
+            return
+
+        def __executeWhenIsIdle():
+            # we want to redirect all prints to the stdout (otherwise
+            # they will go to the script editor only)
+            sys.stdout = sys.__stdout__
+            exitCode = 0
+            try:
+                DCCTaskWrapper.runSerializedTask()
+            except Exception as err:
+                exitCode = 1
+                # printing the exception. This is necessary to make
+                # the error visible in the stdout
+                print(traceback.format_exc())
+                raise err
+            finally:
+                # we need to also flush the stdout before closing
+                sys.stdout.flush()
+
+                # quitting maya
+                cmds.quit(f=True, exitCode=exitCode)
+
+        utils.executeDeferred(__executeWhenIsIdle)
 
     @classmethod
     def _hookName(cls):
