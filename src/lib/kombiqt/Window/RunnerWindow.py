@@ -746,8 +746,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
             args += finalPaths
         # windows
         elif platform.system() == 'Windows':
-            args = ('cmd', '/C', 'start', '""', filePaths[0].replace('/', '\\').replace("\\", "\\\\"))
-            print(args)
+            args = ('explorer.exe', '/select,' + filePaths[0].replace('/', '\\'))
         # macos
         elif platform.system() == 'Darwin':
             args = ('open', filePaths)
