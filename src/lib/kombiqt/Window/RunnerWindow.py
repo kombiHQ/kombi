@@ -328,7 +328,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__sourceRefreshButton = QtWidgets.QPushButton()
         self.__sourceRefreshButton.setToolTip('Refreshes the source directory')
         self.__sourceRefreshButton.setIcon(
-            self.__sourceRefreshButton.style().standardIcon(QtWidgets.QStyle.SP_BrowserReload)
+            self.style().standardIcon(QtWidgets.QStyle.SP_BrowserReload)
         )
 
         # view mode
