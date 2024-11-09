@@ -1,2 +1,0 @@
-from .SettingsCrawler import SettingsCrawler
-from .NukeRenderSettingsCrawler import NukeRenderSettingsCrawler
