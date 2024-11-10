@@ -66,7 +66,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__currentSourcePath = None
         self.__buildWidgets()
 
-        # # task holders
+        # task holders
         assert isinstance(taskHolders, (list, tuple)), "Invalid task holder list!"
 
         self.__updateSourceColumns(self.__taskHolders)
@@ -298,6 +298,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__runButton.setVisible(True)
 
         self.__targetTree.updateTarget(checkedCrawlers, self.__taskHolders, self.__checkedViewMode == 'Group')
+
+    def dispatcherWidget(self):
+        """
+        Return the dispatcher widget.
+        """
+        return self.__selectedDispatcher
 
     def __buildWidgets(self):
         """
