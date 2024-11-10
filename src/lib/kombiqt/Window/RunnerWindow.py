@@ -305,6 +305,24 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         return self.__selectedDispatcher
 
+    def setViewMode(self, viewMode):
+        """
+        Change the view mode.
+        """
+        assert viewMode in self.__viewModes, "Invalid view mode"
+
+        for action in self.__viewModeActionGroup.actions():
+            if action.text().lower() == viewMode.lower():
+                action.setChecked(True)
+
+    def viewMode(self):
+        """
+        Return the current view mode.
+        """
+        for action in self.__viewModeActionGroup.actions():
+            if action.isChecked():
+                return action.text().lower()
+
     def __buildWidgets(self):
         """
         Create the widgets.
