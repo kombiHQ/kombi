@@ -54,7 +54,10 @@ class CopyTask(Task):
                 )
 
             # doing the copy
-            shutil.copy2(sourceFilePath, targetFilePath)
+            if os.path.isdir(sourceFilePath):
+                shutil.copytree(sourceFilePath, targetFilePath)
+            else:
+                shutil.copy2(sourceFilePath, targetFilePath)
 
             # creating result crawler
             newCrawler = FsCrawler.createFromPath(targetFilePath)
