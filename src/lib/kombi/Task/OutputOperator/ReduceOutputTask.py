@@ -17,7 +17,7 @@ class ReduceOutputTask(Task):
         """
         Perform the task.
         """
-        return self.crawlers()[:-self.option('total')]
+        return self.crawlers()[:self.option('total')]
 
 
 Task.register('reduceOutput', ReduceOutputTask)
