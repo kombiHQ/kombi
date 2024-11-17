@@ -171,6 +171,15 @@ class Task(object):
         """
         self.__options[name] = value
 
+    def setOptions(self, **kwargs):
+        """
+        Helper to set multiple options at once to the task.
+
+        The options are expected to te passed as keyword parameters.
+        """
+        for optionName, optionValue in kwargs.items():
+            self.setOption(optionName, optionValue)
+
     def optionNames(self):
         """
         Return a list of the option names.
