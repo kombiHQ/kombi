@@ -1,9 +1,9 @@
 from ...Task import Task
-from ...Crawler import Crawler
+from ...InfoCrate import InfoCrate
 
 class SequenceInfoTask(Task):
     """
-    Task used to assign crawler variables about the sequence first, last and total frames.
+    Task used to assign infoCrate variables about the sequence first, last and total frames.
     """
 
     def __init__(self, *args, **kwargs):
@@ -22,25 +22,25 @@ class SequenceInfoTask(Task):
         """
         result = []
 
-        for crawlerGroup in Crawler.group(self.crawlers()):
-            firstCrawler = crawlerGroup[0]
-            lastCrawler = crawlerGroup[-1]
+        for infoCrateGroup in InfoCrate.group(self.infoCrates()):
+            firstInfoCrate = infoCrateGroup[0]
+            lastInfoCrate = infoCrateGroup[-1]
 
-            for crawler in crawlerGroup:
-                newCrawler = crawler.clone()
-                newCrawler.setVar(
-                    self.templateOption('firstName', crawler),
-                    firstCrawler.var('frame')
+            for infoCrate in infoCrateGroup:
+                newInfoCrate = infoCrate.clone()
+                newInfoCrate.setVar(
+                    self.templateOption('firstName', infoCrate),
+                    firstInfoCrate.var('frame')
                 )
-                newCrawler.setVar(
-                    self.templateOption('lastName', crawler),
-                    lastCrawler.var('frame')
+                newInfoCrate.setVar(
+                    self.templateOption('lastName', infoCrate),
+                    lastInfoCrate.var('frame')
                 )
-                newCrawler.setVar(
-                    self.templateOption('totalName', crawler),
-                    len(crawlerGroup)
+                newInfoCrate.setVar(
+                    self.templateOption('totalName', infoCrate),
+                    len(infoCrateGroup)
                 )
-                result.append(newCrawler)
+                result.append(newInfoCrate)
 
         return result
 

@@ -1,11 +1,11 @@
 from ...Task import Task
-from ...Crawler import Crawler
+from ...InfoCrate import InfoCrate
 
 class RenumberSequenceTask(Task):
     """
-    Implements a task that renumbers the frame variable in image sequence crawlers.
+    Implements a task that renumbers the frame variable in image sequence infoCrates.
 
-    This task returns a new crawler with the renumbered frame assigned to
+    This task returns a new infoCrate with the renumbered frame assigned to
     the "frame" variable (it can be changed through the option renumberedFrameVarName).
     The original frame is assigned to "originalFrame" variable (it can be changed through
     the option originalFrameVarName).
@@ -28,17 +28,17 @@ class RenumberSequenceTask(Task):
         """
         result = []
 
-        for crawlerGroup in Crawler.group(self.crawlers()):
-            for index, crawler in enumerate(crawlerGroup):
+        for infoCrateGroup in InfoCrate.group(self.infoCrates()):
+            for index, infoCrate in enumerate(infoCrateGroup):
                 newFrame = self.option('startAt') + index
 
-                # cloning the crawler before modifying it
-                newCrawler = crawler.clone()
+                # cloning the infoCrate before modifying it
+                newInfoCrate = infoCrate.clone()
 
-                # setting original frame as crawler variable
-                newCrawler.setVar(self.option('originalFrameVarName'), crawler.var('frame'))
-                newCrawler.setVar(self.option('renumberedFrameVarName'), newFrame)
-                result.append(newCrawler)
+                # setting original frame as infoCrate variable
+                newInfoCrate.setVar(self.option('originalFrameVarName'), infoCrate.var('frame'))
+                newInfoCrate.setVar(self.option('renumberedFrameVarName'), newFrame)
+                result.append(newInfoCrate)
 
         return result
 

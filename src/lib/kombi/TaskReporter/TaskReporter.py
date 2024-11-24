@@ -1,6 +1,6 @@
 import sys
 import time
-from ..Crawler import Crawler
+from ..InfoCrate import InfoCrate
 
 class TaskReporter(object):
     """
@@ -16,7 +16,7 @@ class TaskReporter(object):
         self.__setTaskName(taskName)
         self.__startTime = time.time()
         self.__endTime = None
-        self.__crawlers = []
+        self.__infoCrates = []
 
     def startTime(self):
         """
@@ -45,21 +45,21 @@ class TaskReporter(object):
         """
         return self.__taskName
 
-    def addCrawler(self, crawler):
+    def addInfoCrate(self, infoCrate):
         """
-        Add a crawler to the reporter.
+        Add a infoCrate to the reporter.
         """
-        assert isinstance(crawler, Crawler), "Invalid crawler type!"
+        assert isinstance(infoCrate, InfoCrate), "Invalid infoCrate type!"
 
         # resetting end time
         self.__endTime = None
-        self.__crawlers.append(crawler)
+        self.__infoCrates.append(infoCrate)
 
-    def crawlers(self):
+    def infoCrates(self):
         """
-        Return a list of crawlers associated with the report.
+        Return a list of infoCrates associated with the report.
         """
-        return self.__crawlers
+        return self.__infoCrates
 
     def display(self, stream=sys.stdout):
         """

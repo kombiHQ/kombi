@@ -4,8 +4,8 @@ from datetime import datetime
 import unittest
 from ..BaseTestCase import BaseTestCase
 from kombi.TaskHolder.Loader import Loader
-from kombi.Crawler import Crawler
-from kombi.Crawler.Fs.FsCrawler import FsCrawler
+from kombi.InfoCrate import InfoCrate
+from kombi.InfoCrate.Fs.FsInfoCrate import FsInfoCrate
 
 class VendorXPlatesTest(BaseTestCase):
     """Test for the example vendor 'x' plates."""
@@ -104,19 +104,19 @@ class VendorXPlatesTest(BaseTestCase):
         )
 
         # loading input data for the ingestion
-        crawlerGroups = Crawler.group(
-            FsCrawler.createFromPath(
+        infoCrateGroups = InfoCrate.group(
+            FsInfoCrate.createFromPath(
                 os.path.join(self.__exampleDirectory, 'plates')
             ).globFromParent()
         )
 
-        resultCrawlers = []
-        for group in crawlerGroups:
-            if isinstance(group[0], Crawler.registeredType('png')):
-                resultCrawlers += taskHolder.run(group)
+        resultInfoCrates = []
+        for group in infoCrateGroups:
+            if isinstance(group[0], InfoCrate.registeredType('png')):
+                resultInfoCrates += taskHolder.run(group)
 
         targetFilePaths = list(sorted(filter(lambda x: len(x), map(lambda x: x.strip(), self.__ingestedGeneratedData.split('\n')))))
-        createdFilePaths = list(sorted(map(lambda x: x.var('fullPath')[len(self.__exampleIngestionPrefixDirectory) + 1:].replace('\\', '/'), resultCrawlers)))
+        createdFilePaths = list(sorted(map(lambda x: x.var('fullPath')[len(self.__exampleIngestionPrefixDirectory) + 1:].replace('\\', '/'), resultInfoCrates)))
 
         self.assertListEqual(targetFilePaths, createdFilePaths)
 
@@ -138,19 +138,19 @@ class VendorXPlatesTest(BaseTestCase):
         )
 
         # loading input data for the ingestion
-        crawlerGroups = Crawler.group(
-            FsCrawler.createFromPath(
+        infoCrateGroups = InfoCrate.group(
+            FsInfoCrate.createFromPath(
                 os.path.normpath(os.path.join(self.__exampleIngestionPrefixDirectory, 'jobs/foo/seq/abc/shot/def/plates/bla/v001/1920x1080_exr'))
             ).glob()
         )
 
-        resultCrawlers = []
-        for group in crawlerGroups:
-            if isinstance(group[0], Crawler.registeredType('plateExr')):
-                resultCrawlers += taskHolder.run(group)
+        resultInfoCrates = []
+        for group in infoCrateGroups:
+            if isinstance(group[0], InfoCrate.registeredType('plateExr')):
+                resultInfoCrates += taskHolder.run(group)
 
         targetFilePaths = list(sorted(filter(lambda x: len(x), map(lambda x: x.strip(), self.__deliveryGeneratedData.replace('<date>', datetime.today().strftime('%Y%m%d')).split('\n')))))
-        createdFilePaths = list(sorted(map(lambda x: x.var('fullPath')[len(self.__exampleDeliveryPrefixDirectory) + 1:].replace('\\', '/'), resultCrawlers)))
+        createdFilePaths = list(sorted(map(lambda x: x.var('fullPath')[len(self.__exampleDeliveryPrefixDirectory) + 1:].replace('\\', '/'), resultInfoCrates)))
 
         self.assertListEqual(targetFilePaths, createdFilePaths)
 

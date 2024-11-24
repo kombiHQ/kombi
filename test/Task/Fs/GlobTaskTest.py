@@ -3,9 +3,9 @@ import os
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
 from kombi.Template import Template
-from kombi.Crawler.Fs import FsCrawler, DirectoryCrawler
-from kombi.Crawler.Fs.Image import ExrCrawler
-from kombi.Crawler.Fs.Ascii import JsonCrawler, TxtCrawler
+from kombi.InfoCrate.Fs import FsInfoCrate, DirectoryInfoCrate
+from kombi.InfoCrate.Fs.Image import ExrInfoCrate
+from kombi.InfoCrate.Fs.Ascii import JsonInfoCrate, TxtInfoCrate
 
 class GlobTaskTest(BaseTestCase):
     """Test Glob task."""
@@ -31,34 +31,34 @@ class GlobTaskTest(BaseTestCase):
         """
         Test that the glob task looking for specific exr files.
         """
-        crawler = FsCrawler.createFromPath(
+        infoCrate = FsInfoCrate.createFromPath(
             os.path.join(BaseTestCase.dataTestsDirectory(), "glob", "test.json")
         )
 
         globTask = Task.create('glob')
         globTask.add(
-            crawler,
-            Template("(dirname {filePath})/**/*.exr").valueFromCrawler(crawler)
+            infoCrate,
+            Template("(dirname {filePath})/**/*.exr").valueFromInfoCrate(infoCrate)
         )
         result = globTask.output()
         self.assertEqual(len(result), len(self.__globFiles['exr']))
 
-        for resultCrawler in result:
-            self.assertIsInstance(resultCrawler, ExrCrawler)
-            self.assertIn(resultCrawler.var('baseName'), self.__globFiles['exr'])
+        for resultInfoCrate in result:
+            self.assertIsInstance(resultInfoCrate, ExrInfoCrate)
+            self.assertIn(resultInfoCrate.var('baseName'), self.__globFiles['exr'])
 
     def testGlobAll(self):
         """
         Test that the glob task find all files & directories.
         """
-        crawler = FsCrawler.createFromPath(
+        infoCrate = FsInfoCrate.createFromPath(
             os.path.join(BaseTestCase.dataTestsDirectory(), "glob", "test.json")
         )
 
         globTask = Task.create('glob')
         globTask.add(
-            crawler,
-            Template("(dirname {filePath})/**/*").valueFromCrawler(crawler)
+            infoCrate,
+            Template("(dirname {filePath})/**/*").valueFromInfoCrate(infoCrate)
         )
         result = globTask.output()
         self.assertEqual(
@@ -66,58 +66,58 @@ class GlobTaskTest(BaseTestCase):
             len(self.__globFiles['exr']) + len(self.__globFiles['json']) + len(self.__globFiles['txt']) + len(self.__globFiles['directory'])
         )
 
-        for resultCrawler in result:
-            baseType = 'directory' if 'ext' not in resultCrawler.varNames() else resultCrawler.var('ext')
+        for resultInfoCrate in result:
+            baseType = 'directory' if 'ext' not in resultInfoCrate.varNames() else resultInfoCrate.var('ext')
             if baseType == 'exr':
-                CrawlerType = ExrCrawler
+                InfoCrateType = ExrInfoCrate
             elif baseType == 'json':
-                CrawlerType = JsonCrawler
+                InfoCrateType = JsonInfoCrate
             elif baseType == 'txt':
-                CrawlerType = TxtCrawler
+                InfoCrateType = TxtInfoCrate
             else:
                 baseType = 'directory'
-                CrawlerType = DirectoryCrawler
+                InfoCrateType = DirectoryInfoCrate
 
-            self.assertIsInstance(resultCrawler, CrawlerType)
-            self.assertIn(resultCrawler.var('baseName'), self.__globFiles[baseType])
+            self.assertIsInstance(resultInfoCrate, InfoCrateType)
+            self.assertIn(resultInfoCrate.var('baseName'), self.__globFiles[baseType])
 
     def testGlobSkipDuplicated(self):
         """
         Test that the glob task with the option skip duplicated enabled (default).
         """
-        crawler1 = FsCrawler.createFromPath(
+        infoCrate1 = FsInfoCrate.createFromPath(
             os.path.join(BaseTestCase.dataTestsDirectory(), "glob", "test.json")
         )
 
-        crawler2 = FsCrawler.createFromPath(
+        infoCrate2 = FsInfoCrate.createFromPath(
             os.path.join(BaseTestCase.dataTestsDirectory(), "glob", "text.txt")
         )
 
         globTask = Task.create('glob')
         globTask.add(
-            crawler1,
-            Template("(dirname {filePath})/**/*.exr").valueFromCrawler(crawler1)
+            infoCrate1,
+            Template("(dirname {filePath})/**/*.exr").valueFromInfoCrate(infoCrate1)
         )
         globTask.add(
-            crawler2,
-            Template("(dirname {filePath})/images/*.exr").valueFromCrawler(crawler2)
+            infoCrate2,
+            Template("(dirname {filePath})/images/*.exr").valueFromInfoCrate(infoCrate2)
         )
         result = globTask.output()
         self.assertEqual(len(result), len(self.__globFiles['exr']))
 
-        for resultCrawler in result:
-            self.assertIsInstance(resultCrawler, ExrCrawler)
-            self.assertIn(resultCrawler.var('baseName'), self.__globFiles['exr'])
+        for resultInfoCrate in result:
+            self.assertIsInstance(resultInfoCrate, ExrInfoCrate)
+            self.assertIn(resultInfoCrate.var('baseName'), self.__globFiles['exr'])
 
     def testGlobDontSkipDuplicated(self):
         """
         Test that the glob task with he option skip duplicated disabled.
         """
-        crawler1 = FsCrawler.createFromPath(
+        infoCrate1 = FsInfoCrate.createFromPath(
             os.path.join(BaseTestCase.dataTestsDirectory(), "glob", "test.json")
         )
 
-        crawler2 = FsCrawler.createFromPath(
+        infoCrate2 = FsInfoCrate.createFromPath(
             os.path.join(BaseTestCase.dataTestsDirectory(), "glob", "text.txt")
         )
 
@@ -125,20 +125,20 @@ class GlobTaskTest(BaseTestCase):
         globTask.setOption('skipDuplicated', False)
 
         globTask.add(
-            crawler1,
-            Template("(dirname {filePath})/**/*.exr").valueFromCrawler(crawler1)
+            infoCrate1,
+            Template("(dirname {filePath})/**/*.exr").valueFromInfoCrate(infoCrate1)
         )
         globTask.add(
-            crawler2,
-            Template("(dirname {filePath})/images/*.exr").valueFromCrawler(crawler2)
+            infoCrate2,
+            Template("(dirname {filePath})/images/*.exr").valueFromInfoCrate(infoCrate2)
         )
 
         result = globTask.output()
         self.assertEqual(len(result), len(self.__globFiles['exr']) * 2)
 
-        for resultCrawler in result:
-            self.assertIsInstance(resultCrawler, ExrCrawler)
-            self.assertIn(resultCrawler.var('baseName'), self.__globFiles['exr'])
+        for resultInfoCrate in result:
+            self.assertIsInstance(resultInfoCrate, ExrInfoCrate)
+            self.assertIn(resultInfoCrate.var('baseName'), self.__globFiles['exr'])
 
 
 if __name__ == "__main__":

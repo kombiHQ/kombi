@@ -6,7 +6,7 @@ class ChecksumTaskMatchError(TaskError):
 
 class ChecksumTask(Task):
     """
-    Make sure the filePath has the same checksum as the crawler file path.
+    Make sure the filePath has the same checksum as the infoCrate file path.
 
     In case the checksum does not match an exception is raised.
     """
@@ -22,11 +22,11 @@ class ChecksumTask(Task):
         """
         Perform the task.
         """
-        for crawler in self.crawlers():
+        for infoCrate in self.infoCrates():
 
             # copying the file to the new target
-            sourceFilePath = crawler.var('filePath')
-            targetFilePath = self.target(crawler)
+            sourceFilePath = infoCrate.var('filePath')
+            targetFilePath = self.target(infoCrate)
 
             # TODO: change md5 for xxHash
             with open(sourceFilePath, 'rb') as sourceFile:

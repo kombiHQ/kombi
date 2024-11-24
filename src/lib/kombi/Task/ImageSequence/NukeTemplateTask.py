@@ -1,9 +1,9 @@
 import os
 from ..External.NukeTask import NukeTask
 from ..Task import Task
-from ...Crawler import Crawler
-from ...Crawler.Fs import FsCrawler
-from ...Crawler.Fs.Image import ImageCrawler
+from ...InfoCrate import InfoCrate
+from ...InfoCrate.Fs import FsInfoCrate
+from ...InfoCrate.Fs.Image import ImageInfoCrate
 
 class NukeTemplateTask(NukeTask):
     r"""
@@ -102,29 +102,29 @@ class NukeTemplateTask(NukeTask):
         """
         import nuke
 
-        crawlers = self.crawlers()
+        infoCrates = self.infoCrates()
 
         # loading nuke script
-        nuke.scriptOpen(self.templateOption('script', crawlers[0]))
+        nuke.scriptOpen(self.templateOption('script', infoCrates[0]))
 
         result = []
-        for crawlerGroup in Crawler.group(crawlers) if self.option('group') else [self.crawlers()]:
-            sourceCrawler = crawlerGroup[0]
-            targetCrawler = FsCrawler.createFromPath(self.target(sourceCrawler))
-            startFrame = crawlerGroup[0].var('frame') - int(self.templateOption('beginExtraFrames', crawlerGroup[0]))
-            endFrame = crawlerGroup[-1].var('frame') + int(self.templateOption('endExtraFrames', crawlerGroup[0]))
-            renderOffsetFrames = int(self.templateOption('renderOffsetFrames', crawlerGroup[0]))
+        for infoCrateGroup in InfoCrate.group(infoCrates) if self.option('group') else [self.infoCrates()]:
+            sourceInfoCrate = infoCrateGroup[0]
+            targetInfoCrate = FsInfoCrate.createFromPath(self.target(sourceInfoCrate))
+            startFrame = infoCrateGroup[0].var('frame') - int(self.templateOption('beginExtraFrames', infoCrateGroup[0]))
+            endFrame = infoCrateGroup[-1].var('frame') + int(self.templateOption('endExtraFrames', infoCrateGroup[0]))
+            renderOffsetFrames = int(self.templateOption('renderOffsetFrames', infoCrateGroup[0]))
 
             # setting up nuke
             nuke.root()['first_frame'].setValue(startFrame)
             nuke.root()['last_frame'].setValue(endFrame)
-            self.__setInternalData(sourceCrawler, targetCrawler)
+            self.__setInternalData(sourceInfoCrate, targetInfoCrate)
 
             # giving a change for third-party apis to extend this task
             self._beforeRender()
 
             # exporting nuke script before the execution
-            exportNukeScript = self.templateOption('exportNukeScript', crawlerGroup[0])
+            exportNukeScript = self.templateOption('exportNukeScript', infoCrateGroup[0])
             if exportNukeScript and not os.path.exists(exportNukeScript):
                 # creating directories if necessary
                 try:
@@ -143,24 +143,24 @@ class NukeTemplateTask(NukeTask):
                 if writeNode['disable'].value():
                     continue
 
-                # adding crawler to the task
-                renderCrawlers = nukeRenderTask.toRenderCrawlers(
+                # adding infoCrate to the task
+                renderInfoCrates = nukeRenderTask.toRenderInfoCrates(
                     writeNode,
                     int(writeNode['first'].getValue()) if writeNode['use_limit'].getValue() else startFrame + renderOffsetFrames,
                     int(writeNode['last'].getValue()) if writeNode['use_limit'].getValue() else endFrame + renderOffsetFrames
                 )
 
-                # adding crawler to render task
-                for renderCrawler in renderCrawlers:
-                    nukeRenderTask.add(renderCrawler)
+                # adding infoCrate to render task
+                for renderInfoCrate in renderInfoCrates:
+                    nukeRenderTask.add(renderInfoCrate)
 
             # executing write nodes
             result += nukeRenderTask.output()
 
-        # adding the slate description as a crawler var. So it can be used later
+        # adding the slate description as a infoCrate var. So it can be used later
         if '_slateDescription' in self.optionNames():
-            for resultCrawler in result:
-                resultCrawler.setVar(
+            for resultInfoCrate in result:
+                resultInfoCrate.setVar(
                     'slateDescription',
                     self.option('_slateDescription'),
                     True
@@ -168,7 +168,7 @@ class NukeTemplateTask(NukeTask):
 
         return result
 
-    def __setInternalData(self, sourceCrawler, targetCrawler):
+    def __setInternalData(self, sourceInfoCrate, targetInfoCrate):
         """
         Set the data task data internally under the root node.
         """
@@ -196,16 +196,16 @@ class NukeTemplateTask(NukeTask):
 
         # converting frame padding to the mask # digits notation
         sourceFilePath = os.path.join(
-            os.path.dirname(sourceCrawler.var('fullPath')),
-            sourceCrawler.tag('group')
+            os.path.dirname(sourceInfoCrate.var('fullPath')),
+            sourceInfoCrate.tag('group')
         )
 
         # converting frame padding in target to the springf notation
-        targetFilePath = targetCrawler.var('fullPath')
-        if isinstance(targetCrawler, ImageCrawler) and targetCrawler.isSequence():
+        targetFilePath = targetInfoCrate.var('fullPath')
+        if isinstance(targetInfoCrate, ImageInfoCrate) and targetInfoCrate.isSequence():
             targetFilePath = os.path.join(
-                os.path.dirname(targetCrawler.var('fullPath')),
-                targetCrawler.tag('groupSprintf')
+                os.path.dirname(targetInfoCrate.var('fullPath')),
+                targetInfoCrate.tag('groupSprintf')
             )
 
         # source/target knobs
@@ -219,7 +219,7 @@ class NukeTemplateTask(NukeTask):
             if isinstance(optionValue, str) and optionName != '_slateDescription':
                 optionValue = self.templateOption(
                     optionName,
-                    sourceCrawler
+                    sourceInfoCrate
                 )
 
             __set(optionName, optionValue)

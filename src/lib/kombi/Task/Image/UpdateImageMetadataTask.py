@@ -1,6 +1,6 @@
 import os
 from ..Task import Task
-from ...Crawler.Fs.Image.OiioCrawler import OiioCrawler
+from ...InfoCrate.Fs.Image.OiioInfoCrate import OiioInfoCrate
 
 class UpdateImageMetadataTask(Task):
     """
@@ -28,14 +28,14 @@ class UpdateImageMetadataTask(Task):
         """
         import OpenImageIO as oiio
 
-        for crawler in self.crawlers():
-            targetFilePath = OiioCrawler.supportedString(
-                self.target(crawler)
+        for infoCrate in self.infoCrates():
+            targetFilePath = OiioInfoCrate.supportedString(
+                self.target(infoCrate)
             )
 
             # converting image using open image io
-            inputImageFilePath = OiioCrawler.supportedString(
-                crawler.var('filePath')
+            inputImageFilePath = OiioInfoCrate.supportedString(
+                infoCrate.var('filePath')
             )
 
             # trying to create the directory automatically in case it does not exist
@@ -45,7 +45,7 @@ class UpdateImageMetadataTask(Task):
                 pass
 
             # metadata
-            metadata = self.templateOption('data', crawler)
+            metadata = self.templateOption('data', infoCrate)
 
             """
             args = ''
@@ -70,7 +70,7 @@ class UpdateImageMetadataTask(Task):
             imageInput = oiio.ImageInput.open(inputImageFilePath)
             inputSpec = imageInput.spec()
 
-            self.updateMetadata(inputSpec, crawler, metadata)
+            self.updateMetadata(inputSpec, infoCrate, metadata)
 
             # writing image with updated metadata
             outImage = oiio.ImageOutput.create(targetFilePath)
@@ -97,7 +97,7 @@ class UpdateImageMetadataTask(Task):
         return super(UpdateImageMetadataTask, self)._perform()
 
     @classmethod
-    def updateMetadata(cls, spec, crawler, metadata):
+    def updateMetadata(cls, spec, infoCrate, metadata):
         """
         Update the spec with the image metadata information.
         """
@@ -106,8 +106,8 @@ class UpdateImageMetadataTask(Task):
 
         for name, value in metadata.items():
             spec.attribute(
-                OiioCrawler.supportedString(name),
-                OiioCrawler.supportedString(value) if isinstance(value, str) else value
+                OiioInfoCrate.supportedString(name),
+                OiioInfoCrate.supportedString(value) if isinstance(value, str) else value
             )
 
 

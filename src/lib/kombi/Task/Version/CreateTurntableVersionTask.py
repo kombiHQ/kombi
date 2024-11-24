@@ -7,22 +7,22 @@ class CreateTurntableVersionTask(CreateRenderVersionTask):
     Create turntable version task.
     """
 
-    def _computeRenderTargetLocation(self, crawler):
+    def _computeRenderTargetLocation(self, infoCrate):
         """
         Compute the target file path for a render.
         """
         return os.path.join(
             self.dataPath(),
             "renders",
-            crawler.var('pass'),
+            infoCrate.var('pass'),
             "{}_{}_{}_{}_{}.{}.{}".format(
-                crawler.var('job'),
-                crawler.var('assetName'),
-                crawler.var('step'),
-                crawler.var('variant'),
-                crawler.var('pass'),
-                str(crawler.var('frame')).zfill(crawler.var('padding')),
-                crawler.var('ext')
+                infoCrate.var('job'),
+                infoCrate.var('assetName'),
+                infoCrate.var('step'),
+                infoCrate.var('variant'),
+                infoCrate.var('pass'),
+                str(infoCrate.var('frame')).zfill(infoCrate.var('padding')),
+                infoCrate.var('ext')
             )
         )
 

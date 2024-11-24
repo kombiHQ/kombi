@@ -21,8 +21,8 @@ class ConvertTextureTask(Task):
         """
         Perform the task.
         """
-        for crawler in self.crawlers():
-            targetFilePath = self.target(crawler)
+        for infoCrate in self.infoCrates():
+            targetFilePath = self.target(infoCrate)
 
             # creating any necessary directories
             parentDirectory = os.path.dirname(targetFilePath)
@@ -44,7 +44,7 @@ class ConvertTextureTask(Task):
                     self.__maketxExecutable,
                     self.option('maketxArgs'),
                     targetFilePath,
-                    crawler.var('filePath')
+                    infoCrate.var('filePath')
                 ),
                 shell=True,
                 env=env

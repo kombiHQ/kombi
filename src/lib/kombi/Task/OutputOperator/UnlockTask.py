@@ -5,11 +5,11 @@ import json
 from random import random
 from glob import glob
 from kombi.Task import Task
-from kombi.Crawler import Crawler
+from kombi.InfoCrate import InfoCrate
 
 class UnlockTask(Task):
     """
-    Implements a task that unlocks the flow and in case it is all clear return the incoming crawlers as result.
+    Implements a task that unlocks the flow and in case it is all clear return the incoming infoCrates as result.
     """
 
     def __init__(self, *args, **kwargs):
@@ -24,8 +24,8 @@ class UnlockTask(Task):
         """
         Implement the execution of the task.
         """
-        crawlers = self.crawlers()
-        targetLock = self.target(crawlers[0])
+        infoCrates = self.infoCrates()
+        targetLock = self.target(infoCrates[0])
         ext = os.path.splitext(targetLock)[-1]
         assert ext == '.lock', 'Invalid lock!'
 
@@ -35,9 +35,9 @@ class UnlockTask(Task):
                 os.path.splitext(targetLock)[0]
             )
 
-            # dumping crawler info under the lock
+            # dumping infoCrate info under the lock
             with open(targetLock, 'w') as f:
-                json.dump(list(map(lambda x: x.toJson(), crawlers)), f)
+                json.dump(list(map(lambda x: x.toJson(), infoCrates)), f)
 
             time.sleep(random() * 60)
             os.rename(
@@ -79,7 +79,7 @@ class UnlockTask(Task):
             )
             return []
 
-        # otherwise lets read all crawlers under the unlocks. They are
+        # otherwise lets read all infoCrates under the unlocks. They are
         # gonna become the result of the task
         unlocks = glob(
             os.path.join(
@@ -92,7 +92,7 @@ class UnlockTask(Task):
         for unlockName in unlocks:
             with open(unlockName) as f:
                 result.extend(
-                    map(Crawler.createFromJson, json.load(f))
+                    map(InfoCrate.createFromJson, json.load(f))
                 )
 
         return result

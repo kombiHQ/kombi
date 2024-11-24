@@ -25,15 +25,15 @@ class ChownTask(Task):
         import pwd
 
         alreadyDone = set()
-        crawlers = self.crawlers()
+        infoCrates = self.infoCrates()
 
-        user = self.templateOption('user', crawlers)
-        group = self.templateOption('group', crawlers)
+        user = self.templateOption('user', infoCrates)
+        group = self.templateOption('group', infoCrates)
         user = pwd.getpwnam(user).pw_uid
         group = grp.getgrnam(group).gr_gid
 
-        for crawler in crawlers:
-            filePath = crawler.var('filePath')
+        for infoCrate in infoCrates:
+            filePath = infoCrate.var('filePath')
 
             if filePath in alreadyDone:
                 continue

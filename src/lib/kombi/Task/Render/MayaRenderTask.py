@@ -2,9 +2,9 @@ import os
 import subprocess
 import tempfile
 from ..External.MayaTask import MayaTask, MayaTaskError
-from ...Crawler import Crawler
-from ...Crawler.Fs import FsCrawler
-from ...Crawler.Fs.Image import ImageCrawler
+from ...InfoCrate import InfoCrate
+from ...InfoCrate.Fs import FsInfoCrate
+from ...InfoCrate.Fs.Image import ImageInfoCrate
 
 class MayaRenderTaskError(MayaTaskError):
     """Maya Render Task Error."""
@@ -130,27 +130,27 @@ class MayaRenderTask(MayaTask):
         pass
 
     @classmethod
-    def toRenderCrawlers(cls, outputImageCrawlers, startFrame=None, endFrame=None):
+    def toRenderInfoCrates(cls, outputImageInfoCrates, startFrame=None, endFrame=None):
         """
-        Return hashmap crawlers containing the render settings information used by this task.
+        Return hashmap infoCrates containing the render settings information used by this task.
 
         TODO: we want to have a specific application types to describe this information
         """
         result = []
 
-        for crawlerGroup in Crawler.group(outputImageCrawlers):
-            startFrame = startFrame if startFrame is not None else crawlerGroup[0].var('frame')
-            endFrame = endFrame if endFrame is not None else crawlerGroup[-1].var('frame')
+        for infoCrateGroup in InfoCrate.group(outputImageInfoCrates):
+            startFrame = startFrame if startFrame is not None else infoCrateGroup[0].var('frame')
+            endFrame = endFrame if endFrame is not None else infoCrateGroup[-1].var('frame')
 
-            for i, crawler in enumerate(crawlerGroup):
+            for i, infoCrate in enumerate(infoCrateGroup):
                 currentFrame = startFrame + i
 
-                assert isinstance(crawler, ImageCrawler), \
-                    "Invalid output image crawler type!"
+                assert isinstance(infoCrate, ImageInfoCrate), \
+                    "Invalid output image infoCrate type!"
 
                 result.append(
-                    cls.__renderHashmapCrawler(
-                        crawler,
+                    cls.__renderHashmapInfoCrate(
+                        infoCrate,
                         currentFrame,
                         currentFrame
                     )
@@ -188,17 +188,17 @@ class MayaRenderTask(MayaTask):
         seralizedTaskTempFile.write(self.toJson())
         seralizedTaskTempFile.close()
 
-        for crawlerGroup in Crawler.group(self.crawlers()):
-            startFrame = crawlerGroup[0]['settings']['s']
-            endFrame = crawlerGroup[-1]['settings']['e']
-            sceneFilePath = self.templateOption("scene", crawlerGroup[0])
+        for infoCrateGroup in InfoCrate.group(self.infoCrates()):
+            startFrame = infoCrateGroup[0]['settings']['s']
+            endFrame = infoCrateGroup[-1]['settings']['e']
+            sceneFilePath = self.templateOption("scene", infoCrateGroup[0])
 
             # making sure the scene is defined
             assert len(sceneFilePath), "scene option cannot be empty!"
 
             # building final render settings
-            finalRenderSettings = dict(crawlerGroup[0]['settings'])
-            for renderSettingName, renderSettingValue in self.templateOption('settings', crawlerGroup[0]).items():
+            finalRenderSettings = dict(infoCrateGroup[0]['settings'])
+            for renderSettingName, renderSettingValue in self.templateOption('settings', infoCrateGroup[0]).items():
                 finalRenderSettings[renderSettingName] = renderSettingValue
 
             # registering callbacks
@@ -268,19 +268,19 @@ class MayaRenderTask(MayaTask):
                 )
 
             # collecting output paths
-            for crawler in crawlerGroup:
+            for infoCrate in infoCrateGroup:
                 createdFiles.append(
-                    crawler['output']['fullPath']
+                    infoCrate['output']['fullPath']
                 )
 
-        return list(map(FsCrawler.createFromPath, createdFiles))
+        return list(map(FsInfoCrate.createFromPath, createdFiles))
 
     @classmethod
-    def __renderHashmapCrawler(cls, outputImageCrawler, startFrame, endFrame):
+    def __renderHashmapInfoCrate(cls, outputImageInfoCrate, startFrame, endFrame):
         """
-        Return a hashmap crawler with the settings used to render this task.
+        Return a hashmap infoCrate with the settings used to render this task.
         """
-        assert isinstance(outputImageCrawler, ImageCrawler), "Invalid output image crawler type!"
+        assert isinstance(outputImageInfoCrate, ImageInfoCrate), "Invalid output image infoCrate type!"
 
         # maya render file name conventions: name, name.ext, name.#.ext, name.ext.#, name.#, name#.ext, name_#.ext
         # We don't want to support all those variations instead we only support the ones that make sense
@@ -290,52 +290,52 @@ class MayaRenderTask(MayaTask):
             'name_#.ext': 7
         }
         sequenceFormat = 'name{}.ext'.format(
-            outputImageCrawler.tag('group')[len(outputImageCrawler.var('name')):len(outputImageCrawler.var('name')) + 2]
+            outputImageInfoCrate.tag('group')[len(outputImageInfoCrate.var('name')):len(outputImageInfoCrate.var('name')) + 2]
         )
         assert sequenceFormat in supportedFormats, \
-            "Non-supported image sequence format found it: {}".format(outputImageCrawler.var('fullPath'))
+            "Non-supported image sequence format found it: {}".format(outputImageInfoCrate.var('fullPath'))
 
         # looking for tokens
-        rd = os.path.dirname(outputImageCrawler.var('fullPath'))
-        im = outputImageCrawler.var('name')
+        rd = os.path.dirname(outputImageInfoCrate.var('fullPath'))
+        im = outputImageInfoCrate.var('name')
         if "<" in rd:
             splitPartIndex = rd.find("<")
             if splitPartIndex > 0:
                 im = os.path.join(rd[splitPartIndex:], im)
                 rd = rd[:splitPartIndex - 1]
 
-        hashmapCrawler = Crawler.create(
+        hashmapInfoCrate = InfoCrate.create(
             {
                 'settings': {
                     'im': im,
                     'fnc': supportedFormats[sequenceFormat],
-                    'of': outputImageCrawler.var('ext'),
+                    'of': outputImageInfoCrate.var('ext'),
                     'rd': rd,
-                    'pad': outputImageCrawler.var('padding'),
+                    'pad': outputImageInfoCrate.var('padding'),
                     's': startFrame,
                     'e': endFrame,
                     'b': 1
                 },
                 'output': {
-                    'fullPath': outputImageCrawler.var('fullPath')
+                    'fullPath': outputImageInfoCrate.var('fullPath')
                 }
             }
         )
-        hashmapCrawler.setVar('dataLayout', 'mayaRender')
-        hashmapCrawler.setTag('group', outputImageCrawler.tag('group'))
-        hashmapCrawler.setVar(
+        hashmapInfoCrate.setVar('dataLayout', 'mayaRender')
+        hashmapInfoCrate.setTag('group', outputImageInfoCrate.tag('group'))
+        hashmapInfoCrate.setVar(
             'fullPath',
             '{} {}-{}'.format(
                 os.path.join(
-                    hashmapCrawler['settings']['rd'],
-                    hashmapCrawler['settings']['im']
+                    hashmapInfoCrate['settings']['rd'],
+                    hashmapInfoCrate['settings']['im']
                 ),
                 str(startFrame).zfill(10),
                 str(endFrame).zfill(10)
             )
         )
 
-        return hashmapCrawler
+        return hashmapInfoCrate
 
 
 # registering task

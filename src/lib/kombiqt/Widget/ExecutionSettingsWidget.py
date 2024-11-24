@@ -4,7 +4,7 @@ import functools
 import traceback
 import weakref
 from .CheckComboBox import CheckComboBox
-from kombi.Crawler import Crawler
+from kombi.InfoCrate import InfoCrate
 from kombi.Task import Task, TaskValidationError
 from Qt import QtCore, QtWidgets, QtGui
 
@@ -62,7 +62,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         self.taskHolderOptionChangedSignal.connect(self.__onTaskHolderOptionChanged)
 
-    def updateTarget(self, crawlers, taskHolders, groupCrawlers=True):
+    def updateTarget(self, infoCrates, taskHolders, groupInfoCrates=True):
         """
         Update the target tree.
         """
@@ -72,7 +72,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         for index, taskHolder in enumerate(taskHolders):
             try:
-                matchedCrawlers = taskHolder.query(crawlers)
+                matchedInfoCrates = taskHolder.query(infoCrates)
             except Exception as error:
                 QtWidgets.QApplication.restoreOverrideCursor()
                 traceback.print_exc()
@@ -93,10 +93,10 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 continue
 
             alreadyFailed = False
-            for crawlerList in Crawler.group(matchedCrawlers):
+            for infoCrateList in InfoCrate.group(matchedInfoCrates):
                 nameSuffix = "{} ({} total)".format(
-                    crawlerList[0].tag('group') if 'group' in crawlerList[0].tagNames() else crawlerList[0].var('baseName'),
-                    len(crawlerList)
+                    infoCrateList[0].tag('group') if 'group' in infoCrateList[0].tagNames() else infoCrateList[0].var('baseName'),
+                    len(infoCrateList)
                 )
 
                 clonedTaskHolder = taskHolder.clone()
@@ -106,7 +106,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                         hasattr(clonedTaskHolder.task().setup, '__call__'):
 
                     try:
-                        clonedTaskHolder.task().setup(crawlerList)
+                        clonedTaskHolder.task().setup(infoCrateList)
                     except Exception as err:
                         traceback.print_exc()
 
@@ -134,7 +134,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 # TODO: this needs to change
                 clonedTaskHolder.entry = weakref.ref(matchedChild)
                 matchedChild.taskHolderIndex = index
-                matchedChild.crawlerList = crawlerList
+                matchedChild.infoCrateList = infoCrateList
                 matchedChild.taskHolder = clonedTaskHolder
 
                 # option to enable the task holder
@@ -163,7 +163,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 # with none value we will raise an exception
                 for task in item.taskHolder.childTasks():
 
-                    # running validations without any crawlers (this will allow validations
+                    # running validations without any infoCrates (this will allow validations
                     # that verify for options to take affect in all tasks)
                     try:
                         task.validate()
@@ -221,14 +221,14 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
                 # running validations
                 try:
-                    item.taskHolder.task().validate(item.crawlerList)
+                    item.taskHolder.task().validate(item.infoCrateList)
                 except TaskValidationError as err:
                     raise ExecutionSettingsWidgetRequiredError(
                         str(err),
                         item.taskHolder.task()
                     )
 
-                result.append((item.taskHolder, item.crawlerList))
+                result.append((item.taskHolder, item.infoCrateList))
 
         return result
 
@@ -700,10 +700,10 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         if not self.__hasUpdateInfo(taskHolder):
             return
 
-        crawlers = taskHolder.entry().crawlerList
+        infoCrates = taskHolder.entry().infoCrateList
         infoWidget = taskHolder.entry().infoWidget()
 
-        infoResult = taskHolder.task().updateInfo(crawlers)
+        infoResult = taskHolder.task().updateInfo(infoCrates)
 
         infoWidget.setPlainText(str(infoResult))
 

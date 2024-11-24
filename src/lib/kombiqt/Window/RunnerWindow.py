@@ -15,10 +15,10 @@ from kombi.ProcessExecution import ProcessExecution
 from kombi.TaskHolder.Loader import Loader
 from kombi.Template import Template
 from kombi.TaskHolder.Dispatcher import Dispatcher
-from kombi.Crawler import Crawler, CrawlerContext, PathHolder
+from kombi.InfoCrate import InfoCrate, InfoCrateContext, PathHolder
 from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget, ExecutionSettingsWidgetRequiredError
 from ..Widget.DispatcherListWidget import DispatcherListWidget
-from ..Widget.FilterCrawlerVarWidget import FilterCrawlerVarWidget
+from ..Widget.FilterInfoCrateVarWidget import FilterInfoCrateVarWidget
 from ..Widget.RenderfarmDispatcherPriorityWidget import RenderfarmDispatcherPriorityWidget
 from ..Widget.ComboBoxInputDialog import ComboBoxInputDialog
 from ..Resource import Resource
@@ -26,9 +26,9 @@ from ..Resource import Resource
 try:
     import OpenImageIO # noqa: W0611
 except ImportError:
-    ImageCrawlerViewer = None
+    ImageInfoCrateViewer = None
 else:
-    from ..Widget.ImageCrawlerViewer import ImageCrawlerViewer
+    from ..Widget.ImageInfoCrateViewer import ImageInfoCrateViewer
 
 class RunnerWindow(QtWidgets.QMainWindow):
     """
@@ -41,7 +41,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
     __pickerLocation = os.environ.get('KOMBI_GUI_PICKER_LOCATION', '')
     __overridePreviousSelectedLocation = None
 
-    def __init__(self, taskHolders, sourcePaths=[], customHeader='', customCrawlers=[], **kwargs):
+    def __init__(self, taskHolders, sourcePaths=[], customHeader='', customInfoCrates=[], **kwargs):
         """
         Create a Kombi app.
         """
@@ -53,12 +53,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         self.__iconCache = {}
         self.__configurationDirectory = ""
-        self.__imageCrawlerViewerAlreadyDisplayed = False
+        self.__imageInfoCrateViewerAlreadyDisplayed = False
         self.__uiHintSourceColumns = []
         self.__customHeader = customHeader
         self.__verticalSourceScrollBarLatestPos = 0
-        self.__customCrawlers = customCrawlers
-        self.__crawlerList = None
+        self.__customInfoCrates = customInfoCrates
+        self.__infoCrateList = None
         self.__messageBox = None
         self.__showVars = False
         self.__showTags = False
@@ -135,12 +135,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__sourceFilterMenu.clear()
         self.__sourceOverrides = self.__loadSourceOverrides()
 
-        if not paths and not self.__customCrawlers:
+        if not paths and not self.__customInfoCrates:
             return
 
-        # we want to list in the interface only the crawler types used by the main tasks
+        # we want to list in the interface only the infoCrate types used by the main tasks
         filterTypes = []
-        sourceDirectoryCrawlerType = None
+        sourceDirectoryInfoCrateType = None
         validSourcePath = True
         categoryVarName = None
         collectionVarName = None
@@ -154,11 +154,11 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 if '__uiHintSourceValidationError' in taskHolder.varNames():
                     validationErrorMessage = taskHolder.var('__uiHintSourceValidationError')
 
-            if '__uiHintShowPreview' in taskHolder.varNames() and taskHolder.var('__uiHintShowPreview') and self.__imageCrawlerViewer and not self.__imageCrawlerViewerAlreadyDisplayed:
+            if '__uiHintShowPreview' in taskHolder.varNames() and taskHolder.var('__uiHintShowPreview') and self.__imageInfoCrateViewer and not self.__imageInfoCrateViewerAlreadyDisplayed:
                 self.__onToggleImageViewer(True)
 
-            if '__uiHintSourceDirectoryCrawlerType' in taskHolder.varNames():
-                sourceDirectoryCrawlerType = taskHolder.var('__uiHintSourceDirectoryCrawlerType')
+            if '__uiHintSourceDirectoryInfoCrateType' in taskHolder.varNames():
+                sourceDirectoryInfoCrateType = taskHolder.var('__uiHintSourceDirectoryInfoCrateType')
 
             if '__uiHintCategoryVarName' in taskHolder.varNames():
                 categoryVarName = taskHolder.var('__uiHintCategoryVarName')
@@ -185,7 +185,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
             matchTypes = taskHolder.matcher().matchTypes()
 
-            # if there is a task holder that does not have any type specified to it, then we display all crawlers by
+            # if there is a task holder that does not have any type specified to it, then we display all infoCrates by
             # passing an empty list to the filter
             if len(matchTypes) == 0:
                 filterTypes = []
@@ -206,11 +206,11 @@ class RunnerWindow(QtWidgets.QMainWindow):
             )
             return
 
-        # globbing crawlers
-        with CrawlerContext():
-            if self.__crawlerList is None or self.__currentSourcePath != paths:
+        # globbing infoCrates
+        with InfoCrateContext():
+            if self.__infoCrateList is None or self.__currentSourcePath != paths:
                 self.__currentSourcePath = paths
-                self.__crawlerList = []
+                self.__infoCrateList = []
                 for path in paths.split(";"):
                     if not path:
                         continue
@@ -218,55 +218,55 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     if os.path.exists(path):
                         path = PathHolder(path)
 
-                    globCrawlers = []
-                    crawler = Crawler.registeredType(sourceDirectoryCrawlerType)(path) if sourceDirectoryCrawlerType else Crawler.create(path)
-                    if sourceDirectoryCrawlerType:
-                        crawler.setVar('type', sourceDirectoryCrawlerType)
+                    globInfoCrates = []
+                    infoCrate = InfoCrate.registeredType(sourceDirectoryInfoCrateType)(path) if sourceDirectoryInfoCrateType else InfoCrate.create(path)
+                    if sourceDirectoryInfoCrateType:
+                        infoCrate.setVar('type', sourceDirectoryInfoCrateType)
 
-                    if crawler.var('type') in filterTypes:
-                        globCrawlers.append(crawler)
-                    globCrawlers += crawler.glob(filterTypes)
+                    if infoCrate.var('type') in filterTypes:
+                        globInfoCrates.append(infoCrate)
+                    globInfoCrates += infoCrate.glob(filterTypes)
 
-                    # filtering the result of the glob, but now using the crawler matcher
+                    # filtering the result of the glob, but now using the infoCrate matcher
                     # this will match the variable types.
                     for taskHolder in self.__taskHolders:
-                        for crawlerFound in globCrawlers:
-                            if crawlerFound in self.__crawlerList:
+                        for infoCrateFound in globInfoCrates:
+                            if infoCrateFound in self.__infoCrateList:
                                 continue
 
-                            if taskHolder.matcher().match(crawlerFound):
-                                self.__crawlerList.append(crawlerFound)
+                            if taskHolder.matcher().match(infoCrateFound):
+                                self.__infoCrateList.append(infoCrateFound)
 
-                if self.__customCrawlers:
-                    # filtering the result of the glob, but now using the crawler matcher
+                if self.__customInfoCrates:
+                    # filtering the result of the glob, but now using the infoCrate matcher
                     # this will match the variable types.
                     for taskHolder in self.__taskHolders:
-                        for crawlerFound in self.__customCrawlers:
-                            if crawlerFound in self.__crawlerList:
+                        for infoCrateFound in self.__customInfoCrates:
+                            if infoCrateFound in self.__infoCrateList:
                                 continue
 
-                            if taskHolder.matcher().match(crawlerFound):
-                                self.__crawlerList.append(crawlerFound)
+                            if taskHolder.matcher().match(infoCrateFound):
+                                self.__infoCrateList.append(infoCrateFound)
 
                 # sorting result by name
-                self.__crawlerList.sort(key=lambda x: x.var('name').lower() if 'group' not in x.tagNames() else x.tag('group').lower())
+                self.__infoCrateList.sort(key=lambda x: x.var('name').lower() if 'group' not in x.tagNames() else x.tag('group').lower())
 
                 # updating categories (if available)
                 if categoryVarName:
-                    self.__categoriesDock.widget().refresh(categoryVarName, self.__crawlerList)
+                    self.__categoriesDock.widget().refresh(categoryVarName, self.__infoCrateList)
                 self.__categoriesDock.setVisible(bool(categoryVarName))
             else:
                 # in case the user has decided to hit the back button, lets avoid
                 # sending back the user to the target options (since the user may
-                # want to look the source crawlers)
+                # want to look the source infoCrates)
                 skipSourceStep = False
 
-        with CrawlerContext():
+        with InfoCrateContext():
             checked = True
             for taskHolder in filter(lambda x: '__uiHintCheckedByDefault' in x.varNames(), self.__taskHolders):
                 checked = taskHolder.var('__uiHintCheckedByDefault')
 
-            self.__updateSourceTreeCrawlerList(self.__crawlerList, collectionVarName, checked)
+            self.__updateSourceTreeInfoCrateList(self.__infoCrateList, collectionVarName, checked)
             self.__onSourceFiltersChanged()
             QtWidgets.QApplication.restoreOverrideCursor()
 
@@ -278,14 +278,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Update the target tree.
         """
-        checkedCrawlers = self.__checkedCrawlers()
+        checkedInfoCrates = self.__checkedInfoCrates()
         dispatcherName = self.__selectedDispatcher.selectedDispatcher()
         self.__selectedRenderfarmPriority.setVisible(dispatcherName.lower() == "renderfarm")
 
         # applying overrides
         self.__applySourceOverrides(
             self.__loadSourceOverrides(),
-            checkedCrawlers
+            checkedInfoCrates
         )
 
         self.__targetAreaWidget.setVisible(True)
@@ -297,7 +297,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__backButton.setVisible(True)
         self.__runButton.setVisible(True)
 
-        self.__targetTree.updateTarget(checkedCrawlers, self.__taskHolders, self.__checkedViewMode == 'Group')
+        self.__targetTree.updateTarget(checkedInfoCrates, self.__taskHolders, self.__checkedViewMode == 'Group')
 
     def dispatcherWidget(self):
         """
@@ -366,7 +366,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         # filter
         self.__sourceFilterButton = QtWidgets.QPushButton("Visibility")
-        self.__sourceFilterButton.setToolTip('Filters out specific crawler types')
+        self.__sourceFilterButton.setToolTip('Filters out specific infoCrate types')
         self.__sourceFilterButton.setIcon(
             Resource.icon("icons/filterView.png")
         )
@@ -442,21 +442,21 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__categoriesDock.setMinimumWidth(150)
         self.__categoriesDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
 
-        self.__categoriesDock.setWidget(FilterCrawlerVarWidget())
+        self.__categoriesDock.setWidget(FilterInfoCrateVarWidget())
         self.__categoriesDock.setVisible(False)
         self.__categoriesDock.widget().filterChangedSignal.connect(self.__onSourceFiltersChanged)
 
         sourceControlMain.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.__categoriesDock)
 
         # image viewer
-        self.__imageCrawlerViewer = None
-        if ImageCrawlerViewer:
-            self.__imageCrawlerViewer = QtWidgets.QDockWidget("Preview")
-            self.__imageCrawlerViewer.setMinimumWidth(300)
-            self.__imageCrawlerViewer.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
+        self.__imageInfoCrateViewer = None
+        if ImageInfoCrateViewer:
+            self.__imageInfoCrateViewer = QtWidgets.QDockWidget("Preview")
+            self.__imageInfoCrateViewer.setMinimumWidth(300)
+            self.__imageInfoCrateViewer.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
 
-            self.__imageCrawlerViewer.setWidget(ImageCrawlerViewer([], 640, 480))
-            self.__imageCrawlerViewer.setVisible(False)
+            self.__imageInfoCrateViewer.setWidget(ImageInfoCrateViewer([], 640, 480))
+            self.__imageInfoCrateViewer.setVisible(False)
 
             imageViewerButton = QtWidgets.QPushButton("Preview Panel")
             imageViewerButton.setToolTip('Toggles the display of the preview panel')
@@ -464,7 +464,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 Resource.icon("icons/imageViewer.png")
             )
 
-            sourceControlMain.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.__imageCrawlerViewer)
+            sourceControlMain.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.__imageInfoCrateViewer)
             sourceBarLayout.addWidget(imageViewerButton)
 
             imageViewerButton.clicked.connect(self.__onToggleImageViewer)
@@ -482,7 +482,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
             self.__logo.setText(self.__customHeader)
         else:
             logoFilePath = "icons/header.png"
-            if self.__taskHolders[0].var('__uiHintLogo'):
+            if '__uiHintLogo' in self.__taskHolders[0].varNames() and self.__taskHolders[0].var('__uiHintLogo'):
                 logoFilePath = self.__taskHolders[0].var('__uiHintLogo')
                 if not os.path.isabs(logoFilePath):
                     logoFilePath = os.path.realpath(os.path.join(self.__taskHolders[0].var('configDirectory'), logoFilePath))
@@ -526,34 +526,34 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 viewAction.setChecked(True)
 
     def __onSourceTreeSelectionChanged(self):
-        if not (self.__imageCrawlerViewer and self.__imageCrawlerViewer.isVisible()):
+        if not (self.__imageInfoCrateViewer and self.__imageInfoCrateViewer.isVisible()):
             return
 
-        crawlers = []
+        infoCrates = []
         for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
             selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
 
-            if hasattr(selectedItem, 'crawlers'):
-                for crawler in selectedItem.crawlers:
-                    if crawler.isLeaf():
-                        crawlers.append(crawler)
+            if hasattr(selectedItem, 'infoCrates'):
+                for infoCrate in selectedItem.infoCrates:
+                    if infoCrate.isLeaf():
+                        infoCrates.append(infoCrate)
                     else:
-                        with CrawlerContext():
-                            for chilCrawler in crawler.children():
-                                crawlers.append(chilCrawler)
+                        with InfoCrateContext():
+                            for chilInfoCrate in infoCrate.children():
+                                infoCrates.append(chilInfoCrate)
 
-        self.__imageCrawlerViewer.widget().setCrawlers(crawlers)
+        self.__imageInfoCrateViewer.widget().setInfoCrates(infoCrates)
 
     def __onToggleImageViewer(self, forceVisibility=False):
         """
         Slot triggered when the image preview button is pressed.
         """
-        self.__imageCrawlerViewer.setVisible(not self.__imageCrawlerViewer.isVisible() or forceVisibility)
+        self.__imageInfoCrateViewer.setVisible(not self.__imageInfoCrateViewer.isVisible() or forceVisibility)
 
-        if self.__imageCrawlerViewer.isVisible() or forceVisibility:
-            if not self.__imageCrawlerViewerAlreadyDisplayed:
-                self.__imageCrawlerViewerAlreadyDisplayed = True
-                self.__imageCrawlerViewer.parent().resizeDocks([self.__imageCrawlerViewer], [400], QtCore.Qt.Horizontal)
+        if self.__imageInfoCrateViewer.isVisible() or forceVisibility:
+            if not self.__imageInfoCrateViewerAlreadyDisplayed:
+                self.__imageInfoCrateViewerAlreadyDisplayed = True
+                self.__imageInfoCrateViewer.parent().resizeDocks([self.__imageInfoCrateViewer], [400], QtCore.Qt.Horizontal)
                 self.resize(self.width() + 300, self.height())
 
             self.__onSourceTreeSelectionChanged()
@@ -589,20 +589,20 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 )
             )
 
-    def __updateSourceTreeCrawlerList(self, crawlerList, collectionVarName, checked=True):
+    def __updateSourceTreeInfoCrateList(self, infoCrateList, collectionVarName, checked=True):
         """
-        Update the crawlers displayed in the source tree.
+        Update the infoCrates displayed in the source tree.
         """
-        crawlerTypes = set()
-        crawlerTags = {}
+        infoCrateTypes = set()
+        infoCrateTags = {}
         collectionParents = OrderedDict()
 
         # processing collections
         if collectionVarName:
             collections = set()
-            for crawler in crawlerList:
-                if collectionVarName in crawler.varNames():
-                    collectionName = crawler.var(collectionVarName)
+            for infoCrate in infoCrateList:
+                if collectionVarName in infoCrate.varNames():
+                    collectionName = infoCrate.var(collectionVarName)
                     collections.add(collectionName)
 
             for collectionName in sorted(collections, key=lambda x: str(x).lower()):
@@ -618,14 +618,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         # group
         if self.__checkedViewMode == "Group":
-            groupedCrawlers = self.__groupCrawlers(crawlerList)
+            groupedInfoCrates = self.__groupInfoCrates(infoCrateList)
 
-            for groupName in groupedCrawlers.keys():
+            for groupName in groupedInfoCrates.keys():
                 if groupName:
-                    parent = QtWidgets.QTreeWidgetItem(collectionParents[groupedCrawlers[0].var(collectionVarName)] if collectionParents and collectionVarName in groupedCrawlers[0].varNames() else self.__sourceTree)
-                    self.__updateIcon(parent, groupedCrawlers[groupName][0])
-                    parent.crawlers = list(groupedCrawlers[groupName])
-                    parent.setExpanded(len(groupedCrawlers) == 2 and not groupedCrawlers[None])
+                    parent = QtWidgets.QTreeWidgetItem(collectionParents[groupedInfoCrates[0].var(collectionVarName)] if collectionParents and collectionVarName in groupedInfoCrates[0].varNames() else self.__sourceTree)
+                    self.__updateIcon(parent, groupedInfoCrates[groupName][0])
+                    parent.infoCrates = list(groupedInfoCrates[groupName])
+                    parent.setExpanded(len(groupedInfoCrates) == 2 and not groupedInfoCrates[None])
 
                     # visible data
                     visibleGroupName = groupName + '   '
@@ -635,31 +635,31 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     parent.setData(0, QtCore.Qt.EditRole, visibleGroupName)
 
                     # adding column information
-                    self.__addSourceTreeColumnData(groupedCrawlers[groupName][0], parent, groupedCrawlers[groupName])
+                    self.__addSourceTreeColumnData(groupedInfoCrates[groupName][0], parent, groupedInfoCrates[groupName])
 
                     parent.setFlags(parent.flags() | QtCore.Qt.ItemIsUserCheckable)
 
                     # check state
                     parent.setCheckState(0, QtCore.Qt.Checked if checked else QtCore.Qt.Unchecked)
 
-                    for crawler in groupedCrawlers[groupName]:
+                    for infoCrate in groupedInfoCrates[groupName]:
                         self.__createSourceTreeChildItem(
-                            crawler,
+                            infoCrate,
                             parent,
-                            crawlerTypes,
-                            crawlerTags
+                            infoCrateTypes,
+                            infoCrateTags
                         )
 
                 else:
-                    for crawler in groupedCrawlers[groupName]:
+                    for infoCrate in groupedInfoCrates[groupName]:
                         child = self.__createSourceTreeChildItem(
-                            crawler,
-                            collectionParents[crawler.var(collectionVarName)] if collectionParents and collectionVarName in crawler.varNames() else self.__sourceTree,
-                            crawlerTypes,
-                            crawlerTags
+                            infoCrate,
+                            collectionParents[infoCrate.var(collectionVarName)] if collectionParents and collectionVarName in infoCrate.varNames() else self.__sourceTree,
+                            infoCrateTypes,
+                            infoCrateTags
                         )
 
-                        if groupName is None and len(groupedCrawlers) == 1 and len(groupedCrawlers[None]) == 1:
+                        if groupName is None and len(groupedInfoCrates) == 1 and len(groupedInfoCrates[None]) == 1:
                             child.setExpanded(True)
 
                         child.setFlags(child.flags() | QtCore.Qt.ItemIsUserCheckable)
@@ -667,82 +667,82 @@ class RunnerWindow(QtWidgets.QMainWindow):
                         # check state
                         child.setCheckState(0, QtCore.Qt.Checked if checked else QtCore.Qt.Unchecked)
 
-                        self.__addSourceTreeColumnData(crawler, child)
+                        self.__addSourceTreeColumnData(infoCrate, child)
 
         # flat
         else:
-            for crawler in sorted(crawlerList, key=lambda x: x.var('fullPath')):
+            for infoCrate in sorted(infoCrateList, key=lambda x: x.var('fullPath')):
 
-                # only testing with the first crawler when grouped
-                if isinstance(crawler, list):
-                    crawler = crawler[0]
+                # only testing with the first infoCrate when grouped
+                if isinstance(infoCrate, list):
+                    infoCrate = infoCrate[0]
 
-                child = self.__createSourceTreeChildItem(crawler, self.__sourceTree, crawlerTypes, crawlerTags)
+                child = self.__createSourceTreeChildItem(infoCrate, self.__sourceTree, infoCrateTypes, infoCrateTags)
                 child.setFlags(child.flags() | QtCore.Qt.ItemIsUserCheckable)
 
                 # check state
                 child.setCheckState(0, QtCore.Qt.Checked if checked else QtCore.Qt.Unchecked)
 
-                self.__addSourceTreeColumnData(crawler, child)
+                self.__addSourceTreeColumnData(infoCrate, child)
 
-        # crawler info
-        self.__crawlerInfoMenu = self.__sourceFilterMenu.addMenu('Crawler Info')
+        # infoCrate info
+        self.__infoCrateInfoMenu = self.__sourceFilterMenu.addMenu('InfoCrate Info')
 
         # vars
-        self.__showVarsAction = self.__crawlerInfoMenu.addAction('Vars')
+        self.__showVarsAction = self.__infoCrateInfoMenu.addAction('Vars')
         self.__showVarsAction.setCheckable(True)
         self.__showVarsAction.setChecked(self.__showVars)
         self.__showVarsAction.triggered.connect(self.__onFilterShowVars)
 
         # tags
-        self.__showTagsAction = self.__crawlerInfoMenu.addAction('Tags')
+        self.__showTagsAction = self.__infoCrateInfoMenu.addAction('Tags')
         self.__showTagsAction.setCheckable(True)
         self.__showTagsAction.setChecked(self.__showTags)
         self.__showTagsAction.triggered.connect(self.__onFilterShowTags)
 
-        # crawler types
-        self.__crawlerTypesMenu = self.__sourceFilterMenu.addMenu('Crawler Types')
+        # infoCrate types
+        self.__infoCrateTypesMenu = self.__sourceFilterMenu.addMenu('InfoCrate Types')
 
-        allAction = self.__crawlerTypesMenu.addAction('ALL')
+        allAction = self.__infoCrateTypesMenu.addAction('ALL')
         allAction.triggered.connect(self.__onFilterSelectAll)
 
-        noneAction = self.__crawlerTypesMenu.addAction('NONE')
+        noneAction = self.__infoCrateTypesMenu.addAction('NONE')
         noneAction.triggered.connect(self.__onFilterSelectNone)
-        self.__crawlerTypesMenu.addSeparator()
+        self.__infoCrateTypesMenu.addSeparator()
 
         # workaround to improve the performance of the rendering:
         # restoring the visibility of the widget
         self.__sourceTree.setVisible(True)
 
-        for crawlerType in sorted(crawlerTypes):
-            action = self.__crawlerTypesMenu.addAction(crawlerType)
+        for infoCrateType in sorted(infoCrateTypes):
+            action = self.__infoCrateTypesMenu.addAction(infoCrateType)
             action.setCheckable(True)
             action.setChecked(True)
             action.changed.connect(self.__onSourceFiltersChanged)
 
         self.__sourceTree.resizeColumnToContents(0)
 
-    def __groupCrawlers(self, crawlers):
+    def __groupInfoCrates(self, infoCrates):
         """
-        Return a dictionary containing the matched crawlers grouped.
+        Return a dictionary containing the matched infoCrates grouped.
         """
-        groupedCrawlers = OrderedDict()
-        groupedCrawlers[None] = []
-        for crawlerList in Crawler.group(crawlers):
-            for crawler in crawlerList:
+        groupedInfoCrates = OrderedDict()
+        groupedInfoCrates[None] = []
+        for infoCrateList in InfoCrate.group(infoCrates):
+            for infoCrate in infoCrateList:
                 # group
-                if self.__checkedViewMode == 'Group' and 'group' in crawler.tagNames():
-                    groupName = crawler.tag('group')
-                    if groupName not in groupedCrawlers:
-                        groupedCrawlers[groupName] = []
+                if self.__checkedViewMode == 'Group' and 'group' in infoCrate.tagNames():
+                    groupName = infoCrate.tag('group')
+                    if groupName not in groupedInfoCrates:
+                        groupedInfoCrates[groupName] = []
 
-                    groupedCrawlers[groupName].append(crawler)
+                    groupedInfoCrates[groupName].append(infoCrate)
 
                 # flat
                 else:
-                    groupedCrawlers[None].append(crawler)
+                    groupedInfoCrates[None].append(infoCrate)
 
-        return groupedCrawlers
+        return groupedInfoCrates
 
     def __showInFileManager(self, filePaths):
         """
@@ -805,9 +805,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         return sourceTree
 
-    def __checkedCrawlers(self):
+    def __checkedInfoCrates(self):
         """
-        Return a list of checked crawlers in the source tree.
+        Return a list of checked infoCrates in the source tree.
         """
         totalRows = self.__sourceTree.model().rowCount()
         result = []
@@ -816,15 +816,15 @@ class RunnerWindow(QtWidgets.QMainWindow):
             item = self.__sourceTree.topLevelItem(i)
 
             # collections
-            if not hasattr(item, 'crawlers'):
+            if not hasattr(item, 'infoCrates'):
                 for childIndex in range(item.childCount()):
                     childItem = item.child(childIndex)
-                    if childItem.checkState(0) and hasattr(childItem, 'crawlers'):
-                        result.extend(childItem.crawlers)
+                    if childItem.checkState(0) and hasattr(childItem, 'infoCrates'):
+                        result.extend(childItem.infoCrates)
 
             # root items
-            elif item.checkState(0) and hasattr(item, 'crawlers'):
-                result.extend(item.crawlers)
+            elif item.checkState(0) and hasattr(item, 'infoCrates'):
+                result.extend(item.infoCrates)
 
         return list(map(lambda x: x.clone(), result))
 
@@ -845,7 +845,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
     def __loadSourceOverrides(self):
         """
-        Load crawler overrides in the source tree.
+        Load infoCrate overrides in the source tree.
         """
         result = {}
 
@@ -857,34 +857,34 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         return result
 
-    def __applySourceOverrides(self, overrides, crawlers):
+    def __applySourceOverrides(self, overrides, infoCrates):
         """
         Apply overrides overrides on the source tree.
         """
         if not overrides:
             return
 
-        with CrawlerContext():
-            def __allCrawlers(childCrawler):
-                fullPath = childCrawler.var('fullPath')
+        with InfoCrateContext():
+            def __allInfoCrates(childInfoCrate):
+                fullPath = childInfoCrate.var('fullPath')
                 if fullPath in overrides:
                     for varName, varValue in overrides[fullPath].items():
-                        childCrawler.setVar(
+                        childInfoCrate.setVar(
                             varName,
                             varValue,
-                            varName in childCrawler.contextVarNames()
+                            varName in childInfoCrate.contextVarNames()
                         )
 
-                if not childCrawler.isLeaf():
-                    for crawler in childCrawler.children():
-                        __allCrawlers(crawler)
+                if not childInfoCrate.isLeaf():
+                    for infoCrate in childInfoCrate.children():
+                        __allInfoCrates(infoCrate)
 
-            for crawler in crawlers:
-                __allCrawlers(crawler)
+            for infoCrate in infoCrates:
+                __allInfoCrates(infoCrate)
 
-    def __addSourceTreeColumnData(self, crawler, treeItem, groupedCrawlers=None):
+    def __addSourceTreeColumnData(self, infoCrate, treeItem, groupedInfoCrates=None):
         """
-        Add crawler information to a column in the source tree.
+        Add infoCrate information to a column in the source tree.
         """
         # adding column information
         for index, column in enumerate(self.__uiHintSourceColumns):
@@ -893,16 +893,16 @@ class RunnerWindow(QtWidgets.QMainWindow):
             value = ''
             columnLabel = ''
             mixedValues = False
-            for crawlerIndex, checkCrawler in enumerate(groupedCrawlers if groupedCrawlers else [crawler]):
+            for infoCrateIndex, checkInfoCrate in enumerate(groupedInfoCrates if groupedInfoCrates else [infoCrate]):
                 currentValue = ''
-                if checkCrawler.var('fullPath') in self.__sourceOverrides and column in self.__sourceOverrides[checkCrawler.var('fullPath')]:
-                    currentValue = self.__sourceOverrides[checkCrawler.var('fullPath')][column]
+                if checkInfoCrate.var('fullPath') in self.__sourceOverrides and column in self.__sourceOverrides[checkInfoCrate.var('fullPath')]:
+                    currentValue = self.__sourceOverrides[checkInfoCrate.var('fullPath')][column]
                     hasOverride = True
-                if column in checkCrawler.varNames():
+                if column in checkInfoCrate.varNames():
                     if not hasOverride:
-                        currentValue = checkCrawler.var(column)
+                        currentValue = checkInfoCrate.var(column)
 
-                if currentValue != value and crawlerIndex:
+                if currentValue != value and infoCrateIndex:
                     mixedValues = True
                     break
                 value = currentValue
@@ -910,15 +910,15 @@ class RunnerWindow(QtWidgets.QMainWindow):
             columnLabel = ('mixed' if mixedValues else str(value)) + '   '
 
             # creating custom widget to show the presets
-            if '{}.button'.format(column) in crawler.tagNames():
+            if '{}.button'.format(column) in infoCrate.tagNames():
                 columnButton = QtWidgets.QPushButton(self)
                 columnButton.setObjectName('columnButton')
                 columnButton.setText(str(value))
-                columnButton.clicked.connect(functools.partial(self.__onColumnButton, weakref.ref(treeItem), crawler.tag('{}.button'.format(column))))
+                columnButton.clicked.connect(functools.partial(self.__onColumnButton, weakref.ref(treeItem), infoCrate.tag('{}.button'.format(column))))
                 self.__sourceTree.setItemWidget(treeItem, index + 1, columnButton)
 
             # creating custom widget to show the presets
-            elif '{}.presets'.format(column) in crawler.tagNames() or value is not None and isinstance(value, bool):
+            elif '{}.presets'.format(column) in infoCrate.tagNames() or value is not None and isinstance(value, bool):
                 columnLabel += "          "
                 presetsHolderWidget = QtWidgets.QWidget(self)
                 presetsHolderWidget.setObjectName('presetTreeHolder')
@@ -948,8 +948,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     QtGui.QBrush(QtGui.QColor(100, 100, 100))
                 )
 
-            elif value == '' and column in crawler.varNames() and \
-                    (not crawler.tag('{}.allowEmpty'.format(column)) if '{}.allowEmpty'.format(column) in crawler.tagNames() else True):
+            elif value == '' and column in infoCrate.varNames() and \
+                    (not infoCrate.tag('{}.allowEmpty'.format(column)) if '{}.allowEmpty'.format(column) in infoCrate.tagNames() else True):
                 font = QtGui.QFont()
                 font.setBold(True)
 
@@ -982,22 +982,22 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     QtGui.QBrush(QtGui.QColor(255, 152, 28))
                 )
 
-    def __createSourceTreeChildItem(self, crawler, parent, crawlerTypes, crawlerTags):
+    def __createSourceTreeChildItem(self, infoCrate, parent, infoCrateTypes, infoCrateTags):
         """
         Create a new child item in the source tree.
         """
         child = QtWidgets.QTreeWidgetItem(parent)
-        child.crawlers = [crawler]
-        self.__updateIcon(child, crawler)
+        child.infoCrates = [infoCrate]
+        self.__updateIcon(child, infoCrate)
 
         # visible data
-        child.setData(0, QtCore.Qt.EditRole, crawler.var('baseName') + '   ')
-        self.__addSourceTreeColumnData(crawler, child)
+        child.setData(0, QtCore.Qt.EditRole, infoCrate.var('baseName') + '   ')
+        self.__addSourceTreeColumnData(infoCrate, child)
 
-        crawlerTypes.add(crawler.var('type'))
+        infoCrateTypes.add(infoCrate.var('type'))
 
         ####
-        if not crawler.isLeaf():
+        if not infoCrate.isLeaf():
             childEntries = QtWidgets.QTreeWidgetItem(child)
             childEntries.setData(
                 0,
@@ -1005,12 +1005,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 'children'
             )
             childEntries.setExpanded(True)
-            groupedCrawlers = self.__groupCrawlers(crawler.children())
-            for groupName in groupedCrawlers.keys():
+            groupedInfoCrates = self.__groupInfoCrates(infoCrate.children())
+            for groupName in groupedInfoCrates.keys():
                 if groupName:
                     parent = QtWidgets.QTreeWidgetItem(childEntries)
-                    parent.crawlers = list(groupedCrawlers[groupName])
-                    self.__updateIcon(parent, groupedCrawlers[groupName][0])
+                    parent.infoCrates = list(groupedInfoCrates[groupName])
+                    self.__updateIcon(parent, groupedInfoCrates[groupName][0])
 
                     # visible data
                     visibleGroupName = groupName + '   '
@@ -1020,21 +1020,21 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     parent.setData(0, QtCore.Qt.EditRole, visibleGroupName)
 
                     # adding column information
-                    self.__addSourceTreeColumnData(groupedCrawlers[groupName][0], parent, groupedCrawlers[groupName])
-                    for childCrawler in groupedCrawlers[groupName]:
+                    self.__addSourceTreeColumnData(groupedInfoCrates[groupName][0], parent, groupedInfoCrates[groupName])
+                    for childInfoCrate in groupedInfoCrates[groupName]:
                         self.__createSourceTreeChildItem(
-                            childCrawler,
+                            childInfoCrate,
                             parent,
-                            crawlerTypes,
-                            crawlerTags
+                            infoCrateTypes,
+                            infoCrateTags
                         )
                 else:
-                    for childCrawler in groupedCrawlers[groupName]:
+                    for childInfoCrate in groupedInfoCrates[groupName]:
                         self.__createSourceTreeChildItem(
-                            childCrawler,
+                            childInfoCrate,
                             childEntries,
-                            crawlerTypes,
-                            crawlerTags
+                            infoCrateTypes,
+                            infoCrateTags
                         )
 
         if self.__showVars:
@@ -1044,7 +1044,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 QtCore.Qt.EditRole,
                 'vars'
             )
-            for varName in sorted(crawler.varNames()):
+            for varName in sorted(infoCrate.varNames()):
                 if varName in ['path']:
                     continue
 
@@ -1052,7 +1052,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 variablesChild.setData(
                     0,
                     QtCore.Qt.EditRole,
-                    '{0}={1}'.format(varName, crawler.var(varName))
+                    '{0}={1}'.format(varName, infoCrate.var(varName))
                 )
 
         if self.__showTags:
@@ -1063,21 +1063,21 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 'tags'
             )
 
-            for tagName in crawler.tagNames():
-                tagValue = crawler.tag(tagName)
+            for tagName in infoCrate.tagNames():
+                tagValue = infoCrate.tag(tagName)
                 if not isinstance(tagValue, str):
                     continue
 
-                if tagName not in crawlerTags:
-                    crawlerTags[tagName] = set()
-                crawlerTags[tagName].add(tagValue)
+                if tagName not in infoCrateTags:
+                    infoCrateTags[tagName] = set()
+                infoCrateTags[tagName].add(tagValue)
 
-            for tagName in sorted(crawler.tagNames()):
+            for tagName in sorted(infoCrate.tagNames()):
                 tagChild = QtWidgets.QTreeWidgetItem(tags)
                 tagChild.setData(
                     0,
                     QtCore.Qt.EditRole,
-                    '{0}={1}'.format(tagName, crawler.tag(tagName))
+                    '{0}={1}'.format(tagName, infoCrate.tag(tagName))
                 )
 
         return child
@@ -1126,7 +1126,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
             dispatcherPriority = self.__selectedRenderfarmPriority.selectedPriorityValue()
 
         try:
-            for taskHolder, crawlersGroup in self.__targetTree.executionTaskHolders():
+            for taskHolder, infoCratesGroup in self.__targetTree.executionTaskHolders():
 
                 # replacing the priority for the tasks
                 if dispatcherPriority:
@@ -1138,13 +1138,13 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 # applying overrides
                 self.__applySourceOverrides(
                     self.__loadSourceOverrides(),
-                    crawlersGroup
+                    infoCratesGroup
                 )
 
                 # default label
                 label = "{}/{} [{}]".format(
                     os.path.basename(taskHolder.var('configDirectory')),
-                    crawlersGroup[0].tag('group') if 'group' in crawlersGroup[0].tagNames() else crawlersGroup[0].var('baseName'),
+                    infoCratesGroup[0].tag('group') if 'group' in infoCratesGroup[0].tagNames() else infoCratesGroup[0].var('baseName'),
                     datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 )
 
@@ -1155,12 +1155,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
                             taskHolder.task().metadata('dispatch.label'),
                             datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         )
-                    ).valueFromCrawler(crawlersGroup[0])
+                    ).valueFromInfoCrate(infoCratesGroup[0])
 
                 dispatcher.setOption('label', label)
                 dispatcher.setOption('priority', 20)
 
-                for result in dispatcher.dispatch(taskHolder, crawlersGroup):
+                for result in dispatcher.dispatch(taskHolder, infoCratesGroup):
                     if isinstance(result, ProcessExecution):
                         output += result.stdoutContent()
                     else:
@@ -1226,20 +1226,20 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Slot triggered when the column button is clicked.
         """
-        crawlers = treeItemWeakRef().crawlers
+        infoCrates = treeItemWeakRef().infoCrates
 
         # executing callable
-        for index, crawler in enumerate(crawlers):
-            if hasattr(crawler, callableName):
+        for index, infoCrate in enumerate(infoCrates):
+            if hasattr(infoCrate, callableName):
                 try:
-                    getattr(crawlers[0], callableName)(index, len(crawlers))
+                    getattr(infoCrates[0], callableName)(index, len(infoCrates))
                 except Exception as err:
                     traceback.print_exc()
 
                     QtWidgets.QMessageBox.critical(
                         None,
                         "Kombi",
-                        "Error during the execution {}:\n\n{}".format(str(crawler), str(err)),
+                        "Error during the execution {}:\n\n{}".format(str(infoCrate), str(err)),
                         QtWidgets.QMessageBox.Ok
                     )
 
@@ -1248,9 +1248,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.critical(
                     None,
                     "Kombi",
-                    'Could not find callable "{0}" in crawler "{1}"'.format(
+                    'Could not find callable "{0}" in infoCrate "{1}"'.format(
                         callableName,
-                        str(crawlers[0].var('type'))
+                        str(infoCrates[0].var('type'))
                     ),
                     QtWidgets.QMessageBox.Ok
                 )
@@ -1266,7 +1266,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if currentIndex not in self.__sourceTree.selectionModel().selectedIndexes():
             self.__sourceTree.selectionModel().select(currentIndex, QtCore.QItemSelectionModel.SelectCurrent)
 
-        self.__onChangeCrawlerValue()
+        self.__onChangeInfoCrateValue()
 
     def __onSourceTreeContextMenu(self, point=None):
         """
@@ -1290,14 +1290,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 # action.triggered.connect(self.__onShowFolder)
             else:
                 action = menu.addAction('Override Value')
-                action.triggered.connect(self.__onChangeCrawlerValue)
+                action.triggered.connect(self.__onChangeInfoCrateValue)
 
                 action = menu.addAction('Reset Value')
-                action.triggered.connect(self.__onResetCrawlerValue)
+                action.triggered.connect(self.__onResetInfoCrateValue)
 
             menu.exec_(self.__sourceTree.mapToGlobal(point) if point is not None else QtGui.QCursor.pos())
 
-    def __onChangeCrawlerValue(self):
+    def __onChangeInfoCrateValue(self):
         """
         Slot triggered when an override in the source tree is triggered.
         """
@@ -1307,10 +1307,10 @@ class RunnerWindow(QtWidgets.QMainWindow):
         for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
             selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
 
-            crawlers = []
-            if hasattr(selectedItem, 'crawlers'):
-                crawlers = selectedItem.crawlers[:]
-            if not crawlers:
+            infoCrates = []
+            if hasattr(selectedItem, 'infoCrates'):
+                infoCrates = selectedItem.infoCrates[:]
+            if not infoCrates:
                 continue
 
             selectedColumn = selectedIndex.column()
@@ -1318,9 +1318,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
             hintValue = ""
             fileChooserName = '{}.fileChooserOnOverride'.format(columnName)
-            showFileChooser = fileChooserName in crawlers[0].tagNames() and crawlers[0].tag(fileChooserName)
-            if columnName in crawlers[0].varNames():
-                hintValue = crawlers[0].var(columnName)
+            showFileChooser = fileChooserName in infoCrates[0].tagNames() and infoCrates[0].tag(fileChooserName)
+            if columnName in infoCrates[0].varNames():
+                hintValue = infoCrates[0].var(columnName)
 
             if value is None:
                 allPresets = []
@@ -1330,15 +1330,15 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     allPresets.append('False')
                 else:
                     presetsName = '{}.presets'.format(columnName)
-                    for crawlerItem in crawlers:
-                        if presetsName not in crawlerItem.tagNames():
+                    for infoCrateItem in infoCrates:
+                        if presetsName not in infoCrateItem.tagNames():
                             continue
 
-                        for presetValue in crawlerItem.tag(presetsName):
+                        for presetValue in infoCrateItem.tag(presetsName):
                             if presetValue not in allPresets:
                                 allPresets.append(presetValue)
 
-                    if len(crawlers) > 1:
+                    if len(infoCrates) > 1:
                         allPresets.sort(key=lambda x: str(x).lower())
 
                 if allPresets:
@@ -1354,15 +1354,15 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 else:
                     if showFileChooser:
                         ext = None
-                        if '{}.fileChooserOnOverrideAllowedExt'.format(columnName) in crawlers[0].tagNames():
+                        if '{}.fileChooserOnOverrideAllowedExt'.format(columnName) in infoCrates[0].tagNames():
                             ext = "{ext} (*.{ext})".format(
-                                ext=crawlers[0].tag('{}.fileChooserOnOverrideAllowedExt'.format(columnName))
+                                ext=infoCrates[0].tag('{}.fileChooserOnOverrideAllowedExt'.format(columnName))
                             )
 
                         value = QtWidgets.QFileDialog.getOpenFileName(
                             self,
                             "Select a file to override: {}".format(
-                                crawlers[0].var('baseName')
+                                infoCrates[0].var('baseName')
                             ),
                             self.__overridePreviousSelectedLocation,
                             ext
@@ -1389,20 +1389,20 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
                 value = type(hintValue)(value) if type(hintValue) is not bool else value.lower() == 'true'
 
-            for crawlerItem in crawlers:
-                crawlerFullPath = crawlerItem.var('fullPath')
+            for infoCrateItem in infoCrates:
+                infoCrateFullPath = infoCrateItem.var('fullPath')
 
-                # skipping the same value that is currently set in the crawler
-                if value == crawlerItem.var(columnName):
-                    if crawlerFullPath in overrides and columnName in overrides[crawlerFullPath]:
-                        del overrides[crawlerFullPath][columnName]
+                # skipping the same value that is currently set in the infoCrate
+                if value == infoCrateItem.var(columnName):
+                    if infoCrateFullPath in overrides and columnName in overrides[infoCrateFullPath]:
+                        del overrides[infoCrateFullPath][columnName]
                     continue
 
                 # adding
-                if crawlerFullPath not in overrides:
-                    overrides[crawlerFullPath] = {}
+                if infoCrateFullPath not in overrides:
+                    overrides[infoCrateFullPath] = {}
 
-                overrides[crawlerFullPath][columnName] = value
+                overrides[infoCrateFullPath][columnName] = value
 
         if not os.path.exists(os.path.dirname(self.__sourceOverridesConfig())):
             os.mkdir(os.path.dirname(self.__sourceOverridesConfig()))
@@ -1418,30 +1418,30 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if value is not None:
             self.__onRefreshSourceDir()
 
-    def __onResetCrawlerValue(self):
+    def __onResetInfoCrateValue(self):
         """
         Slot triggered when an override in the source tree is removed.
         """
         overrides = dict(self.__sourceOverrides)
 
-        selectedCrawlers = set()
+        selectedInfoCrates = set()
         columnNames = set()
         for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
             selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
 
-            crawlers = []
-            if hasattr(selectedItem, 'crawlers'):
-                crawlers = selectedItem.crawlers[:]
-            if not crawlers:
+            infoCrates = []
+            if hasattr(selectedItem, 'infoCrates'):
+                infoCrates = selectedItem.infoCrates[:]
+            if not infoCrates:
                 continue
 
             selectedColumn = selectedIndex.column()
             columnName = self.__uiHintSourceColumns[selectedColumn - 1]
 
-            selectedCrawlers.update(crawlers)
+            selectedInfoCrates.update(infoCrates)
             columnNames.add(columnName)
 
-        for fullPath in map(lambda x: x.var('fullPath'), selectedCrawlers):
+        for fullPath in map(lambda x: x.var('fullPath'), selectedInfoCrates):
             if fullPath not in overrides:
                 continue
 
@@ -1464,57 +1464,57 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
     def __onShowFolder(self):
         """
-        Slot triggered when show folder for the selected crawlers is triggered.
+        Slot triggered when show folder for the selected infoCrates is triggered.
         """
         folderPaths = set()
-        for crawler in self.__selectedCrawlers():
-            if crawler.isLeaf():
-                folderPaths.add(os.path.dirname(crawler.var('fullPath')))
+        for infoCrate in self.__selectedInfoCrates():
+            if infoCrate.isLeaf():
+                folderPaths.add(os.path.dirname(infoCrate.var('fullPath')))
             else:
-                folderPaths.add(crawler.var('fullPath'))
+                folderPaths.add(infoCrate.var('fullPath'))
 
         for folderPath in folderPaths:
             self.__showInFileManager(
                 folderPath
             )
 
-    def __selectedCrawlers(self):
+    def __selectedInfoCrates(self):
         """
-        Return a list of selected crawlers.
+        Return a list of selected infoCrates.
         """
-        selectedCrawlers = set()
+        selectedInfoCrates = set()
         for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
             selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
 
-            crawlers = []
-            if hasattr(selectedItem, 'crawlers'):
-                crawlers = selectedItem.crawlers[:]
-            if not crawlers:
+            infoCrates = []
+            if hasattr(selectedItem, 'infoCrates'):
+                infoCrates = selectedItem.infoCrates[:]
+            if not infoCrates:
                 continue
 
-            selectedCrawlers.update(crawlers)
+            selectedInfoCrates.update(infoCrates)
 
-        return list(selectedCrawlers)
+        return list(selectedInfoCrates)
 
     def __onOpenSelected(self):
         """
         Slot triggered when open the select file is triggered.
         """
-        crawlers = self.__selectedCrawlers()
-        if not crawlers:
+        infoCrates = self.__selectedInfoCrates()
+        if not infoCrates:
             return
-        self.__showInFileManager(list(map(lambda x: x.var('fullPath'), crawlers)))
+        self.__showInFileManager(list(map(lambda x: x.var('fullPath'), infoCrates)))
 
     def __onPlayInRV(self):
         """
         Slot triggered when the option play in rv is selected.
         """
-        crawlers = self.__selectedCrawlers()
-        if not crawlers:
+        infoCrates = self.__selectedInfoCrates()
+        if not infoCrates:
             return
 
         commonPaths = {}
-        for filePath in map(lambda x: x.var('fullPath'), crawlers):
+        for filePath in map(lambda x: x.var('fullPath'), infoCrates):
             parentDir = os.path.dirname(filePath)
             if parentDir not in commonPaths:
                 commonPaths[parentDir] = set()
@@ -1571,7 +1571,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         # refreshing tree
         if force:
-            self.__crawlerList = None
+            self.__infoCrateList = None
 
         self.updateSource(self.__sourcePath.text())
 
@@ -1614,14 +1614,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Slot triggered when select none filter is triggered.
         """
-        for action in self.__crawlerTypesMenu.actions():
+        for action in self.__infoCrateTypesMenu.actions():
             action.setChecked(False)
 
     def __onFilterSelectAll(self):
         """
         Slot triggered when select all filter is triggered.
         """
-        for action in self.__crawlerTypesMenu.actions():
+        for action in self.__infoCrateTypesMenu.actions():
             action.setChecked(True)
 
     def __onSourceFilterSearch(self, *args, **kwargs):
@@ -1635,7 +1635,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         Slot triggered a filter is changed in the source tree.
         """
         visibleTypes = []
-        for action in self.__crawlerTypesMenu.actions():
+        for action in self.__infoCrateTypesMenu.actions():
             if action.isChecked():
                 visibleTypes.append(action.text())
 
@@ -1647,19 +1647,19 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         allTreeItems = self.__sourceTree.findItems("*", QtCore.Qt.MatchWildcard | QtCore.Qt.MatchWrap | QtCore.Qt.MatchRecursive, 1)
         filterSearch = list(self.__sourceFilterSearch.text().lower().strip().split(' '))
-        crawlerItems = []
+        infoCrateItems = []
         for treeItem in allTreeItems:
             # in case of collections we always want to hide the root item
             if not treeItem.parent():
                 treeItem.setHidden(True)
 
-            if not hasattr(treeItem, 'crawlers'):
+            if not hasattr(treeItem, 'infoCrates'):
                 continue
 
             treeItem.setHidden(True)
-            crawlerItems.append(treeItem)
+            infoCrateItems.append(treeItem)
 
-            if treeItem.crawlers[0].var('type') not in visibleTypes:
+            if treeItem.infoCrates[0].var('type') not in visibleTypes:
                 break
 
             for filterWord in filterSearch:
@@ -1669,12 +1669,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
             if filterVarName:
                 treeItem.setHidden(
-                    not (treeItem.crawlers[0].var(filterVarName) in filterVarValues if filterVarName in treeItem.crawlers[0].varNames() and (not filterSearch or not treeItem.isHidden()) else False)
+                    not (treeItem.infoCrates[0].var(filterVarName) in filterVarValues if filterVarName in treeItem.infoCrates[0].varNames() and (not filterSearch or not treeItem.isHidden()) else False)
                 )
 
-        for crawlerItem in crawlerItems:
-            if not crawlerItem.isHidden():
-                parentItem = crawlerItem
+        for infoCrateItem in infoCrateItems:
+            if not infoCrateItem.isHidden():
+                parentItem = infoCrateItem
                 while parentItem:
                     parentItem = parentItem.parent()
 
@@ -1682,11 +1682,11 @@ class RunnerWindow(QtWidgets.QMainWindow):
                         break
                     parentItem.setHidden(False)
 
-    def __updateIcon(self, item, crawler, columnIndex=0):
+    def __updateIcon(self, item, infoCrate, columnIndex=0):
         """
-        Set the icon based on the crawler for the tree item.
+        Set the icon based on the infoCrate for the tree item.
         """
-        iconPath = crawler.tag('icon') if 'icon' in crawler.tagNames() else None
+        iconPath = infoCrate.tag('icon') if 'icon' in infoCrate.tagNames() else None
         if not iconPath:
             return
 
@@ -1713,7 +1713,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
             selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
 
-            if hasattr(selectedItem, 'crawlers'):
+            if hasattr(selectedItem, 'infoCrates'):
                 selectedItem.setCheckState(0, currentItem.checkState(0))
 
         self.__ignoreCheckedEvents = False

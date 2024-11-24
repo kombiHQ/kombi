@@ -18,21 +18,21 @@ class ColumnsTaskReporter(TaskReporter):
         if self.__textColumnSize(self.taskName()) + self.__columnSize >= taskNameWidth:
             taskNameWidth = self.__textColumnSize(self.taskName()) + self.__columnSize
 
-        # computing crawler type column size
-        crawlerTypeWidth = self.__columnSize * self.__reserveColumns
-        for crawler in self.crawlers():
-            if self.__textColumnSize(crawler.var('type')) + self.__columnSize >= crawlerTypeWidth:
-                crawlerTypeWidth = self.__textColumnSize(crawler.var('type')) + self.__columnSize
+        # computing infoCrate type column size
+        infoCrateTypeWidth = self.__columnSize * self.__reserveColumns
+        for infoCrate in self.infoCrates():
+            if self.__textColumnSize(infoCrate.var('type')) + self.__columnSize >= infoCrateTypeWidth:
+                infoCrateTypeWidth = self.__textColumnSize(infoCrate.var('type')) + self.__columnSize
 
         # printing columns
-        for crawler in self.crawlers():
+        for infoCrate in self.infoCrates():
             sys.stdout.write(
                 '{}{}{}{}{}\n'.format(
                     self.taskName(),
                     "\t" * int((taskNameWidth - self.__textColumnSize(self.taskName())) / self.__columnSize),
-                    crawler.var('type'),
-                    "\t" * int((crawlerTypeWidth - self.__textColumnSize(crawler.var('type'))) / self.__columnSize),
-                    crawler.var('fullPath')
+                    infoCrate.var('type'),
+                    "\t" * int((infoCrateTypeWidth - self.__textColumnSize(infoCrate.var('type'))) / self.__columnSize),
+                    infoCrate.var('fullPath')
                 )
             )
 

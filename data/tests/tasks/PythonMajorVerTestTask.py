@@ -7,9 +7,9 @@ class PythonMajorVerTestTask(Task):
     """
 
     def _perform(self):
-        sourceCrawler = self.crawlers()[0]
-        sourceCrawler.setVar("majorVer", sys.version_info[0])
-        return [sourceCrawler.clone()]
+        sourceInfoCrate = self.infoCrates()[0]
+        sourceInfoCrate.setVar("majorVer", sys.version_info[0])
+        return [sourceInfoCrate.clone()]
 
 
 Task.register(

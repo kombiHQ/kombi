@@ -17,8 +17,8 @@ class RemoveTask(Task):
         """
         Perform the task.
         """
-        for crawler in self.crawlers():
-            filePath = self.target(crawler)
+        for infoCrate in self.infoCrates():
+            filePath = self.target(infoCrate)
 
             os.remove(filePath)
 

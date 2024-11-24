@@ -25,8 +25,8 @@ class ChmodTask(Task):
         directoryMode = int(str(self.option('directoryMode')), 8)
         fileMode = int(str(self.option('fileMode')), 8)
 
-        for crawler in self.crawlers():
-            filePath = crawler.var('filePath')
+        for infoCrate in self.infoCrates():
+            filePath = infoCrate.var('filePath')
 
             if filePath in alreadyDone:
                 continue

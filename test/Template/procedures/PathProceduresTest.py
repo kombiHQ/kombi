@@ -43,8 +43,8 @@ class PathProceduresTest(BaseTestCase):
         """
         Test that the find procedure works properly.
         """
-        result = Template.runProcedure("findpath", 'TestCrawler.py', BaseTestCase.dataTestsDirectory())
-        testPath = os.path.join(BaseTestCase.dataTestsDirectory(), 'config', 'crawlers', 'TestCrawler.py')
+        result = Template.runProcedure("findpath", 'TestInfoCrate.py', BaseTestCase.dataTestsDirectory())
+        testPath = os.path.join(BaseTestCase.dataTestsDirectory(), 'config', 'infoCrates', 'TestInfoCrate.py')
         self.assertEqual(result, testPath)
 
     def testRegistration(self):

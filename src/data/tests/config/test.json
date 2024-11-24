@@ -29,7 +29,7 @@
           "target": "(tmpdir)/{name}.jpg",
           "metadata": {
             "match.types": [
-              "testCrawler"
+              "testInfoCrate"
             ],
             "match.vars": {
               "imageType": [

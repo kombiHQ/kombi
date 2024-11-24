@@ -21,12 +21,12 @@ class LockTask(Task):
         """
         Implement the execution of the task.
         """
-        crawlers = self.crawlers()
+        infoCrates = self.infoCrates()
 
         result = []
         alreadyCreated = set()
-        for crawler in crawlers:
-            targetFilePath = self.target(crawler)
+        for infoCrate in infoCrates:
+            targetFilePath = self.target(infoCrate)
 
             if targetFilePath not in alreadyCreated:
                 try:
@@ -42,13 +42,13 @@ class LockTask(Task):
 
                 alreadyCreated.add(targetFilePath)
 
-            newCrawler = crawler.clone()
-            newCrawler.setVar(
-                self.templateOption('assignLockToContextVar', crawler),
+            newInfoCrate = infoCrate.clone()
+            newInfoCrate.setVar(
+                self.templateOption('assignLockToContextVar', infoCrate),
                 targetFilePath,
                 True
             )
-            result.append(newCrawler)
+            result.append(newInfoCrate)
 
         return result
 

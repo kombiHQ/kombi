@@ -17,10 +17,10 @@ class DetailedTaskReporter(TaskReporter):
             )
         )
 
-        for crawler in self.crawlers():
+        for infoCrate in self.infoCrates():
             sys.stdout.write(
                 '  - {}\n'.format(
-                    crawler
+                    infoCrate
                 )
             )
 

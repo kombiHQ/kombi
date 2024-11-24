@@ -5,8 +5,8 @@ import time
 from glob import glob
 from ..Task import Task, TaskError, TaskValidationError
 from ..External.GafferTask import GafferTask
-from ...Crawler import Crawler
-from ...Crawler.Fs.FsCrawler import FsCrawler
+from ...InfoCrate import InfoCrate
+from ...InfoCrate.Fs.FsInfoCrate import FsInfoCrate
 
 class GafferLoadTaskError(TaskError):
     """
@@ -62,11 +62,11 @@ class GafferLoadTask(Task):
             }
         )
 
-    def updateInfo(self, crawlers):
+    def updateInfo(self, infoCrates):
         """
-        Return a text output displayed in the info area of the crawler.
+        Return a text output displayed in the info area of the infoCrate.
         """
-        outputPath = crawlers[0].var('fullPath')
+        outputPath = infoCrates[0].var('fullPath')
         version = self.option('version')
 
         jsonInfoFilePath = os.path.join(outputPath, version, 'info.json')
@@ -86,16 +86,16 @@ class GafferLoadTask(Task):
 
         return '\n'.join(output)
 
-    def setup(self, crawlers):
+    def setup(self, infoCrates):
         """
         Setting the initial value for output dir.
         """
-        crawler = crawlers[0]
+        infoCrate = infoCrates[0]
 
         versions = set()
-        if os.path.exists(crawler.var('fullPath')):
-            for node in os.listdir(crawler.var('fullPath')):
-                if os.path.isdir(os.path.join(crawler.var('fullPath'), node)) and node.startswith('v') and node[1:].isdigit():
+        if os.path.exists(infoCrate.var('fullPath')):
+            for node in os.listdir(infoCrate.var('fullPath')):
+                if os.path.isdir(os.path.join(infoCrate.var('fullPath'), node)) and node.startswith('v') and node[1:].isdigit():
                     versions.add(node)
 
         allVersions = sorted(list(versions), reverse=True)
@@ -111,19 +111,19 @@ class GafferLoadTask(Task):
 
         self.setOption('version', allVersions[0] if allVersions else '')
 
-    def validate(self, crawlers=None):
+    def validate(self, infoCrates=None):
         """
-        Validating then updating crawler information with the new output dir.
+        Validating then updating infoCrate information with the new output dir.
         """
-        if not crawlers:
+        if not infoCrates:
             return
 
-        for crawler in crawlers:
+        for infoCrate in infoCrates:
             if not self.option('version'):
                 raise TaskValidationError(
                     'Version cannot be empty!'
                 )
-            elif not os.path.exists(os.path.join(crawler.var('fullPath'), self.option('version'))):
+            elif not os.path.exists(os.path.join(infoCrate.var('fullPath'), self.option('version'))):
                 raise TaskValidationError(
                     'Version does not exist!'
                 )
@@ -140,9 +140,9 @@ class GafferLoadTask(Task):
 
         scriptNode = GafferLoadTask.currentScriptNode()
         result = []
-        for crawler in self.crawlers():
-            dataDirectory = os.path.join(crawler.var('outputDir'), crawler.var('outputType'), crawler.var('outputName'), self.templateOption('version', crawler), 'd')
-            outputType = crawler.var('outputType')
+        for infoCrate in self.infoCrates():
+            dataDirectory = os.path.join(infoCrate.var('outputDir'), infoCrate.var('outputType'), infoCrate.var('outputName'), self.templateOption('version', infoCrate), 'd')
+            outputType = infoCrate.var('outputType')
 
             if outputType.endswith('box'):
                 referenceFilePaths = list(glob('{}/*.gfr'.format(dataDirectory)))
@@ -151,18 +151,18 @@ class GafferLoadTask(Task):
                     raise GafferLoadTaskError('Version is broken, missing data: {}'.format(dataDirectory))
 
                 for referenceFilePath in referenceFilePaths:
-                    referenceNode = Gaffer.Reference('{}_{}'.format(crawler.var('outputName').replace('-', '_'), crawler.var('outputType')[:-3]))
+                    referenceNode = Gaffer.Reference('{}_{}'.format(infoCrate.var('outputName').replace('-', '_'), infoCrate.var('outputType')[:-3]))
                     scriptNode.addChild(referenceNode)
                     referenceNode.load(referenceFilePath)
                     scriptNode.selection().add(referenceNode)
 
-                    result.append(FsCrawler.createFromPath(referenceFilePath))
+                    result.append(FsInfoCrate.createFromPath(referenceFilePath))
 
             elif outputType in ('geo', 'animgeocache', 'pointCache'):
                 geoFilePaths = list(glob('{}/*.abc'.format(dataDirectory)))
                 if not geoFilePaths:
                     continue
-                geoScene = GafferScene.SceneReader('{}_{}'.format(crawler.var('outputName').replace('-', '_'), crawler.var('outputType')))
+                geoScene = GafferScene.SceneReader('{}_{}'.format(infoCrate.var('outputName').replace('-', '_'), infoCrate.var('outputType')))
                 scriptNode.addChild(geoScene)
                 geoScene['fileName'].setValue(str(geoFilePaths[0]))
                 scriptNode.selection().add(geoScene)
@@ -185,7 +185,7 @@ class GafferLoadTask(Task):
                 scriptNode['frame'].setValue(float(startFrame))
 
                 # loading plate
-                imageReader = GafferImage.ImageReader('{}_{}'.format(crawler.var('outputName').replace('-', '_'), crawler.var('outputType')))
+                imageReader = GafferImage.ImageReader('{}_{}'.format(infoCrate.var('outputName').replace('-', '_'), infoCrate.var('outputType')))
                 scriptNode.addChild(imageReader)
                 imageReader['fileName'].setValue(str(platePath))
                 scriptNode.selection().add(imageReader)
@@ -194,7 +194,7 @@ class GafferLoadTask(Task):
                 cameraFilePaths = list(glob('{}/*.usd'.format(dataDirectory)))
                 if not cameraFilePaths:
                     continue
-                geoScene = GafferScene.SceneReader('{}_{}'.format(crawler.var('outputName').replace('-', '_'), crawler.var('outputType')))
+                geoScene = GafferScene.SceneReader('{}_{}'.format(infoCrate.var('outputName').replace('-', '_'), infoCrate.var('outputType')))
                 scriptNode.addChild(geoScene)
                 geoScene['fileName'].setValue(str(cameraFilePaths[0]))
                 scriptNode.selection().add(geoScene)
@@ -207,7 +207,7 @@ class GafferLoadTask(Task):
                 vdbFilePathParts = vdbFilePaths[0].split('.')
                 vdbFilePathParts[-2] = "#" * len(vdbFilePathParts[-2])
 
-                volumeScene = GafferScene.SceneReader('{}_{}'.format(crawler.var('outputName').replace('-', '_'), crawler.var('outputType')))
+                volumeScene = GafferScene.SceneReader('{}_{}'.format(infoCrate.var('outputName').replace('-', '_'), infoCrate.var('outputType')))
                 scriptNode.addChild(volumeScene)
                 volumeScene['fileName'].setValue('.'.join(vdbFilePathParts))
                 scriptNode.selection().add(volumeScene)
@@ -228,7 +228,7 @@ class GafferLoadTask(Task):
                 agentVariationPath = os.path.join(dataDirectory, 'variation.json')
                 if not os.path.exists(agentVariationPath):
                     continue
-                atomsVariationReader = AtomsGaffer.AtomsVariationReader('{}_variation'.format(crawler.var('outputName').replace('-', '_').replace('.', '_')))
+                atomsVariationReader = AtomsGaffer.AtomsVariationReader('{}_variation'.format(infoCrate.var('outputName').replace('-', '_').replace('.', '_')))
                 scriptNode.addChild(atomsVariationReader)
                 atomsVariationReader['atomsVariationFile'].setValue(str(agentVariationPath))
                 scriptNode.selection().add(atomsVariationReader)
@@ -237,7 +237,7 @@ class GafferLoadTask(Task):
                 crowdCachePath = os.path.join(dataDirectory, 'd.atoms')
                 if not os.path.exists(crowdCachePath):
                     continue
-                atomsCrowdReader = AtomsGaffer.AtomsCrowdReader('{}_crowd'.format(crawler.var('outputName').replace('-', '_').replace('.', '_')))
+                atomsCrowdReader = AtomsGaffer.AtomsCrowdReader('{}_crowd'.format(infoCrate.var('outputName').replace('-', '_').replace('.', '_')))
                 scriptNode.addChild(atomsCrowdReader)
                 atomsCrowdReader['atomsSimFile'].setValue(str(crowdCachePath))
                 scriptNode.selection().add(atomsCrowdReader)
@@ -260,7 +260,7 @@ class GafferLoadTask(Task):
 
                     alreadyCreated.append(normalizedBaseName)
 
-                    textureShader = GafferArnold.ArnoldShader('{}_{}'.format(crawler.var('outputName'), '.'.join(textureParts[:-2])).replace('-', '_'))
+                    textureShader = GafferArnold.ArnoldShader('{}_{}'.format(infoCrate.var('outputName'), '.'.join(textureParts[:-2])).replace('-', '_'))
                     textureShader.loadShader("image")
                     scriptNode.addChild(textureShader)
                     textureShader['parameters']['filename'].setValue(str(os.path.join(os.path.dirname(textureFilePath), normalizedBaseName)))
@@ -269,31 +269,31 @@ class GafferLoadTask(Task):
         return result
 
     @classmethod
-    def toLoadCrawler(cls, outputName, outputType, outputDir, loaded=False):
+    def toLoadInfoCrate(cls, outputName, outputType, outputDir, loaded=False):
         """
-        Return a hashmap crawler for the load gaffer data.
+        Return a hashmap infoCrate for the load gaffer data.
         """
-        hashmapCrawler = Crawler.create(
+        hashmapInfoCrate = InfoCrate.create(
             {
                 'name': outputName
             }
         )
 
-        hashmapCrawler.setVar('dataLayout', 'gafferLoad')
-        hashmapCrawler.setVar('baseName', os.path.join(outputType, outputName))
-        hashmapCrawler.setVar('outputName', outputName)
-        hashmapCrawler.setVar('loaded', 'Loaded' if loaded else ' ')
-        hashmapCrawler.setVar('outputVersion', '')
-        hashmapCrawler.setVar('outputDir', outputDir)
-        hashmapCrawler.setVar('location', os.path.dirname(outputDir))
-        hashmapCrawler.setVar('outputType', outputType)
+        hashmapInfoCrate.setVar('dataLayout', 'gafferLoad')
+        hashmapInfoCrate.setVar('baseName', os.path.join(outputType, outputName))
+        hashmapInfoCrate.setVar('outputName', outputName)
+        hashmapInfoCrate.setVar('loaded', 'Loaded' if loaded else ' ')
+        hashmapInfoCrate.setVar('outputVersion', '')
+        hashmapInfoCrate.setVar('outputDir', outputDir)
+        hashmapInfoCrate.setVar('location', os.path.dirname(outputDir))
+        hashmapInfoCrate.setVar('outputType', outputType)
 
-        hashmapCrawler.setVar(
+        hashmapInfoCrate.setVar(
             'fullPath',
             os.path.join(outputDir, outputType, outputName)
         )
 
-        return hashmapCrawler
+        return hashmapInfoCrate
 
     @classmethod
     def __camelCaseToSpaced(cls, text):

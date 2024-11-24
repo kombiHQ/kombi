@@ -10,12 +10,12 @@ class VendorData(Task):
         """
         Implement the execution of the task.
         """
-        crawler = self.crawlers()[0]
-        targetFilePath = self.target(crawler)
+        infoCrate = self.infoCrates()[0]
+        targetFilePath = self.target(infoCrate)
 
         data = {
-            "vendorVersion": crawler.var('vendorVersion'),
-            "plateName": crawler.var('plateName')
+            "vendorVersion": infoCrate.var('vendorVersion'),
+            "plateName": infoCrate.var('plateName')
         }
 
         with open(targetFilePath, 'w') as f:

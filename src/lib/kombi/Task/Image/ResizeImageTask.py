@@ -3,7 +3,7 @@ import os
 import multiprocessing
 from ...Template import Template
 from ..Task import Task
-from ... import Crawler
+from ... import InfoCrate
 
 class ResizeImageTask(Task):
     """
@@ -33,23 +33,23 @@ class ResizeImageTask(Task):
         """
         import OpenImageIO as oiio
 
-        for crawler in self.crawlers():
+        for infoCrate in self.infoCrates():
             width = self.option('width')
             height = self.option('height')
 
             # resolving template
             if isinstance(width, str):
-                width = int(Template(width).valueFromCrawler(
-                    crawler
+                width = int(Template(width).valueFromInfoCrate(
+                    infoCrate
                 ))
 
             if isinstance(height, str):
-                height = int(Template(height).valueFromCrawler(
-                    crawler
+                height = int(Template(height).valueFromInfoCrate(
+                    infoCrate
                 ))
 
-            targetFilePath = Crawler.Fs.Image.OiioCrawler.supportedString(
-                self.target(crawler)
+            targetFilePath = InfoCrate.Fs.Image.OiioInfoCrate.supportedString(
+                self.target(infoCrate)
             )
 
             # trying to create the directory automatically in case it does not exist
@@ -60,8 +60,8 @@ class ResizeImageTask(Task):
 
             # opening the source image to generate a resized image
             inputImageBuf = oiio.ImageBuf(
-                Crawler.Fs.Image.OiioCrawler.supportedString(
-                    crawler.var('filePath')
+                InfoCrate.Fs.Image.OiioInfoCrate.supportedString(
+                    infoCrate.var('filePath')
                 )
             )
             inputSpec = inputImageBuf.spec()

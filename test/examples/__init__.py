@@ -1,4 +1,4 @@
 from .VendorXPlatesTest import VendorXPlatesTest
-from .VendorXPlatesInlineCrawlersTest import VendorXPlatesInlineCrawlersTest
+from .VendorXPlatesInlineInfoCratesTest import VendorXPlatesInlineInfoCratesTest
 from .GafferBlurImageSequenceTest import GafferBlurImageSequenceTest
 from .PublishTexturesTest import PublishTexturesTest

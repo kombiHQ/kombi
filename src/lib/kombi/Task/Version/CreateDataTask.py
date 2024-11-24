@@ -189,7 +189,7 @@ class CreateDataTask(Task):
 
     def add(self, *args, **kwargs):
         """
-        Cache the static information about the first crawler you add.
+        Cache the static information about the first infoCrate you add.
         """
         super(CreateDataTask, self).add(*args, **kwargs)
         self.__loadStaticData()
@@ -231,11 +231,11 @@ class CreateDataTask(Task):
         """
         Load static information.
         """
-        if self.__loadedStaticData or not self.crawlers():
+        if self.__loadedStaticData or not self.infoCrates():
             return
 
         self.__loadedStaticData = True
 
-        crawler = self.crawlers()[0]
-        self.__rootPath = self.target(crawler)
-        self.__configDirectory = crawler.var('configDirectory')
+        infoCrate = self.infoCrates()[0]
+        self.__rootPath = self.target(infoCrate)
+        self.__configDirectory = infoCrate.var('configDirectory')

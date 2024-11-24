@@ -1,9 +1,9 @@
 from ...Task import Task
-from ...Crawler import Crawler
+from ...InfoCrate import InfoCrate
 
 class SliceSequenceTask(Task):
     """
-    Implements a task that slices the image sequence crawlers.
+    Implements a task that slices the image sequence infoCrates.
     """
 
     def __init__(self, *args, **kwargs):
@@ -21,14 +21,14 @@ class SliceSequenceTask(Task):
         """
         result = []
 
-        for crawlerGroup in Crawler.group(self.crawlers()):
-            sliceBegin = int(self.templateOption('sliceTotalAtBegin', crawlerGroup[0]))
-            sliceEnd = int(self.templateOption('sliceTotalAtEnd', crawlerGroup[-1]))
+        for infoCrateGroup in InfoCrate.group(self.infoCrates()):
+            sliceBegin = int(self.templateOption('sliceTotalAtBegin', infoCrateGroup[0]))
+            sliceEnd = int(self.templateOption('sliceTotalAtEnd', infoCrateGroup[-1]))
 
-            slicedCrawlers = crawlerGroup[sliceBegin:]
+            slicedInfoCrates = infoCrateGroup[sliceBegin:]
             if sliceEnd:
-                slicedCrawlers = slicedCrawlers[:-sliceEnd]
-            result += slicedCrawlers
+                slicedInfoCrates = slicedInfoCrates[:-sliceEnd]
+            result += slicedInfoCrates
 
         return result
 

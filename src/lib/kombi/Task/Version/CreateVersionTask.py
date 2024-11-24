@@ -1,7 +1,7 @@
 import os
 import time
 from ..Task import Task
-from ...Crawler.Fs import FsCrawler
+from ...InfoCrate.Fs import FsInfoCrate
 from ...Template import Template
 from .CreateDataTask import CreateDataTask
 
@@ -10,7 +10,7 @@ class CreateVersionTask(CreateDataTask):
     ABC for creating a version.
     """
 
-    __genericCrawlerInfo = [
+    __genericInfoCrateInfo = [
         "job",
         "seq",
         "shot",
@@ -49,7 +49,7 @@ class CreateVersionTask(CreateDataTask):
 
     def add(self, *args, **kwargs):
         """
-        Cache the static information about the first crawler you add.
+        Cache the static information about the first infoCrate you add.
         """
         super(CreateVersionTask, self).add(*args, **kwargs)
 
@@ -74,25 +74,25 @@ class CreateVersionTask(CreateDataTask):
         """
         super(CreateVersionTask, self)._perform()
 
-        # Find all the crawlers for data that was created for this version
-        crawler = FsCrawler.createFromPath(self.dataPath())
-        dataCrawlers = crawler.glob()
+        # Find all the infoCrates for data that was created for this version
+        infoCrate = FsInfoCrate.createFromPath(self.dataPath())
+        dataInfoCrates = infoCrate.glob()
 
         # Add json files
         for jsonFile in ["info.json", "data.json", "env.json"]:
-            dataCrawlers.append(FsCrawler.createFromPath(os.path.join(self.versionPath(), jsonFile)))
+            dataInfoCrates.append(FsInfoCrate.createFromPath(os.path.join(self.versionPath(), jsonFile)))
 
         # Add context variables so subsequent tasks get them
-        for crawler in dataCrawlers:
-            for var in self.__genericCrawlerInfo:
+        for infoCrate in dataInfoCrates:
+            for var in self.__genericInfoCrateInfo:
                 if var in self.infoNames():
-                    crawler.setVar(var, self.info(var), True)
-            crawler.setVar("versionPath", self.versionPath(), True)
-            crawler.setVar("version", self.version(), True)
-            crawler.setVar("versionName", self.versionName(), True)
-            crawler.setVar("dataPath", self.dataPath(), True)
+                    infoCrate.setVar(var, self.info(var), True)
+            infoCrate.setVar("versionPath", self.versionPath(), True)
+            infoCrate.setVar("version", self.version(), True)
+            infoCrate.setVar("versionName", self.versionName(), True)
+            infoCrate.setVar("dataPath", self.dataPath(), True)
 
-        return dataCrawlers
+        return dataInfoCrates
 
     def updateInfo(self):
         """
@@ -107,19 +107,19 @@ class CreateVersionTask(CreateDataTask):
         """
         Load the static information about the publish.
         """
-        if self.__loadedStaticData or not self.crawlers():
+        if self.__loadedStaticData or not self.infoCrates():
             return
 
         self.__loadedStaticData = True
 
-        # all crawlers must contain the same information about assetName,
+        # all infoCrates must contain the same information about assetName,
         # variant and version. For this reason looking only in the first one
-        crawler = self.crawlers()[0]
+        infoCrate = self.infoCrates()[0]
 
-        # Add generic info that is expected to be on the crawler
-        for info in self.__genericCrawlerInfo:
-            if info in crawler.varNames():
-                self.addInfo(info, crawler.var(info))
+        # Add generic info that is expected to be on the infoCrate
+        for info in self.__genericInfoCrateInfo:
+            if info in infoCrate.varNames():
+                self.addInfo(info, infoCrate.var(info))
 
         # looking for the version based on the version folder name
         # that follows the convention "v001"

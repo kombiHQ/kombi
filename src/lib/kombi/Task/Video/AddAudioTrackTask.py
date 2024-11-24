@@ -29,11 +29,11 @@ class AddAudioTrackTask(Task):
         """
         Perform the task.
         """
-        for crawler in self.crawlers():
-            targetFilePath = os.path.normpath(self.target(crawler))
-            sourceFilePath = os.path.normpath(crawler.var('fullPath'))
+        for infoCrate in self.infoCrates():
+            targetFilePath = os.path.normpath(self.target(infoCrate))
+            sourceFilePath = os.path.normpath(infoCrate.var('fullPath'))
             sourceCopyFilePath = None
-            audioFilePath = self.templateOption('audioFilePath', crawler)
+            audioFilePath = self.templateOption('audioFilePath', infoCrate)
 
             # in case the source is the same as the target, making a copy of the source so
             # we can modify it
@@ -56,7 +56,7 @@ class AddAudioTrackTask(Task):
                     pass
 
             audioOffsetArgs = ""
-            audioOffset = float(self.templateOption('offset', crawler))
+            audioOffset = float(self.templateOption('offset', infoCrate))
             if audioOffset:
                 audioOffsetArgs = '-af "adelay={offset}|{offset}"'.format(offset=int(audioOffset * 1000.0))
 
@@ -64,12 +64,12 @@ class AddAudioTrackTask(Task):
             ffmpegCommand = '{ffmpeg} -loglevel error -i "{videoInput}" -ss {audioStartAt} -i "{audioInput}" {audioOffset} -c:v copy -c:a {audioCodec} -b:a {audioBitrate} -t {duration} -y -strict -2 "{output}"'.format(
                 ffmpeg=self.__ffmpegExecutable,
                 videoInput=sourceFilePath,
-                audioStartAt=self.templateOption('audioStartAt', crawler),
+                audioStartAt=self.templateOption('audioStartAt', infoCrate),
                 audioOffset=audioOffsetArgs,
                 audioInput=audioFilePath,
-                audioCodec=self.templateOption('audioCodec', crawler),
-                audioBitrate=self.templateOption('audioBitrate', crawler),
-                duration=crawler.var('duration'),
+                audioCodec=self.templateOption('audioCodec', infoCrate),
+                audioBitrate=self.templateOption('audioBitrate', infoCrate),
+                duration=infoCrate.var('duration'),
                 output=targetFilePath
             )
 

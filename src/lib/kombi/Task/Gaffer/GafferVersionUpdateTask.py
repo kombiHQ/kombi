@@ -7,7 +7,7 @@ import traceback
 from ..Task import Task, TaskError, TaskValidationError
 from ..External.GafferTask import GafferTask
 from ...Template import Template
-from ...Crawler import Crawler
+from ...InfoCrate import InfoCrate
 
 class GafferUpdateVersionTaskError(TaskError):
     """
@@ -43,11 +43,11 @@ class GafferVersionUpdateTask(Task):
             }
         )
 
-    def updateInfo(self, crawlers):
+    def updateInfo(self, infoCrates):
         """
-        Return a text output displayed in the info area of the crawler.
+        Return a text output displayed in the info area of the infoCrate.
         """
-        versionsPath = crawlers[0].var('versionsPath')
+        versionsPath = infoCrates[0].var('versionsPath')
         version = self.option('version')
 
         jsonInfoFilePath = os.path.join(versionsPath, version, 'info.json')
@@ -67,16 +67,16 @@ class GafferVersionUpdateTask(Task):
 
         return '\n'.join(output)
 
-    def setup(self, crawlers):
+    def setup(self, infoCrates):
         """
         Setting the initial value for output dir.
         """
-        crawler = crawlers[0]
+        infoCrate = infoCrates[0]
 
         versions = set()
-        if os.path.exists(crawler.var('versionsPath')):
-            for node in os.listdir(crawler.var('versionsPath')):
-                if os.path.isdir(os.path.join(crawler.var('versionsPath'), node)) and node.startswith('v') and node[1:].isdigit():
+        if os.path.exists(infoCrate.var('versionsPath')):
+            for node in os.listdir(infoCrate.var('versionsPath')):
+                if os.path.isdir(os.path.join(infoCrate.var('versionsPath'), node)) and node.startswith('v') and node[1:].isdigit():
                     versions.add(node)
 
         allVersions = sorted(list(versions), reverse=True)
@@ -92,19 +92,19 @@ class GafferVersionUpdateTask(Task):
 
         self.setOption('version', allVersions[0] if allVersions else '')
 
-    def validate(self, crawlers=None):
+    def validate(self, infoCrates=None):
         """
-        Validating then updating crawler information with the new output dir.
+        Validating then updating infoCrate information with the new output dir.
         """
-        if not crawlers:
+        if not infoCrates:
             return
 
-        for crawler in crawlers:
+        for infoCrate in infoCrates:
             if not self.option('version'):
                 raise TaskValidationError(
                     'Version cannot be empty!'
                 )
-            elif not os.path.exists(os.path.join(crawler.var('versionsPath'), self.option('version'))):
+            elif not os.path.exists(os.path.join(infoCrate.var('versionsPath'), self.option('version'))):
                 raise TaskValidationError(
                     'Version does not exist!'
                 )
@@ -115,15 +115,15 @@ class GafferVersionUpdateTask(Task):
         """
         scriptNode = GafferVersionUpdateTask.currentScriptNode()
         result = []
-        for crawler in self.crawlers():
-            node = self.fromPathToNode(scriptNode, str(crawler.var('nodePath')))
+        for infoCrate in self.infoCrates():
+            node = self.fromPathToNode(scriptNode, str(infoCrate.var('nodePath')))
             selectedVersion = self.option('version')
 
             # replacing version in the path
-            currentFilePath = crawler.var('currentFilePath')
+            currentFilePath = infoCrate.var('currentFilePath')
             newFilePath = currentFilePath.replace(
                 '/{}/'.format(
-                    crawler.var('currentVersion')
+                    infoCrate.var('currentVersion')
                 ),
                 '/{}/'.format(
                     selectedVersion
@@ -132,7 +132,7 @@ class GafferVersionUpdateTask(Task):
 
             newFilePath = newFilePath.replace(
                 '_{}'.format(
-                    crawler.var('currentVersion')
+                    infoCrate.var('currentVersion')
                 ),
                 '_{}'.format(
                     selectedVersion
@@ -141,26 +141,26 @@ class GafferVersionUpdateTask(Task):
 
             try:
                 # reference
-                if crawler.var('typeName') == 'Reference':
+                if infoCrate.var('typeName') == 'Reference':
                     node.load(str(newFilePath))
                     continue
 
                 # regular nodes/plugs
-                if crawler.var('nestedName'):
-                    node = node[str(crawler.var('nestedName'))]
+                if infoCrate.var('nestedName'):
+                    node = node[str(infoCrate.var('nestedName'))]
 
-                node[str(crawler.var('plugName'))].setValue(str(newFilePath))
+                node[str(infoCrate.var('plugName'))].setValue(str(newFilePath))
             except Exception:
-                sys.stderr.write('Failed on updating {}: {}\n'.format(crawler.var('fullPath'), newFilePath))
+                sys.stderr.write('Failed on updating {}: {}\n'.format(infoCrate.var('fullPath'), newFilePath))
                 sys.stderr.flush()
                 traceback.print_exc()
 
         return result
 
     @classmethod
-    def toVersionUpdateCrawlers(cls, scriptNode):
+    def toVersionUpdateInfoCrates(cls, scriptNode):
         """
-        Return a hashmap crawler for the version update nodes.
+        Return a hashmap infoCrate for the version update nodes.
         """
         import Gaffer
 
@@ -209,18 +209,18 @@ class GafferVersionUpdateTask(Task):
 
         result = []
         for nodeNeedingUpdate in nodesNeedingUpdate:
-            hashmapCrawler = Crawler.create(
+            hashmapInfoCrate = InfoCrate.create(
                 {
                     'name': nodeNeedingUpdate['name']
                 }
             )
-            hashmapCrawler.setVar('dataLayout', 'gafferVersionUpdate')
-            hashmapCrawler.setVar('baseName', nodeNeedingUpdate['name'][1:])
+            hashmapInfoCrate.setVar('dataLayout', 'gafferVersionUpdate')
+            hashmapInfoCrate.setVar('baseName', nodeNeedingUpdate['name'][1:])
 
             for key, value in nodeNeedingUpdate.items():
-                hashmapCrawler.setVar(key, value)
+                hashmapInfoCrate.setVar(key, value)
 
-            result.append(hashmapCrawler)
+            result.append(hashmapInfoCrate)
 
         return result
 

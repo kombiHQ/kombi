@@ -4,7 +4,7 @@ import json
 import argparse
 from glob import glob
 from collections import OrderedDict
-from kombi.Crawler import Crawler
+from kombi.InfoCrate import InfoCrate
 from kombi.TaskHolder import TaskHolder
 from kombi.TaskHolder.Dispatcher import Dispatcher
 
@@ -63,17 +63,17 @@ def __runCollapsed(data, taskHolder, dataJsonFile):
             )
 
             # since the range is padded by sorting them it is going to
-            # provide the proper order that the crawlers should be loaded
+            # provide the proper order that the infoCrates should be loaded
             taskInputFilePaths.sort()
         else:
             taskInputFilePaths = data['taskInputFilePaths']
 
-        # loading input crawlers
-        crawlers = []
+        # loading input infoCrates
+        infoCrates = []
         for taskInputFilePath in taskInputFilePaths:
             with open(taskInputFilePath) as jsonFile:
-                serializedCrawlers = json.load(jsonFile)
-                crawlers += list(map(lambda x: Crawler.createFromJson(x), serializedCrawlers))
+                serializedInfoCrates = json.load(jsonFile)
+                infoCrates += list(map(lambda x: InfoCrate.createFromJson(x), serializedInfoCrates))
 
         dispatcher = Dispatcher.createFromJson(data['dispatcher'])
 
@@ -81,25 +81,25 @@ def __runCollapsed(data, taskHolder, dataJsonFile):
         # dispatchers
         dispatchedIds = []
         if taskHolder.regroupTag():
-            crawlerGroups = Crawler.group(crawlers, taskHolder.regroupTag())
+            infoCrateGroups = InfoCrate.group(infoCrates, taskHolder.regroupTag())
             modifiedTaskHolder = taskHolder.clone()
 
             # since we don't want the task holder to split over again we
             # need to reset this information in the modified task holder
             modifiedTaskHolder.setRegroupTag('')
-            for crawlerGroup in crawlerGroups:
+            for infoCrateGroup in infoCrateGroups:
                 dispatchedIds.extend(
                     dispatcher.dispatch(
                         modifiedTaskHolder.clone(),
-                        crawlerGroup
+                        infoCrateGroup
                     )
                 )
-        # otherwise, it passes all crawlers to the task holder (default)
+        # otherwise, it passes all infoCrates to the task holder (default)
         else:
             dispatchedIds.extend(
                 dispatcher.dispatch(
                     taskHolder,
-                    crawlers
+                    infoCrates
                 )
             )
 
@@ -145,27 +145,27 @@ def __runExpanded(data, taskHolder, rangeStart, rangeEnd):
             ext=nameParts[1][1:]
         )
 
-        # collecting all crawlers so we can re-assign only the ones that belong
+        # collecting all infoCrates so we can re-assign only the ones that belong
         # to the range
         task = taskHolder.task()
-        crawlers = OrderedDict()
-        for crawler in task.crawlers():
-            crawlers[crawler] = task.target(crawler)
+        infoCrates = OrderedDict()
+        for infoCrate in task.infoCrates():
+            infoCrates[infoCrate] = task.target(infoCrate)
 
-        # including only the crawlers from the specific range
+        # including only the infoCrates from the specific range
         task.clear()
-        for crawler in list(crawlers.keys())[rangeStart: rangeEnd + 1]:
-            filePath = crawlers[crawler]
+        for infoCrate in list(infoCrates.keys())[rangeStart: rangeEnd + 1]:
+            filePath = infoCrates[infoCrate]
             task.add(
-                crawler,
+                infoCrate,
                 filePath
             )
 
-    outputCrawlers = taskHolder.run()
+    outputInfoCrates = taskHolder.run()
 
-    # writing resulted crawlers
+    # writing resulted infoCrates
     with open(taskResultFilePath, 'w') as jsonFile:
-        data = list(map(lambda x: x.toJson(), outputCrawlers))
+        data = list(map(lambda x: x.toJson(), outputInfoCrates))
         json.dump(
             data,
             jsonFile,
@@ -218,14 +218,14 @@ parser.add_argument(
     '--range-start',
     type=int,
     action="store",
-    help='In case the task has been chunkfied on the farm, tells the context about the start crawler index'
+    help='In case the task has been chunkfied on the farm, tells the context about the start infoCrate index'
 )
 
 parser.add_argument(
     '--range-end',
     type=int,
     action="store",
-    help='In case the task has been chunkfied on the farm, tells the context about the end crawler index'
+    help='In case the task has been chunkfied on the farm, tells the context about the end infoCrate index'
 )
 
 # executing it

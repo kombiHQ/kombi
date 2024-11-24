@@ -2,7 +2,7 @@ import os
 import unittest
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.Crawler.Fs import FsCrawler
+from kombi.InfoCrate.Fs import FsInfoCrate
 
 class ConvertImageTaskTest(BaseTestCase):
     """
@@ -19,9 +19,9 @@ class ConvertImageTaskTest(BaseTestCase):
         """
         Test that the ConvertImage task works properly.
         """
-        crawler = FsCrawler.createFromPath(self.__sourcePath)
+        infoCrate = FsInfoCrate.createFromPath(self.__sourcePath)
         convertTask = Task.create('convertImage')
-        convertTask.add(crawler, self.__targetPath)
+        convertTask.add(infoCrate, self.__targetPath)
         result = convertTask.output()
         self.assertEqual(len(result), 1)
         self.assertTrue(os.path.exists(result[0].var('filePath')))

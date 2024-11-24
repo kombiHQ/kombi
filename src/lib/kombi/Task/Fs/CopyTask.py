@@ -1,7 +1,7 @@
 import os
 import shutil
 from ..Task import Task, TaskError
-from ...Crawler.Fs import FsCrawler
+from ...InfoCrate.Fs import FsInfoCrate
 
 class CopyTaskTargetDirectoryError(TaskError):
     """Copy Target Directory Error."""
@@ -30,8 +30,8 @@ class CopyTask(Task):
         Perform the task.
         """
         result = []
-        for crawler in self.crawlers():
-            filePath = self.target(crawler)
+        for infoCrate in self.infoCrates():
+            filePath = self.target(infoCrate)
 
             # trying to create the directory automatically in case it does not exist
             try:
@@ -40,7 +40,7 @@ class CopyTask(Task):
                 pass
 
             # copying the file to the new target
-            sourceFilePath = crawler.var('filePath')
+            sourceFilePath = infoCrate.var('filePath')
             targetFilePath = filePath
             if os.path.normpath(sourceFilePath) == os.path.normpath(targetFilePath):
                 continue
@@ -59,22 +59,22 @@ class CopyTask(Task):
             else:
                 shutil.copy2(sourceFilePath, targetFilePath)
 
-            # creating result crawler
-            newCrawler = FsCrawler.createFromPath(targetFilePath)
+            # creating result infoCrate
+            newInfoCrate = FsInfoCrate.createFromPath(targetFilePath)
 
             # copying vars
-            for sourceVarName, targetVarName in self.templateOption('copyVar', crawler).items():
-                newCrawler.setVar(targetVarName, crawler.var(sourceVarName))
+            for sourceVarName, targetVarName in self.templateOption('copyVar', infoCrate).items():
+                newInfoCrate.setVar(targetVarName, infoCrate.var(sourceVarName))
 
             # copying context vars
-            for sourceVarName, targetVarName in self.templateOption('copyContextVar', crawler).items():
-                newCrawler.setVar(targetVarName, crawler.var(sourceVarName), True)
+            for sourceVarName, targetVarName in self.templateOption('copyContextVar', infoCrate).items():
+                newInfoCrate.setVar(targetVarName, infoCrate.var(sourceVarName), True)
 
             # copying tags
-            for sourceTagName, targetTagName in self.templateOption('copyTag', crawler).items():
-                newCrawler.setTag(targetTagName, crawler.tag(sourceTagName))
+            for sourceTagName, targetTagName in self.templateOption('copyTag', infoCrate).items():
+                newInfoCrate.setTag(targetTagName, infoCrate.tag(sourceTagName))
 
-            result.append(newCrawler)
+            result.append(newInfoCrate)
 
         return result
 
