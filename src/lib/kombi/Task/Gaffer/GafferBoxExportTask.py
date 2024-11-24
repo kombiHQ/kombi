@@ -4,8 +4,8 @@ import json
 from ..Task import TaskError, TaskValidationError
 from ..External.GafferTask import GafferTask
 from ...Template import Template
-from ...Crawler import Crawler
-from ...Crawler.Fs.FsCrawler import FsCrawler
+from ...InfoCrate import InfoCrate
+from ...InfoCrate.Fs.FsInfoCrate import FsInfoCrate
 
 class GafferBoxExportTaskError(TaskError):
     """
@@ -64,13 +64,13 @@ class GafferBoxExportTask(GafferTask):
             }
         )
 
-    def setup(self, crawlers):
+    def setup(self, infoCrates):
         """
         Setting the initial value for output dir.
         """
         self.setOption(
             'outputDir',
-            crawlers[0].var('outputDir')
+            infoCrates[0].var('outputDir')
         )
 
         outputDirs = []
@@ -85,57 +85,57 @@ class GafferBoxExportTask(GafferTask):
 
         self.setMetadata('ui.options.outputDir.presets', outputDirs)
 
-    def validate(self, crawlers=None):
+    def validate(self, infoCrates=None):
         """
-        Validating then updating crawler information with the new output dir.
+        Validating then updating infoCrate information with the new output dir.
         """
-        if not crawlers:
+        if not infoCrates:
             return
 
-        # updating crawlers with the new output dir
-        for crawler in crawlers:
-            crawler.setVar('outputDir', self.option('outputDir'))
+        # updating infoCrates with the new output dir
+        for infoCrate in infoCrates:
+            infoCrate.setVar('outputDir', self.option('outputDir'))
 
-            if not crawler.var('outputName'):
+            if not infoCrate.var('outputName'):
                 raise TaskValidationError(
-                    'Output name cannot be empty for {}'.format(crawler.var('baseName'))
+                    'Output name cannot be empty for {}'.format(infoCrate.var('baseName'))
                 )
             elif len(self.option('description')) < 10:
                 raise TaskValidationError(
-                    'Description is too short. It requires at least 10 characters: {}'.format(crawler.var('baseName'))
+                    'Description is too short. It requires at least 10 characters: {}'.format(infoCrate.var('baseName'))
                 )
 
-            elif crawler.var('outputName').lower() == 'box' or re.match('box[0-9]+', crawler.var('outputName').lower()):
+            elif infoCrate.var('outputName').lower() == 'box' or re.match('box[0-9]+', infoCrate.var('outputName').lower()):
                 raise TaskValidationError(
-                    'Invalid output name, it cannot be published using default box name: {}'.format(crawler.var('baseName'))
+                    'Invalid output name, it cannot be published using default box name: {}'.format(infoCrate.var('baseName'))
                 )
 
-            elif not re.match('^[a-zA-Z0-9-]+$', crawler.var('outputName')):
+            elif not re.match('^[a-zA-Z0-9-]+$', infoCrate.var('outputName')):
                 raise TaskValidationError(
-                    'Output name cannot contain special characters (except from dash): {}'.format(crawler.var('outputName'))
+                    'Output name cannot contain special characters (except from dash): {}'.format(infoCrate.var('outputName'))
                 )
 
-            elif not crawler.var('outputType'):
+            elif not infoCrate.var('outputType'):
                 raise TaskValidationError(
-                    'Reference type cannot be empty: {}'.format(crawler.var('baseName'))
+                    'Reference type cannot be empty: {}'.format(infoCrate.var('baseName'))
                 )
 
-            elif crawler.var('outputType') not in self.referenceTypes:
+            elif infoCrate.var('outputType') not in self.referenceTypes:
                 raise TaskValidationError(
-                    'Invalid reference type ({}) for: {}'.format(crawler.var('outputType'), crawler.var('baseName'))
+                    'Invalid reference type ({}) for: {}'.format(infoCrate.var('outputType'), infoCrate.var('baseName'))
                 )
 
-            elif not crawler.var('outputDir'):
+            elif not infoCrate.var('outputDir'):
                 raise TaskValidationError(
                     'Output location cannot be empty!'
                 )
-            elif not os.path.exists(crawler.var('outputDir')):
+            elif not os.path.exists(infoCrate.var('outputDir')):
                 raise TaskValidationError(
-                    'Output location does not exist: {}'.format(crawler.var('outputDir'))
+                    'Output location does not exist: {}'.format(infoCrate.var('outputDir'))
                 )
-            elif self.option('outputRegexValidation') and not re.match(self.templateOption('outputRegexValidation', crawler), crawler.var('outputDir')):
+            elif self.option('outputRegexValidation') and not re.match(self.templateOption('outputRegexValidation', infoCrate), infoCrate.var('outputDir')):
                 raise TaskValidationError(
-                    self.templateOption('outputRegexValidationFailMessage', crawler)
+                    self.templateOption('outputRegexValidationFailMessage', infoCrate)
                 )
 
     def _perform(self):
@@ -144,20 +144,20 @@ class GafferBoxExportTask(GafferTask):
         """
         import Gaffer
 
-        crawlers = self.crawlers()
-        sceneFullPath = self.templateOption('scene', crawlers[0])
+        infoCrates = self.infoCrates()
+        sceneFullPath = self.templateOption('scene', infoCrates[0])
 
         if not os.path.exists(sceneFullPath):
             raise GafferBoxExportTaskError('Invalid Scene: {}'.format(sceneFullPath))
 
         # loading gaffer scene
         script = Gaffer.ScriptNode()
-        script['fileName'].setValue(self.templateOption('scene', crawlers[0]))
+        script['fileName'].setValue(self.templateOption('scene', infoCrates[0]))
         script.load()
 
         result = []
-        for index, crawler in enumerate(self.crawlers()):
-            targetPath = self.target(crawler)
+        for index, infoCrate in enumerate(self.infoCrates()):
+            targetPath = self.target(infoCrate)
 
             # creating directories if necessary
             os.makedirs(os.path.dirname(targetPath), exist_ok=True)
@@ -170,7 +170,7 @@ class GafferBoxExportTask(GafferTask):
                 infoData['gafferVersion'] = os.environ.get('BVER_GAFFER_VERSION')
                 infoData['arnoldVersion'] = os.environ.get('BVER_GAFFER_ARNOLD_VERSION')
 
-                with open(self.templateOption('info', FsCrawler.createFromPath(targetPath)), 'w') as f:
+                with open(self.templateOption('info', FsInfoCrate.createFromPath(targetPath)), 'w') as f:
                     json.dump(
                         infoData,
                         f,
@@ -178,43 +178,43 @@ class GafferBoxExportTask(GafferTask):
                         sort_keys=True
                     )
 
-            script.descendant(str(crawler.var('relativeName'))).exportForReference(targetPath)
-            result.append(FsCrawler.createFromPath(targetPath))
+            script.descendant(str(infoCrate.var('relativeName'))).exportForReference(targetPath)
+            result.append(FsInfoCrate.createFromPath(targetPath))
 
         return result
 
     @classmethod
-    def toBoxCrawler(cls, script, gafferBox, outputType='', outputDir=''):
+    def toBoxInfoCrate(cls, script, gafferBox, outputType='', outputDir=''):
         """
-        Return a hashmap crawler for the input gaffer box.
+        Return a hashmap infoCrate for the input gaffer box.
         """
         import Gaffer
 
         # checking gaffer box node
         assert isinstance(gafferBox, Gaffer.Box), "Invalid gaffer box node!"
 
-        hashmapCrawler = Crawler.create(
+        hashmapInfoCrate = InfoCrate.create(
             {
                 'name': gafferBox.getName()
             }
         )
 
-        hashmapCrawler.setVar('dataLayout', 'gafferBox')
-        hashmapCrawler.setVar('baseName', gafferBox.getName())
-        hashmapCrawler.setVar('outputName', cls.outputName(gafferBox.getName()))
-        hashmapCrawler.setVar('relativeName', gafferBox.relativeName(script))
-        hashmapCrawler.setTag('outputName.allowEmpty', False)
-        hashmapCrawler.setVar('outputDir', outputDir)
-        hashmapCrawler.setVar('outputType', outputType or cls.outputType(gafferBox.getName()))
-        hashmapCrawler.setTag('outputType.presets', cls.referenceTypes)
-        hashmapCrawler.setTag('outputType.allowEmpty', False)
+        hashmapInfoCrate.setVar('dataLayout', 'gafferBox')
+        hashmapInfoCrate.setVar('baseName', gafferBox.getName())
+        hashmapInfoCrate.setVar('outputName', cls.outputName(gafferBox.getName()))
+        hashmapInfoCrate.setVar('relativeName', gafferBox.relativeName(script))
+        hashmapInfoCrate.setTag('outputName.allowEmpty', False)
+        hashmapInfoCrate.setVar('outputDir', outputDir)
+        hashmapInfoCrate.setVar('outputType', outputType or cls.outputType(gafferBox.getName()))
+        hashmapInfoCrate.setTag('outputType.presets', cls.referenceTypes)
+        hashmapInfoCrate.setTag('outputType.allowEmpty', False)
 
-        hashmapCrawler.setVar(
+        hashmapInfoCrate.setVar(
             'fullPath',
             gafferBox.getName()
         )
 
-        return hashmapCrawler
+        return hashmapInfoCrate
 
     @classmethod
     def outputName(cls, name):

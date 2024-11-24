@@ -1,6 +1,6 @@
 import os
 from ..Task import Task
-from ... import Crawler
+from ... import InfoCrate
 
 class FrameImageTask(Task):
     """
@@ -54,14 +54,14 @@ class FrameImageTask(Task):
         """
         import OpenImageIO as oiio
 
-        for crawler in self.crawlers():
-            targetFilePath = self.target(crawler)
+        for infoCrate in self.infoCrates():
+            targetFilePath = self.target(infoCrate)
 
             # opening source image
-            inputImageBuf = self.__toImageBuf(crawler.var('filePath'))
+            inputImageBuf = self.__toImageBuf(infoCrate.var('filePath'))
             width = inputImageBuf.spec().width
 
-            headerImageBuf = self.templateOption('headerFilePath', crawler) if int(self.templateOption('enableHeader', crawler)) else None
+            headerImageBuf = self.templateOption('headerFilePath', infoCrate) if int(self.templateOption('enableHeader', infoCrate)) else None
             headerHeight = 0
             if headerImageBuf:
                 headerImageBuf = self.__toImageBuf(headerImageBuf)
@@ -69,7 +69,7 @@ class FrameImageTask(Task):
                 width = max(width, headerImageBuf.spec().width)
 
             footerHeight = 0
-            footerImageBuf = self.templateOption('footerFilePath', crawler) if int(self.templateOption('enableFooter', crawler)) else None
+            footerImageBuf = self.templateOption('footerFilePath', infoCrate) if int(self.templateOption('enableFooter', infoCrate)) else None
             if footerImageBuf:
                 footerImageBuf = self.__toImageBuf(footerImageBuf)
                 footerHeight = footerImageBuf.spec().height
@@ -89,7 +89,7 @@ class FrameImageTask(Task):
             )
 
             # background color
-            bgColor = self.__fromHexColor(self.templateOption('bgColor', crawler))
+            bgColor = self.__fromHexColor(self.templateOption('bgColor', infoCrate))
 
             # filling background color
             oiio.ImageBufAlgo.fill(outputImageBuf, bgColor)
@@ -98,7 +98,7 @@ class FrameImageTask(Task):
             if headerImageBuf:
                 oiio.ImageBufAlgo.paste(
                     outputImageBuf,
-                    0 if int(self.templateOption('diagonalLayout', crawler)) else int((width - headerImageBuf.spec().width) / 2),
+                    0 if int(self.templateOption('diagonalLayout', infoCrate)) else int((width - headerImageBuf.spec().width) / 2),
                     0,
                     0,
                     0,
@@ -106,7 +106,7 @@ class FrameImageTask(Task):
                 )
 
             # watermark
-            watermarkImage = self.templateOption('watermarkFilePath', crawler) if int(self.templateOption('enableWatermark', crawler)) else None
+            watermarkImage = self.templateOption('watermarkFilePath', infoCrate) if int(self.templateOption('enableWatermark', infoCrate)) else None
             if watermarkImage:
                 inputImageBuf = self.__watermark(inputImageBuf, self.__toImageBuf(watermarkImage))
 
@@ -124,7 +124,7 @@ class FrameImageTask(Task):
             if footerImageBuf:
                 oiio.ImageBufAlgo.paste(
                     outputImageBuf,
-                    width - footerImageBuf.spec().width if int(self.templateOption('diagonalLayout', crawler)) else int((width - footerImageBuf.spec().width) / 2),
+                    width - footerImageBuf.spec().width if int(self.templateOption('diagonalLayout', infoCrate)) else int((width - footerImageBuf.spec().width) / 2),
                     headerHeight + inputImageBuf.spec().height,
                     0,
                     0,
@@ -132,15 +132,15 @@ class FrameImageTask(Task):
                 )
 
             # burn-in text
-            burnin = self.templateOption('burnin', crawler)
-            if int(self.templateOption('enableBurnin', crawler)) and burnin['text']:
+            burnin = self.templateOption('burnin', infoCrate)
+            if int(self.templateOption('enableBurnin', infoCrate)) and burnin['text']:
                 oiio.ImageBufAlgo.render_text(
                     outputImageBuf,
                     int(burnin['x']),
                     int(burnin['y']),
-                    Crawler.Fs.Image.OiioCrawler.supportedString(burnin['text']),
+                    InfoCrate.Fs.Image.OiioInfoCrate.supportedString(burnin['text']),
                     int(burnin['size']),
-                    Crawler.Fs.Image.OiioCrawler.supportedString(burnin['font']),
+                    InfoCrate.Fs.Image.OiioInfoCrate.supportedString(burnin['font']),
                     self.__fromHexColor(burnin['color'])
                 )
 
@@ -205,7 +205,7 @@ class FrameImageTask(Task):
         import OpenImageIO as oiio
 
         return oiio.ImageBuf(
-            Crawler.Fs.Image.OiioCrawler.supportedString(
+            InfoCrate.Fs.Image.OiioInfoCrate.supportedString(
                 filePath
             )
         )

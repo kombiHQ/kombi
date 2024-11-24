@@ -1,7 +1,7 @@
 import os
 import glob
 from ...Task import Task
-from ...Crawler import Crawler, VarExtractor
+from ...InfoCrate import InfoCrate, VarExtractor
 from ...Template import Template
 from ...TaskHolder import TaskHolder
 from ...Resource import Resource
@@ -31,8 +31,8 @@ class PythonLoader(Loader):
                 "type"
             ]
           },
-          "crawlers": {
-            "myCustomCrawlerType < png": "{job:3}_{shot:3}_{seq:3}_{plateName}_{vendorVersion:3i}.####.png"
+          "infoCrates": {
+            "myCustomInfoCrateType < png": "{job:3}_{shot:3}_{seq:3}_{plateName}_{vendorVersion:3i}.####.png"
           },
           "tasks": [
             {
@@ -40,7 +40,7 @@ class PythonLoader(Loader):
               "target": "{prefix}/foo/sequences/{seq}/{shot}/online/publish/elements/{plateName}/(newver <parent>).(pad {frame} 4).exr",
               "filter": "",
               "status": "execute",
-              "export": "{prefix}/result/{sessionId}/resultCrawlersFromConvertImage.json"
+              "export": "{prefix}/result/{sessionId}/resultInfoCratesFromConvertImage.json"
               "metadata": {
                 "match.types": [
                     "dpxPlate"
@@ -118,8 +118,8 @@ class PythonLoader(Loader):
 
         contextVars = dict(list(contextVars.items()) + list(self.__parseVars(contents).items()))
 
-        # parsing inline crawlers
-        self.__parseInlineCrawlers(contents)
+        # parsing inline infoCrates
+        self.__parseInlineInfoCrates(contents)
 
         # task holders checking
         if not isinstance(contents['tasks'], list):
@@ -332,36 +332,36 @@ class PythonLoader(Loader):
         return result
 
     @classmethod
-    def __parseInlineCrawlers(cls, contents):
+    def __parseInlineInfoCrates(cls, contents):
         """
-        Parse the custom inline crawlers defined in the contents.
+        Parse the custom inline infoCrates defined in the contents.
         """
-        if 'crawlers' in contents:
+        if 'infoCrates' in contents:
             # vars checking
-            if not isinstance(contents['crawlers'], dict):
+            if not isinstance(contents['infoCrates'], dict):
                 raise PythonLoaderContentError('Expecting a list of vars!')
 
-            for crawlerKey, varExtractorExpression in contents['crawlers'].items():
-                parts = crawlerKey.split('<')
-                BaseCrawler = Crawler
+            for infoCrateKey, varExtractorExpression in contents['infoCrates'].items():
+                parts = infoCrateKey.split('<')
+                BaseInfoCrate = InfoCrate
                 if len(parts) > 1:
-                    BaseCrawler = Crawler.registeredType(parts[1].strip())
+                    BaseInfoCrate = InfoCrate.registeredType(parts[1].strip())
 
-                Crawler.register(
+                InfoCrate.register(
                     parts[0].strip(),
-                    cls.__customInlineCrawler(varExtractorExpression, BaseCrawler)
+                    cls.__customInlineInfoCrate(varExtractorExpression, BaseInfoCrate)
                 )
 
     @classmethod
-    def __customInlineCrawler(cls, varExtractionExpression, BaseCrawler):
+    def __customInlineInfoCrate(cls, varExtractionExpression, BaseInfoCrate):
         """
-        Return a custom crawler class.
+        Return a custom infoCrate class.
         """
-        class _CustomCrawler(BaseCrawler):
+        class _CustomInfoCrate(BaseInfoCrate):
             namePattern = varExtractionExpression
 
             def __init__(self, *args, **kwargs):
-                super(_CustomCrawler, self).__init__(*args, **kwargs)
+                super(_CustomInfoCrate, self).__init__(*args, **kwargs)
 
                 # assigning variables
                 self.assignVars(
@@ -372,11 +372,11 @@ class PythonLoader(Loader):
                 )
 
             @classmethod
-            def test(cls, data, parentCrawler=None):
+            def test(cls, data, parentInfoCrate=None):
                 # perform the tests for the base classes
-                if super(_CustomCrawler, cls).test(data, parentCrawler):
+                if super(_CustomInfoCrate, cls).test(data, parentInfoCrate):
                     return VarExtractor(data.baseName(), cls.namePattern).match()
 
                 return False
 
-        return _CustomCrawler
+        return _CustomInfoCrate

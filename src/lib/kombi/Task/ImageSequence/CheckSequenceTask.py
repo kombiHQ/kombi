@@ -1,8 +1,8 @@
 import os
 from fnmatch import fnmatch
 from ...Task import Task, TaskError
-from ...Crawler import Crawler
-from ...Crawler.Fs.Image.OiioCrawler import OiioCrawler
+from ...InfoCrate import InfoCrate
+from ...InfoCrate.Fs.Image.OiioInfoCrate import OiioInfoCrate
 
 class CheckSequenceTaskError(TaskError):
     """Base check sequence task exception."""
@@ -24,7 +24,7 @@ class CheckSequenceTaskRequiredMetadataError(CheckSequenceTaskError):
 
 class CheckSequenceTask(Task):
     """
-    Implements a task that verifies for common issues in image sequence crawlers.
+    Implements a task that verifies for common issues in image sequence infoCrates.
     """
 
     __missingFrame = True
@@ -64,72 +64,72 @@ class CheckSequenceTask(Task):
         """
         import OpenImageIO as oiio
 
-        for crawlerGroup in Crawler.group(self.crawlers()):
-            # sorting crawlers by frame
-            crawlerGroup.sort(key=lambda x: x.var('frame'))
+        for infoCrateGroup in InfoCrate.group(self.infoCrates()):
+            # sorting infoCrates by frame
+            infoCrateGroup.sort(key=lambda x: x.var('frame'))
 
             previousFrame = None
-            previousCrawler = None
+            previousInfoCrate = None
 
             # total frames check
             sequenceFullPath = os.path.join(
-                os.path.dirname(crawlerGroup[0].var('fullPath')),
-                crawlerGroup[0].tag('group')
+                os.path.dirname(infoCrateGroup[0].var('fullPath')),
+                infoCrateGroup[0].tag('group')
             ).replace("\\", '/')
 
             # sequence total frames check
-            if self.option("totalFrames") != -1 and len(crawlerGroup) != self.option("totalFrames"):
+            if self.option("totalFrames") != -1 and len(infoCrateGroup) != self.option("totalFrames"):
                 raise CheckSequenceTaskTotalFramesError(
                     "Sequence does not match the total number of frames. It requires '{}' and contains '{}':\n    {}".format(
                         self.option("totalFrames"),
-                        len(crawlerGroup),
+                        len(infoCrateGroup),
                         sequenceFullPath
                     )
                 )
 
             # sequence minimum frames check
-            if len(crawlerGroup) < self.option("minimumFrames"):
+            if len(infoCrateGroup) < self.option("minimumFrames"):
                 raise CheckSequenceTaskMinimumFileSizeError(
                     "Sequence does not match the minimum number of frames. It requires as miminum '{}' and contains '{}':\n    {}".format(
                         self.option("minimumFrames"),
-                        len(crawlerGroup),
+                        len(infoCrateGroup),
                         sequenceFullPath
                     )
                 )
 
-            for index, crawler in enumerate(crawlerGroup):
+            for index, infoCrate in enumerate(infoCrateGroup):
                 # missing frame check
                 if self.option("missingFrame"):
-                    if previousFrame is None or crawler.var("frame") - previousFrame == 1:
-                        previousFrame = crawler.var("frame")
-                        previousCrawler = crawler
+                    if previousFrame is None or infoCrate.var("frame") - previousFrame == 1:
+                        previousFrame = infoCrate.var("frame")
+                        previousInfoCrate = infoCrate
                     else:
                         raise CheckSequenceTaskMissingFrameError(
                             "Found missing frame(s) between:\n    {}\n    ???\n    {}".format(
-                                previousCrawler.var('fullPath'),
-                                crawler.var('fullPath')
+                                previousInfoCrate.var('fullPath'),
+                                infoCrate.var('fullPath')
                             )
                         )
 
                 # minimum file size check
-                if self.option("minimumFileSize") != -1 and crawler.pathHolder().size() < self.option("minimumFileSize"):
+                if self.option("minimumFileSize") != -1 and infoCrate.pathHolder().size() < self.option("minimumFileSize"):
                     raise CheckSequenceTaskMinimumFileSizeError(
                         "Frame file size does not match the minimum required size (perhaps corruped):\n    {}".format(
-                            crawler.var('fullPath')
+                            infoCrate.var('fullPath')
                         )
                     )
 
                 # minimum file size check
-                if self.option("minimumFileSize") != -1 and crawler.pathHolder().size() < self.option("minimumFileSize"):
+                if self.option("minimumFileSize") != -1 and infoCrate.pathHolder().size() < self.option("minimumFileSize"):
                     raise CheckSequenceTaskMinimumFileSizeError(
                         "Frame file size does not match the minimum required size (perhaps corruped):\n    {}".format(
-                            crawler.var('fullPath')
+                            infoCrate.var('fullPath')
                         )
                     )
 
                 # required metadata check
                 for requiredMetadata in self.option("requiredMetadata"):
-                    inputSpec = oiio.ImageInput.open(OiioCrawler.supportedString(crawler.var("fullPath"))).spec()
+                    inputSpec = oiio.ImageInput.open(OiioInfoCrate.supportedString(infoCrate.var("fullPath"))).spec()
 
                     found = False
                     for attribute in inputSpec.extra_attribs:
@@ -140,11 +140,11 @@ class CheckSequenceTask(Task):
                         raise CheckSequenceTaskRequiredMetadataError(
                             "Could not find the required metadata name '{}' in the frame:\n    {}".format(
                                 attribute,
-                                crawler.var('fullPath')
+                                infoCrate.var('fullPath')
                             )
                         )
 
-        return self.crawlers()
+        return self.infoCrates()
 
 
 # registering task

@@ -1,7 +1,7 @@
 import os
 import uuid
 import shutil
-from ...Crawler.Fs.FsCrawler import FsCrawler
+from ...InfoCrate.Fs.FsInfoCrate import FsInfoCrate
 from ..Task import Task
 
 class ByteCopyTask(Task):
@@ -23,11 +23,11 @@ class ByteCopyTask(Task):
         Implement the execution of the task.
         """
         result = []
-        crawlers = self.crawlers()
+        infoCrates = self.infoCrates()
 
-        for crawler in crawlers:
-            sourceFilePath = crawler.var('filePath')
-            targetFilePath = self.target(crawler)
+        for infoCrate in infoCrates:
+            sourceFilePath = infoCrate.var('filePath')
+            targetFilePath = self.target(infoCrate)
 
             # trying to create the directory automatically in case it does not exist
             try:
@@ -62,9 +62,9 @@ class ByteCopyTask(Task):
                 if temporaryTargetName and os.path.exists(temporaryTargetName):
                     os.remove(temporaryTargetName)
 
-            # creating a new crawler
+            # creating a new infoCrate
             result.append(
-                FsCrawler.createFromPath(targetFilePath)
+                FsInfoCrate.createFromPath(targetFilePath)
             )
 
         return result

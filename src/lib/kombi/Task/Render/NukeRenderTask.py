@@ -2,9 +2,9 @@ import os
 import sys
 from io import StringIO
 from ..External.NukeTask import NukeTask
-from ...Crawler import Crawler
-from ...Crawler.Fs import FsCrawler
-from ...Crawler.Fs.Image import ImageCrawler
+from ...InfoCrate import InfoCrate
+from ...InfoCrate.Fs import FsInfoCrate
+from ...InfoCrate.Fs.Image import ImageInfoCrate
 
 class NukeRenderTask(NukeTask):
     """
@@ -27,9 +27,9 @@ class NukeRenderTask(NukeTask):
         self.setOption("script", "")
 
     @classmethod
-    def toRenderCrawlers(cls, writeNode, startFrame=None, endFrame=None):
+    def toRenderInfoCrates(cls, writeNode, startFrame=None, endFrame=None):
         """
-        Return hashmap crawlers containing the write node information used by this task.
+        Return hashmap infoCrates containing the write node information used by this task.
 
         TODO: we want to have a specific application types to describe this information
         """
@@ -40,12 +40,12 @@ class NukeRenderTask(NukeTask):
 
         result = []
         currentFile = writeNode['file'].evaluate()
-        renderOutputCrawler = FsCrawler.createFromPath(currentFile)
-        if isinstance(renderOutputCrawler, ImageCrawler) and renderOutputCrawler.isSequence():
+        renderOutputInfoCrate = FsInfoCrate.createFromPath(currentFile)
+        if isinstance(renderOutputInfoCrate, ImageInfoCrate) and renderOutputInfoCrate.isSequence():
             for i in range(startFrame, endFrame + 1):
-                result.append(cls.__renderHashmapCrawler(writeNode, i, i))
+                result.append(cls.__renderHashmapInfoCrate(writeNode, i, i))
         else:
-            result.append(cls.__renderHashmapCrawler(writeNode, startFrame, endFrame))
+            result.append(cls.__renderHashmapInfoCrate(writeNode, startFrame, endFrame))
 
         return result
 
@@ -68,25 +68,25 @@ class NukeRenderTask(NukeTask):
         """
         import nuke
 
-        crawlers = self.crawlers()
+        infoCrates = self.infoCrates()
         self.__totalFrames = 0
         self.__renderedFrames = 0
         nuke.addAfterFrameRender(self.__onAfterFrameRender)
 
         # loading nuke script
-        script = self.templateOption('script', crawlers[0])
+        script = self.templateOption('script', infoCrates[0])
         if os.path.exists(script):
             nuke.scriptOpen(script)
 
         createdFiles = []
-        for crawlerGroup in Crawler.group(crawlers):
-            startFrame = crawlerGroup[0]['startFrame']
-            endFrame = crawlerGroup[-1]['endFrame']
+        for infoCrateGroup in InfoCrate.group(infoCrates):
+            startFrame = infoCrateGroup[0]['startFrame']
+            endFrame = infoCrateGroup[-1]['endFrame']
             self.__totalFrames += (endFrame - startFrame) + 1
-            writeNode = nuke.toNode(crawlerGroup[0]['name'])
+            writeNode = nuke.toNode(infoCrateGroup[0]['name'])
 
             if not writeNode:
-                raise Exception('Could not find write node: {}'.format(crawlerGroup[0]['name']))
+                raise Exception('Could not find write node: {}'.format(infoCrateGroup[0]['name']))
 
             # creating render directory if necessary
             currentFile = writeNode['file'].evaluate()
@@ -98,16 +98,16 @@ class NukeRenderTask(NukeTask):
             # executing render
             nuke.execute(writeNode, startFrame, endFrame)
 
-            renderOutputCrawler = FsCrawler.createFromPath(currentFile)
-            if isinstance(renderOutputCrawler, ImageCrawler) and renderOutputCrawler.isSequence():
-                currentFileSprintf = renderOutputCrawler.tag('groupSprintf')
+            renderOutputInfoCrate = FsInfoCrate.createFromPath(currentFile)
+            if isinstance(renderOutputInfoCrate, ImageInfoCrate) and renderOutputInfoCrate.isSequence():
+                currentFileSprintf = renderOutputInfoCrate.tag('groupSprintf')
 
                 for frame in range(startFrame, endFrame + 1):
                     bufferString = StringIO()
                     bufferString.write(currentFileSprintf % frame)
                     createdFiles.append(
                         os.path.join(
-                            os.path.dirname(renderOutputCrawler.var('fullPath')),
+                            os.path.dirname(renderOutputInfoCrate.var('fullPath')),
                             bufferString.getvalue()
                         )
                     )
@@ -116,14 +116,14 @@ class NukeRenderTask(NukeTask):
             else:
                 createdFiles.append(currentFile)
 
-        return list(map(FsCrawler.createFromPath, createdFiles))
+        return list(map(FsInfoCrate.createFromPath, createdFiles))
 
     @classmethod
-    def __renderHashmapCrawler(cls, writeNode, startFrame, endFrame):
+    def __renderHashmapInfoCrate(cls, writeNode, startFrame, endFrame):
         """
-        Return a hashmap crawler for the input write node start and end frame.
+        Return a hashmap infoCrate for the input write node start and end frame.
         """
-        hashmapCrawler = Crawler.create(
+        hashmapInfoCrate = InfoCrate.create(
             {
                 'name': writeNode.fullName(),
                 'type': 'sequence',
@@ -131,9 +131,9 @@ class NukeRenderTask(NukeTask):
                 'endFrame': endFrame,
             }
         )
-        hashmapCrawler.setVar('dataLayout', 'nukeRender')
-        hashmapCrawler.setTag('group', writeNode.fullName())
-        hashmapCrawler.setVar(
+        hashmapInfoCrate.setVar('dataLayout', 'nukeRender')
+        hashmapInfoCrate.setTag('group', writeNode.fullName())
+        hashmapInfoCrate.setVar(
             'fullPath',
             '{} {}-{}'.format(
                 writeNode.fullName(),
@@ -142,7 +142,7 @@ class NukeRenderTask(NukeTask):
             )
         )
 
-        return hashmapCrawler
+        return hashmapInfoCrate
 
 
 # registering task

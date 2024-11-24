@@ -2,7 +2,7 @@ import os
 import unittest
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.Crawler.Fs import FsCrawler
+from kombi.InfoCrate.Fs import FsInfoCrate
 
 class ConvertTextureTaskTest(BaseTestCase):
     """
@@ -16,10 +16,10 @@ class ConvertTextureTaskTest(BaseTestCase):
         """
         Test that the ConvertTexture task works properly.
         """
-        crawler = FsCrawler.createFromPath(self.__sourcePath)
+        infoCrate = FsInfoCrate.createFromPath(self.__sourcePath)
         convertTask = Task.create('convertTexture')
         convertTask.setOption('maketxArgs', '-u --unpremult --oiio')
-        convertTask.add(crawler, self.__targetPath)
+        convertTask.add(infoCrate, self.__targetPath)
         result = convertTask.output()
 
         self.assertEqual(len(result), 1)

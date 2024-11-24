@@ -1,7 +1,7 @@
 import os
 import sys
 import subprocess
-from ...Crawler import Crawler
+from ...InfoCrate import InfoCrate
 from ..External.ExternalTask import ExternalTask
 
 
@@ -26,9 +26,9 @@ class BlenderRenderTask(ExternalTask):
         self.setMetadata('dispatch.renderFarm.pool', 'blender')
 
     @classmethod
-    def toRenderCrawlers(cls, blenderScenePath=None, startFrame=None, endFrame=None):
+    def toRenderInfoCrates(cls, blenderScenePath=None, startFrame=None, endFrame=None):
         """
-        Return hashmap crawlers containing the write node information used by this task.
+        Return hashmap infoCrates containing the write node information used by this task.
         """
         import bpy
 
@@ -40,7 +40,7 @@ class BlenderRenderTask(ExternalTask):
         result = []
         for i in range(startFrame, endFrame + 1):
             result.append(
-                cls.__renderHashmapCrawler(
+                cls.__renderHashmapInfoCrate(
                     blenderScenePath,
                     i,
                     i
@@ -53,14 +53,14 @@ class BlenderRenderTask(ExternalTask):
         """
         Perform the task.
         """
-        crawlers = self.crawlers()
+        infoCrates = self.infoCrates()
 
-        for crawlerGroup in Crawler.group(crawlers):
-            startFrame = crawlerGroup[0]['startFrame']
-            endFrame = crawlerGroup[-1]['endFrame']
+        for infoCrateGroup in InfoCrate.group(infoCrates):
+            startFrame = infoCrateGroup[0]['startFrame']
+            endFrame = infoCrateGroup[-1]['endFrame']
 
             renderCommand = 'blender -b "{}" -s {} -e {} -F OPEN_EXR_MULTILAYER -a --python {}'.format(
-                crawlerGroup[0].var('fullPathScene'),
+                infoCrateGroup[0].var('fullPathScene'),
                 int(startFrame),
                 int(endFrame),
                 os.path.realpath(__file__)
@@ -91,29 +91,29 @@ class BlenderRenderTask(ExternalTask):
                     )
                 )
 
-        return self.crawlers()
+        return self.infoCrates()
 
     @classmethod
-    def __renderHashmapCrawler(cls, blenderScenePath, startFrame, endFrame):
+    def __renderHashmapInfoCrate(cls, blenderScenePath, startFrame, endFrame):
         """
-        Return a hashmap crawler for the input write node start and end frame.
+        Return a hashmap infoCrate for the input write node start and end frame.
         """
         sceneBaseName = os.path.basename(blenderScenePath)
-        hashmapCrawler = Crawler.create(
+        hashmapInfoCrate = InfoCrate.create(
             {
                 'name': sceneBaseName,
                 'startFrame': startFrame,
                 'endFrame': endFrame,
             }
         )
-        hashmapCrawler.setVar('dataLayout', 'blenderRender')
-        hashmapCrawler.setVar('baseName', sceneBaseName)
-        hashmapCrawler.setVar('fullPathScene', blenderScenePath)
-        hashmapCrawler.setTag('group', sceneBaseName)
-        hashmapCrawler.setVar('startFrame', str(startFrame).zfill(10))
-        hashmapCrawler.setVar('endFrame', str(endFrame).zfill(10))
+        hashmapInfoCrate.setVar('dataLayout', 'blenderRender')
+        hashmapInfoCrate.setVar('baseName', sceneBaseName)
+        hashmapInfoCrate.setVar('fullPathScene', blenderScenePath)
+        hashmapInfoCrate.setTag('group', sceneBaseName)
+        hashmapInfoCrate.setVar('startFrame', str(startFrame).zfill(10))
+        hashmapInfoCrate.setVar('endFrame', str(endFrame).zfill(10))
 
-        hashmapCrawler.setVar(
+        hashmapInfoCrate.setVar(
             'fullPath',
             '{} {}-{}'.format(
                 blenderScenePath,
@@ -122,7 +122,7 @@ class BlenderRenderTask(ExternalTask):
             )
         )
 
-        return hashmapCrawler
+        return hashmapInfoCrate
 
 
 # registering task

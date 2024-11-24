@@ -1,8 +1,8 @@
 import csv
 import os
-from ...Crawler.Fs import FsCrawler
-from ...Crawler.Fs.Image import ImageCrawler
-from ...Crawler.Fs.Video import VideoCrawler
+from ...InfoCrate.Fs import FsInfoCrate
+from ...InfoCrate.Fs.Image import ImageInfoCrate
+from ...InfoCrate.Fs.Video import VideoInfoCrate
 from ..Task import Task
 
 class SubmissionSheetTask(Task):
@@ -24,23 +24,23 @@ class SubmissionSheetTask(Task):
         """
         Perform the task.
         """
-        jsonCrawler = self.crawlers()[0]
-        self.__getDeliveryData(jsonCrawler)
+        jsonInfoCrate = self.infoCrates()[0]
+        self.__getDeliveryData(jsonInfoCrate)
         if self.option('mergeMattes'):
             self.__findMattes()
 
         self.__columnLabels = list(map(lambda x: x[0], self.option("_columns")))
 
-        internalDeliveryFolder = os.path.dirname(jsonCrawler.var('filePath'))
-        self.__clientDeliveryPath = os.path.join(internalDeliveryFolder, jsonCrawler.var('name'))
-        crawler = FsCrawler.createFromPath(self.__clientDeliveryPath)
+        internalDeliveryFolder = os.path.dirname(jsonInfoCrate.var('filePath'))
+        self.__clientDeliveryPath = os.path.join(internalDeliveryFolder, jsonInfoCrate.var('name'))
+        infoCrate = FsInfoCrate.createFromPath(self.__clientDeliveryPath)
         # Add rows for all images found first, so the resolution and other info is added in priority
-        for crawler in crawler.glob(filterTypes=[ImageCrawler]):
-            self.__setRow(crawler)
+        for infoCrate in infoCrate.glob(filterTypes=[ImageInfoCrate]):
+            self.__setRow(infoCrate)
         # Add rows for all videos next, so if images were already written, it'll just update the extensions, otherwise
         # it'll add the full video info
-        for crawler in crawler.glob(filterTypes=[VideoCrawler]):
-            self.__setRow(crawler)
+        for infoCrate in infoCrate.glob(filterTypes=[VideoInfoCrate]):
+            self.__setRow(infoCrate)
 
         self.__writeSpreadsheet()
         if self.option("includeLogFile"):
@@ -48,11 +48,11 @@ class SubmissionSheetTask(Task):
 
         return []
 
-    def __getDeliveryData(self, jsonCrawler):
+    def __getDeliveryData(self, jsonInfoCrate):
         """
         Get the delivery data stored in a json file in the parent folder of the client delivery folder.
         """
-        self.__deliveryData = jsonCrawler.contents()
+        self.__deliveryData = jsonInfoCrate.contents()
 
     def __findMattes(self):
         """
@@ -73,11 +73,11 @@ class SubmissionSheetTask(Task):
         for name in toDelete:
             del self.__deliveryData[name]
 
-    def __setRow(self, crawler):
+    def __setRow(self, infoCrate):
         """
-        Get the data expected to be in a spreadsheet row for the given file crawler.
+        Get the data expected to be in a spreadsheet row for the given file infoCrate.
         """
-        name = crawler.var("name")
+        name = infoCrate.var("name")
 
         isProxy = (name.endswith("_h264") or name.endswith("_prores"))
         if isProxy and not self.option('includeProxies'):
@@ -88,11 +88,11 @@ class SubmissionSheetTask(Task):
             return
 
         if shortName not in self.__rows:
-            self.__addRow(shortName, crawler)
+            self.__addRow(shortName, infoCrate)
         else:
-            self.__updateRow(shortName, crawler)
+            self.__updateRow(shortName, infoCrate)
 
-    def __addRow(self, name, crawler):
+    def __addRow(self, name, infoCrate):
 
         self.__rows[name] = {}
         for label, fieldName in self.option("_columns"):
@@ -105,33 +105,33 @@ class SubmissionSheetTask(Task):
                 self.__rows[name][label] = self.templateOption('clientStatus', extraVars=extraVars)
 
             else:
-                self.__rows[name][label] = self.__getFieldValue(name, fieldName, crawler)
+                self.__rows[name][label] = self.__getFieldValue(name, fieldName, infoCrate)
 
-    def __updateRow(self, name, crawler):
+    def __updateRow(self, name, infoCrate):
 
         for label, fieldName in self.option("_columns"):
             if fieldName == "clientFileType":
                 currentExt = self.__rows[name].get(label)
-                extName = self.__getFieldValue(name, fieldName, crawler)
+                extName = self.__getFieldValue(name, fieldName, infoCrate)
                 if extName not in currentExt.split(","):
                     self.__rows[name][label] = "{},{}".format(currentExt, extName)
 
-    def __getFieldValue(self, name, fieldName, crawler):
+    def __getFieldValue(self, name, fieldName, infoCrate):
         # Look for a value in the delivery data first
         if fieldName in self.__deliveryData[name]:
             return self.__deliveryData[name].get(fieldName)
         # Next, it could be a task option
         elif fieldName in self.optionNames():
-            return self.templateOption(fieldName, crawler=crawler)
-        # Finally, the value would be in the crawler
-        elif fieldName in crawler.varNames():
-            return crawler.var(fieldName)
+            return self.templateOption(fieldName, infoCrate=infoCrate)
+        # Finally, the value would be in the infoCrate
+        elif fieldName in infoCrate.varNames():
+            return infoCrate.var(fieldName)
 
     def __writeSpreadsheet(self):
         """
         Write a cvs file at the target path.
         """
-        targetPath = os.path.join(self.__clientDeliveryPath, "{}.csv".format(self.crawlers()[0].var('name')))
+        targetPath = os.path.join(self.__clientDeliveryPath, "{}.csv".format(self.infoCrates()[0].var('name')))
         with open(targetPath, 'w') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=self.__columnLabels)
             writer.writeheader()

@@ -31,17 +31,17 @@ class ImageThumbnailTask(Task):
         height = self.option('height')
 
         result = []
-        for crawler in self.crawlers():
-            targetFilePath = self.target(crawler)
+        for infoCrate in self.infoCrates():
+            targetFilePath = self.target(infoCrate)
 
             # creating a task to resize the thumbnail
             resizeImageTask = Task.create('resizeImage')
             resizeImageTask.setOption('convertToRGBA', self.option('convertToRGBA'))
-            resizeImageTask.add(crawler, targetFilePath)
+            resizeImageTask.add(infoCrate, targetFilePath)
 
             # Calculate resize ratios for resizing
-            currentWidth = crawler.var('width')
-            currentHeigth = crawler.var('height')
+            currentWidth = infoCrate.var('width')
+            currentHeigth = infoCrate.var('height')
 
             ratioWidth = width / float(currentWidth)
             ratioHeight = height / float(currentHeigth)

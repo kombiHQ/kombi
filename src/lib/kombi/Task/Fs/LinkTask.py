@@ -32,8 +32,8 @@ class LinkTask(Task):
         """
         assert self.option('type') in ('hardlink', 'symlink'), "Invalid link type {}".format(self.option())
 
-        for crawler in self.crawlers():
-            filePath = self.target(crawler)
+        for infoCrate in self.infoCrates():
+            filePath = self.target(infoCrate)
 
             # trying to create the directory automatically in case it does not exist
             try:
@@ -42,7 +42,7 @@ class LinkTask(Task):
                 pass
 
             # linking the file to the new target
-            sourceFilePath = crawler.var('filePath')
+            sourceFilePath = infoCrate.var('filePath')
             targetFilePath = filePath
 
             # Check if the target path already exists, if it is file remove it else raise an exception

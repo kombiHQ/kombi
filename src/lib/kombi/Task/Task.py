@@ -1,8 +1,8 @@
 import json
 from collections import OrderedDict
 from ..Resource import Resource
-from ..Crawler.Fs import FsCrawler
-from ..Crawler import Crawler
+from ..InfoCrate.Fs import FsInfoCrate
+from ..InfoCrate import InfoCrate
 from ..Template import Template
 from ..TaskReporter import TaskReporter
 
@@ -15,8 +15,8 @@ class TaskTypeNotFoundError(TaskError):
 class TaskValidationError(TaskError):
     """Task validation error."""
 
-class TaskInvalidCrawlerError(TaskError):
-    """Task Invalid crawler error."""
+class TaskInvalidInfoCrateError(TaskError):
+    """Task Invalid infoCrate error."""
 
 class TaskInvalidOptionError(TaskError):
     """Task invalid option error."""
@@ -40,7 +40,7 @@ class Task(object):
         """
         Create a task object.
         """
-        self.__crawlers = OrderedDict()
+        self.__infoCrates = OrderedDict()
         self.__metadata = {}
         self.__taskType = taskType
         self.__options = OrderedDict()
@@ -143,7 +143,7 @@ class Task(object):
 
         return self.__options[name]
 
-    def templateOption(self, name, crawler=None, extraVars={}):
+    def templateOption(self, name, infoCrate=None, extraVars={}):
         """
         Return the resolved value of an option.
         """
@@ -153,17 +153,17 @@ class Task(object):
         if isinstance(optionValue, dict):
             result = {}
             for key, value in optionValue.items():
-                result[key] = self.__resolveTemplateValue(value, crawler, extraVars)
+                result[key] = self.__resolveTemplateValue(value, infoCrate, extraVars)
             return result
 
         # 2d array
         elif isinstance(optionValue, (list, tuple)):
             result = []
             for value in optionValue:
-                result.append(self.__resolveTemplateValue(value, crawler, extraVars))
+                result.append(self.__resolveTemplateValue(value, infoCrate, extraVars))
             return result
 
-        return self.__resolveTemplateValue(optionValue, crawler, extraVars)
+        return self.__resolveTemplateValue(optionValue, infoCrate, extraVars)
 
     def setOption(self, name, value):
         """
@@ -186,50 +186,50 @@ class Task(object):
         """
         return list(self.__options.keys())
 
-    def target(self, crawler):
+    def target(self, infoCrate):
         """
-        Return the target file path for crawler.
+        Return the target file path for infoCrate.
         """
-        if crawler not in self.__crawlers:
-            raise TaskInvalidCrawlerError(
-                'Crawler is not part of the task!'
+        if infoCrate not in self.__infoCrates:
+            raise TaskInvalidInfoCrateError(
+                'InfoCrate is not part of the task!'
             )
 
-        return self.__crawlers[crawler]
+        return self.__infoCrates[infoCrate]
 
-    def crawlers(self):
+    def infoCrates(self):
         """
-        Return a list of crawlers associated with the task.
+        Return a list of infoCrates associated with the task.
         """
-        return list(self.__crawlers.keys())
+        return list(self.__infoCrates.keys())
 
-    def add(self, crawler, targetFilePath=''):
+    def add(self, infoCrate, targetFilePath=''):
         """
-        Add a crawler to the task.
+        Add a infoCrate to the task.
 
-        A target file path can be associated with the crawler. It should be
+        A target file path can be associated with the infoCrate. It should be
         used by tasks that generate files. This information may be provided
         by tasks executed through a task holder where the template in the
         task holder is resolved and passed as target when adding
-        the crawler to the task.
+        the infoCrate to the task.
         """
-        assert isinstance(crawler, Crawler), \
-            "Invalid Crawler!"
+        assert isinstance(infoCrate, InfoCrate), \
+            "Invalid InfoCrate!"
 
         assert isinstance(targetFilePath, str), \
             "targetFilePath needs to be defined as string"
 
-        self.__crawlers[crawler] = targetFilePath
+        self.__infoCrates[infoCrate] = targetFilePath
 
     def clear(self):
         """
-        Remove all crawlers associated with the task.
+        Remove all infoCrates associated with the task.
         """
-        self.__crawlers.clear()
+        self.__infoCrates.clear()
 
     def output(self, taskReporter=None):
         """
-        Perform and result a list of crawlers created by task.
+        Perform and result a list of infoCrates created by task.
         """
         reporterName = self.hasMetadata('output.reporter') and self.metadata('output.reporter')
         reporter = None
@@ -237,24 +237,24 @@ class Task(object):
             reporter = TaskReporter.create(reporterName, self.type())
 
         contextVars = {}
-        for crawler in self.crawlers():
-            for ctxVarName in crawler.contextVarNames():
+        for infoCrate in self.infoCrates():
+            for ctxVarName in infoCrate.contextVarNames():
                 if ctxVarName not in contextVars:
-                    contextVars[ctxVarName] = crawler.var(ctxVarName)
+                    contextVars[ctxVarName] = infoCrate.var(ctxVarName)
 
         # validating input
-        self.validate(self.crawlers())
+        self.validate(self.infoCrates())
 
         # performing task
-        outputCrawlers = self._perform()
+        outputInfoCrates = self._perform()
 
-        # Copy all context variables to output crawlers
-        for outputCrawler in outputCrawlers:
+        # Copy all context variables to output infoCrates
+        for outputInfoCrate in outputInfoCrates:
             if reporter:
-                reporter.addCrawler(outputCrawler)
+                reporter.addInfoCrate(outputInfoCrate)
 
-            for ctxVarName in filter(lambda x: x not in outputCrawler.varNames(), contextVars):
-                outputCrawler.setVar(
+            for ctxVarName in filter(lambda x: x not in outputInfoCrate.varNames(), contextVars):
+                outputInfoCrate.setVar(
                     ctxVarName,
                     contextVars[ctxVarName],
                     True
@@ -263,7 +263,7 @@ class Task(object):
         if reporter:
             reporter.display()
 
-        return outputCrawlers
+        return outputInfoCrates
 
     def clone(self):
         """
@@ -279,9 +279,9 @@ class Task(object):
         for metadataName in self.metadataNames():
             clone.setMetadata(metadataName, self.metadata(metadataName))
 
-        # copying crawlers
-        for crawler in self.crawlers():
-            clone.add(crawler, self.target(crawler))
+        # copying infoCrates
+        for infoCrate in self.infoCrates():
+            clone.add(infoCrate, self.target(infoCrate))
 
         return clone
 
@@ -301,12 +301,12 @@ class Task(object):
         for optionName in self.optionNames():
             options[optionName] = self.option(optionName)
 
-        # crawler data
-        crawlerData = []
-        for crawler in self.crawlers():
-            crawlerData.append({
-                'filePath': self.target(crawler),
-                'serializedCrawler': crawler.toJson()
+        # infoCrate data
+        infoCrateData = []
+        for infoCrate in self.infoCrates():
+            infoCrateData.append({
+                'filePath': self.target(infoCrate),
+                'serializedInfoCrate': infoCrate.toJson()
             })
 
         # custom resources
@@ -319,8 +319,8 @@ class Task(object):
         if len(options):
             contents['options'] = options
 
-        if len(crawlerData):
-            contents['crawlerData'] = crawlerData
+        if len(infoCrateData):
+            contents['infoCrateData'] = infoCrateData
 
         if len(loadedResources):
             contents['resources'] = loadedResources
@@ -371,7 +371,7 @@ class Task(object):
         taskType = contents["type"]
         taskOptions = contents.get("options", {})
         taskMetadata = contents.get("metadata", {})
-        crawlerData = contents.get("crawlerData", [])
+        infoCrateData = contents.get("infoCrateData", [])
         loadResources = contents.get("resources", [])
 
         # loading resources
@@ -391,32 +391,32 @@ class Task(object):
         for metadataName, metadataValue in taskMetadata.items():
             task.setMetadata(metadataName, metadataValue)
 
-        # adding crawlers
-        for crawlerDataItem in crawlerData:
-            filePath = crawlerDataItem['filePath']
-            crawler = Crawler.createFromJson(
-                crawlerDataItem['serializedCrawler']
+        # adding infoCrates
+        for infoCrateDataItem in infoCrateData:
+            filePath = infoCrateDataItem['filePath']
+            infoCrate = InfoCrate.createFromJson(
+                infoCrateDataItem['serializedInfoCrate']
             )
-            task.add(crawler, filePath)
+            task.add(infoCrate, filePath)
 
         return task
 
     def _perform(self):
         """
-        For re-implementation: should implement the computation of the task and return a list of crawlers as output.
+        For re-implementation: should implement the computation of the task and return a list of infoCrates as output.
 
-        The default implementation return a list of crawlers based on the target filePath (The filePath is provided by
-        by the template). In case none file path has not been specified then returns an empty list of crawlers.
+        The default implementation return a list of infoCrates based on the target filePath (The filePath is provided by
+        by the template). In case none file path has not been specified then returns an empty list of infoCrates.
         """
         filePaths = []
-        for crawler in self.crawlers():
-            filePath = self.target(crawler)
+        for infoCrate in self.infoCrates():
+            filePath = self.target(infoCrate)
             if filePath and filePath not in filePaths:
                 filePaths.append(filePath)
 
-        return list(map(FsCrawler.createFromPath, filePaths))
+        return list(map(FsInfoCrate.createFromPath, filePaths))
 
-    def validate(self, crawlers=None):
+    def validate(self, infoCrates=None):
         """
         For re-implementation: should implement a check for the task.
 
@@ -427,13 +427,13 @@ class Task(object):
         with the message about the failure. Otherwise, in case of no failure then no result is needed.
         """
 
-    def __resolveTemplateValue(self, value, crawler, extraVars):
+    def __resolveTemplateValue(self, value, infoCrate, extraVars):
         """
         Resolve the template value.
         """
         if not isinstance(value, str):
             return value
-        elif crawler is not None:
-            return Template(value).valueFromCrawler(crawler, extraVars)
+        elif infoCrate is not None:
+            return Template(value).valueFromInfoCrate(infoCrate, extraVars)
 
         return Template(value).value(extraVars)

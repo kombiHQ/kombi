@@ -1,0 +1,3 @@
+from .NukeRenderInfoCrateTest import NukeRenderInfoCrateTest
+from .ShotRenderInfoCrateTest import ShotRenderInfoCrateTest
+from .TurntableInfoCrateTest import TurntableInfoCrateTest

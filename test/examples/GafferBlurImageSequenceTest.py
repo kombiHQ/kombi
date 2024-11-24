@@ -3,8 +3,8 @@ import shutil
 import unittest
 from ..BaseTestCase import BaseTestCase
 from kombi.TaskHolder.Loader import Loader
-from kombi.Crawler import Crawler
-from kombi.Crawler.Fs.FsCrawler import FsCrawler
+from kombi.InfoCrate import InfoCrate
+from kombi.InfoCrate.Fs.FsInfoCrate import FsInfoCrate
 
 class GafferBlurImageSequenceTest(BaseTestCase):
     """Test for example gaffer blur image sequence."""
@@ -61,19 +61,19 @@ class GafferBlurImageSequenceTest(BaseTestCase):
         )
 
         # loading input data for the execution
-        crawlerGroups = Crawler.group(
-            FsCrawler.createFromPath(
+        infoCrateGroups = InfoCrate.group(
+            FsInfoCrate.createFromPath(
                 os.path.join(self.__exampleDirectory, 'imageSequence')
             ).globFromParent()
         )
 
-        resultCrawlers = []
-        for group in crawlerGroups:
-            if isinstance(group[0], Crawler.registeredType('png')):
-                resultCrawlers += taskHolder.run(group)
+        resultInfoCrates = []
+        for group in infoCrateGroups:
+            if isinstance(group[0], InfoCrate.registeredType('png')):
+                resultInfoCrates += taskHolder.run(group)
 
         targetFilePaths = list(sorted(filter(lambda x: len(x), map(lambda x: x.strip(), self.__generatedData.split('\n')))))
-        createdFilePaths = list(sorted(map(lambda x: x.var('fullPath')[len(self.__exampleTargetPrefixDirectory) + 1:].replace('\\', '/'), resultCrawlers)))
+        createdFilePaths = list(sorted(map(lambda x: x.var('fullPath')[len(self.__exampleTargetPrefixDirectory) + 1:].replace('\\', '/'), resultInfoCrates)))
 
         self.assertListEqual(targetFilePaths, createdFilePaths)
 

@@ -2,7 +2,7 @@ import os
 import json
 from ..Task import Task
 from ...Template import Template
-from ...Crawler.Fs.FsCrawler import FsCrawler
+from ...InfoCrate.Fs.FsInfoCrate import FsInfoCrate
 from .CreateVersionTask import CreateVersionTask
 
 class CreateIncrementalVersionTask(CreateVersionTask):
@@ -85,8 +85,8 @@ class CreateIncrementalVersionTask(CreateVersionTask):
                 'type',
                 'hardlink'
             )
-            sourceCrawler = FsCrawler.createFromPath(sourceFile)
-            linkTask.add(sourceCrawler, targetFile)
+            sourceInfoCrate = FsInfoCrate.createFromPath(sourceFile)
+            linkTask.add(sourceInfoCrate, targetFile)
             # running task
             linkTask.output()
 

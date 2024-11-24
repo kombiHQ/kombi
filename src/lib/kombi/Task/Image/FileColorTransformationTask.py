@@ -3,7 +3,7 @@ from array import array
 from .UpdateImageMetadataTask import UpdateImageMetadataTask
 from .OcioTask import OcioTask
 from ..Task import Task
-from ... import Crawler
+from ... import InfoCrate
 
 class FileColorTransformationTask(OcioTask):
     """
@@ -29,9 +29,9 @@ class FileColorTransformationTask(OcioTask):
         # open color io configuration
         config = self.ocioConfig()
 
-        for crawler in self.crawlers():
+        for infoCrate in self.infoCrates():
             # resolving the lut path
-            lut = self.templateOption('lut', crawler=crawler)
+            lut = self.templateOption('lut', infoCrate=infoCrate)
 
             # adding color space transform
             groupTransform = ocio.GroupTransform()
@@ -52,8 +52,8 @@ class FileColorTransformationTask(OcioTask):
 
             # source image
             sourceImage = oiio.ImageInput.open(
-                Crawler.Fs.Image.OiioCrawler.supportedString(
-                    crawler.var('filePath')
+                InfoCrate.Fs.Image.OiioInfoCrate.supportedString(
+                    infoCrate.var('filePath')
                 )
             )
             spec = sourceImage.spec()
@@ -68,8 +68,8 @@ class FileColorTransformationTask(OcioTask):
                 groupTransform
             ).applyRGB(pixels)
 
-            targetFilePath = Crawler.Fs.Image.OiioCrawler.supportedString(
-                self.target(crawler)
+            targetFilePath = InfoCrate.Fs.Image.OiioInfoCrate.supportedString(
+                self.target(infoCrate)
             )
 
             # trying to create the directory automatically in case it does not exist
@@ -83,7 +83,7 @@ class FileColorTransformationTask(OcioTask):
             # kombi metadata information
             UpdateImageMetadataTask.updateMetadata(
                 spec,
-                crawler,
+                infoCrate,
                 metadata
             )
 

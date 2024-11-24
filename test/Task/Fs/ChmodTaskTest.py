@@ -3,7 +3,7 @@ import os
 import sys
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.Crawler.Fs import FsCrawler
+from kombi.InfoCrate.Fs import FsInfoCrate
 
 class ChmodTaskTest(BaseTestCase):
     """Test Chmod task."""
@@ -16,27 +16,27 @@ class ChmodTaskTest(BaseTestCase):
         """
         Test that the chmod task works properly on a file.
         """
-        crawler = FsCrawler.createFromPath(self.__path)
+        infoCrate = FsInfoCrate.createFromPath(self.__path)
         chmodTask = Task.create('chmod')
-        chmodTask.add(crawler, self.__path)
+        chmodTask.add(infoCrate, self.__path)
         for permission in ["644", "444", "744", "664"]:
             chmodTask.setOption('directoryMode', permission)
             chmodTask.setOption('fileMode', permission)
             result = chmodTask.output()
             self.assertEqual(len(result), 1)
-            crawler = result[0]
-            self.assertEqual(self.__getPermission(crawler.var('filePath')), permission)
+            infoCrate = result[0]
+            self.assertEqual(self.__getPermission(infoCrate.var('filePath')), permission)
 
     @unittest.skipIf(sys.platform.startswith("win"), "not supported on windows")
     def testChmodDir(self):
         """
         Test that the chmod task works properly on a directory.
         """
-        crawler = FsCrawler.createFromPath(self.__dir)
-        fileCrawler = FsCrawler.createFromPath(self.__path)
+        infoCrate = FsInfoCrate.createFromPath(self.__dir)
+        fileInfoCrate = FsInfoCrate.createFromPath(self.__path)
         chmodTask = Task.create('chmod')
-        chmodTask.add(crawler, self.__dir)
-        chmodTask.add(fileCrawler, self.__dir)
+        chmodTask.add(infoCrate, self.__dir)
+        chmodTask.add(fileInfoCrate, self.__dir)
         dirPerm = "775"
         filePerm = "664"
         chmodTask.setOption('directoryMode', dirPerm)
@@ -55,9 +55,9 @@ class ChmodTaskTest(BaseTestCase):
         os.symlink(self.__path, link)
         self.assertEqual(self.__getPermission(link), '664')
         self.assertTrue(os.path.islink(link))
-        crawler = FsCrawler.createFromPath(link)
+        infoCrate = FsInfoCrate.createFromPath(link)
         chmodTask = Task.create('chmod')
-        chmodTask.add(crawler, link)
+        chmodTask.add(infoCrate, link)
         chmodTask.setOption('directoryMode', '775')
         chmodTask.setOption('fileMode', '775')
         chmodTask.output()

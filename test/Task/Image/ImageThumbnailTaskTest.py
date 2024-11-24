@@ -2,7 +2,7 @@ import unittest
 import os
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.Crawler.Fs import FsCrawler
+from kombi.InfoCrate.Fs import FsInfoCrate
 
 class ImageThumbnailTaskTest(BaseTestCase):
     """Test ImageThumbnail task."""
@@ -14,14 +14,14 @@ class ImageThumbnailTaskTest(BaseTestCase):
         """
         Test that the ImageThumbnail task works properly.
         """
-        crawler = FsCrawler.createFromPath(self.__sourcePath)
+        infoCrate = FsInfoCrate.createFromPath(self.__sourcePath)
         thumbnailTask = Task.create('imageThumbnail')
-        thumbnailTask.add(crawler, self.__targetPath)
+        thumbnailTask.add(infoCrate, self.__targetPath)
         result = thumbnailTask.output()
         self.assertEqual(len(result), 1)
-        crawler = result[0]
-        self.assertEqual(crawler.var("width"), 640)
-        self.assertEqual(crawler.var("height"), 360)
+        infoCrate = result[0]
+        self.assertEqual(infoCrate.var("width"), 640)
+        self.assertEqual(infoCrate.var("height"), 360)
 
     @classmethod
     def tearDownClass(cls):

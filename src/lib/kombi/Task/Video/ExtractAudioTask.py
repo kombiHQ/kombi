@@ -24,8 +24,8 @@ class ExtractAudioTask(Task):
         """
         audioArgs = self.option('audioArgs')
 
-        for crawler in self.crawlers():
-            targetFilePath = self.target(crawler)
+        for infoCrate in self.infoCrates():
+            targetFilePath = self.target(infoCrate)
 
             # creating any necessary directories
             parentDirectory = os.path.dirname(targetFilePath)
@@ -38,7 +38,7 @@ class ExtractAudioTask(Task):
             # ffmpeg command
             ffmpegCommand = '{ffmpeg} -loglevel error {audioArgs} -i "{input}" -y -strict -2 "{output}"'.format(
                 ffmpeg=self.__ffmpegExecutable,
-                input=crawler.var('filePath'),
+                input=infoCrate.var('filePath'),
                 output=targetFilePath,
                 audioArgs=audioArgs
             )

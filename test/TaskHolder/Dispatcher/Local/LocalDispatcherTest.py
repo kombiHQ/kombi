@@ -4,11 +4,11 @@ import unittest
 import tempfile
 from fnmatch import fnmatch
 from ....BaseTestCase import BaseTestCase
-from kombi.Crawler.Fs import FsCrawler
+from kombi.InfoCrate.Fs import FsInfoCrate
 from kombi.TaskHolder.Loader import JsonLoader
 from kombi.TaskWrapper import TaskWrapper
 from kombi.Task import Task
-from kombi.Crawler.Fs.Image import JpgCrawler, ExrCrawler
+from kombi.InfoCrate.Fs.Image import JpgInfoCrate, ExrInfoCrate
 from kombi.TaskHolder.Dispatcher import Dispatcher
 
 class LocalDispatcherTest(BaseTestCase):
@@ -20,19 +20,19 @@ class LocalDispatcherTest(BaseTestCase):
           - nukeRender(*/RND-TST-SHT_comp_compName_output_v010_tk.1001.exr)
           - shotRender(*/RND-TST-SHT_lighting_beauty_sr.1001.exr)
           - turntable(*/RND_ass_lookdev_default_beauty_tt.1001.exr)
-          - testCrawler(*/testSeq.0001.exr)
-          - testCrawler(*/testSeq.0002.exr)
-          - testCrawler(*/testSeq.0003.exr)
-          - testCrawler(*/testSeq.0004.exr)
-          - testCrawler(*/testSeq.0005.exr)
-          - testCrawler(*/testSeq.0006.exr)
-          - testCrawler(*/testSeq.0007.exr)
-          - testCrawler(*/testSeq.0008.exr)
-          - testCrawler(*/testSeq.0009.exr)
-          - testCrawler(*/testSeq.0010.exr)
-          - testCrawler(*/testSeq.0011.exr)
-          - testCrawler(*/testSeq.0012.exr)
-          - testCrawler(*/test_0001.exr)
+          - testInfoCrate(*/testSeq.0001.exr)
+          - testInfoCrate(*/testSeq.0002.exr)
+          - testInfoCrate(*/testSeq.0003.exr)
+          - testInfoCrate(*/testSeq.0004.exr)
+          - testInfoCrate(*/testSeq.0005.exr)
+          - testInfoCrate(*/testSeq.0006.exr)
+          - testInfoCrate(*/testSeq.0007.exr)
+          - testInfoCrate(*/testSeq.0008.exr)
+          - testInfoCrate(*/testSeq.0009.exr)
+          - testInfoCrate(*/testSeq.0010.exr)
+          - testInfoCrate(*/testSeq.0011.exr)
+          - testInfoCrate(*/testSeq.0012.exr)
+          - testInfoCrate(*/test_0001.exr)
         done
         sequenceThumbnail output (execution * seconds):
           - jpg(*/testSeq.jpg)
@@ -45,7 +45,7 @@ class LocalDispatcherTest(BaseTestCase):
         """
         taskHolderLoader = JsonLoader()
         taskHolderLoader.loadFromFile(self.__jsonConfig)
-        crawlers = FsCrawler.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
+        infoCrates = FsInfoCrate.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
         temporaryDir = tempfile.mkdtemp()
 
         dispacher = Dispatcher.create("local")
@@ -67,14 +67,14 @@ class LocalDispatcherTest(BaseTestCase):
                 temporaryDir,
                 True
             )
-            dispacher.dispatch(taskHolder, crawlers)
+            dispacher.dispatch(taskHolder, infoCrates)
 
-        createdCrawlers = FsCrawler.createFromPath(temporaryDir).glob()
-        exrCrawlers = list(filter(lambda x: isinstance(x, ExrCrawler), createdCrawlers))
-        self.assertEqual(len(exrCrawlers), 16)
+        createdInfoCrates = FsInfoCrate.createFromPath(temporaryDir).glob()
+        exrInfoCrates = list(filter(lambda x: isinstance(x, ExrInfoCrate), createdInfoCrates))
+        self.assertEqual(len(exrInfoCrates), 16)
 
-        jpgCrawlers = list(filter(lambda x: isinstance(x, JpgCrawler), createdCrawlers))
-        self.assertEqual(len(jpgCrawlers), 1)
+        jpgInfoCrates = list(filter(lambda x: isinstance(x, JpgInfoCrate), createdInfoCrates))
+        self.assertEqual(len(jpgInfoCrates), 1)
 
         output = outputStream.getvalue().replace('\r\n', '\n').split('\n')
         prefixSize = None
@@ -87,15 +87,15 @@ class LocalDispatcherTest(BaseTestCase):
             if not fnmatch(outputLine, line):
                 self.assertEqual(outputLine, line)
 
-        self.cleanup(exrCrawlers + jpgCrawlers)
+        self.cleanup(exrInfoCrates + jpgInfoCrates)
 
-    def cleanup(self, crawlers):
+    def cleanup(self, infoCrates):
         """
         Remove the data that was copied.
         """
         removeTask = Task.create('remove')
-        for crawler in crawlers:
-            removeTask.add(crawler, crawler.var("filePath"))
+        for infoCrate in infoCrates:
+            removeTask.add(infoCrate, infoCrate.var("filePath"))
         wrapper = TaskWrapper.create('python')
         wrapper.setOption('user', '')
         wrapper.run(removeTask)

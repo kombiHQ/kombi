@@ -3,8 +3,8 @@ from collections import OrderedDict
 from zipfile import ZipFile, ZIP_DEFLATED, ZIP_STORED
 from tarfile import TarFile
 from ..Task import Task, TaskError
-from ...Crawler.Fs.FsCrawler import FsCrawler
-from ...Crawler.Fs.DirectoryCrawler import DirectoryCrawler
+from ...InfoCrate.Fs.FsInfoCrate import FsInfoCrate
+from ...InfoCrate.Fs.DirectoryInfoCrate import DirectoryInfoCrate
 
 class PackTaskUnsupportedTypeError(TaskError):
     """Pack Task Unsupported Type Error."""
@@ -39,40 +39,40 @@ class PackTask(Task):
         Perform the task.
         """
         archive = OrderedDict()
-        for taskCrawler in self.crawlers():
+        for taskInfoCrate in self.infoCrates():
 
-            allCrawlers = []
-            # in case of directory crawler we glob for the contents
-            if isinstance(taskCrawler, DirectoryCrawler):
-                allCrawlers += taskCrawler.glob()
+            allInfoCrates = []
+            # in case of directory infoCrate we glob for the contents
+            if isinstance(taskInfoCrate, DirectoryInfoCrate):
+                allInfoCrates += taskInfoCrate.glob()
             else:
-                allCrawlers.append(taskCrawler)
+                allInfoCrates.append(taskInfoCrate)
 
-            filePath = self.target(taskCrawler)
+            filePath = self.target(taskInfoCrate)
 
-            # resolving the internal path for the crawlers
-            for crawler in allCrawlers:
+            # resolving the internal path for the infoCrates
+            for infoCrate in allInfoCrates:
                 internalArchivePath = None
 
-                # crawlers based on directory crawlers the internal path is relative to source directory crawler
-                if isinstance(taskCrawler, DirectoryCrawler):
-                    internalArchivePath = crawler.var('fullPath')[len(taskCrawler.var('fullPath')) - len(taskCrawler.var('baseName')):]
+                # infoCrates based on directory infoCrates the internal path is relative to source directory infoCrate
+                if isinstance(taskInfoCrate, DirectoryInfoCrate):
+                    internalArchivePath = infoCrate.var('fullPath')[len(taskInfoCrate.var('fullPath')) - len(taskInfoCrate.var('baseName')):]
 
-                # crawlers containing a custom internal path that can be declared as part of the target path,
+                # infoCrates containing a custom internal path that can be declared as part of the target path,
                 # for instance: test.zip[a/b/c/file.ext]
                 elif filePath.endswith(']') and filePath.count('[') == 1:
                     filePath, internalArchivePath = filePath[:-1].split('[')
                     internalArchivePath = internalArchivePath.replace('|', '/')
 
-                # otherwise the internal path is the base name of the crawler
+                # otherwise the internal path is the base name of the infoCrate
                 else:
-                    internalArchivePath = crawler.var('baseName')
+                    internalArchivePath = infoCrate.var('baseName')
 
                 if filePath not in archive:
                     archive[filePath] = []
                 archive[filePath].append(
                     {
-                        'crawler': crawler,
+                        'infoCrate': infoCrate,
                         'internalPath': internalArchivePath
                     }
                 )
@@ -94,7 +94,7 @@ class PackTask(Task):
                     'Unsupported archive type: {}'.format(archiveName)
                 )
 
-        return list(map(FsCrawler.createFromPath, archive.keys()))
+        return list(map(FsInfoCrate.createFromPath, archive.keys()))
 
     def __archiveTar(self, archiveFilePath, archiveItems, compressTar):
         """
@@ -105,7 +105,7 @@ class PackTask(Task):
 
         with TarFile.open(archiveFilePath, archiveMode) as archiveFile:
             for archiveItem in archiveItems:
-                archiveFile.add(archiveItem['crawler'].var('fullPath'), archiveItem['internalPath'])
+                archiveFile.add(archiveItem['infoCrate'].var('fullPath'), archiveItem['internalPath'])
 
     def __archiveZip(self, archiveFilePath, archiveItems):
         """
@@ -115,7 +115,7 @@ class PackTask(Task):
 
         with ZipFile(archiveFilePath, 'w', compression=archiveMode, allowZip64=True) as archiveFile:
             for archiveItem in archiveItems:
-                archiveFile.write(archiveItem['crawler'].var('fullPath'), archiveItem['internalPath'])
+                archiveFile.write(archiveItem['infoCrate'].var('fullPath'), archiveItem['internalPath'])
 
 
 # registering task

@@ -3,9 +3,9 @@ import sys
 import argparse
 import subprocess
 import fileinput
-from .Crawler.Fs.FsCrawler import FsCrawler
-from .Crawler.Fs.DirectoryCrawler import DirectoryCrawler
-from .Crawler import Crawler
+from .InfoCrate.Fs.FsInfoCrate import FsInfoCrate
+from .InfoCrate.Fs.DirectoryInfoCrate import DirectoryInfoCrate
+from .InfoCrate import InfoCrate
 from .TaskHolder.Loader import Loader
 from .TaskHolder.Dispatcher import Dispatcher
 
@@ -57,8 +57,8 @@ class Cli(object):
                 "No task holders were found in the config path!"
             )
 
-        # collecting crawlers
-        crawlers = self.__loadCrawlers(parseArgs.source)
+        # collecting infoCrates
+        infoCrates = self.__loadInfoCrates(parseArgs.source)
 
         # creating dispatcher
         dispatcher = Dispatcher.create('local')
@@ -69,57 +69,57 @@ class Cli(object):
 
         # dispatching task holders
         for taskHolder in loader.taskHolders():
-            for crawlersGroup in Crawler.group(crawlers):
+            for infoCratesGroup in InfoCrate.group(infoCrates):
                 dispatcher.dispatch(
                     taskHolder,
-                    crawlersGroup
+                    infoCratesGroup
                 )
 
-    def __loadCrawlers(self, sourcePaths):
+    def __loadInfoCrates(self, sourcePaths):
         """
-        Return the source crawlers.
+        Return the source infoCrates.
         """
-        crawlers = []
-        globDirectoryCrawlers = True
+        infoCrates = []
+        globDirectoryInfoCrates = True
 
         # source through argument
         if sourcePaths:
             for sourcePath in sourcePaths:
-                crawler = FsCrawler.createFromPath(sourcePath)
-                crawlers.append(crawler)
+                infoCrate = FsInfoCrate.createFromPath(sourcePath)
+                infoCrates.append(infoCrate)
 
         # source through stdin
         elif not sys.stdin.isatty():
             for line in fileinput.input(files=[]):
                 # in case the sdtin is reading a kombi
                 # output, it is defined in columns:
-                # taskName, crawlerType and fullPath.
+                # taskName, infoCrateType and fullPath.
                 outputParts = tuple(filter(lambda x: x != '', line.strip().split('\t')))
-                crawlerFullPath = outputParts[-1]
+                infoCrateFullPath = outputParts[-1]
 
                 # when stdin is reading kombi output
-                crawler = None
+                infoCrate = None
                 if len(outputParts) == 3:
-                    globDirectoryCrawlers = False
-                    crawler = FsCrawler.createFromPath(
-                        crawlerFullPath,
+                    globDirectoryInfoCrates = False
+                    infoCrate = FsInfoCrate.createFromPath(
+                        infoCrateFullPath,
                         outputParts[1]
                     )
 
                 # otherwise when stdin is reading a list of paths
                 else:
-                    crawler = FsCrawler.createFromPath(crawlerFullPath)
+                    infoCrate = FsInfoCrate.createFromPath(infoCrateFullPath)
 
-                crawlers.append(crawler)
+                infoCrates.append(infoCrate)
         else:
             raise CliError("Cannot determine source!")
 
         # when a directory is detected as input. We glob
         # by default. The only exception is when
-        # the crawler type is defined (reading a kombi output)
-        if globDirectoryCrawlers:
-            for crawler in list(crawlers):
-                if isinstance(crawler, DirectoryCrawler):
-                    crawlers += crawler.glob()
+        # the infoCrate type is defined (reading a kombi output)
+        if globDirectoryInfoCrates:
+            for infoCrate in list(infoCrates):
+                if isinstance(infoCrate, DirectoryInfoCrate):
+                    infoCrates += infoCrate.glob()
 
-        return crawlers
+        return infoCrates

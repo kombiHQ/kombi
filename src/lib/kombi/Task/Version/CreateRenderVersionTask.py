@@ -1,7 +1,7 @@
 import os
-from ...Crawler.Fs import FsCrawler
-from ...Crawler import Crawler
-from ...Crawler.Fs.Scene import SceneCrawler
+from ...InfoCrate.Fs import FsInfoCrate
+from ...InfoCrate import InfoCrate
+from ...InfoCrate.Fs.Scene import SceneInfoCrate
 from ..Task import Task
 from .CreateIncrementalVersionTask import CreateIncrementalVersionTask
 
@@ -22,18 +22,18 @@ class CreateRenderVersionTask(CreateIncrementalVersionTask):
         """
         sourceScenes = set()
 
-        for crawler in self.crawlers():
+        for infoCrate in self.infoCrates():
 
-            targetFile = self._computeRenderTargetLocation(crawler)
+            targetFile = self._computeRenderTargetLocation(infoCrate)
             # copying the render file
-            self.copyFile(crawler.var('filePath'), targetFile)
+            self.copyFile(infoCrate.var('filePath'), targetFile)
             self.addFile(targetFile)
 
             # Crawl from source directory for scenes to save along with data
-            crawler = FsCrawler.createFromPath(crawler.var('sourceDirectory'))
-            sceneCrawlers = crawler.glob([SceneCrawler])
-            for sceneCrawler in sceneCrawlers:
-                sourceScenes.add(sceneCrawler.var('filePath'))
+            infoCrate = FsInfoCrate.createFromPath(infoCrate.var('sourceDirectory'))
+            sceneInfoCrates = infoCrate.glob([SceneInfoCrate])
+            for sceneInfoCrate in sceneInfoCrates:
+                sourceScenes.add(sceneInfoCrate.var('filePath'))
 
         # Copy source scenes
         for sourceScene in sourceScenes:
@@ -43,13 +43,13 @@ class CreateRenderVersionTask(CreateIncrementalVersionTask):
 
         # Exclude all work scenes and movies from incremental versioning
         exclude = set()
-        for sceneClasses in Crawler.registeredSubclasses(SceneCrawler):
+        for sceneClasses in InfoCrate.registeredSubclasses(SceneInfoCrate):
             exclude.update(sceneClasses.extensions())
         exclude.add("mov")
 
         return super(CreateRenderVersionTask, self)._perform(incrementalExcludeTypes=list(exclude))
 
-    def _computeRenderTargetLocation(self, crawler):
+    def _computeRenderTargetLocation(self, infoCrate):
         """
         Compute the target file path for a render.
         """
@@ -57,11 +57,11 @@ class CreateRenderVersionTask(CreateIncrementalVersionTask):
             self.dataPath(),
             "renders",
             "{}_{}_{}.{}.{}".format(
-                crawler.var('shot'),
-                crawler.var('step'),
-                crawler.var('pass'),
-                str(crawler.var('frame')).zfill(crawler.var('padding')),
-                crawler.var('ext')
+                infoCrate.var('shot'),
+                infoCrate.var('step'),
+                infoCrate.var('pass'),
+                str(infoCrate.var('frame')).zfill(infoCrate.var('padding')),
+                infoCrate.var('ext')
             )
         )
 

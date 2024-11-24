@@ -1,5 +1,5 @@
 from ..Task import Task
-from ...Crawler.Fs.FsCrawler import FsCrawler
+from ...InfoCrate.Fs.FsInfoCrate import FsInfoCrate
 from glob import glob
 
 class GlobTask(Task):
@@ -35,8 +35,8 @@ class GlobTask(Task):
         result = []
         alreadyAdded = set()
         targets = set()
-        for crawler in self.crawlers():
-            filePath = self.target(crawler)
+        for infoCrate in self.infoCrates():
+            filePath = self.target(infoCrate)
             if self.option('skipDuplicated') and filePath in targets:
                 continue
             targets.add(filePath)
@@ -48,10 +48,10 @@ class GlobTask(Task):
                 alreadyAdded.add(resolvedFilePath)
 
                 result.append(
-                    FsCrawler.createFromPath(resolvedFilePath)
+                    FsInfoCrate.createFromPath(resolvedFilePath)
                 )
 
-        return [y for x in FsCrawler.group(result) for y in x]
+        return [y for x in FsInfoCrate.group(result) for y in x]
 
 
 # registering task

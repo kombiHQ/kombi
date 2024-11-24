@@ -1,5 +1,5 @@
 import os
-from ...Crawler import Crawler
+from ...InfoCrate import InfoCrate
 from ..External.HoudiniTask import HoudiniTask
 
 class HoudiniRenderTask(HoudiniTask):
@@ -24,9 +24,9 @@ class HoudiniRenderTask(HoudiniTask):
         self.setMetadata('dispatch.renderFarm.pool', 'houdini')
 
     @classmethod
-    def toRenderCrawlers(cls, houdiniScenePath, ropNodes, startFrame=None, endFrame=None):
+    def toRenderInfoCrates(cls, houdiniScenePath, ropNodes, startFrame=None, endFrame=None):
         """
-        Return hashmap crawlers containing the write node information used by this task.
+        Return hashmap infoCrates containing the write node information used by this task.
         """
         import hou
 
@@ -80,7 +80,7 @@ class HoudiniRenderTask(HoudiniTask):
 
             for i in range(startFrame, endFrame + 1):
                 result.append(
-                    cls.__renderHashmapCrawler(
+                    cls.__renderHashmapInfoCrate(
                         houdiniScenePath,
                         ropNode.path(),
                         i,
@@ -97,12 +97,12 @@ class HoudiniRenderTask(HoudiniTask):
         """
         import hou
 
-        crawlers = self.crawlers()
-        for crawlerGroup in Crawler.group(crawlers):
-            startFrame = crawlerGroup[0]['startFrame']
-            endFrame = crawlerGroup[-1]['endFrame']
-            houdiniRopName = crawlerGroup[0].var('rop')
-            scenePath = crawlerGroup[0].var('fullPathScene')
+        infoCrates = self.infoCrates()
+        for infoCrateGroup in InfoCrate.group(infoCrates):
+            startFrame = infoCrateGroup[0]['startFrame']
+            endFrame = infoCrateGroup[-1]['endFrame']
+            houdiniRopName = infoCrateGroup[0].var('rop')
+            scenePath = infoCrateGroup[0].var('fullPathScene')
 
             hou.hipFile.load(scenePath, ignore_load_warnings=True)
             print("Rendering: ", scenePath, "Rop:", houdiniRopName)
@@ -118,16 +118,16 @@ class HoudiniRenderTask(HoudiniTask):
                 verbose=True
             )
 
-        return self.crawlers()
+        return self.infoCrates()
 
     @classmethod
-    def __renderHashmapCrawler(cls, houdiniScenePath, ropNodeName, startFrame, endFrame, output=''):
+    def __renderHashmapInfoCrate(cls, houdiniScenePath, ropNodeName, startFrame, endFrame, output=''):
         """
-        Return a hashmap crawler for the input write node start and end frame.
+        Return a hashmap infoCrate for the input write node start and end frame.
         """
         # todo: we dont want to depend in houdini
         sceneBaseName = os.path.basename(houdiniScenePath)
-        hashmapCrawler = Crawler.create(
+        hashmapInfoCrate = InfoCrate.create(
             {
                 'name': sceneBaseName,
                 'rop': ropNodeName,
@@ -136,17 +136,17 @@ class HoudiniRenderTask(HoudiniTask):
                 'output': output
             }
         )
-        hashmapCrawler.setVar('dataLayout', 'houdiniRender')
-        hashmapCrawler.setVar('baseName', sceneBaseName)
-        hashmapCrawler.setVar('rop', ropNodeName)
-        hashmapCrawler.setVar('fullPathScene', houdiniScenePath)
-        hashmapCrawler.setTag('group', "{}-{}".format(
+        hashmapInfoCrate.setVar('dataLayout', 'houdiniRender')
+        hashmapInfoCrate.setVar('baseName', sceneBaseName)
+        hashmapInfoCrate.setVar('rop', ropNodeName)
+        hashmapInfoCrate.setVar('fullPathScene', houdiniScenePath)
+        hashmapInfoCrate.setTag('group', "{}-{}".format(
             sceneBaseName, ropNodeName)
         )
-        hashmapCrawler.setVar('startFrame', str(startFrame).zfill(10))
-        hashmapCrawler.setVar('endFrame', str(endFrame).zfill(10))
+        hashmapInfoCrate.setVar('startFrame', str(startFrame).zfill(10))
+        hashmapInfoCrate.setVar('endFrame', str(endFrame).zfill(10))
 
-        hashmapCrawler.setVar(
+        hashmapInfoCrate.setVar(
             'fullPath',
             '{} ({}) {}-{}'.format(
                 houdiniScenePath,
@@ -156,7 +156,7 @@ class HoudiniRenderTask(HoudiniTask):
             )
         )
 
-        return hashmapCrawler
+        return hashmapInfoCrate
 
 
 # registering task

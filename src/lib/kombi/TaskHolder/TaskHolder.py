@@ -5,7 +5,7 @@ from fnmatch import fnmatch
 from ..Task import Task
 from ..TaskWrapper import TaskWrapper
 from ..Template import Template
-from ..Crawler import Crawler, Matcher
+from ..InfoCrate import InfoCrate, Matcher
 
 class TaskHolderError(Exception):
     """Task holder error."""
@@ -15,13 +15,13 @@ class TaskHolderInvalidVarNameError(TaskHolderError):
 
 class TaskHolder(object):
     """
-    Holds task and sub task holders associated with a target template and crawler matcher.
+    Holds task and sub task holders associated with a target template and infoCrate matcher.
 
     Task Metadata:
         - wrapper.name: string with the name of the task wrapper used to execute the task
         - wrapper.options: dict containing the options passed to the task wrapper
-        - match.types: list containing the types used to match the crawlers
-        - match.vars: dict containing the key and value for the variables used to match the crawlers
+        - match.types: list containing the types used to match the infoCrates
+        - match.vars: dict containing the key and value for the variables used to match the infoCrates
     """
 
     statusTypes = (
@@ -57,7 +57,7 @@ class TaskHolder(object):
             exportTemplate = Template()
         self.__setExportTemplate(exportTemplate)
 
-        # creating crawler matcher
+        # creating infoCrate matcher
         matchTypes = []
         if task.hasMetadata('match.types'):
             matchTypes = task.metadata('match.types')
@@ -89,7 +89,7 @@ class TaskHolder(object):
 
     def setRegroupTag(self, groupTagName):
         """
-        Set the name of the tag used to re-group the input crawlers.
+        Set the name of the tag used to re-group the input infoCrates.
 
         It works by splitting the task execution for each group (empty
         string means no regroup is being associated).
@@ -109,7 +109,7 @@ class TaskHolder(object):
         Status:
             - execute: perform the task normally (default)
             - bypass: bypass the execution of the task and passes the source
-            crawlers as result for subtasks
+            infoCrates as result for subtasks
             - ignore: ignore the execution of the task and subtasks
         """
         assert status in self.statusTypes, \
@@ -185,7 +185,7 @@ class TaskHolder(object):
 
     def importTemplates(self):
         """
-        Return a list of templates used to import crawlers during run.
+        Return a list of templates used to import infoCrates during run.
         """
         return self.__importTemplates
 
@@ -241,48 +241,48 @@ class TaskHolder(object):
 
     def addImportTemplate(self, template):
         """
-        Add a template used to load crawlers exported by the export template.
+        Add a template used to load infoCrates exported by the export template.
 
-        The crawlers are loaded during run.
+        The infoCrates are loaded during run.
         """
         assert isinstance(template, Template), "Invalid Template type!"
 
         self.__importTemplates.append(template)
 
-    def addCrawlers(self, crawlers, addTaskHolderVars=True):
+    def addInfoCrates(self, infoCrates, addTaskHolderVars=True):
         """
-        Add a list of crawlers to the task.
+        Add a list of infoCrates to the task.
 
-        The crawlers are added to the task using "query" method to resolve
+        The infoCrates are added to the task using "query" method to resolve
         the target template.
         """
-        for crawler, filePath in self.query(crawlers).items():
+        for infoCrate, filePath in self.query(infoCrates).items():
 
             if addTaskHolderVars:
-                # cloning crawler so we can modify it safely
-                crawler = crawler.clone()
+                # cloning infoCrate so we can modify it safely
+                infoCrate = infoCrate.clone()
 
                 for varName in self.varNames():
 
                     # in case the variable has already been
-                    # defined in the crawler we skip it
-                    if varName in crawler.varNames():
+                    # defined in the infoCrate we skip it
+                    if varName in infoCrate.varNames():
                         continue
 
-                    crawler.setVar(
+                    infoCrate.setVar(
                         varName,
                         self.var(varName),
                         varName in self.contextVarNames()
                     )
 
             self.__task.add(
-                crawler,
+                infoCrate,
                 filePath
             )
 
     def matcher(self):
         """
-        Return the crawler matcher associated with the task holder.
+        Return the infoCrate matcher associated with the task holder.
         """
         return self.__matcher
 
@@ -307,25 +307,25 @@ class TaskHolder(object):
         """
         del self.__subTaskHolders[:]
 
-    def query(self, crawlers):
+    def query(self, infoCrates):
         """
-        Return a dict containing the matched crawler as key and resolved template as value.
+        Return a dict containing the matched infoCrate as key and resolved template as value.
         """
-        validCrawlers = {}
-        for crawler in crawlers:
-            if self.matcher().match(crawler):
-                filterTemplateValue = self.filterTemplate().valueFromCrawler(crawler, self.__vars)
+        validInfoCrates = {}
+        for infoCrate in infoCrates:
+            if self.matcher().match(infoCrate):
+                filterTemplateValue = self.filterTemplate().valueFromInfoCrate(infoCrate, self.__vars)
 
-                # if the value of the filter is 0 or false the crawler is ignored
+                # if the value of the filter is 0 or false the infoCrate is ignored
                 if str(filterTemplateValue).lower() in ['false', '0']:
                     continue
 
-                validCrawlers[crawler] = self.targetTemplate().valueFromCrawler(crawler, self.__vars)
+                validInfoCrates[infoCrate] = self.targetTemplate().valueFromInfoCrate(infoCrate, self.__vars)
 
         # sorting result
         result = OrderedDict()
-        for crawler, filePath in sorted(validCrawlers.items(), key=lambda x: (x[1], x[0].var('fullPath'))):
-            result[crawler] = filePath
+        for infoCrate, filePath in sorted(validInfoCrates.items(), key=lambda x: (x[1], x[0].var('fullPath'))):
+            result[infoCrate] = filePath
 
         return result
 
@@ -345,32 +345,32 @@ class TaskHolder(object):
         """
         return self.createFromJson(self.toJson(includeSubTaskHolders))
 
-    def run(self, crawlers=[], ignoreImports=False):
+    def run(self, infoCrates=[], ignoreImports=False):
         """
         Perform the task.
 
-        Return all the crawlers resulted by the execution of the task (and sub tasks).
+        Return all the infoCrates resulted by the execution of the task (and sub tasks).
         """
-        assert isinstance(crawlers, (tuple, list)), "Invalid crawler list!"
+        assert isinstance(infoCrates, (tuple, list)), "Invalid infoCrate list!"
 
-        useCrawlers = list(crawlers)
+        useInfoCrates = list(infoCrates)
         if not ignoreImports:
             for importTemplate in self.importTemplates():
                 importFilePath = importTemplate.value(self.__vars)
 
-                # loading crawlers
+                # loading infoCrates
                 with open(importFilePath) as f:
-                    for crawlerJson in json.load(f):
-                        crawler = Crawler.createFromJson(crawlerJson)
+                    for infoCrateJson in json.load(f):
+                        infoCrate = InfoCrate.createFromJson(infoCrateJson)
 
-                        # the imported crawlers need to be validated
-                        # by the crawler matcher
-                        if self.matcher().match(crawler):
-                            useCrawlers.append(crawler)
+                        # the imported infoCrates need to be validated
+                        # by the infoCrate matcher
+                        if self.matcher().match(infoCrate):
+                            useInfoCrates.append(infoCrate)
 
         return self.__recursiveTaskRunner(
             self.clone(),
-            useCrawlers
+            useInfoCrates
         )
 
     @classmethod
@@ -384,7 +384,7 @@ class TaskHolder(object):
 
     def __setMatcher(self, matcher):
         """
-        Associate a crawler matcher with the task holder.
+        Associate a infoCrate matcher with the task holder.
         """
         assert isinstance(matcher, Matcher), \
             "Invalid Matcher type"
@@ -403,7 +403,7 @@ class TaskHolder(object):
         """
         Associate a filter template with the task holder.
 
-        A filter template can be used to filter out crawlers based on
+        A filter template can be used to filter out infoCrates based on
         returning 0 or false as result of the filter.
         """
         assert isinstance(filterTemplate, Template), \
@@ -415,7 +415,7 @@ class TaskHolder(object):
         """
         Associate an export template with the task holder.
 
-        This template is used to export the crawlers
+        This template is used to export the infoCrates
         resulted by the task through "TaskHolder.run()"
         to a json file. This template represents of
         path for that json file.
@@ -519,16 +519,16 @@ class TaskHolder(object):
         return taskHolder
 
     @classmethod
-    def __recursiveTaskRunner(cls, taskHolder, crawlers):
+    def __recursiveTaskRunner(cls, taskHolder, infoCrates):
         """
         Perform the task runner recursively.
         """
-        # when re-group tag is defined we get the input crawlers and regroup
+        # when re-group tag is defined we get the input infoCrates and regroup
         # them. This is going to split the processing of the task per group
         if taskHolder.regroupTag():
             result = []
-            groupCrawlers = Crawler.group(crawlers, taskHolder.regroupTag())
-            for group in groupCrawlers:
+            groupInfoCrates = InfoCrate.group(infoCrates, taskHolder.regroupTag())
+            for group in groupInfoCrates:
                 newTaskHolder = taskHolder.clone()
                 newTaskHolder.setRegroupTag('')
                 result.extend(
@@ -539,22 +539,22 @@ class TaskHolder(object):
                 )
             return result
 
-        taskHolder.addCrawlers(crawlers)
+        taskHolder.addInfoCrates(infoCrates)
         result = []
 
         # ignoring the execution of the task
-        if taskHolder.status() == 'ignore' or not taskHolder.task().crawlers():
+        if taskHolder.status() == 'ignore' or not taskHolder.task().infoCrates():
             pass
 
         # bypassing task execution
         elif taskHolder.status() == 'bypass':
-            taskCrawlers = taskHolder.task().crawlers()
-            result += taskCrawlers
+            taskInfoCrates = taskHolder.task().infoCrates()
+            result += taskInfoCrates
 
         # running task through the wrapper
         else:
-            taskCrawlers = taskHolder.taskWrapper().run(taskHolder.task())
-            result += taskCrawlers
+            taskInfoCrates = taskHolder.taskWrapper().run(taskHolder.task())
+            result += taskInfoCrates
 
         # exporting the result when export template is defined
         if taskHolder.exportTemplate().inputString():
@@ -565,7 +565,7 @@ class TaskHolder(object):
                 taskHolderVars[varName] = taskHolder.var(varName)
             exportTemplate = taskHolder.exportTemplate().value(taskHolderVars)
 
-            # writing crawlers
+            # writing infoCrates
             if exportTemplate:
                 try:
                     os.makedirs(os.path.dirname(exportTemplate))
@@ -576,11 +576,11 @@ class TaskHolder(object):
                     f.write(json.dumps(list(map(lambda x: x.toJson(), result))))
 
         # nothing to be done
-        if taskHolder.status() == 'ignore' or not taskHolder.task().crawlers():
+        if taskHolder.status() == 'ignore' or not taskHolder.task().infoCrates():
             return []
 
         # calling subtask holders
         for subTaskHolder in taskHolder.subTaskHolders():
-            result += cls.__recursiveTaskRunner(subTaskHolder, taskCrawlers)
+            result += cls.__recursiveTaskRunner(subTaskHolder, taskInfoCrates)
 
         return result

@@ -39,7 +39,7 @@ class App(QtWidgets.QApplication):
         # loading task holders
         taskHolders = RunnerWindow.loadConfigurationTaskHolders(configurationDirectory)
 
-        # source crawler paths
+        # source infoCrate paths
         sourcePaths = []
         if len(sys.argv) > 2:
             sourcePaths = sys.argv[2:]

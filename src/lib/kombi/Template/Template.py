@@ -1,7 +1,7 @@
 import re
 import os
 import uuid
-from ..Crawler import CrawlerInvalidVarError
+from ..InfoCrate import InfoCrateInvalidVarError
 
 class TemplateError(Exception):
     """Template error."""
@@ -22,10 +22,10 @@ class Template(object):
     """
     Creates a template object based on a string defined using template syntax.
 
-    A template string can contain crawler variables using the syntax
-    {crawlerVariable}. Procedures can be used through the syntax (myprocedure),
+    A template string can contain infoCrate variables using the syntax
+    {infoCrateVariable}. Procedures can be used through the syntax (myprocedure),
     arguments can be passed to procedures after the procedure name,
-    for instance (myprocedure {crawlerVariable}) where the arguments must be
+    for instance (myprocedure {infoCrateVariable}) where the arguments must be
     separated by space:
         "/tmp/{myVariable}/(myprocedure {myVariable} 'second arg' 3)"
 
@@ -84,9 +84,9 @@ class Template(object):
         """
         return self.__varNames
 
-    def valueFromCrawler(self, crawler, extraVars={}):
+    def valueFromInfoCrate(self, infoCrate, extraVars={}):
         """
-        Return the value of the template based on a crawler.
+        Return the value of the template based on a infoCrate.
         """
         allVars = {}
         for varName in self.varNames():
@@ -94,8 +94,8 @@ class Template(object):
                 allVars[varName] = extraVars[varName]
             else:
                 try:
-                    allVars[varName] = crawler.var(varName)
-                except CrawlerInvalidVarError:
+                    allVars[varName] = infoCrate.var(varName)
+                except InfoCrateInvalidVarError:
 
                     # in case any information about the config
                     # is available including them
@@ -103,7 +103,7 @@ class Template(object):
                     if 'contextConfig' in extraVars:
                         contextConfig = extraVars['contextConfig']
                     elif 'contextConfig' in self.varNames():
-                        contextConfig = crawler.var('contextConfig')
+                        contextConfig = infoCrate.var('contextConfig')
                     if contextConfig:
                         contextConfig = ' by the config "{}"'.format(contextConfig)
 
@@ -117,18 +117,18 @@ class Template(object):
 
         return self.value(allVars)
 
-    def value(self, crawlerVars={}):
+    def value(self, infoCrateVars={}):
         """
         Return the value of the template based on the input variables.
         """
-        assert isinstance(crawlerVars, dict), "invalid crawlerVars type!"
+        assert isinstance(infoCrateVars, dict), "invalid infoCrateVars type!"
 
-        # converting the crawler values to string
-        templateCrawlerVars = {}
-        for key, value in crawlerVars.items():
-            templateCrawlerVars[key] = '' if value is None else str(value)
+        # converting the infoCrate values to string
+        templateInfoCrateVars = {}
+        for key, value in infoCrateVars.items():
+            templateInfoCrateVars[key] = '' if value is None else str(value)
 
-        self.__validateTemplateVariables(templateCrawlerVars)
+        self.__validateTemplateVariables(templateInfoCrateVars)
 
         # resolving variables values
         resolvedTemplate = self.inputString()
@@ -136,7 +136,7 @@ class Template(object):
         # resolving function values
         finalResolvedTemplate = self.__resolveTemplate(
             resolvedTemplate,
-            templateCrawlerVars
+            templateInfoCrateVars
         )
 
         # resolving required path levels
@@ -306,13 +306,13 @@ class Template(object):
                 finalPath.append(pathLevel)
         return os.sep.join(finalPath)
 
-    def __resolveTemplate(self, resolvedTemplate, crawlerVars):
+    def __resolveTemplate(self, resolvedTemplate, infoCrateVars):
         """
         Return a resolved template by processing all variables, tokens and procedures.
         """
-        crawlerVars = self.__resolveVariables(crawlerVars)
+        infoCrateVars = self.__resolveVariables(infoCrateVars)
 
-        crawlerVarsEnclosing = dict(map(lambda x:  ('{' + x[0] + '}', x[1]), crawlerVars.items()))
+        infoCrateVarsEnclosing = dict(map(lambda x:  ('{' + x[0] + '}', x[1]), infoCrateVars.items()))
         finalResolvedTemplate = ""
         tokens = {}
         requiredLevelToken = self.__generatePlaceHolderId()
@@ -351,7 +351,7 @@ class Template(object):
                 templateLastPart = templatePart[endIndex + 1:]
                 rawTemplateProcedure = self.__resolveData(
                     rawTemplateProcedure,
-                    list(tokens.items()) + list(crawlerVarsEnclosing.items()),
+                    list(tokens.items()) + list(infoCrateVarsEnclosing.items()),
                     procedure=True
                 )
 
@@ -368,30 +368,30 @@ class Template(object):
 
                 templateLastPart = self.__resolveData(
                     templateLastPart,
-                    list(tokens.items()) + list(crawlerVarsEnclosing.items())
+                    list(tokens.items()) + list(infoCrateVarsEnclosing.items())
                 )
                 finalResolvedTemplate += procedureValue + templateLastPart
 
             else:
                 templatePart = self.__resolveData(
                     templatePart,
-                    list(tokens.items()) + list(crawlerVarsEnclosing.items())
+                    list(tokens.items()) + list(infoCrateVarsEnclosing.items())
                 )
                 finalResolvedTemplate += templatePart
 
         return finalResolvedTemplate
 
-    def __resolveVariables(self, crawlerVars):
+    def __resolveVariables(self, infoCrateVars):
         """
-        Resolve crawler variables containing a value referencing another crawler variables.
+        Resolve infoCrate variables containing a value referencing another infoCrate variables.
         """
-        crawlerVars = dict(crawlerVars)
+        infoCrateVars = dict(infoCrateVars)
         circularReferenceKeys = []
         unresolved = True
         while unresolved:
             unresolved = False
-            for mainVarName, mainVarValue in crawlerVars.items():
-                for currentVarName, currentVarValue in crawlerVars.items():
+            for mainVarName, mainVarValue in infoCrateVars.items():
+                for currentVarName, currentVarValue in infoCrateVars.items():
 
                     # ignoring same variable
                     if mainVarName == currentVarName:
@@ -406,7 +406,7 @@ class Template(object):
                         # checking for circular references
                         if circularReferenceKey in circularReferenceKeys:
                             raise TemplateVarCircularReferenceError(
-                                'Found circular reference between the crawler variables: {{{0}}} and {{{1}}}'.format(
+                                'Found circular reference between the infoCrate variables: {{{0}}} and {{{1}}}'.format(
                                     circularReferenceKey[0],
                                     circularReferenceKey[1]
                                 )
@@ -414,13 +414,13 @@ class Template(object):
                         circularReferenceKeys.append(circularReferenceKey)
 
                         # replacing mainVariable name for its value
-                        crawlerVars[currentVarName] = currentVarValue.replace(searchVarName, mainVarValue)
+                        infoCrateVars[currentVarName] = currentVarValue.replace(searchVarName, mainVarValue)
 
                         # restarting the process again until there is nothing left
                         # to be resolved
                         unresolved = True
 
-        return crawlerVars
+        return infoCrateVars
 
     def __resolveData(self, template, resultData, procedure=False):
         """
@@ -445,19 +445,19 @@ class Template(object):
 
         return template
 
-    def __validateTemplateVariables(self, crawlerVars):
+    def __validateTemplateVariables(self, infoCrateVars):
         """
         Make sure the variables used by template are available, otherwise raise an exception (TemplateVarNotFoundError).
         """
         for requiredVarName in self.varNames():
-            if requiredVarName not in crawlerVars:
+            if requiredVarName not in infoCrateVars:
 
                 # in case any information about the config
                 # is available including them
                 contextConfig = ''
-                if 'contextConfig' in crawlerVars:
+                if 'contextConfig' in infoCrateVars:
                     contextConfig = ' by the config "{}"'.format(
-                        crawlerVars['contextConfig']
+                        infoCrateVars['contextConfig']
                     )
 
                 raise TemplateVarNotFoundError(
