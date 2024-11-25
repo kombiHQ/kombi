@@ -14,7 +14,7 @@ class Resource(object):
     """
     Class used to load custom resources to kombi.
 
-    The resources can be custom infoCrates, tasks, task wrappers (etc). By default
+    The resources can be custom elements, tasks, task wrappers (etc). By default
     any resource specified under the 'KOMBI_RESOURCE_PATH' is
     automatically loaded during the startup.
 
@@ -42,7 +42,7 @@ class Resource(object):
         """
         Load a python resource file to the runtime.
 
-        Used to load custom infoCrates, template procedures, task wrappers...
+        Used to load custom elements, template procedures, task wrappers...
         """
         if not os.path.exists(filePath):
             raise ResourceInvalidError(

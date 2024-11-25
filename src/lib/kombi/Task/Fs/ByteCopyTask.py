@@ -1,7 +1,7 @@
 import os
 import uuid
 import shutil
-from ...InfoCrate.Fs.FsInfoCrate import FsInfoCrate
+from ...Element.Fs.FsElement import FsElement
 from ..Task import Task
 
 class ByteCopyTask(Task):
@@ -23,11 +23,11 @@ class ByteCopyTask(Task):
         Implement the execution of the task.
         """
         result = []
-        infoCrates = self.infoCrates()
+        elements = self.elements()
 
-        for infoCrate in infoCrates:
-            sourceFilePath = infoCrate.var('filePath')
-            targetFilePath = self.target(infoCrate)
+        for element in elements:
+            sourceFilePath = element.var('filePath')
+            targetFilePath = self.target(element)
 
             # trying to create the directory automatically in case it does not exist
             try:
@@ -62,9 +62,9 @@ class ByteCopyTask(Task):
                 if temporaryTargetName and os.path.exists(temporaryTargetName):
                     os.remove(temporaryTargetName)
 
-            # creating a new infoCrate
+            # creating a new element
             result.append(
-                FsInfoCrate.createFromPath(targetFilePath)
+                FsElement.createFromPath(targetFilePath)
             )
 
         return result

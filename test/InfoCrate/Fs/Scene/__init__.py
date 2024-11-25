@@ -1,1 +1,0 @@
-from .MayaSceneInfoCrateTest import MayaSceneInfoCrateTest

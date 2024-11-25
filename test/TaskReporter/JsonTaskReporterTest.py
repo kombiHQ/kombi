@@ -3,7 +3,7 @@ import io
 import unittest
 from fnmatch import fnmatch
 from ..BaseTestCase import BaseTestCase
-from kombi.InfoCrate.Fs import FsInfoCrate
+from kombi.Element.Fs import FsElement
 from kombi.TaskHolder.Loader import JsonLoader
 from kombi.TaskHolder.Dispatcher import Dispatcher
 from kombi.Resource import Resource
@@ -15,69 +15,69 @@ class JsonTaskReporterTest(BaseTestCase):
     __taskPath = os.path.join(BaseTestCase.dataTestsDirectory(), 'tasks', 'EchoTask.py')
     __output = """
         {
-            "infoCrates": [
+            "elements": [
                 {
-                    "infoCrateType": "nukeRender",
+                    "elementType": "nukeRender",
                     "fullPath": "*/RND-TST-SHT_comp_compName_output_v010_tk.1001.exr"
                 },
                 {
-                    "infoCrateType": "shotRender",
+                    "elementType": "shotRender",
                     "fullPath": "*/RND-TST-SHT_lighting_beauty_sr.1001.exr"
                 },
                 {
-                    "infoCrateType": "turntable",
+                    "elementType": "turntable",
                     "fullPath": "*/RND_ass_lookdev_default_beauty_tt.1001.exr"
                 },
                 {
-                    "infoCrateType": "testInfoCrate",
+                    "elementType": "testElement",
                     "fullPath": "*/testSeq.0001.exr"
                 },
                 {
-                    "infoCrateType": "testInfoCrate",
+                    "elementType": "testElement",
                     "fullPath": "*/testSeq.0002.exr"
                 },
                 {
-                    "infoCrateType": "testInfoCrate",
+                    "elementType": "testElement",
                     "fullPath": "*/testSeq.0003.exr"
                 },
                 {
-                    "infoCrateType": "testInfoCrate",
+                    "elementType": "testElement",
                     "fullPath": "*/testSeq.0004.exr"
                 },
                 {
-                    "infoCrateType": "testInfoCrate",
+                    "elementType": "testElement",
                     "fullPath": "*/testSeq.0005.exr"
                 },
                 {
-                    "infoCrateType": "testInfoCrate",
+                    "elementType": "testElement",
                     "fullPath": "*/testSeq.0006.exr"
                 },
                 {
-                    "infoCrateType": "testInfoCrate",
+                    "elementType": "testElement",
                     "fullPath": "*/testSeq.0007.exr"
                 },
                 {
-                    "infoCrateType": "testInfoCrate",
+                    "elementType": "testElement",
                     "fullPath": "*/testSeq.0008.exr"
                 },
                 {
-                    "infoCrateType": "testInfoCrate",
+                    "elementType": "testElement",
                     "fullPath": "*/testSeq.0009.exr"
                 },
                 {
-                    "infoCrateType": "testInfoCrate",
+                    "elementType": "testElement",
                     "fullPath": "*/testSeq.0010.exr"
                 },
                 {
-                    "infoCrateType": "testInfoCrate",
+                    "elementType": "testElement",
                     "fullPath": "*/testSeq.0011.exr"
                 },
                 {
-                    "infoCrateType": "testInfoCrate",
+                    "elementType": "testElement",
                     "fullPath": "*/testSeq.0012.exr"
                 },
                 {
-                    "infoCrateType": "testInfoCrate",
+                    "elementType": "testElement",
                     "fullPath": "*/test_0001.exr"
                 }
             ],
@@ -85,9 +85,9 @@ class JsonTaskReporterTest(BaseTestCase):
             "task": "echoTask"
         }
         {
-            "infoCrates": [
+            "elements": [
                 {
-                    "infoCrateType": "jpg",
+                    "elementType": "jpg",
                     "fullPath": "*/testSeq.jpg"
                 }
             ],
@@ -105,7 +105,7 @@ class JsonTaskReporterTest(BaseTestCase):
 
         taskHolderLoader = JsonLoader()
         taskHolderLoader.loadFromFile(self.__jsonConfig)
-        infoCrates = FsInfoCrate.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
+        elements = FsElement.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
 
         dispacher = Dispatcher.create('local')
         dispacher.setOption('defaultReporter', 'json')
@@ -122,7 +122,7 @@ class JsonTaskReporterTest(BaseTestCase):
         )
 
         for taskHolder in taskHolderLoader.taskHolders():
-            dispacher.dispatch(taskHolder, infoCrates)
+            dispacher.dispatch(taskHolder, elements)
 
         output = outputStream.getvalue().replace('\r\n', '\n').split('\n')
         prefixSize = None

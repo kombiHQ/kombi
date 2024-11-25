@@ -188,7 +188,7 @@ class RenderfarmDispatcher(Dispatcher):
         task = clonedTaskHolder.task()
         result = []
 
-        # figuring out how the task is going to split the infoCrates in multiple
+        # figuring out how the task is going to split the elements in multiple
         # tasks. In case the split size is assigned to 0 means the task is not
         # going to be divided
         splitSize = 0
@@ -198,46 +198,46 @@ class RenderfarmDispatcher(Dispatcher):
             else:
                 splitSize = self.option('splitSize')
 
-        # querying all infoCrates from the current task so we can re-assign them
+        # querying all elements from the current task so we can re-assign them
         # back to the task in chunks (when split size is greater than 0)
-        taskInfoCrates = OrderedDict()
-        for index, infoCrate in enumerate(task.infoCrates()):
-            # we are adding the tag 'originalIndex' to the infoCrates, so even if they get
+        taskElements = OrderedDict()
+        for index, element in enumerate(task.elements()):
+            # we are adding the tag 'originalIndex' to the elements, so even if they get
             # executed in chunks we can get to know their original index. Useful,
             # when you want to executed a single operation among all chunks:
             # if originalIndex == 0 do something...
-            infoCrate.setTag('originalIndex', index)
-            taskInfoCrates[infoCrate] = task.target(infoCrate)
+            element.setTag('originalIndex', index)
+            taskElements[element] = task.target(element)
 
         # we can delegate the chunkfication to the render farm dispatcher
         # when chunkifyOnTheFarm is enabled. Otherwise, we chunkify
         # by splitting in sub jobs
-        infoCrates = list(taskInfoCrates.keys())
+        elements = list(taskElements.keys())
         if self.option('chunkifyOnTheFarm') or splitSize == 0:
-            chunkfiedInfoCrates = [infoCrates]
+            chunkfiedElements = [elements]
         else:
-            chunkfiedInfoCrates = self.__chunkify(infoCrates, splitSize)
+            chunkfiedElements = self.__chunkify(elements, splitSize)
 
         # splitting in multiple tasks
-        for index, chunkedInfoCrates in enumerate(chunkfiedInfoCrates):
+        for index, chunkedElements in enumerate(chunkfiedElements):
 
             # creating a renderfarm job
             expandedJob = ExpandedJob(clonedTaskHolder, jobDirectory)
 
             # adding information about the chunks
-            expandedJob.setChunkTotal(len(chunkfiedInfoCrates))
+            expandedJob.setChunkTotal(len(chunkfiedElements))
             expandedJob.setCurrentChunk(index)
-            expandedJob.setTotalInChunk(len(chunkedInfoCrates))
+            expandedJob.setTotalInChunk(len(chunkedElements))
             expandedJob.setChunkSize(splitSize)
 
             task = clonedTaskHolder.task()
 
-            # adding infoCrates to the task (since the task holder has been cloned
+            # adding elements to the task (since the task holder has been cloned
             # previously it's safe for us to change it)
             task.clear()
-            for chunkedInfoCrate in chunkedInfoCrates:
-                targetFilePath = taskInfoCrates[chunkedInfoCrate]
-                task.add(chunkedInfoCrate, targetFilePath)
+            for chunkedElement in chunkedElements:
+                targetFilePath = taskElements[chunkedElement]
+                task.add(chunkedElement, targetFilePath)
 
             jobDataFilePath = self.__generateJobData(
                 expandedJob
@@ -410,7 +410,7 @@ class RenderfarmDispatcher(Dispatcher):
             result.append(inputList)
             return result
 
-        # adding an extra chunk for the infoCrates
+        # adding an extra chunk for the elements
         # that don't fit completely in a full chunk
         totalChunks = int(len(inputList) / chunkSize)
         if len(inputList) % chunkSize:

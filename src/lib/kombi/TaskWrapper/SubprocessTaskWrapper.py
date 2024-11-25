@@ -12,7 +12,7 @@ import atexit
 from ..EnvModifier import EnvModifier
 from .TaskWrapper import TaskWrapper, TaskWrapperError
 from ..Task import Task
-from ..InfoCrate import InfoCrate
+from ..Element import Element
 
 class SubprocessTaskWrapperFailedError(TaskWrapperError):
     """Subprocess task wrapper failed Error."""
@@ -78,7 +78,7 @@ class SubprocessTaskWrapper(TaskWrapper):
 
         # tells the total number of instances that will be created to
         # execute the task as subprocesses. This effectively divides
-        # the number of infoCrates by the number of execution instances.
+        # the number of elements by the number of execution instances.
         # This is useful for tasks that don't use a lot of memory
         # /processing (Blocking I.O.). Therefore, they can be
         # executed in parallel, speeding up the entire execution.
@@ -108,24 +108,24 @@ class SubprocessTaskWrapper(TaskWrapper):
         processes = {}
         executionInstances = self.option('executionInstances')
         clonedTask = task.clone()
-        originalInfoCrates = task.infoCrates()
+        originalElements = task.elements()
 
-        totalInfoCratesPerPerform = int(round(len(originalInfoCrates) / float(executionInstances)))
+        totalElementsPerPerform = int(round(len(originalElements) / float(executionInstances)))
         for i in range(executionInstances):
-            currentIndex = i * totalInfoCratesPerPerform
-            nextIndex = currentIndex + totalInfoCratesPerPerform if i < executionInstances - 1 else None
-            taskInfoCrates = originalInfoCrates[currentIndex:nextIndex]
+            currentIndex = i * totalElementsPerPerform
+            nextIndex = currentIndex + totalElementsPerPerform if i < executionInstances - 1 else None
+            taskElements = originalElements[currentIndex:nextIndex]
 
-            if not taskInfoCrates:
+            if not taskElements:
                 continue
 
-            # cleaning all infoCrates in the task
+            # cleaning all elements in the task
             # we are going to add them back in groups
             clonedTask.clear()
 
-            # adding infoCrates back to the cloned task
-            for taskInfoCrate in taskInfoCrates:
-                clonedTask.add(taskInfoCrate, task.target(taskInfoCrate))
+            # adding elements back to the cloned task
+            for taskElement in taskElements:
+                clonedTask.add(taskElement, task.target(taskElement))
 
             # execute process passing json
             serializedTaskFile = tempfile.NamedTemporaryFile(
@@ -221,7 +221,7 @@ class SubprocessTaskWrapper(TaskWrapper):
                 )
 
             # the task passes the result by serializing it as json, we need to load the json file
-            # and re-create the infoCrates.
+            # and re-create the elements.
             with open(serializedTaskFileName) as jsonFile:
                 taskResultDataJson = jsonFile.read()
 
@@ -231,9 +231,9 @@ class SubprocessTaskWrapper(TaskWrapper):
                         'Failed to retrieve task result from subprocess!'
                     )
 
-                for serializedJsonInfoCrate in json.loads(taskResultDataJson):
+                for serializedJsonElement in json.loads(taskResultDataJson):
                     result.append(
-                        InfoCrate.createFromJson(serializedJsonInfoCrate)
+                        Element.createFromJson(serializedJsonElement)
                     )
 
             # removing temporary file
@@ -255,9 +255,9 @@ class SubprocessTaskWrapper(TaskWrapper):
         task = Task.createFromJson(serializedJsonTaskContent)
 
         # running task and serializing the output as json.
-        serializedInfoCrates = []
-        for infoCrate in task.output():
-            serializedInfoCrates.append(infoCrate.toJson())
+        serializedElements = []
+        for element in task.output():
+            serializedElements.append(element.toJson())
 
         # we use the environment to tell where the result has been serialized
         # so it can be resulted back by the parent process.
@@ -267,7 +267,7 @@ class SubprocessTaskWrapper(TaskWrapper):
             # running a task wrapper with the option 'user' defined)
             f.truncate(0)
             # writing the output
-            f.write(json.dumps(serializedInfoCrates))
+            f.write(json.dumps(serializedElements))
 
     @classmethod
     def killAllSubProcesses(cls):

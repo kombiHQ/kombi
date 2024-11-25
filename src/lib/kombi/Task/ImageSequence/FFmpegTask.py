@@ -33,45 +33,45 @@ class FFmpegTask(Task):
         """
         Perform the task.
         """
-        # collecting all infoCrates that have the same target file path
+        # collecting all elements that have the same target file path
         movFiles = OrderedDict()
-        for infoCrate in self.infoCrates():
-            targetFilePath = self.target(infoCrate)
+        for element in self.elements():
+            targetFilePath = self.target(element)
 
             if targetFilePath not in movFiles:
                 movFiles[targetFilePath] = []
 
-            movFiles[targetFilePath].append(infoCrate)
+            movFiles[targetFilePath].append(element)
 
         # calling ffmpeg
         for movFile in movFiles.keys():
-            sequenceInfoCrates = movFiles[movFile]
-            infoCrate = sequenceInfoCrates[0]
+            sequenceElements = movFiles[movFile]
+            element = sequenceElements[0]
 
             # executing ffmpeg
             self.__executeFFmpeg(
-                sequenceInfoCrates,
+                sequenceElements,
                 movFile
             )
 
         # default result based on the target filePath
         return super(FFmpegTask, self)._perform()
 
-    def __executeFFmpeg(self, sequenceInfoCrates, outputFilePath):
+    def __executeFFmpeg(self, sequenceElements, outputFilePath):
         """
         Execute ffmpeg.
         """
-        infoCrate = sequenceInfoCrates[0]
-        startFrame = infoCrate.var('frame')
+        element = sequenceElements[0]
+        startFrame = element.var('frame')
 
         # building an image sequence name that ffmpeg understands that is a file
         # sequence (aka foo.%04d.ext)
         inputSequence = os.path.join(
-            os.path.dirname(infoCrate.var('filePath')),
+            os.path.dirname(element.var('filePath')),
             '{name}.%0{padding}d.{ext}'.format(
-                name=infoCrate.var('name'),
-                padding=infoCrate.var('padding'),
-                ext=infoCrate.var('ext')
+                name=element.var('name'),
+                padding=element.var('padding'),
+                ext=element.var('ext')
             )
         )
 
@@ -127,8 +127,8 @@ class FFmpegTask(Task):
             ),
             # resolution
             '-vf scale={0}:{1}'.format(
-                self.templateOption('width', infoCrate),
-                self.templateOption('height', infoCrate)
+                self.templateOption('width', element),
+                self.templateOption('height', element)
             ),
             # target mov file
             '-y "{0}"'.format(

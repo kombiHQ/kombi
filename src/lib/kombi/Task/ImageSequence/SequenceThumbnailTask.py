@@ -23,22 +23,22 @@ class SequenceThumbnailTask(Task):
         Perform the task.
         """
         targetThumbnails = OrderedDict()
-        for infoCrate in self.infoCrates():
-            targetFilePath = self.target(infoCrate)
+        for element in self.elements():
+            targetFilePath = self.target(element)
 
             if targetFilePath not in targetThumbnails:
                 targetThumbnails[targetFilePath] = []
 
-            targetThumbnails[targetFilePath].append(infoCrate)
+            targetThumbnails[targetFilePath].append(element)
 
         result = []
         # generating a thumbnail for the sequence
-        for targetThumbnail, thumbnailInfoCrates in targetThumbnails.items():
-            thumbnailInfoCrate = thumbnailInfoCrates[int(len(thumbnailInfoCrates) / 2)]
+        for targetThumbnail, thumbnailElements in targetThumbnails.items():
+            thumbnailElement = thumbnailElements[int(len(thumbnailElements) / 2)]
 
             # creating a thumbnail for the image sequence
             imageThumbnailTask = Task.create('imageThumbnail')
-            imageThumbnailTask.add(thumbnailInfoCrate, targetThumbnail)
+            imageThumbnailTask.add(thumbnailElement, targetThumbnail)
 
             imageThumbnailTask.setOption('width', self.option('width'))
             imageThumbnailTask.setOption('height', self.option('height'))

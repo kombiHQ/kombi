@@ -1,7 +1,7 @@
 import os
 import time
 from ..Task import Task
-from ...InfoCrate.Fs import FsInfoCrate
+from ...Element.Fs import FsElement
 from ...Template import Template
 from .CreateDataTask import CreateDataTask
 
@@ -10,7 +10,7 @@ class CreateVersionTask(CreateDataTask):
     ABC for creating a version.
     """
 
-    __genericInfoCrateInfo = [
+    __genericElementInfo = [
         "job",
         "seq",
         "shot",
@@ -49,7 +49,7 @@ class CreateVersionTask(CreateDataTask):
 
     def add(self, *args, **kwargs):
         """
-        Cache the static information about the first infoCrate you add.
+        Cache the static information about the first element you add.
         """
         super(CreateVersionTask, self).add(*args, **kwargs)
 
@@ -74,25 +74,25 @@ class CreateVersionTask(CreateDataTask):
         """
         super(CreateVersionTask, self)._perform()
 
-        # Find all the infoCrates for data that was created for this version
-        infoCrate = FsInfoCrate.createFromPath(self.dataPath())
-        dataInfoCrates = infoCrate.glob()
+        # Find all the elements for data that was created for this version
+        element = FsElement.createFromPath(self.dataPath())
+        dataElements = element.glob()
 
         # Add json files
         for jsonFile in ["info.json", "data.json", "env.json"]:
-            dataInfoCrates.append(FsInfoCrate.createFromPath(os.path.join(self.versionPath(), jsonFile)))
+            dataElements.append(FsElement.createFromPath(os.path.join(self.versionPath(), jsonFile)))
 
         # Add context variables so subsequent tasks get them
-        for infoCrate in dataInfoCrates:
-            for var in self.__genericInfoCrateInfo:
+        for element in dataElements:
+            for var in self.__genericElementInfo:
                 if var in self.infoNames():
-                    infoCrate.setVar(var, self.info(var), True)
-            infoCrate.setVar("versionPath", self.versionPath(), True)
-            infoCrate.setVar("version", self.version(), True)
-            infoCrate.setVar("versionName", self.versionName(), True)
-            infoCrate.setVar("dataPath", self.dataPath(), True)
+                    element.setVar(var, self.info(var), True)
+            element.setVar("versionPath", self.versionPath(), True)
+            element.setVar("version", self.version(), True)
+            element.setVar("versionName", self.versionName(), True)
+            element.setVar("dataPath", self.dataPath(), True)
 
-        return dataInfoCrates
+        return dataElements
 
     def updateInfo(self):
         """
@@ -107,19 +107,19 @@ class CreateVersionTask(CreateDataTask):
         """
         Load the static information about the publish.
         """
-        if self.__loadedStaticData or not self.infoCrates():
+        if self.__loadedStaticData or not self.elements():
             return
 
         self.__loadedStaticData = True
 
-        # all infoCrates must contain the same information about assetName,
+        # all elements must contain the same information about assetName,
         # variant and version. For this reason looking only in the first one
-        infoCrate = self.infoCrates()[0]
+        element = self.elements()[0]
 
-        # Add generic info that is expected to be on the infoCrate
-        for info in self.__genericInfoCrateInfo:
-            if info in infoCrate.varNames():
-                self.addInfo(info, infoCrate.var(info))
+        # Add generic info that is expected to be on the element
+        for info in self.__genericElementInfo:
+            if info in element.varNames():
+                self.addInfo(info, element.var(info))
 
         # looking for the version based on the version folder name
         # that follows the convention "v001"

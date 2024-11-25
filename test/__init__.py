@@ -1,6 +1,6 @@
 from .BaseTestCase import BaseTestCase
 from .CliTest import CliTest
-from . import InfoCrate
+from . import Element
 from . import Template
 from . import Task
 from . import TaskReporter

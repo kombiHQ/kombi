@@ -5,7 +5,7 @@ import unittest
 import platform
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.InfoCrate.Fs import FsInfoCrate
+from kombi.Element.Fs import FsElement
 
 class LinkTaskTest(BaseTestCase):
     """Test link task."""
@@ -29,11 +29,11 @@ class LinkTaskTest(BaseTestCase):
         """
         Test that symlink support in link task works properly.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__targetPath)
+        element = FsElement.createFromPath(self.__targetPath)
 
         linkTask = Task.create('link')
         linkTask.setOption('type', 'symlink')
-        linkTask.add(infoCrate, self.__targetSymlinkPath)
+        linkTask.add(element, self.__targetSymlinkPath)
 
         result = None
         try:
@@ -55,11 +55,11 @@ class LinkTaskTest(BaseTestCase):
         """
         Test that hardlink support in link task works properly.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__targetPath)
+        element = FsElement.createFromPath(self.__targetPath)
 
         linkTask = Task.create('link')
         linkTask.setOption('type', 'hardlink')
-        linkTask.add(infoCrate, self.__targetHardlinkPath)
+        linkTask.add(element, self.__targetHardlinkPath)
         result = linkTask.output()
         self.assertEqual(len(result), 1)
         self.assertTrue(os.path.exists(result[0].var('filePath')))

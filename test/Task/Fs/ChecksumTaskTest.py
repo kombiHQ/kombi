@@ -3,7 +3,7 @@ import os
 import shutil
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.InfoCrate.Fs import FsInfoCrate
+from kombi.Element.Fs import FsElement
 from kombi.Task.Fs.ChecksumTask import ChecksumTaskMatchError
 
 class ChecksumTaskTest(BaseTestCase):
@@ -27,13 +27,13 @@ class ChecksumTaskTest(BaseTestCase):
         """
         Test that the checksum task works properly.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__sourcePath)
+        element = FsElement.createFromPath(self.__sourcePath)
         checksumTask = Task.create('checksum')
-        checksumTask.add(infoCrate, self.__targetPath)
+        checksumTask.add(element, self.__targetPath)
         result = checksumTask.output()
         self.assertEqual(len(result), 1)
         checksumTask = Task.create('checksum')
-        checksumTask.add(infoCrate, self.__otherPath)
+        checksumTask.add(element, self.__otherPath)
         self.assertRaises(ChecksumTaskMatchError, checksumTask.output)
 
     @classmethod

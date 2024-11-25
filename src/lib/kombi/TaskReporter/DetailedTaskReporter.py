@@ -17,10 +17,10 @@ class DetailedTaskReporter(TaskReporter):
             )
         )
 
-        for infoCrate in self.infoCrates():
+        for element in self.elements():
             sys.stdout.write(
                 '  - {}\n'.format(
-                    infoCrate
+                    element
                 )
             )
 

@@ -3,7 +3,7 @@ import os
 from ..BaseTestCase import BaseTestCase
 from kombi.Task import Task
 from kombi.TaskWrapper import TaskWrapper
-from kombi.InfoCrate.Fs import FsInfoCrate
+from kombi.Element.Fs import FsElement
 from kombi.Resource import Resource
 
 class Python3TaskWrapperTest(BaseTestCase):
@@ -18,9 +18,9 @@ class Python3TaskWrapperTest(BaseTestCase):
         """
         resource = Resource.get()
         resource.load(self.__taskPath)
-        infoCrate = FsInfoCrate.createFromPath(self.__sourcePath)
+        element = FsElement.createFromPath(self.__sourcePath)
         dummyTask = Task.create('pythonMajorVerTestTask')
-        dummyTask.add(infoCrate)
+        dummyTask.add(element)
 
         wrapper = TaskWrapper.create("python3")
         result = wrapper.run(dummyTask)

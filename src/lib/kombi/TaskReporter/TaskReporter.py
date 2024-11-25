@@ -1,6 +1,6 @@
 import sys
 import time
-from ..InfoCrate import InfoCrate
+from ..Element import Element
 
 class TaskReporter(object):
     """
@@ -16,7 +16,7 @@ class TaskReporter(object):
         self.__setTaskName(taskName)
         self.__startTime = time.time()
         self.__endTime = None
-        self.__infoCrates = []
+        self.__elements = []
 
     def startTime(self):
         """
@@ -45,21 +45,21 @@ class TaskReporter(object):
         """
         return self.__taskName
 
-    def addInfoCrate(self, infoCrate):
+    def addElement(self, element):
         """
-        Add a infoCrate to the reporter.
+        Add a element to the reporter.
         """
-        assert isinstance(infoCrate, InfoCrate), "Invalid infoCrate type!"
+        assert isinstance(element, Element), "Invalid element type!"
 
         # resetting end time
         self.__endTime = None
-        self.__infoCrates.append(infoCrate)
+        self.__elements.append(element)
 
-    def infoCrates(self):
+    def elements(self):
         """
-        Return a list of infoCrates associated with the report.
+        Return a list of elements associated with the report.
         """
-        return self.__infoCrates
+        return self.__elements
 
     def display(self, stream=sys.stdout):
         """

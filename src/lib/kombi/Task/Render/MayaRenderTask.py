@@ -2,9 +2,9 @@ import os
 import subprocess
 import tempfile
 from ..External.MayaTask import MayaTask, MayaTaskError
-from ...InfoCrate import InfoCrate
-from ...InfoCrate.Fs import FsInfoCrate
-from ...InfoCrate.Fs.Image import ImageInfoCrate
+from ...Element import Element
+from ...Element.Fs import FsElement
+from ...Element.Fs.Image import ImageElement
 
 class MayaRenderTaskError(MayaTaskError):
     """Maya Render Task Error."""
@@ -130,27 +130,27 @@ class MayaRenderTask(MayaTask):
         pass
 
     @classmethod
-    def toRenderInfoCrates(cls, outputImageInfoCrates, startFrame=None, endFrame=None):
+    def toRenderElements(cls, outputImageElements, startFrame=None, endFrame=None):
         """
-        Return hashmap infoCrates containing the render settings information used by this task.
+        Return hashmap elements containing the render settings information used by this task.
 
         TODO: we want to have a specific application types to describe this information
         """
         result = []
 
-        for infoCrateGroup in InfoCrate.group(outputImageInfoCrates):
-            startFrame = startFrame if startFrame is not None else infoCrateGroup[0].var('frame')
-            endFrame = endFrame if endFrame is not None else infoCrateGroup[-1].var('frame')
+        for elementGroup in Element.group(outputImageElements):
+            startFrame = startFrame if startFrame is not None else elementGroup[0].var('frame')
+            endFrame = endFrame if endFrame is not None else elementGroup[-1].var('frame')
 
-            for i, infoCrate in enumerate(infoCrateGroup):
+            for i, element in enumerate(elementGroup):
                 currentFrame = startFrame + i
 
-                assert isinstance(infoCrate, ImageInfoCrate), \
-                    "Invalid output image infoCrate type!"
+                assert isinstance(element, ImageElement), \
+                    "Invalid output image element type!"
 
                 result.append(
-                    cls.__renderHashmapInfoCrate(
-                        infoCrate,
+                    cls.__renderHashmapElement(
+                        element,
                         currentFrame,
                         currentFrame
                     )
@@ -188,17 +188,17 @@ class MayaRenderTask(MayaTask):
         seralizedTaskTempFile.write(self.toJson())
         seralizedTaskTempFile.close()
 
-        for infoCrateGroup in InfoCrate.group(self.infoCrates()):
-            startFrame = infoCrateGroup[0]['settings']['s']
-            endFrame = infoCrateGroup[-1]['settings']['e']
-            sceneFilePath = self.templateOption("scene", infoCrateGroup[0])
+        for elementGroup in Element.group(self.elements()):
+            startFrame = elementGroup[0]['settings']['s']
+            endFrame = elementGroup[-1]['settings']['e']
+            sceneFilePath = self.templateOption("scene", elementGroup[0])
 
             # making sure the scene is defined
             assert len(sceneFilePath), "scene option cannot be empty!"
 
             # building final render settings
-            finalRenderSettings = dict(infoCrateGroup[0]['settings'])
-            for renderSettingName, renderSettingValue in self.templateOption('settings', infoCrateGroup[0]).items():
+            finalRenderSettings = dict(elementGroup[0]['settings'])
+            for renderSettingName, renderSettingValue in self.templateOption('settings', elementGroup[0]).items():
                 finalRenderSettings[renderSettingName] = renderSettingValue
 
             # registering callbacks
@@ -268,19 +268,19 @@ class MayaRenderTask(MayaTask):
                 )
 
             # collecting output paths
-            for infoCrate in infoCrateGroup:
+            for element in elementGroup:
                 createdFiles.append(
-                    infoCrate['output']['fullPath']
+                    element['output']['fullPath']
                 )
 
-        return list(map(FsInfoCrate.createFromPath, createdFiles))
+        return list(map(FsElement.createFromPath, createdFiles))
 
     @classmethod
-    def __renderHashmapInfoCrate(cls, outputImageInfoCrate, startFrame, endFrame):
+    def __renderHashmapElement(cls, outputImageElement, startFrame, endFrame):
         """
-        Return a hashmap infoCrate with the settings used to render this task.
+        Return a hashmap element with the settings used to render this task.
         """
-        assert isinstance(outputImageInfoCrate, ImageInfoCrate), "Invalid output image infoCrate type!"
+        assert isinstance(outputImageElement, ImageElement), "Invalid output image element type!"
 
         # maya render file name conventions: name, name.ext, name.#.ext, name.ext.#, name.#, name#.ext, name_#.ext
         # We don't want to support all those variations instead we only support the ones that make sense
@@ -290,52 +290,52 @@ class MayaRenderTask(MayaTask):
             'name_#.ext': 7
         }
         sequenceFormat = 'name{}.ext'.format(
-            outputImageInfoCrate.tag('group')[len(outputImageInfoCrate.var('name')):len(outputImageInfoCrate.var('name')) + 2]
+            outputImageElement.tag('group')[len(outputImageElement.var('name')):len(outputImageElement.var('name')) + 2]
         )
         assert sequenceFormat in supportedFormats, \
-            "Non-supported image sequence format found it: {}".format(outputImageInfoCrate.var('fullPath'))
+            "Non-supported image sequence format found it: {}".format(outputImageElement.var('fullPath'))
 
         # looking for tokens
-        rd = os.path.dirname(outputImageInfoCrate.var('fullPath'))
-        im = outputImageInfoCrate.var('name')
+        rd = os.path.dirname(outputImageElement.var('fullPath'))
+        im = outputImageElement.var('name')
         if "<" in rd:
             splitPartIndex = rd.find("<")
             if splitPartIndex > 0:
                 im = os.path.join(rd[splitPartIndex:], im)
                 rd = rd[:splitPartIndex - 1]
 
-        hashmapInfoCrate = InfoCrate.create(
+        hashmapElement = Element.create(
             {
                 'settings': {
                     'im': im,
                     'fnc': supportedFormats[sequenceFormat],
-                    'of': outputImageInfoCrate.var('ext'),
+                    'of': outputImageElement.var('ext'),
                     'rd': rd,
-                    'pad': outputImageInfoCrate.var('padding'),
+                    'pad': outputImageElement.var('padding'),
                     's': startFrame,
                     'e': endFrame,
                     'b': 1
                 },
                 'output': {
-                    'fullPath': outputImageInfoCrate.var('fullPath')
+                    'fullPath': outputImageElement.var('fullPath')
                 }
             }
         )
-        hashmapInfoCrate.setVar('dataLayout', 'mayaRender')
-        hashmapInfoCrate.setTag('group', outputImageInfoCrate.tag('group'))
-        hashmapInfoCrate.setVar(
+        hashmapElement.setVar('dataLayout', 'mayaRender')
+        hashmapElement.setTag('group', outputImageElement.tag('group'))
+        hashmapElement.setVar(
             'fullPath',
             '{} {}-{}'.format(
                 os.path.join(
-                    hashmapInfoCrate['settings']['rd'],
-                    hashmapInfoCrate['settings']['im']
+                    hashmapElement['settings']['rd'],
+                    hashmapElement['settings']['im']
                 ),
                 str(startFrame).zfill(10),
                 str(endFrame).zfill(10)
             )
         )
 
-        return hashmapInfoCrate
+        return hashmapElement
 
 
 # registering task

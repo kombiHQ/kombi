@@ -3,7 +3,7 @@ import io
 import unittest
 from fnmatch import fnmatch
 from ..BaseTestCase import BaseTestCase
-from kombi.InfoCrate.Fs import FsInfoCrate
+from kombi.Element.Fs import FsElement
 from kombi.TaskHolder.Loader import JsonLoader
 from kombi.TaskHolder.Dispatcher import Dispatcher
 from kombi.Resource import Resource
@@ -17,19 +17,19 @@ class ColumnsTaskReporterTest(BaseTestCase):
         echoTask\t\tnukeRender\t\t*/RND-TST-SHT_comp_compName_output_v010_tk.1001.exr
         echoTask\t\tshotRender\t\t*/RND-TST-SHT_lighting_beauty_sr.1001.exr
         echoTask\t\tturntable\t\t*/RND_ass_lookdev_default_beauty_tt.1001.exr
-        echoTask\t\ttestInfoCrate\t\t*/testSeq.0001.exr
-        echoTask\t\ttestInfoCrate\t\t*/testSeq.0002.exr
-        echoTask\t\ttestInfoCrate\t\t*/testSeq.0003.exr
-        echoTask\t\ttestInfoCrate\t\t*/testSeq.0004.exr
-        echoTask\t\ttestInfoCrate\t\t*/testSeq.0005.exr
-        echoTask\t\ttestInfoCrate\t\t*/testSeq.0006.exr
-        echoTask\t\ttestInfoCrate\t\t*/testSeq.0007.exr
-        echoTask\t\ttestInfoCrate\t\t*/testSeq.0008.exr
-        echoTask\t\ttestInfoCrate\t\t*/testSeq.0009.exr
-        echoTask\t\ttestInfoCrate\t\t*/testSeq.0010.exr
-        echoTask\t\ttestInfoCrate\t\t*/testSeq.0011.exr
-        echoTask\t\ttestInfoCrate\t\t*/testSeq.0012.exr
-        echoTask\t\ttestInfoCrate\t\t*/test_0001.exr
+        echoTask\t\ttestElement\t\t*/testSeq.0001.exr
+        echoTask\t\ttestElement\t\t*/testSeq.0002.exr
+        echoTask\t\ttestElement\t\t*/testSeq.0003.exr
+        echoTask\t\ttestElement\t\t*/testSeq.0004.exr
+        echoTask\t\ttestElement\t\t*/testSeq.0005.exr
+        echoTask\t\ttestElement\t\t*/testSeq.0006.exr
+        echoTask\t\ttestElement\t\t*/testSeq.0007.exr
+        echoTask\t\ttestElement\t\t*/testSeq.0008.exr
+        echoTask\t\ttestElement\t\t*/testSeq.0009.exr
+        echoTask\t\ttestElement\t\t*/testSeq.0010.exr
+        echoTask\t\ttestElement\t\t*/testSeq.0011.exr
+        echoTask\t\ttestElement\t\t*/testSeq.0012.exr
+        echoTask\t\ttestElement\t\t*/test_0001.exr
         echoTask\t\tjpg\t\t\t*/testSeq.jpg
     """
 
@@ -42,7 +42,7 @@ class ColumnsTaskReporterTest(BaseTestCase):
 
         taskHolderLoader = JsonLoader()
         taskHolderLoader.loadFromFile(self.__jsonConfig)
-        infoCrates = FsInfoCrate.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
+        elements = FsElement.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
 
         dispacher = Dispatcher.create('local')
         dispacher.setOption('defaultReporter', 'columns')
@@ -59,7 +59,7 @@ class ColumnsTaskReporterTest(BaseTestCase):
         )
 
         for taskHolder in taskHolderLoader.taskHolders():
-            dispacher.dispatch(taskHolder, infoCrates)
+            dispacher.dispatch(taskHolder, elements)
 
         output = outputStream.getvalue().replace('\r\n', '\n').split('\n')
         prefixSize = None

@@ -3,8 +3,8 @@ from collections import OrderedDict
 from zipfile import ZipFile, ZIP_DEFLATED, ZIP_STORED
 from tarfile import TarFile
 from ..Task import Task, TaskError
-from ...InfoCrate.Fs.FsInfoCrate import FsInfoCrate
-from ...InfoCrate.Fs.DirectoryInfoCrate import DirectoryInfoCrate
+from ...Element.Fs.FsElement import FsElement
+from ...Element.Fs.DirectoryElement import DirectoryElement
 
 class PackTaskUnsupportedTypeError(TaskError):
     """Pack Task Unsupported Type Error."""
@@ -39,40 +39,40 @@ class PackTask(Task):
         Perform the task.
         """
         archive = OrderedDict()
-        for taskInfoCrate in self.infoCrates():
+        for taskElement in self.elements():
 
-            allInfoCrates = []
-            # in case of directory infoCrate we glob for the contents
-            if isinstance(taskInfoCrate, DirectoryInfoCrate):
-                allInfoCrates += taskInfoCrate.glob()
+            allElements = []
+            # in case of directory element we glob for the contents
+            if isinstance(taskElement, DirectoryElement):
+                allElements += taskElement.glob()
             else:
-                allInfoCrates.append(taskInfoCrate)
+                allElements.append(taskElement)
 
-            filePath = self.target(taskInfoCrate)
+            filePath = self.target(taskElement)
 
-            # resolving the internal path for the infoCrates
-            for infoCrate in allInfoCrates:
+            # resolving the internal path for the elements
+            for element in allElements:
                 internalArchivePath = None
 
-                # infoCrates based on directory infoCrates the internal path is relative to source directory infoCrate
-                if isinstance(taskInfoCrate, DirectoryInfoCrate):
-                    internalArchivePath = infoCrate.var('fullPath')[len(taskInfoCrate.var('fullPath')) - len(taskInfoCrate.var('baseName')):]
+                # elements based on directory elements the internal path is relative to source directory element
+                if isinstance(taskElement, DirectoryElement):
+                    internalArchivePath = element.var('fullPath')[len(taskElement.var('fullPath')) - len(taskElement.var('baseName')):]
 
-                # infoCrates containing a custom internal path that can be declared as part of the target path,
+                # elements containing a custom internal path that can be declared as part of the target path,
                 # for instance: test.zip[a/b/c/file.ext]
                 elif filePath.endswith(']') and filePath.count('[') == 1:
                     filePath, internalArchivePath = filePath[:-1].split('[')
                     internalArchivePath = internalArchivePath.replace('|', '/')
 
-                # otherwise the internal path is the base name of the infoCrate
+                # otherwise the internal path is the base name of the element
                 else:
-                    internalArchivePath = infoCrate.var('baseName')
+                    internalArchivePath = element.var('baseName')
 
                 if filePath not in archive:
                     archive[filePath] = []
                 archive[filePath].append(
                     {
-                        'infoCrate': infoCrate,
+                        'element': element,
                         'internalPath': internalArchivePath
                     }
                 )
@@ -94,7 +94,7 @@ class PackTask(Task):
                     'Unsupported archive type: {}'.format(archiveName)
                 )
 
-        return list(map(FsInfoCrate.createFromPath, archive.keys()))
+        return list(map(FsElement.createFromPath, archive.keys()))
 
     def __archiveTar(self, archiveFilePath, archiveItems, compressTar):
         """
@@ -105,7 +105,7 @@ class PackTask(Task):
 
         with TarFile.open(archiveFilePath, archiveMode) as archiveFile:
             for archiveItem in archiveItems:
-                archiveFile.add(archiveItem['infoCrate'].var('fullPath'), archiveItem['internalPath'])
+                archiveFile.add(archiveItem['element'].var('fullPath'), archiveItem['internalPath'])
 
     def __archiveZip(self, archiveFilePath, archiveItems):
         """
@@ -115,7 +115,7 @@ class PackTask(Task):
 
         with ZipFile(archiveFilePath, 'w', compression=archiveMode, allowZip64=True) as archiveFile:
             for archiveItem in archiveItems:
-                archiveFile.write(archiveItem['infoCrate'].var('fullPath'), archiveItem['internalPath'])
+                archiveFile.write(archiveItem['element'].var('fullPath'), archiveItem['internalPath'])
 
 
 # registering task

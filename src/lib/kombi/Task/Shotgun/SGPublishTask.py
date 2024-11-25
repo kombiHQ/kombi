@@ -3,7 +3,7 @@ import sys
 import json
 from datetime import datetime
 from ..External.ExternalTask import ExternalTask
-from ...InfoCrate.Fs.Video import VideoInfoCrate
+from ...Element.Fs.Video import VideoElement
 
 class SGPublishTask(ExternalTask):
     """
@@ -49,10 +49,10 @@ class SGPublishTask(ExternalTask):
         """
         import shotgun_api3
 
-        infoCrate = self.infoCrates()[0]
-        userName = self.templateOption('user', infoCrate)
-        outputType = self.templateOption('outputType', infoCrate)
-        comment = self.templateOption('comment', infoCrate)
+        element = self.elements()[0]
+        userName = self.templateOption('user', element)
+        outputType = self.templateOption('outputType', element)
+        comment = self.templateOption('comment', element)
 
         sg = shotgun_api3.Shotgun(
             self.__shotgunUrl,
@@ -60,7 +60,7 @@ class SGPublishTask(ExternalTask):
             api_key=self.__shotgunToken
         )
 
-        taskValue = self.templateOption('shotgunTask', infoCrate)
+        taskValue = self.templateOption('shotgunTask', element)
         filters = []
         if taskValue:
             if taskValue.isdigit():
@@ -80,11 +80,11 @@ class SGPublishTask(ExternalTask):
             shotOrAsset = task['entity']
             department = task['step']['name']
         else:
-            job = infoCrate.var('job')
-            episode = infoCrate.var('episode') if 'episode' in infoCrate.varNames() and infoCrate.var('episode') else None
-            seq = infoCrate.var('seq')
-            shot = infoCrate.var('shot')
-            department = self.templateOption('department', infoCrate)
+            job = element.var('job')
+            episode = element.var('episode') if 'episode' in element.varNames() and element.var('episode') else None
+            seq = element.var('seq')
+            shot = element.var('shot')
+            department = self.templateOption('department', element)
 
             filters = [
                 ['project.Project.name', 'is', job],
@@ -135,8 +135,8 @@ class SGPublishTask(ExternalTask):
         data = {
             'project': task['project'],
             'code': '{} {}'.format(
-                self.templateOption('versionType', infoCrate).capitalize(),
-                self.templateOption('displayPath', infoCrate)
+                self.templateOption('versionType', element).capitalize(),
+                self.templateOption('displayPath', element)
             ).strip(),
             'description': comment,
             'entity': shotOrAsset,
@@ -145,17 +145,17 @@ class SGPublishTask(ExternalTask):
             'user': user
         }
 
-        if isinstance(infoCrate, VideoInfoCrate):
-            data['sg_path_to_movie'] = os.path.normpath(infoCrate.var('fullPath'))
+        if isinstance(element, VideoElement):
+            data['sg_path_to_movie'] = os.path.normpath(element.var('fullPath'))
 
         if outputType == 'client':
-            data['client_code'] = infoCrate.var('name')
+            data['client_code'] = element.var('name')
 
         versionType = ''
         if self.option('versionType'):
             versionType = self.templateOption(
                 'versionType',
-                infoCrate
+                element
             )
             data['sg_version_type'] = versionType
 
@@ -163,7 +163,7 @@ class SGPublishTask(ExternalTask):
         if self.option('pathToFrames'):
             pathToFrames = self.templateOption(
                 'pathToFrames',
-                infoCrate
+                element
             )
             data['sg_path_to_frames'] = os.path.normpath(pathToFrames)
 
@@ -209,15 +209,15 @@ class SGPublishTask(ExternalTask):
             sg.upload_thumbnail(
                 'Version',
                 result['id'],
-                self.templateOption('thumbnail', infoCrate)
+                self.templateOption('thumbnail', element)
             )
 
         # uploading quicktime
-        if isinstance(infoCrate, VideoInfoCrate):
+        if isinstance(element, VideoElement):
             sg.upload(
                 'Version',
                 result['id'],
-                infoCrate.var('fullPath'),
+                element.var('fullPath'),
                 'sg_uploaded_movie'
             )
 

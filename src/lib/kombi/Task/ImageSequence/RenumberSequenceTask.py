@@ -1,11 +1,11 @@
 from ...Task import Task
-from ...InfoCrate import InfoCrate
+from ...Element import Element
 
 class RenumberSequenceTask(Task):
     """
-    Implements a task that renumbers the frame variable in image sequence infoCrates.
+    Implements a task that renumbers the frame variable in image sequence elements.
 
-    This task returns a new infoCrate with the renumbered frame assigned to
+    This task returns a new element with the renumbered frame assigned to
     the "frame" variable (it can be changed through the option renumberedFrameVarName).
     The original frame is assigned to "originalFrame" variable (it can be changed through
     the option originalFrameVarName).
@@ -28,17 +28,17 @@ class RenumberSequenceTask(Task):
         """
         result = []
 
-        for infoCrateGroup in InfoCrate.group(self.infoCrates()):
-            for index, infoCrate in enumerate(infoCrateGroup):
+        for elementGroup in Element.group(self.elements()):
+            for index, element in enumerate(elementGroup):
                 newFrame = self.option('startAt') + index
 
-                # cloning the infoCrate before modifying it
-                newInfoCrate = infoCrate.clone()
+                # cloning the element before modifying it
+                newElement = element.clone()
 
-                # setting original frame as infoCrate variable
-                newInfoCrate.setVar(self.option('originalFrameVarName'), infoCrate.var('frame'))
-                newInfoCrate.setVar(self.option('renumberedFrameVarName'), newFrame)
-                result.append(newInfoCrate)
+                # setting original frame as element variable
+                newElement.setVar(self.option('originalFrameVarName'), element.var('frame'))
+                newElement.setVar(self.option('renumberedFrameVarName'), newFrame)
+                result.append(newElement)
 
         return result
 

@@ -1,9 +1,9 @@
 from ...Task import Task
-from ...InfoCrate import InfoCrate
+from ...Element import Element
 
 class SliceSequenceTask(Task):
     """
-    Implements a task that slices the image sequence infoCrates.
+    Implements a task that slices the image sequence elements.
     """
 
     def __init__(self, *args, **kwargs):
@@ -21,14 +21,14 @@ class SliceSequenceTask(Task):
         """
         result = []
 
-        for infoCrateGroup in InfoCrate.group(self.infoCrates()):
-            sliceBegin = int(self.templateOption('sliceTotalAtBegin', infoCrateGroup[0]))
-            sliceEnd = int(self.templateOption('sliceTotalAtEnd', infoCrateGroup[-1]))
+        for elementGroup in Element.group(self.elements()):
+            sliceBegin = int(self.templateOption('sliceTotalAtBegin', elementGroup[0]))
+            sliceEnd = int(self.templateOption('sliceTotalAtEnd', elementGroup[-1]))
 
-            slicedInfoCrates = infoCrateGroup[sliceBegin:]
+            slicedElements = elementGroup[sliceBegin:]
             if sliceEnd:
-                slicedInfoCrates = slicedInfoCrates[:-sliceEnd]
-            result += slicedInfoCrates
+                slicedElements = slicedElements[:-sliceEnd]
+            result += slicedElements
 
         return result
 

@@ -1,7 +1,7 @@
 import os
 import shutil
 from ..Task import Task, TaskError
-from ...InfoCrate.Fs import FsInfoCrate
+from ...Element.Fs import FsElement
 
 class CopyTaskTargetDirectoryError(TaskError):
     """Copy Target Directory Error."""
@@ -30,8 +30,8 @@ class CopyTask(Task):
         Perform the task.
         """
         result = []
-        for infoCrate in self.infoCrates():
-            filePath = self.target(infoCrate)
+        for element in self.elements():
+            filePath = self.target(element)
 
             # trying to create the directory automatically in case it does not exist
             try:
@@ -40,7 +40,7 @@ class CopyTask(Task):
                 pass
 
             # copying the file to the new target
-            sourceFilePath = infoCrate.var('filePath')
+            sourceFilePath = element.var('filePath')
             targetFilePath = filePath
             if os.path.normpath(sourceFilePath) == os.path.normpath(targetFilePath):
                 continue
@@ -59,22 +59,22 @@ class CopyTask(Task):
             else:
                 shutil.copy2(sourceFilePath, targetFilePath)
 
-            # creating result infoCrate
-            newInfoCrate = FsInfoCrate.createFromPath(targetFilePath)
+            # creating result element
+            newElement = FsElement.createFromPath(targetFilePath)
 
             # copying vars
-            for sourceVarName, targetVarName in self.templateOption('copyVar', infoCrate).items():
-                newInfoCrate.setVar(targetVarName, infoCrate.var(sourceVarName))
+            for sourceVarName, targetVarName in self.templateOption('copyVar', element).items():
+                newElement.setVar(targetVarName, element.var(sourceVarName))
 
             # copying context vars
-            for sourceVarName, targetVarName in self.templateOption('copyContextVar', infoCrate).items():
-                newInfoCrate.setVar(targetVarName, infoCrate.var(sourceVarName), True)
+            for sourceVarName, targetVarName in self.templateOption('copyContextVar', element).items():
+                newElement.setVar(targetVarName, element.var(sourceVarName), True)
 
             # copying tags
-            for sourceTagName, targetTagName in self.templateOption('copyTag', infoCrate).items():
-                newInfoCrate.setTag(targetTagName, infoCrate.tag(sourceTagName))
+            for sourceTagName, targetTagName in self.templateOption('copyTag', element).items():
+                newElement.setTag(targetTagName, element.tag(sourceTagName))
 
-            result.append(newInfoCrate)
+            result.append(newElement)
 
         return result
 

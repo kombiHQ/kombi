@@ -206,7 +206,7 @@ class DeadlineDispatcher(RenderfarmDispatcher):
 
             taskLabel = "{} {}".format(
                 taskLabel,
-                task.infoCrates()[0].var('name')
+                task.elements()[0].var('name')
             )
 
             args += [
@@ -227,7 +227,7 @@ class DeadlineDispatcher(RenderfarmDispatcher):
 
             # output directories
             if not hasOutputDirectory:
-                outputDirectories = list(filter(lambda x: bool(x), set(map(lambda x: os.path.dirname(task.target(x)), task.infoCrates()))))
+                outputDirectories = list(filter(lambda x: bool(x), set(map(lambda x: os.path.dirname(task.target(x)), task.elements()))))
                 for index, outputDirectory in enumerate(outputDirectories):
                     args += [
                         "-prop",

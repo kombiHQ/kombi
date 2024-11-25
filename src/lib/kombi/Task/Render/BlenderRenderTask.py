@@ -1,7 +1,7 @@
 import os
 import sys
 import subprocess
-from ...InfoCrate import InfoCrate
+from ...Element import Element
 from ..External.ExternalTask import ExternalTask
 
 
@@ -26,9 +26,9 @@ class BlenderRenderTask(ExternalTask):
         self.setMetadata('dispatch.renderFarm.pool', 'blender')
 
     @classmethod
-    def toRenderInfoCrates(cls, blenderScenePath=None, startFrame=None, endFrame=None):
+    def toRenderElements(cls, blenderScenePath=None, startFrame=None, endFrame=None):
         """
-        Return hashmap infoCrates containing the write node information used by this task.
+        Return hashmap elements containing the write node information used by this task.
         """
         import bpy
 
@@ -40,7 +40,7 @@ class BlenderRenderTask(ExternalTask):
         result = []
         for i in range(startFrame, endFrame + 1):
             result.append(
-                cls.__renderHashmapInfoCrate(
+                cls.__renderHashmapElement(
                     blenderScenePath,
                     i,
                     i
@@ -53,14 +53,14 @@ class BlenderRenderTask(ExternalTask):
         """
         Perform the task.
         """
-        infoCrates = self.infoCrates()
+        elements = self.elements()
 
-        for infoCrateGroup in InfoCrate.group(infoCrates):
-            startFrame = infoCrateGroup[0]['startFrame']
-            endFrame = infoCrateGroup[-1]['endFrame']
+        for elementGroup in Element.group(elements):
+            startFrame = elementGroup[0]['startFrame']
+            endFrame = elementGroup[-1]['endFrame']
 
             renderCommand = 'blender -b "{}" -s {} -e {} -F OPEN_EXR_MULTILAYER -a --python {}'.format(
-                infoCrateGroup[0].var('fullPathScene'),
+                elementGroup[0].var('fullPathScene'),
                 int(startFrame),
                 int(endFrame),
                 os.path.realpath(__file__)
@@ -91,29 +91,29 @@ class BlenderRenderTask(ExternalTask):
                     )
                 )
 
-        return self.infoCrates()
+        return self.elements()
 
     @classmethod
-    def __renderHashmapInfoCrate(cls, blenderScenePath, startFrame, endFrame):
+    def __renderHashmapElement(cls, blenderScenePath, startFrame, endFrame):
         """
-        Return a hashmap infoCrate for the input write node start and end frame.
+        Return a hashmap element for the input write node start and end frame.
         """
         sceneBaseName = os.path.basename(blenderScenePath)
-        hashmapInfoCrate = InfoCrate.create(
+        hashmapElement = Element.create(
             {
                 'name': sceneBaseName,
                 'startFrame': startFrame,
                 'endFrame': endFrame,
             }
         )
-        hashmapInfoCrate.setVar('dataLayout', 'blenderRender')
-        hashmapInfoCrate.setVar('baseName', sceneBaseName)
-        hashmapInfoCrate.setVar('fullPathScene', blenderScenePath)
-        hashmapInfoCrate.setTag('group', sceneBaseName)
-        hashmapInfoCrate.setVar('startFrame', str(startFrame).zfill(10))
-        hashmapInfoCrate.setVar('endFrame', str(endFrame).zfill(10))
+        hashmapElement.setVar('dataLayout', 'blenderRender')
+        hashmapElement.setVar('baseName', sceneBaseName)
+        hashmapElement.setVar('fullPathScene', blenderScenePath)
+        hashmapElement.setTag('group', sceneBaseName)
+        hashmapElement.setVar('startFrame', str(startFrame).zfill(10))
+        hashmapElement.setVar('endFrame', str(endFrame).zfill(10))
 
-        hashmapInfoCrate.setVar(
+        hashmapElement.setVar(
             'fullPath',
             '{} {}-{}'.format(
                 blenderScenePath,
@@ -122,7 +122,7 @@ class BlenderRenderTask(ExternalTask):
             )
         )
 
-        return hashmapInfoCrate
+        return hashmapElement
 
 
 # registering task

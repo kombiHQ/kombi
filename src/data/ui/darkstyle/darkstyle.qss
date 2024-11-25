@@ -389,7 +389,7 @@ QWidget#presetTreeHolder {
     border: 1px solid #222
 }
 
-QPushButton#filterInfoCrateVar, QPushButton#filterInfoCrateVar:checked{
+QPushButton#filterElementVar, QPushButton#filterElementVar:checked{
     text-align: left;
     border-radius: 5px;
     margin: 1px;
@@ -399,7 +399,7 @@ QPushButton#filterInfoCrateVar, QPushButton#filterInfoCrateVar:checked{
     padding-left: 5px;
 }
 
-QPushButton#filterInfoCrateVar:checked{
+QPushButton#filterElementVar:checked{
     background-color:rgb(200, 99, 38);
     border: 1px solid rgb(200, 99, 38);
 }

@@ -4,7 +4,7 @@ import tarfile
 from zipfile import ZipFile
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.InfoCrate.Fs import FsInfoCrate
+from kombi.Element.Fs import FsElement
 from kombi.Task.Archive.PackTask import PackTaskUnsupportedTypeError
 
 class PackTaskTest(BaseTestCase):
@@ -24,7 +24,7 @@ class PackTaskTest(BaseTestCase):
         """
         packTask = Task.create('pack')
         packTask.add(
-            FsInfoCrate.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "glob")),
+            FsElement.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "glob")),
             self.__targetZipDirectoryArchivePath
         )
 
@@ -54,11 +54,11 @@ class PackTaskTest(BaseTestCase):
         """
         packTask = Task.create('pack')
         packTask.add(
-            FsInfoCrate.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
+            FsElement.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
             self.__targetGzArchivePath
         )
         packTask.add(
-            FsInfoCrate.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
+            FsElement.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
             "{}[a|b|c|d.exr]".format(self.__targetGzArchivePath)
         )
 
@@ -79,11 +79,11 @@ class PackTaskTest(BaseTestCase):
         """
         packTask = Task.create('pack')
         packTask.add(
-            FsInfoCrate.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
+            FsElement.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
             self.__targetZipMultipleArchive1Path
         )
         packTask.add(
-            FsInfoCrate.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
+            FsElement.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
             "{}[a|b|c|d.exr]".format(self.__targetZipMultipleArchive2Path)
         )
         # checking results
@@ -109,11 +109,11 @@ class PackTaskTest(BaseTestCase):
         """
         packTask = Task.create('pack')
         packTask.add(
-            FsInfoCrate.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
+            FsElement.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
             self.__targetTarArchivePath
         )
         packTask.add(
-            FsInfoCrate.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
+            FsElement.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
             "{}[a|b|c|d.exr]".format(self.__targetTarArchivePath)
         )
 
@@ -134,11 +134,11 @@ class PackTaskTest(BaseTestCase):
         """
         packTask = Task.create('pack')
         packTask.add(
-            FsInfoCrate.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
+            FsElement.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
             self.__targetTarGzArchivePath
         )
         packTask.add(
-            FsInfoCrate.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
+            FsElement.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
             "{}[a|b|c|d.exr]".format(self.__targetTarGzArchivePath)
         )
 
@@ -159,7 +159,7 @@ class PackTaskTest(BaseTestCase):
         """
         packTask = Task.create('pack')
         packTask.add(
-            FsInfoCrate.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
+            FsElement.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")),
             self.__targetTarGzArchivePath
         )
 
@@ -178,9 +178,9 @@ class PackTaskTest(BaseTestCase):
         """
         Test the exception unsupported archive type.
         """
-        infoCrate = FsInfoCrate.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr"))
+        element = FsElement.createFromPath(os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr"))
         packTask = Task.create('pack')
-        packTask.add(infoCrate, os.path.join(BaseTestCase.tempDirectory(), "testZipArchive.invalid"))
+        packTask.add(element, os.path.join(BaseTestCase.tempDirectory(), "testZipArchive.invalid"))
         self.assertRaises(PackTaskUnsupportedTypeError, packTask.output)
 
     @classmethod

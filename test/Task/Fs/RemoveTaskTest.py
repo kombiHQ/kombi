@@ -2,7 +2,7 @@ import unittest
 import os
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.InfoCrate.Fs import FsInfoCrate
+from kombi.Element.Fs import FsElement
 
 class RemoveTaskTest(BaseTestCase):
     """Test Remove task."""
@@ -20,13 +20,13 @@ class RemoveTaskTest(BaseTestCase):
         """
         Test that the remove task works properly.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__path)
+        element = FsElement.createFromPath(self.__path)
         removeTask = Task.create('remove')
-        removeTask.add(infoCrate, self.__path)
+        removeTask.add(element, self.__path)
         result = removeTask.output()
         self.assertEqual(len(result), 1)
-        infoCrate = result[0]
-        self.assertFalse(os.path.isfile(infoCrate.var("filePath")))
+        element = result[0]
+        self.assertFalse(os.path.isfile(element.var("filePath")))
 
 
 if __name__ == "__main__":

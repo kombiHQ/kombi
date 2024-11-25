@@ -2,12 +2,12 @@ from ..Task import Task
 
 class ModifyOutputTask(Task):
     """
-    Task used to modify the output by assign infoCrate vars and tags.
+    Task used to modify the output by assign element vars and tags.
     """
 
     def __init__(self, *args, **kwargs):
         """
-        Create a modify infoCrates task object.
+        Create a modify elements task object.
         """
         super(ModifyOutputTask, self).__init__(*args, **kwargs)
 
@@ -21,22 +21,22 @@ class ModifyOutputTask(Task):
         """
         result = []
 
-        for infoCrate in self.infoCrates():
-            newInfoCrate = infoCrate.clone()
+        for element in self.elements():
+            newElement = element.clone()
 
             # vars
-            for varName, varValue in self.templateOption('assignVars', infoCrate).items():
-                newInfoCrate.setVar(varName, varValue)
+            for varName, varValue in self.templateOption('assignVars', element).items():
+                newElement.setVar(varName, varValue)
 
             # context vars
-            for varName, varValue in self.templateOption('assignContextVars', infoCrate).items():
-                newInfoCrate.setVar(varName, varValue, True)
+            for varName, varValue in self.templateOption('assignContextVars', element).items():
+                newElement.setVar(varName, varValue, True)
 
             # tags
-            for tagName, tagValue in self.templateOption('assignTags', infoCrate).items():
-                newInfoCrate.setTar(tagName, tagValue)
+            for tagName, tagValue in self.templateOption('assignTags', element).items():
+                newElement.setTar(tagName, tagValue)
 
-            result.append(newInfoCrate)
+            result.append(newElement)
 
         return result
 

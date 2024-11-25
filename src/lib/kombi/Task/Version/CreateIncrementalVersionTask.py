@@ -2,7 +2,7 @@ import os
 import json
 from ..Task import Task
 from ...Template import Template
-from ...InfoCrate.Fs.FsInfoCrate import FsInfoCrate
+from ...Element.Fs.FsElement import FsElement
 from .CreateVersionTask import CreateVersionTask
 
 class CreateIncrementalVersionTask(CreateVersionTask):
@@ -85,8 +85,8 @@ class CreateIncrementalVersionTask(CreateVersionTask):
                 'type',
                 'hardlink'
             )
-            sourceInfoCrate = FsInfoCrate.createFromPath(sourceFile)
-            linkTask.add(sourceInfoCrate, targetFile)
+            sourceElement = FsElement.createFromPath(sourceFile)
+            linkTask.add(sourceElement, targetFile)
             # running task
             linkTask.output()
 

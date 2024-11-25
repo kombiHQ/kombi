@@ -6,7 +6,7 @@ class ChecksumTaskMatchError(TaskError):
 
 class ChecksumTask(Task):
     """
-    Make sure the filePath has the same checksum as the infoCrate file path.
+    Make sure the filePath has the same checksum as the element file path.
 
     In case the checksum does not match an exception is raised.
     """
@@ -22,11 +22,11 @@ class ChecksumTask(Task):
         """
         Perform the task.
         """
-        for infoCrate in self.infoCrates():
+        for element in self.elements():
 
             # copying the file to the new target
-            sourceFilePath = infoCrate.var('filePath')
-            targetFilePath = self.target(infoCrate)
+            sourceFilePath = element.var('filePath')
+            targetFilePath = self.target(element)
 
             # TODO: change md5 for xxHash
             with open(sourceFilePath, 'rb') as sourceFile:

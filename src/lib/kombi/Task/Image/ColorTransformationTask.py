@@ -3,7 +3,7 @@ from array import array
 from .UpdateImageMetadataTask import UpdateImageMetadataTask
 from .OcioTask import OcioTask
 from ..Task import Task
-from ... import InfoCrate
+from ... import Element
 
 class ColorTransformationTask(OcioTask):
     """
@@ -28,11 +28,11 @@ class ColorTransformationTask(OcioTask):
             'targetColorSpace': targetColorSpace
         }
 
-        for infoCrate in self.infoCrates():
+        for element in self.elements():
 
             sourceImage = oiio.ImageInput.open(
-                InfoCrate.Fs.Image.OiioInfoCrate.supportedString(
-                    infoCrate.var('filePath')
+                Element.Fs.Image.OiioElement.supportedString(
+                    element.var('filePath')
                 )
             )
             spec = sourceImage.spec()
@@ -46,8 +46,8 @@ class ColorTransformationTask(OcioTask):
                 targetColorSpace
             ).applyRGB(pixels)
 
-            targetFilePath = InfoCrate.Fs.Image.OiioInfoCrate.supportedString(
-                self.target(infoCrate)
+            targetFilePath = Element.Fs.Image.OiioElement.supportedString(
+                self.target(element)
             )
 
             # trying to create the directory automatically in case it does not exist
@@ -63,7 +63,7 @@ class ColorTransformationTask(OcioTask):
             # kombi metadata information
             UpdateImageMetadataTask.updateMetadata(
                 spec,
-                infoCrate,
+                element,
                 metadata
             )
 

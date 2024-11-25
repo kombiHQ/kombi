@@ -1,5 +1,5 @@
 from ..Task import Task
-from ...InfoCrate.Fs.FsInfoCrate import FsInfoCrate
+from ...Element.Fs.FsElement import FsElement
 from glob import glob
 
 class GlobTask(Task):
@@ -35,8 +35,8 @@ class GlobTask(Task):
         result = []
         alreadyAdded = set()
         targets = set()
-        for infoCrate in self.infoCrates():
-            filePath = self.target(infoCrate)
+        for element in self.elements():
+            filePath = self.target(element)
             if self.option('skipDuplicated') and filePath in targets:
                 continue
             targets.add(filePath)
@@ -48,10 +48,10 @@ class GlobTask(Task):
                 alreadyAdded.add(resolvedFilePath)
 
                 result.append(
-                    FsInfoCrate.createFromPath(resolvedFilePath)
+                    FsElement.createFromPath(resolvedFilePath)
                 )
 
-        return [y for x in FsInfoCrate.group(result) for y in x]
+        return [y for x in FsElement.group(result) for y in x]
 
 
 # registering task

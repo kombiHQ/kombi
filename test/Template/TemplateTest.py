@@ -3,10 +3,10 @@ import unittest
 from ..BaseTestCase import BaseTestCase
 from kombi.Template import Template
 from kombi.Template import TemplateRequiredPathNotFoundError, TemplateVarNotFoundError
-from kombi.InfoCrate.Fs import FsInfoCrate
+from kombi.Element.Fs import FsElement
 
 class TemplateTest(BaseTestCase):
-    """Test Template infoCrate."""
+    """Test Template element."""
 
     __file = os.path.join(BaseTestCase.dataTestsDirectory(), 'RND-TST-SHT_lighting_beauty_sr.1001.exr')
 
@@ -14,9 +14,9 @@ class TemplateTest(BaseTestCase):
         """
         Test simple nested procedures in the template.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__file)
+        element = FsElement.createFromPath(self.__file)
         value = "/a/b/c/(dirname(dirname '/d/e/f'))/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
-        result = Template(value).valueFromInfoCrate(infoCrate)
+        result = Template(value).valueFromElement(element)
         self.assertEqual(
             os.path.normpath(result),
             os.path.normpath('/a/b/c/d/v001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
@@ -26,9 +26,9 @@ class TemplateTest(BaseTestCase):
         """
         Test simple nested procedures in the template.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__file)
+        element = FsElement.createFromPath(self.__file)
         value = "/a/b/c/(concat '(teste(bla - blaa))' '_foo')/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
-        result = Template(value).valueFromInfoCrate(infoCrate)
+        result = Template(value).valueFromElement(element)
         self.assertEqual(
             os.path.normpath(result),
             os.path.normpath('/a/b/c/(teste(bla - blaa))_foo/v001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
@@ -38,10 +38,10 @@ class TemplateTest(BaseTestCase):
         """
         Test multiple nested procedures in the template.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__file)
+        element = FsElement.createFromPath(self.__file)
         value = "/a/b/c/(concat (dirname(dirname (dirname '/d/e/f/g'))) '_' (dirname (dirname {var})))/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
-        result = Template(value).valueFromInfoCrate(
-            infoCrate,
+        result = Template(value).valueFromElement(
+            element,
             extraVars={
                 'var': 'h/j/l'
             }
@@ -55,10 +55,10 @@ class TemplateTest(BaseTestCase):
         """
         Test multiple nested procedures by assigning the result to a token in the template.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__file)
+        element = FsElement.createFromPath(self.__file)
         value = "/a/b/c/(concat (dirname(dirname (dirname '/d/e/f/g'))) '_' (dirname (dirname {var})) as <result>)/(newver <parent>)/(concat <result> '_' 'foo')/{name}.(pad {frame} 6).{ext}"
-        result = Template(value).valueFromInfoCrate(
-            infoCrate,
+        result = Template(value).valueFromElement(
+            element,
             extraVars={
                 'var': 'h/j/l'
             }
@@ -72,10 +72,10 @@ class TemplateTest(BaseTestCase):
         """
         Test arithmetic nested procedures in the template.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__file)
+        element = FsElement.createFromPath(self.__file)
         value = "/a/b/c/({a} + (sum {b} 2))/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
-        result = Template(value).valueFromInfoCrate(
-            infoCrate,
+        result = Template(value).valueFromElement(
+            element,
             extraVars={
                 'a': 2,
                 'b': 3
@@ -90,9 +90,9 @@ class TemplateTest(BaseTestCase):
         """
         Test that the Template works properly.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__file)
+        element = FsElement.createFromPath(self.__file)
         value = '(dirname {filePath})/(newver <parent>)/{name}.(pad {frame} 6).{ext}'
-        result = Template(value).valueFromInfoCrate(infoCrate)
+        result = Template(value).valueFromElement(element)
         self.assertEqual(
             os.path.normpath(result),
             os.path.join(

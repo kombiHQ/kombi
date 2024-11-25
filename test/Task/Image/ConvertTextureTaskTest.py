@@ -2,7 +2,7 @@ import os
 import unittest
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.InfoCrate.Fs import FsInfoCrate
+from kombi.Element.Fs import FsElement
 
 class ConvertTextureTaskTest(BaseTestCase):
     """
@@ -16,10 +16,10 @@ class ConvertTextureTaskTest(BaseTestCase):
         """
         Test that the ConvertTexture task works properly.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__sourcePath)
+        element = FsElement.createFromPath(self.__sourcePath)
         convertTask = Task.create('convertTexture')
         convertTask.setOption('maketxArgs', '-u --unpremult --oiio')
-        convertTask.add(infoCrate, self.__targetPath)
+        convertTask.add(element, self.__targetPath)
         result = convertTask.output()
 
         self.assertEqual(len(result), 1)

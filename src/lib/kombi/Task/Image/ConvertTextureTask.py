@@ -21,8 +21,8 @@ class ConvertTextureTask(Task):
         """
         Perform the task.
         """
-        for infoCrate in self.infoCrates():
-            targetFilePath = self.target(infoCrate)
+        for element in self.elements():
+            targetFilePath = self.target(element)
 
             # creating any necessary directories
             parentDirectory = os.path.dirname(targetFilePath)
@@ -44,7 +44,7 @@ class ConvertTextureTask(Task):
                     self.__maketxExecutable,
                     self.option('maketxArgs'),
                     targetFilePath,
-                    infoCrate.var('filePath')
+                    element.var('filePath')
                 ),
                 shell=True,
                 env=env

@@ -4,7 +4,7 @@ import functools
 import traceback
 import weakref
 from .CheckComboBox import CheckComboBox
-from kombi.InfoCrate import InfoCrate
+from kombi.Element import Element
 from kombi.Task import Task, TaskValidationError
 from Qt import QtCore, QtWidgets, QtGui
 
@@ -62,7 +62,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         self.taskHolderOptionChangedSignal.connect(self.__onTaskHolderOptionChanged)
 
-    def updateTarget(self, infoCrates, taskHolders, groupInfoCrates=True):
+    def updateTarget(self, elements, taskHolders, groupElements=True):
         """
         Update the target tree.
         """
@@ -72,7 +72,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         for index, taskHolder in enumerate(taskHolders):
             try:
-                matchedInfoCrates = taskHolder.query(infoCrates)
+                matchedElements = taskHolder.query(elements)
             except Exception as error:
                 QtWidgets.QApplication.restoreOverrideCursor()
                 traceback.print_exc()
@@ -93,10 +93,10 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 continue
 
             alreadyFailed = False
-            for infoCrateList in InfoCrate.group(matchedInfoCrates):
+            for elementList in Element.group(matchedElements):
                 nameSuffix = "{} ({} total)".format(
-                    infoCrateList[0].tag('group') if 'group' in infoCrateList[0].tagNames() else infoCrateList[0].var('baseName'),
-                    len(infoCrateList)
+                    elementList[0].tag('group') if 'group' in elementList[0].tagNames() else elementList[0].var('baseName'),
+                    len(elementList)
                 )
 
                 clonedTaskHolder = taskHolder.clone()
@@ -106,7 +106,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                         hasattr(clonedTaskHolder.task().setup, '__call__'):
 
                     try:
-                        clonedTaskHolder.task().setup(infoCrateList)
+                        clonedTaskHolder.task().setup(elementList)
                     except Exception as err:
                         traceback.print_exc()
 
@@ -134,7 +134,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 # TODO: this needs to change
                 clonedTaskHolder.entry = weakref.ref(matchedChild)
                 matchedChild.taskHolderIndex = index
-                matchedChild.infoCrateList = infoCrateList
+                matchedChild.elementList = elementList
                 matchedChild.taskHolder = clonedTaskHolder
 
                 # option to enable the task holder
@@ -163,7 +163,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 # with none value we will raise an exception
                 for task in item.taskHolder.childTasks():
 
-                    # running validations without any infoCrates (this will allow validations
+                    # running validations without any elements (this will allow validations
                     # that verify for options to take affect in all tasks)
                     try:
                         task.validate()
@@ -221,14 +221,14 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
                 # running validations
                 try:
-                    item.taskHolder.task().validate(item.infoCrateList)
+                    item.taskHolder.task().validate(item.elementList)
                 except TaskValidationError as err:
                     raise ExecutionSettingsWidgetRequiredError(
                         str(err),
                         item.taskHolder.task()
                     )
 
-                result.append((item.taskHolder, item.infoCrateList))
+                result.append((item.taskHolder, item.elementList))
 
         return result
 
@@ -700,10 +700,10 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         if not self.__hasUpdateInfo(taskHolder):
             return
 
-        infoCrates = taskHolder.entry().infoCrateList
+        elements = taskHolder.entry().elementList
         infoWidget = taskHolder.entry().infoWidget()
 
-        infoResult = taskHolder.task().updateInfo(infoCrates)
+        infoResult = taskHolder.task().updateInfo(elements)
 
         infoWidget.setPlainText(str(infoResult))
 

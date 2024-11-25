@@ -14,14 +14,14 @@ class JsonTaskReporter(TaskReporter):
         result = {
             'task': self.taskName(),
             'execution': int(self.totalTime()),
-            'infoCrates': []
+            'elements': []
         }
 
-        for infoCrate in self.infoCrates():
-            result['infoCrates'].append(
+        for element in self.elements():
+            result['elements'].append(
                 {
-                    'infoCrateType': infoCrate.var('type'),
-                    'fullPath': infoCrate.var('fullPath')
+                    'elementType': element.var('type'),
+                    'fullPath': element.var('fullPath')
                 }
             )
 

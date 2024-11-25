@@ -1,7 +1,7 @@
 import os
-from ...InfoCrate.Fs import FsInfoCrate
-from ...InfoCrate import InfoCrate
-from ...InfoCrate.Fs.Scene import SceneInfoCrate
+from ...Element.Fs import FsElement
+from ...Element import Element
+from ...Element.Fs.Scene import SceneElement
 from ..Task import Task
 from .CreateIncrementalVersionTask import CreateIncrementalVersionTask
 
@@ -22,18 +22,18 @@ class CreateRenderVersionTask(CreateIncrementalVersionTask):
         """
         sourceScenes = set()
 
-        for infoCrate in self.infoCrates():
+        for element in self.elements():
 
-            targetFile = self._computeRenderTargetLocation(infoCrate)
+            targetFile = self._computeRenderTargetLocation(element)
             # copying the render file
-            self.copyFile(infoCrate.var('filePath'), targetFile)
+            self.copyFile(element.var('filePath'), targetFile)
             self.addFile(targetFile)
 
             # Crawl from source directory for scenes to save along with data
-            infoCrate = FsInfoCrate.createFromPath(infoCrate.var('sourceDirectory'))
-            sceneInfoCrates = infoCrate.glob([SceneInfoCrate])
-            for sceneInfoCrate in sceneInfoCrates:
-                sourceScenes.add(sceneInfoCrate.var('filePath'))
+            element = FsElement.createFromPath(element.var('sourceDirectory'))
+            sceneElements = element.glob([SceneElement])
+            for sceneElement in sceneElements:
+                sourceScenes.add(sceneElement.var('filePath'))
 
         # Copy source scenes
         for sourceScene in sourceScenes:
@@ -43,13 +43,13 @@ class CreateRenderVersionTask(CreateIncrementalVersionTask):
 
         # Exclude all work scenes and movies from incremental versioning
         exclude = set()
-        for sceneClasses in InfoCrate.registeredSubclasses(SceneInfoCrate):
+        for sceneClasses in Element.registeredSubclasses(SceneElement):
             exclude.update(sceneClasses.extensions())
         exclude.add("mov")
 
         return super(CreateRenderVersionTask, self)._perform(incrementalExcludeTypes=list(exclude))
 
-    def _computeRenderTargetLocation(self, infoCrate):
+    def _computeRenderTargetLocation(self, element):
         """
         Compute the target file path for a render.
         """
@@ -57,11 +57,11 @@ class CreateRenderVersionTask(CreateIncrementalVersionTask):
             self.dataPath(),
             "renders",
             "{}_{}_{}.{}.{}".format(
-                infoCrate.var('shot'),
-                infoCrate.var('step'),
-                infoCrate.var('pass'),
-                str(infoCrate.var('frame')).zfill(infoCrate.var('padding')),
-                infoCrate.var('ext')
+                element.var('shot'),
+                element.var('step'),
+                element.var('pass'),
+                str(element.var('frame')).zfill(element.var('padding')),
+                element.var('ext')
             )
         )
 

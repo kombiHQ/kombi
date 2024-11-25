@@ -3,7 +3,7 @@ import io
 import unittest
 from fnmatch import fnmatch
 from ..BaseTestCase import BaseTestCase
-from kombi.InfoCrate.Fs import FsInfoCrate
+from kombi.Element.Fs import FsElement
 from kombi.TaskHolder.Loader import JsonLoader
 from kombi.TaskHolder.Dispatcher import Dispatcher
 from kombi.Resource import Resource
@@ -18,19 +18,19 @@ class DetailedTaskReporterTest(BaseTestCase):
           - nukeRender(*/RND-TST-SHT_comp_compName_output_v010_tk.1001.exr)
           - shotRender(*/RND-TST-SHT_lighting_beauty_sr.1001.exr)
           - turntable(*/RND_ass_lookdev_default_beauty_tt.1001.exr)
-          - testInfoCrate(*/testSeq.0001.exr)
-          - testInfoCrate(*/testSeq.0002.exr)
-          - testInfoCrate(*/testSeq.0003.exr)
-          - testInfoCrate(*/testSeq.0004.exr)
-          - testInfoCrate(*/testSeq.0005.exr)
-          - testInfoCrate(*/testSeq.0006.exr)
-          - testInfoCrate(*/testSeq.0007.exr)
-          - testInfoCrate(*/testSeq.0008.exr)
-          - testInfoCrate(*/testSeq.0009.exr)
-          - testInfoCrate(*/testSeq.0010.exr)
-          - testInfoCrate(*/testSeq.0011.exr)
-          - testInfoCrate(*/testSeq.0012.exr)
-          - testInfoCrate(*/test_0001.exr)
+          - testElement(*/testSeq.0001.exr)
+          - testElement(*/testSeq.0002.exr)
+          - testElement(*/testSeq.0003.exr)
+          - testElement(*/testSeq.0004.exr)
+          - testElement(*/testSeq.0005.exr)
+          - testElement(*/testSeq.0006.exr)
+          - testElement(*/testSeq.0007.exr)
+          - testElement(*/testSeq.0008.exr)
+          - testElement(*/testSeq.0009.exr)
+          - testElement(*/testSeq.0010.exr)
+          - testElement(*/testSeq.0011.exr)
+          - testElement(*/testSeq.0012.exr)
+          - testElement(*/test_0001.exr)
         done
         echoTask output (execution * seconds):
           - jpg(*/testSeq.jpg)
@@ -46,7 +46,7 @@ class DetailedTaskReporterTest(BaseTestCase):
 
         taskHolderLoader = JsonLoader()
         taskHolderLoader.loadFromFile(self.__jsonConfig)
-        infoCrates = FsInfoCrate.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
+        elements = FsElement.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
 
         dispacher = Dispatcher.create('local')
         dispacher.setOption('defaultReporter', 'detailed')
@@ -63,7 +63,7 @@ class DetailedTaskReporterTest(BaseTestCase):
         )
 
         for taskHolder in taskHolderLoader.taskHolders():
-            dispacher.dispatch(taskHolder, infoCrates)
+            dispacher.dispatch(taskHolder, elements)
 
         output = outputStream.getvalue().replace('\r\n', '\n').split('\n')
         prefixSize = None

@@ -3,7 +3,7 @@ import os
 import sys
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.InfoCrate.Fs import FsInfoCrate
+from kombi.Element.Fs import FsElement
 
 class ChmodTaskTest(BaseTestCase):
     """Test Chmod task."""
@@ -16,27 +16,27 @@ class ChmodTaskTest(BaseTestCase):
         """
         Test that the chmod task works properly on a file.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__path)
+        element = FsElement.createFromPath(self.__path)
         chmodTask = Task.create('chmod')
-        chmodTask.add(infoCrate, self.__path)
+        chmodTask.add(element, self.__path)
         for permission in ["644", "444", "744", "664"]:
             chmodTask.setOption('directoryMode', permission)
             chmodTask.setOption('fileMode', permission)
             result = chmodTask.output()
             self.assertEqual(len(result), 1)
-            infoCrate = result[0]
-            self.assertEqual(self.__getPermission(infoCrate.var('filePath')), permission)
+            element = result[0]
+            self.assertEqual(self.__getPermission(element.var('filePath')), permission)
 
     @unittest.skipIf(sys.platform.startswith("win"), "not supported on windows")
     def testChmodDir(self):
         """
         Test that the chmod task works properly on a directory.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__dir)
-        fileInfoCrate = FsInfoCrate.createFromPath(self.__path)
+        element = FsElement.createFromPath(self.__dir)
+        fileElement = FsElement.createFromPath(self.__path)
         chmodTask = Task.create('chmod')
-        chmodTask.add(infoCrate, self.__dir)
-        chmodTask.add(fileInfoCrate, self.__dir)
+        chmodTask.add(element, self.__dir)
+        chmodTask.add(fileElement, self.__dir)
         dirPerm = "775"
         filePerm = "664"
         chmodTask.setOption('directoryMode', dirPerm)
@@ -55,9 +55,9 @@ class ChmodTaskTest(BaseTestCase):
         os.symlink(self.__path, link)
         self.assertEqual(self.__getPermission(link), '664')
         self.assertTrue(os.path.islink(link))
-        infoCrate = FsInfoCrate.createFromPath(link)
+        element = FsElement.createFromPath(link)
         chmodTask = Task.create('chmod')
-        chmodTask.add(infoCrate, link)
+        chmodTask.add(element, link)
         chmodTask.setOption('directoryMode', '775')
         chmodTask.setOption('fileMode', '775')
         chmodTask.output()

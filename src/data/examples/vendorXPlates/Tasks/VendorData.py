@@ -10,12 +10,12 @@ class VendorData(Task):
         """
         Implement the execution of the task.
         """
-        infoCrate = self.infoCrates()[0]
-        targetFilePath = self.target(infoCrate)
+        element = self.elements()[0]
+        targetFilePath = self.target(element)
 
         data = {
-            "vendorVersion": infoCrate.var('vendorVersion'),
-            "plateName": infoCrate.var('plateName')
+            "vendorVersion": element.var('vendorVersion'),
+            "plateName": element.var('plateName')
         }
 
         with open(targetFilePath, 'w') as f:

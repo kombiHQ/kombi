@@ -5,7 +5,7 @@ from fnmatch import fnmatch
 from ..Task import Task
 from ..TaskWrapper import TaskWrapper
 from ..Template import Template
-from ..InfoCrate import InfoCrate, Matcher
+from ..Element import Element, Matcher
 
 class TaskHolderError(Exception):
     """Task holder error."""
@@ -15,13 +15,13 @@ class TaskHolderInvalidVarNameError(TaskHolderError):
 
 class TaskHolder(object):
     """
-    Holds task and sub task holders associated with a target template and infoCrate matcher.
+    Holds task and sub task holders associated with a target template and element matcher.
 
     Task Metadata:
         - wrapper.name: string with the name of the task wrapper used to execute the task
         - wrapper.options: dict containing the options passed to the task wrapper
-        - match.types: list containing the types used to match the infoCrates
-        - match.vars: dict containing the key and value for the variables used to match the infoCrates
+        - match.types: list containing the types used to match the elements
+        - match.vars: dict containing the key and value for the variables used to match the elements
     """
 
     statusTypes = (
@@ -57,7 +57,7 @@ class TaskHolder(object):
             exportTemplate = Template()
         self.__setExportTemplate(exportTemplate)
 
-        # creating infoCrate matcher
+        # creating element matcher
         matchTypes = []
         if task.hasMetadata('match.types'):
             matchTypes = task.metadata('match.types')
@@ -89,7 +89,7 @@ class TaskHolder(object):
 
     def setRegroupTag(self, groupTagName):
         """
-        Set the name of the tag used to re-group the input infoCrates.
+        Set the name of the tag used to re-group the input elements.
 
         It works by splitting the task execution for each group (empty
         string means no regroup is being associated).
@@ -109,7 +109,7 @@ class TaskHolder(object):
         Status:
             - execute: perform the task normally (default)
             - bypass: bypass the execution of the task and passes the source
-            infoCrates as result for subtasks
+            elements as result for subtasks
             - ignore: ignore the execution of the task and subtasks
         """
         assert status in self.statusTypes, \
@@ -185,7 +185,7 @@ class TaskHolder(object):
 
     def importTemplates(self):
         """
-        Return a list of templates used to import infoCrates during run.
+        Return a list of templates used to import elements during run.
         """
         return self.__importTemplates
 
@@ -241,48 +241,48 @@ class TaskHolder(object):
 
     def addImportTemplate(self, template):
         """
-        Add a template used to load infoCrates exported by the export template.
+        Add a template used to load elements exported by the export template.
 
-        The infoCrates are loaded during run.
+        The elements are loaded during run.
         """
         assert isinstance(template, Template), "Invalid Template type!"
 
         self.__importTemplates.append(template)
 
-    def addInfoCrates(self, infoCrates, addTaskHolderVars=True):
+    def addElements(self, elements, addTaskHolderVars=True):
         """
-        Add a list of infoCrates to the task.
+        Add a list of elements to the task.
 
-        The infoCrates are added to the task using "query" method to resolve
+        The elements are added to the task using "query" method to resolve
         the target template.
         """
-        for infoCrate, filePath in self.query(infoCrates).items():
+        for element, filePath in self.query(elements).items():
 
             if addTaskHolderVars:
-                # cloning infoCrate so we can modify it safely
-                infoCrate = infoCrate.clone()
+                # cloning element so we can modify it safely
+                element = element.clone()
 
                 for varName in self.varNames():
 
                     # in case the variable has already been
-                    # defined in the infoCrate we skip it
-                    if varName in infoCrate.varNames():
+                    # defined in the element we skip it
+                    if varName in element.varNames():
                         continue
 
-                    infoCrate.setVar(
+                    element.setVar(
                         varName,
                         self.var(varName),
                         varName in self.contextVarNames()
                     )
 
             self.__task.add(
-                infoCrate,
+                element,
                 filePath
             )
 
     def matcher(self):
         """
-        Return the infoCrate matcher associated with the task holder.
+        Return the element matcher associated with the task holder.
         """
         return self.__matcher
 
@@ -307,25 +307,25 @@ class TaskHolder(object):
         """
         del self.__subTaskHolders[:]
 
-    def query(self, infoCrates):
+    def query(self, elements):
         """
-        Return a dict containing the matched infoCrate as key and resolved template as value.
+        Return a dict containing the matched element as key and resolved template as value.
         """
-        validInfoCrates = {}
-        for infoCrate in infoCrates:
-            if self.matcher().match(infoCrate):
-                filterTemplateValue = self.filterTemplate().valueFromInfoCrate(infoCrate, self.__vars)
+        validElements = {}
+        for element in elements:
+            if self.matcher().match(element):
+                filterTemplateValue = self.filterTemplate().valueFromElement(element, self.__vars)
 
-                # if the value of the filter is 0 or false the infoCrate is ignored
+                # if the value of the filter is 0 or false the element is ignored
                 if str(filterTemplateValue).lower() in ['false', '0']:
                     continue
 
-                validInfoCrates[infoCrate] = self.targetTemplate().valueFromInfoCrate(infoCrate, self.__vars)
+                validElements[element] = self.targetTemplate().valueFromElement(element, self.__vars)
 
         # sorting result
         result = OrderedDict()
-        for infoCrate, filePath in sorted(validInfoCrates.items(), key=lambda x: (x[1], x[0].var('fullPath'))):
-            result[infoCrate] = filePath
+        for element, filePath in sorted(validElements.items(), key=lambda x: (x[1], x[0].var('fullPath'))):
+            result[element] = filePath
 
         return result
 
@@ -345,32 +345,32 @@ class TaskHolder(object):
         """
         return self.createFromJson(self.toJson(includeSubTaskHolders))
 
-    def run(self, infoCrates=[], ignoreImports=False):
+    def run(self, elements=[], ignoreImports=False):
         """
         Perform the task.
 
-        Return all the infoCrates resulted by the execution of the task (and sub tasks).
+        Return all the elements resulted by the execution of the task (and sub tasks).
         """
-        assert isinstance(infoCrates, (tuple, list)), "Invalid infoCrate list!"
+        assert isinstance(elements, (tuple, list)), "Invalid element list!"
 
-        useInfoCrates = list(infoCrates)
+        useElements = list(elements)
         if not ignoreImports:
             for importTemplate in self.importTemplates():
                 importFilePath = importTemplate.value(self.__vars)
 
-                # loading infoCrates
+                # loading elements
                 with open(importFilePath) as f:
-                    for infoCrateJson in json.load(f):
-                        infoCrate = InfoCrate.createFromJson(infoCrateJson)
+                    for elementJson in json.load(f):
+                        element = Element.createFromJson(elementJson)
 
-                        # the imported infoCrates need to be validated
-                        # by the infoCrate matcher
-                        if self.matcher().match(infoCrate):
-                            useInfoCrates.append(infoCrate)
+                        # the imported elements need to be validated
+                        # by the element matcher
+                        if self.matcher().match(element):
+                            useElements.append(element)
 
         return self.__recursiveTaskRunner(
             self.clone(),
-            useInfoCrates
+            useElements
         )
 
     @classmethod
@@ -384,7 +384,7 @@ class TaskHolder(object):
 
     def __setMatcher(self, matcher):
         """
-        Associate a infoCrate matcher with the task holder.
+        Associate a element matcher with the task holder.
         """
         assert isinstance(matcher, Matcher), \
             "Invalid Matcher type"
@@ -403,7 +403,7 @@ class TaskHolder(object):
         """
         Associate a filter template with the task holder.
 
-        A filter template can be used to filter out infoCrates based on
+        A filter template can be used to filter out elements based on
         returning 0 or false as result of the filter.
         """
         assert isinstance(filterTemplate, Template), \
@@ -415,7 +415,7 @@ class TaskHolder(object):
         """
         Associate an export template with the task holder.
 
-        This template is used to export the infoCrates
+        This template is used to export the elements
         resulted by the task through "TaskHolder.run()"
         to a json file. This template represents of
         path for that json file.
@@ -519,16 +519,16 @@ class TaskHolder(object):
         return taskHolder
 
     @classmethod
-    def __recursiveTaskRunner(cls, taskHolder, infoCrates):
+    def __recursiveTaskRunner(cls, taskHolder, elements):
         """
         Perform the task runner recursively.
         """
-        # when re-group tag is defined we get the input infoCrates and regroup
+        # when re-group tag is defined we get the input elements and regroup
         # them. This is going to split the processing of the task per group
         if taskHolder.regroupTag():
             result = []
-            groupInfoCrates = InfoCrate.group(infoCrates, taskHolder.regroupTag())
-            for group in groupInfoCrates:
+            groupElements = Element.group(elements, taskHolder.regroupTag())
+            for group in groupElements:
                 newTaskHolder = taskHolder.clone()
                 newTaskHolder.setRegroupTag('')
                 result.extend(
@@ -539,22 +539,22 @@ class TaskHolder(object):
                 )
             return result
 
-        taskHolder.addInfoCrates(infoCrates)
+        taskHolder.addElements(elements)
         result = []
 
         # ignoring the execution of the task
-        if taskHolder.status() == 'ignore' or not taskHolder.task().infoCrates():
+        if taskHolder.status() == 'ignore' or not taskHolder.task().elements():
             pass
 
         # bypassing task execution
         elif taskHolder.status() == 'bypass':
-            taskInfoCrates = taskHolder.task().infoCrates()
-            result += taskInfoCrates
+            taskElements = taskHolder.task().elements()
+            result += taskElements
 
         # running task through the wrapper
         else:
-            taskInfoCrates = taskHolder.taskWrapper().run(taskHolder.task())
-            result += taskInfoCrates
+            taskElements = taskHolder.taskWrapper().run(taskHolder.task())
+            result += taskElements
 
         # exporting the result when export template is defined
         if taskHolder.exportTemplate().inputString():
@@ -565,7 +565,7 @@ class TaskHolder(object):
                 taskHolderVars[varName] = taskHolder.var(varName)
             exportTemplate = taskHolder.exportTemplate().value(taskHolderVars)
 
-            # writing infoCrates
+            # writing elements
             if exportTemplate:
                 try:
                     os.makedirs(os.path.dirname(exportTemplate))
@@ -576,11 +576,11 @@ class TaskHolder(object):
                     f.write(json.dumps(list(map(lambda x: x.toJson(), result))))
 
         # nothing to be done
-        if taskHolder.status() == 'ignore' or not taskHolder.task().infoCrates():
+        if taskHolder.status() == 'ignore' or not taskHolder.task().elements():
             return []
 
         # calling subtask holders
         for subTaskHolder in taskHolder.subTaskHolders():
-            result += cls.__recursiveTaskRunner(subTaskHolder, taskInfoCrates)
+            result += cls.__recursiveTaskRunner(subTaskHolder, taskElements)
 
         return result

@@ -2,7 +2,7 @@ import os
 import multiprocessing
 
 from ..Task import Task, TaskError
-from ... import InfoCrate
+from ... import Element
 
 class ConvertImageTaskError(TaskError):
     """Convert image task error."""
@@ -20,7 +20,7 @@ class ConvertImageTask(Task):
 
         # options used for resizing (the resize happens in case
         # the resize values are different from the original
-        # infoCrate values)
+        # element values)
         self.setOption('width', '{width}')
         self.setOption('height', '{height}')
         self.setOption('keepAspectRatio', False)
@@ -48,15 +48,15 @@ class ConvertImageTask(Task):
         """
         import OpenImageIO as oiio
 
-        for infoCrate in self.infoCrates():
-            targetFilePath = InfoCrate.Fs.Image.OiioInfoCrate.supportedString(
-                self.target(infoCrate)
+        for element in self.elements():
+            targetFilePath = Element.Fs.Image.OiioElement.supportedString(
+                self.target(element)
             )
 
             # opening the source image
             inputImageBuf = oiio.ImageBuf(
-                InfoCrate.Fs.Image.OiioInfoCrate.supportedString(
-                    infoCrate.var('filePath')
+                Element.Fs.Image.OiioElement.supportedString(
+                    element.var('filePath')
                 )
             )
 
@@ -64,24 +64,24 @@ class ConvertImageTask(Task):
             outImageBuf = inputImageBuf
 
             # resizing image
-            width = int(self.templateOption('width', infoCrate))
-            height = int(self.templateOption('height', infoCrate))
+            width = int(self.templateOption('width', element))
+            height = int(self.templateOption('height', element))
 
-            if width != infoCrate.var('width') or height != infoCrate.var('height'):
+            if width != element.var('width') or height != element.var('height'):
                 # figuring out aspect ratio used for the resizing
                 ratio = None
-                if int(self.templateOption('keepAspectRatio', infoCrate)):
+                if int(self.templateOption('keepAspectRatio', element)):
                     ratio = self.__aspectRatio(
-                        infoCrate.var('width'),
-                        infoCrate.var('height'),
+                        element.var('width'),
+                        element.var('height'),
                         width,
                         height
                     )
 
                 outImageBuf = oiio.ImageBuf(
                     oiio.ImageSpec(
-                        int(infoCrate.var('width') * ratio) if ratio is not None else width,
-                        int(infoCrate.var('height') * ratio) if ratio is not None else height,
+                        int(element.var('width') * ratio) if ratio is not None else width,
+                        int(element.var('height') * ratio) if ratio is not None else height,
                         inputImageBuf.spec().nchannels,
                         inputImageBuf.spec().format
                     )
@@ -114,14 +114,14 @@ class ConvertImageTask(Task):
                 outImageBuf = temporaryBuffer
 
             # changing colorspace
-            targetColorspace = self.templateOption('targetColorspace', infoCrate)
+            targetColorspace = self.templateOption('targetColorspace', element)
             if targetColorspace:
                 oiio.ImageBufAlgo.colorconvert(
                     outImageBuf,
                     outImageBuf,
-                    self.templateOption('sourceColorspace', infoCrate),
+                    self.templateOption('sourceColorspace', element),
                     targetColorspace,
-                    colorconfig=self.templateOption('colorConfig', infoCrate)
+                    colorconfig=self.templateOption('colorConfig', element)
                 )
 
             # trying to create the directory automatically in case
