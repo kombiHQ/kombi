@@ -4,7 +4,7 @@ import json
 import argparse
 from glob import glob
 from collections import OrderedDict
-from kombi.InfoCrate import InfoCrate
+from kombi.Element import Element
 from kombi.TaskHolder import TaskHolder
 from kombi.TaskHolder.Dispatcher import Dispatcher
 
@@ -63,17 +63,17 @@ def __runCollapsed(data, taskHolder, dataJsonFile):
             )
 
             # since the range is padded by sorting them it is going to
-            # provide the proper order that the infoCrates should be loaded
+            # provide the proper order that the elements should be loaded
             taskInputFilePaths.sort()
         else:
             taskInputFilePaths = data['taskInputFilePaths']
 
-        # loading input infoCrates
-        infoCrates = []
+        # loading input elements
+        elements = []
         for taskInputFilePath in taskInputFilePaths:
             with open(taskInputFilePath) as jsonFile:
-                serializedInfoCrates = json.load(jsonFile)
-                infoCrates += list(map(lambda x: InfoCrate.createFromJson(x), serializedInfoCrates))
+                serializedElements = json.load(jsonFile)
+                elements += list(map(lambda x: Element.createFromJson(x), serializedElements))
 
         dispatcher = Dispatcher.createFromJson(data['dispatcher'])
 
@@ -81,25 +81,25 @@ def __runCollapsed(data, taskHolder, dataJsonFile):
         # dispatchers
         dispatchedIds = []
         if taskHolder.regroupTag():
-            infoCrateGroups = InfoCrate.group(infoCrates, taskHolder.regroupTag())
+            elementGroups = Element.group(elements, taskHolder.regroupTag())
             modifiedTaskHolder = taskHolder.clone()
 
             # since we don't want the task holder to split over again we
             # need to reset this information in the modified task holder
             modifiedTaskHolder.setRegroupTag('')
-            for infoCrateGroup in infoCrateGroups:
+            for elementGroup in elementGroups:
                 dispatchedIds.extend(
                     dispatcher.dispatch(
                         modifiedTaskHolder.clone(),
-                        infoCrateGroup
+                        elementGroup
                     )
                 )
-        # otherwise, it passes all infoCrates to the task holder (default)
+        # otherwise, it passes all elements to the task holder (default)
         else:
             dispatchedIds.extend(
                 dispatcher.dispatch(
                     taskHolder,
-                    infoCrates
+                    elements
                 )
             )
 
@@ -145,27 +145,27 @@ def __runExpanded(data, taskHolder, rangeStart, rangeEnd):
             ext=nameParts[1][1:]
         )
 
-        # collecting all infoCrates so we can re-assign only the ones that belong
+        # collecting all elements so we can re-assign only the ones that belong
         # to the range
         task = taskHolder.task()
-        infoCrates = OrderedDict()
-        for infoCrate in task.infoCrates():
-            infoCrates[infoCrate] = task.target(infoCrate)
+        elements = OrderedDict()
+        for element in task.elements():
+            elements[element] = task.target(element)
 
-        # including only the infoCrates from the specific range
+        # including only the elements from the specific range
         task.clear()
-        for infoCrate in list(infoCrates.keys())[rangeStart: rangeEnd + 1]:
-            filePath = infoCrates[infoCrate]
+        for element in list(elements.keys())[rangeStart: rangeEnd + 1]:
+            filePath = elements[element]
             task.add(
-                infoCrate,
+                element,
                 filePath
             )
 
-    outputInfoCrates = taskHolder.run()
+    outputElements = taskHolder.run()
 
-    # writing resulted infoCrates
+    # writing resulted elements
     with open(taskResultFilePath, 'w') as jsonFile:
-        data = list(map(lambda x: x.toJson(), outputInfoCrates))
+        data = list(map(lambda x: x.toJson(), outputElements))
         json.dump(
             data,
             jsonFile,
@@ -218,14 +218,14 @@ parser.add_argument(
     '--range-start',
     type=int,
     action="store",
-    help='In case the task has been chunkfied on the farm, tells the context about the start infoCrate index'
+    help='In case the task has been chunkfied on the farm, tells the context about the start element index'
 )
 
 parser.add_argument(
     '--range-end',
     type=int,
     action="store",
-    help='In case the task has been chunkfied on the farm, tells the context about the end infoCrate index'
+    help='In case the task has been chunkfied on the farm, tells the context about the end element index'
 )
 
 # executing it

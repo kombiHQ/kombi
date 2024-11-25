@@ -7,7 +7,7 @@ import traceback
 from ..Task import Task, TaskError, TaskValidationError
 from ..External.GafferTask import GafferTask
 from ...Template import Template
-from ...InfoCrate import InfoCrate
+from ...Element import Element
 
 class GafferSwitchVersionTaskError(TaskError):
     """
@@ -43,11 +43,11 @@ class GafferVersionSwitchTask(Task):
             }
         )
 
-    def switchInfo(self, infoCrates):
+    def switchInfo(self, elements):
         """
-        Return a text output displayed in the info area of the infoCrate.
+        Return a text output displayed in the info area of the element.
         """
-        versionsPath = infoCrates[0].var('versionsPath')
+        versionsPath = elements[0].var('versionsPath')
         version = self.option('version')
 
         jsonInfoFilePath = os.path.join(versionsPath, version, 'info.json')
@@ -67,16 +67,16 @@ class GafferVersionSwitchTask(Task):
 
         return '\n'.join(output)
 
-    def setup(self, infoCrates):
+    def setup(self, elements):
         """
         Setting the initial value for output dir.
         """
-        infoCrate = infoCrates[0]
+        element = elements[0]
 
         versions = set()
-        if os.path.exists(infoCrate.var('versionsPath')):
-            for node in os.listdir(infoCrate.var('versionsPath')):
-                if os.path.isdir(os.path.join(infoCrate.var('versionsPath'), node)) and node.startswith('v') and node[1:].isdigit():
+        if os.path.exists(element.var('versionsPath')):
+            for node in os.listdir(element.var('versionsPath')):
+                if os.path.isdir(os.path.join(element.var('versionsPath'), node)) and node.startswith('v') and node[1:].isdigit():
                     versions.add(node)
 
         allVersions = sorted(list(versions), reverse=True)
@@ -92,19 +92,19 @@ class GafferVersionSwitchTask(Task):
 
         self.setOption('version', allVersions[0] if allVersions else '')
 
-    def validate(self, infoCrates=None):
+    def validate(self, elements=None):
         """
-        Validating then updating infoCrate information with the new output dir.
+        Validating then updating element information with the new output dir.
         """
-        if not infoCrates:
+        if not elements:
             return
 
-        for infoCrate in infoCrates:
+        for element in elements:
             if not self.option('version'):
                 raise TaskValidationError(
                     'Version cannot be empty!'
                 )
-            elif not os.path.exists(os.path.join(infoCrate.var('versionsPath'), self.option('version'))):
+            elif not os.path.exists(os.path.join(element.var('versionsPath'), self.option('version'))):
                 raise TaskValidationError(
                     'Version does not exist!'
                 )
@@ -115,15 +115,15 @@ class GafferVersionSwitchTask(Task):
         """
         scriptNode = GafferVersionSwitchTask.currentScriptNode()
         result = []
-        for infoCrate in self.infoCrates():
-            node = self.fromPathToNode(scriptNode, str(infoCrate.var('nodePath')))
+        for element in self.elements():
+            node = self.fromPathToNode(scriptNode, str(element.var('nodePath')))
             selectedVersion = self.option('version')
 
             # replacing version in the path
-            currentFilePath = infoCrate.var('currentFilePath')
+            currentFilePath = element.var('currentFilePath')
             newFilePath = currentFilePath.replace(
                 '/{}/'.format(
-                    infoCrate.var('currentVersion')
+                    element.var('currentVersion')
                 ),
                 '/{}/'.format(
                     selectedVersion
@@ -132,7 +132,7 @@ class GafferVersionSwitchTask(Task):
 
             newFilePath = newFilePath.replace(
                 '_{}'.format(
-                    infoCrate.var('currentVersion')
+                    element.var('currentVersion')
                 ),
                 '_{}'.format(
                     selectedVersion
@@ -141,26 +141,26 @@ class GafferVersionSwitchTask(Task):
 
             try:
                 # reference
-                if infoCrate.var('typeName') == 'Reference':
+                if element.var('typeName') == 'Reference':
                     node.load(str(newFilePath))
                     continue
 
                 # regular nodes/plugs
-                if infoCrate.var('nestedName'):
-                    node = node[str(infoCrate.var('nestedName'))]
+                if element.var('nestedName'):
+                    node = node[str(element.var('nestedName'))]
 
-                node[str(infoCrate.var('plugName'))].setValue(str(newFilePath))
+                node[str(element.var('plugName'))].setValue(str(newFilePath))
             except Exception:
-                sys.stderr.write('Failed on updating {}: {}\n'.format(infoCrate.var('fullPath'), newFilePath))
+                sys.stderr.write('Failed on updating {}: {}\n'.format(element.var('fullPath'), newFilePath))
                 sys.stderr.flush()
                 traceback.print_exc()
 
         return result
 
     @classmethod
-    def toVersionSwitchInfoCrates(cls, scriptNode):
+    def toVersionSwitchElements(cls, scriptNode):
         """
-        Return a hashmap infoCrate for the version switch nodes.
+        Return a hashmap element for the version switch nodes.
         """
         import Gaffer
 
@@ -201,18 +201,18 @@ class GafferVersionSwitchTask(Task):
 
         result = []
         for nodeNeedingUpdate in nodesNeedingUpdate:
-            hashmapInfoCrate = InfoCrate.create(
+            hashmapElement = Element.create(
                 {
                     'name': nodeNeedingUpdate['name']
                 }
             )
-            hashmapInfoCrate.setVar('dataLayout', 'gafferVersionSwitch')
-            hashmapInfoCrate.setVar('baseName', nodeNeedingUpdate['name'][1:])
+            hashmapElement.setVar('dataLayout', 'gafferVersionSwitch')
+            hashmapElement.setVar('baseName', nodeNeedingUpdate['name'][1:])
 
             for key, value in nodeNeedingUpdate.items():
-                hashmapInfoCrate.setVar(key, value)
+                hashmapElement.setVar(key, value)
 
-            result.append(hashmapInfoCrate)
+            result.append(hashmapElement)
 
         return result
 

@@ -1,8 +1,8 @@
 from .ExecutionSettingsWidget import ExecutionSettingsWidget, ExecutionSettingsWidgetError, ExecutionSettingsWidgetRequiredError
 from .DispatcherListWidget import DispatcherListWidget
-from .ImageInfoCrateViewer import ImageInfoCrateViewer
+from .ImageElementViewer import ImageElementViewer
 from .MultiInputDialog import MultiInputDialog
 from .ComboBoxInputDialog import ComboBoxInputDialog
 from .CheckComboBox import CheckComboBox
 from .RenderfarmDispatcherPriorityWidget import RenderfarmDispatcherPriorityWidget
-from .FilterInfoCrateVarWidget import FilterInfoCrateVarWidget
+from .FilterElementVarWidget import FilterElementVarWidget

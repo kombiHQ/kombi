@@ -2,7 +2,7 @@ import unittest
 import os
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.InfoCrate.Fs import FsInfoCrate
+from kombi.Element.Fs import FsElement
 
 class ConvertVideoTaskTest(BaseTestCase):
     """Test ConvertVideo task."""
@@ -14,9 +14,9 @@ class ConvertVideoTaskTest(BaseTestCase):
         """
         Test that the Convert Video task works properly.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__sourcePath)
+        element = FsElement.createFromPath(self.__sourcePath)
         convertTask = Task.create('convertVideo')
-        convertTask.add(infoCrate, self.__targetPath)
+        convertTask.add(element, self.__targetPath)
         result = convertTask.output()
         self.assertEqual(len(result), 1)
 

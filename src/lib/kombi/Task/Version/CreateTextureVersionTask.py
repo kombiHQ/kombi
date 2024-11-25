@@ -18,16 +18,16 @@ class CreateTextureVersionTask(CreateIncrementalVersionTask):
         """
         Perform the task.
         """
-        for infoCrate in self.infoCrates():
+        for element in self.elements():
 
             textureOriginalTargetLocation = self.__computeTextureTargetLocation(
-                infoCrate,
-                infoCrate.var('ext')
+                element,
+                element.var('ext')
             )
 
             # copying the original texture file
             self.copyFile(
-                infoCrate.var('filePath'),
+                element.var('filePath'),
                 textureOriginalTargetLocation
             )
 
@@ -38,8 +38,8 @@ class CreateTextureVersionTask(CreateIncrementalVersionTask):
                 self.option('maketxArgs')
             )
 
-            textureTxTargetLocation = self.__computeTextureTargetLocation(infoCrate, 'tx')
-            convertTexureTask.add(infoCrate, textureTxTargetLocation)
+            textureTxTargetLocation = self.__computeTextureTargetLocation(element, 'tx')
+            convertTexureTask.add(element, textureTxTargetLocation)
             convertTexureTask.output()
 
             # adding texture files to the published version
@@ -48,7 +48,7 @@ class CreateTextureVersionTask(CreateIncrementalVersionTask):
 
         return super(CreateTextureVersionTask, self)._perform()
 
-    def __computeTextureTargetLocation(self, infoCrate, ext):
+    def __computeTextureTargetLocation(self, element, ext):
         """
         Compute the target file path for an texture.
         """
@@ -56,8 +56,8 @@ class CreateTextureVersionTask(CreateIncrementalVersionTask):
             self.dataPath(),
             ext,
             "{0}_{1}.{2}".format(
-                infoCrate.var('mapType'),
-                infoCrate.var('udim'),
+                element.var('mapType'),
+                element.var('udim'),
                 ext
             )
         )

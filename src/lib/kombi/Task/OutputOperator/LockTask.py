@@ -21,12 +21,12 @@ class LockTask(Task):
         """
         Implement the execution of the task.
         """
-        infoCrates = self.infoCrates()
+        elements = self.elements()
 
         result = []
         alreadyCreated = set()
-        for infoCrate in infoCrates:
-            targetFilePath = self.target(infoCrate)
+        for element in elements:
+            targetFilePath = self.target(element)
 
             if targetFilePath not in alreadyCreated:
                 try:
@@ -42,13 +42,13 @@ class LockTask(Task):
 
                 alreadyCreated.add(targetFilePath)
 
-            newInfoCrate = infoCrate.clone()
-            newInfoCrate.setVar(
-                self.templateOption('assignLockToContextVar', infoCrate),
+            newElement = element.clone()
+            newElement.setVar(
+                self.templateOption('assignLockToContextVar', element),
                 targetFilePath,
                 True
             )
-            result.append(newInfoCrate)
+            result.append(newElement)
 
         return result
 

@@ -1,8 +1,8 @@
 import os
 from fnmatch import fnmatch
 from ...Task import Task, TaskError
-from ...InfoCrate import InfoCrate
-from ...InfoCrate.Fs.Image.OiioInfoCrate import OiioInfoCrate
+from ...Element import Element
+from ...Element.Fs.Image.OiioElement import OiioElement
 
 class CheckSequenceTaskError(TaskError):
     """Base check sequence task exception."""
@@ -24,7 +24,7 @@ class CheckSequenceTaskRequiredMetadataError(CheckSequenceTaskError):
 
 class CheckSequenceTask(Task):
     """
-    Implements a task that verifies for common issues in image sequence infoCrates.
+    Implements a task that verifies for common issues in image sequence elements.
     """
 
     __missingFrame = True
@@ -64,72 +64,72 @@ class CheckSequenceTask(Task):
         """
         import OpenImageIO as oiio
 
-        for infoCrateGroup in InfoCrate.group(self.infoCrates()):
-            # sorting infoCrates by frame
-            infoCrateGroup.sort(key=lambda x: x.var('frame'))
+        for elementGroup in Element.group(self.elements()):
+            # sorting elements by frame
+            elementGroup.sort(key=lambda x: x.var('frame'))
 
             previousFrame = None
-            previousInfoCrate = None
+            previousElement = None
 
             # total frames check
             sequenceFullPath = os.path.join(
-                os.path.dirname(infoCrateGroup[0].var('fullPath')),
-                infoCrateGroup[0].tag('group')
+                os.path.dirname(elementGroup[0].var('fullPath')),
+                elementGroup[0].tag('group')
             ).replace("\\", '/')
 
             # sequence total frames check
-            if self.option("totalFrames") != -1 and len(infoCrateGroup) != self.option("totalFrames"):
+            if self.option("totalFrames") != -1 and len(elementGroup) != self.option("totalFrames"):
                 raise CheckSequenceTaskTotalFramesError(
                     "Sequence does not match the total number of frames. It requires '{}' and contains '{}':\n    {}".format(
                         self.option("totalFrames"),
-                        len(infoCrateGroup),
+                        len(elementGroup),
                         sequenceFullPath
                     )
                 )
 
             # sequence minimum frames check
-            if len(infoCrateGroup) < self.option("minimumFrames"):
+            if len(elementGroup) < self.option("minimumFrames"):
                 raise CheckSequenceTaskMinimumFileSizeError(
                     "Sequence does not match the minimum number of frames. It requires as miminum '{}' and contains '{}':\n    {}".format(
                         self.option("minimumFrames"),
-                        len(infoCrateGroup),
+                        len(elementGroup),
                         sequenceFullPath
                     )
                 )
 
-            for index, infoCrate in enumerate(infoCrateGroup):
+            for index, element in enumerate(elementGroup):
                 # missing frame check
                 if self.option("missingFrame"):
-                    if previousFrame is None or infoCrate.var("frame") - previousFrame == 1:
-                        previousFrame = infoCrate.var("frame")
-                        previousInfoCrate = infoCrate
+                    if previousFrame is None or element.var("frame") - previousFrame == 1:
+                        previousFrame = element.var("frame")
+                        previousElement = element
                     else:
                         raise CheckSequenceTaskMissingFrameError(
                             "Found missing frame(s) between:\n    {}\n    ???\n    {}".format(
-                                previousInfoCrate.var('fullPath'),
-                                infoCrate.var('fullPath')
+                                previousElement.var('fullPath'),
+                                element.var('fullPath')
                             )
                         )
 
                 # minimum file size check
-                if self.option("minimumFileSize") != -1 and infoCrate.pathHolder().size() < self.option("minimumFileSize"):
+                if self.option("minimumFileSize") != -1 and element.pathHolder().size() < self.option("minimumFileSize"):
                     raise CheckSequenceTaskMinimumFileSizeError(
                         "Frame file size does not match the minimum required size (perhaps corruped):\n    {}".format(
-                            infoCrate.var('fullPath')
+                            element.var('fullPath')
                         )
                     )
 
                 # minimum file size check
-                if self.option("minimumFileSize") != -1 and infoCrate.pathHolder().size() < self.option("minimumFileSize"):
+                if self.option("minimumFileSize") != -1 and element.pathHolder().size() < self.option("minimumFileSize"):
                     raise CheckSequenceTaskMinimumFileSizeError(
                         "Frame file size does not match the minimum required size (perhaps corruped):\n    {}".format(
-                            infoCrate.var('fullPath')
+                            element.var('fullPath')
                         )
                     )
 
                 # required metadata check
                 for requiredMetadata in self.option("requiredMetadata"):
-                    inputSpec = oiio.ImageInput.open(OiioInfoCrate.supportedString(infoCrate.var("fullPath"))).spec()
+                    inputSpec = oiio.ImageInput.open(OiioElement.supportedString(element.var("fullPath"))).spec()
 
                     found = False
                     for attribute in inputSpec.extra_attribs:
@@ -140,11 +140,11 @@ class CheckSequenceTask(Task):
                         raise CheckSequenceTaskRequiredMetadataError(
                             "Could not find the required metadata name '{}' in the frame:\n    {}".format(
                                 attribute,
-                                infoCrate.var('fullPath')
+                                element.var('fullPath')
                             )
                         )
 
-        return self.infoCrates()
+        return self.elements()
 
 
 # registering task

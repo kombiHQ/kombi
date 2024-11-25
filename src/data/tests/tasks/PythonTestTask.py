@@ -7,17 +7,17 @@ class PythonTestTask(Task):
     """
 
     def _perform(self):
-        sourceInfoCrate = self.infoCrates()[0]
+        sourceElement = self.elements()[0]
         if self.option('runPython'):
             dummyTask = Task.create('pythonTestTask')
             dummyTask.setOption("runPython", False)
-            dummyTask.add(sourceInfoCrate)
+            dummyTask.add(sourceElement)
             wrapper = TaskWrapper.create('python')
             result = wrapper.run(dummyTask)
         else:
             import OpenImageIO
-            sourceInfoCrate.setVar("testPython", OpenImageIO.VERSION)
-            result = [sourceInfoCrate.clone()]
+            sourceElement.setVar("testPython", OpenImageIO.VERSION)
+            result = [sourceElement.clone()]
 
         return result
 

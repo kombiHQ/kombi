@@ -47,11 +47,11 @@ class FtrackPublishAssetVersionTask(ExternalTask):
         """
         import ftrack_api
 
-        infoCrate = self.infoCrates()[0]
-        user = self.templateOption('user', infoCrate)
-        department = self.templateOption('department', infoCrate).lower()
-        outputType = self.templateOption('outputType', infoCrate)
-        comment = self.templateOption('comment', infoCrate)
+        element = self.elements()[0]
+        user = self.templateOption('user', element)
+        department = self.templateOption('department', element).lower()
+        outputType = self.templateOption('outputType', element)
+        comment = self.templateOption('comment', element)
 
         session = ftrack_api.Session(
             self.__ftrackUrl,
@@ -63,12 +63,12 @@ class FtrackPublishAssetVersionTask(ExternalTask):
         fields = OrderedDict()
 
         # job
-        job = infoCrate.var('clientJobName') if 'clientJobName' in infoCrate.varNames() else infoCrate.var('job')
+        job = element.var('clientJobName') if 'clientJobName' in element.varNames() else element.var('job')
         fields['project.name'] = job
 
         # season (optional)
-        if 'season' in infoCrate.varNames() and infoCrate.var('season'):
-            season = infoCrate.var('originalSeason') if 'originalSeason' in infoCrate.varNames() else infoCrate.var('season')
+        if 'season' in element.varNames() and element.var('season'):
+            season = element.var('originalSeason') if 'originalSeason' in element.varNames() else element.var('season')
 
             # converting season format from 210 to S02E10
             seasonFormated = "S{}E{}".format(
@@ -78,17 +78,17 @@ class FtrackPublishAssetVersionTask(ExternalTask):
             fields['parent.parent.parent.name'] = seasonFormated
 
         # seq
-        seq = infoCrate.var('originalSeq') if 'originalSeq' in infoCrate.varNames() else infoCrate.var('seq')
+        seq = element.var('originalSeq') if 'originalSeq' in element.varNames() else element.var('seq')
         fields['parent.parent.name'] = seq
 
         # shot
-        shot = infoCrate.var('originalShot') if 'originalShot' in infoCrate.varNames() else infoCrate.var('shot')
+        shot = element.var('originalShot') if 'originalShot' in element.varNames() else element.var('shot')
         fields['parent.name'] = shot
 
         # special case for archer
         # TODO: remove this mapping in future releases
-        if infoCrate.var('job').lower() == 'arc':
-            charName = infoCrate.var('name').split('_')[-2].split('-')[0]
+        if element.var('job').lower() == 'arc':
+            charName = element.var('name').split('_')[-2].split('-')[0]
             fields['parent.parent.name'] = charName
 
         # task name
@@ -124,7 +124,7 @@ class FtrackPublishAssetVersionTask(ExternalTask):
         # creating asset (if needed)
         fields['parent.project.name'] = fields['project.name']
         del fields['project.name']
-        assetName = "_".join(infoCrate.var('name').split("_")[:-1])
+        assetName = "_".join(element.var('name').split("_")[:-1])
 
         # adding the output as part of the asset name
         assetName += "_{}".format(outputType)
@@ -159,7 +159,7 @@ class FtrackPublishAssetVersionTask(ExternalTask):
 
         assetVersion = session.query(
             'AssetVersion where version is {} and asset_id is "{}"'.format(
-                infoCrate.var('version'),
+                element.var('version'),
                 asset['id']
             )
         ).first()
@@ -172,7 +172,7 @@ class FtrackPublishAssetVersionTask(ExternalTask):
                     'asset': asset,
                     'task': departmentTask,
                     'comment': comment,
-                    'version': infoCrate.var('version')
+                    'version': element.var('version')
                 }
             )
             session.commit()
@@ -180,7 +180,7 @@ class FtrackPublishAssetVersionTask(ExternalTask):
         # adding component to the asset version
         # (limiting to a single quicktime)
         assetVersion.encode_media(
-            infoCrate.var('fullPath')
+            element.var('fullPath')
         )
 
         # updating task status

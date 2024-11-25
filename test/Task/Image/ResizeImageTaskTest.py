@@ -2,7 +2,7 @@ import unittest
 import os
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.InfoCrate.Fs import FsInfoCrate
+from kombi.Element.Fs import FsElement
 
 class ResizeImageTaskTest(BaseTestCase):
     """Test ResizeImage task."""
@@ -14,18 +14,18 @@ class ResizeImageTaskTest(BaseTestCase):
         """
         Test that the ResizeImage task works properly.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__sourcePath)
+        element = FsElement.createFromPath(self.__sourcePath)
         resizeTask = Task.create('resizeImage')
-        resizeTask.add(infoCrate, self.__targetPath)
+        resizeTask.add(element, self.__targetPath)
         resizeTask.setOption("width", "480")
         resizeTask.setOption("height", "270")
         for convertToRGBA in [False, True]:
             resizeTask.setOption("convertToRGBA", convertToRGBA)
             result = resizeTask.output()
             self.assertEqual(len(result), 1)
-            infoCrate = result[0]
-            self.assertEqual(infoCrate.var("width"), 480)
-            self.assertEqual(infoCrate.var("height"), 270)
+            element = result[0]
+            self.assertEqual(element.var("width"), 480)
+            self.assertEqual(element.var("height"), 270)
 
     @classmethod
     def tearDownClass(cls):

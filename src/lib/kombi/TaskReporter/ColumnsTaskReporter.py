@@ -18,21 +18,21 @@ class ColumnsTaskReporter(TaskReporter):
         if self.__textColumnSize(self.taskName()) + self.__columnSize >= taskNameWidth:
             taskNameWidth = self.__textColumnSize(self.taskName()) + self.__columnSize
 
-        # computing infoCrate type column size
-        infoCrateTypeWidth = self.__columnSize * self.__reserveColumns
-        for infoCrate in self.infoCrates():
-            if self.__textColumnSize(infoCrate.var('type')) + self.__columnSize >= infoCrateTypeWidth:
-                infoCrateTypeWidth = self.__textColumnSize(infoCrate.var('type')) + self.__columnSize
+        # computing element type column size
+        elementTypeWidth = self.__columnSize * self.__reserveColumns
+        for element in self.elements():
+            if self.__textColumnSize(element.var('type')) + self.__columnSize >= elementTypeWidth:
+                elementTypeWidth = self.__textColumnSize(element.var('type')) + self.__columnSize
 
         # printing columns
-        for infoCrate in self.infoCrates():
+        for element in self.elements():
             sys.stdout.write(
                 '{}{}{}{}{}\n'.format(
                     self.taskName(),
                     "\t" * int((taskNameWidth - self.__textColumnSize(self.taskName())) / self.__columnSize),
-                    infoCrate.var('type'),
-                    "\t" * int((infoCrateTypeWidth - self.__textColumnSize(infoCrate.var('type'))) / self.__columnSize),
-                    infoCrate.var('fullPath')
+                    element.var('type'),
+                    "\t" * int((elementTypeWidth - self.__textColumnSize(element.var('type'))) / self.__columnSize),
+                    element.var('fullPath')
                 )
             )
 

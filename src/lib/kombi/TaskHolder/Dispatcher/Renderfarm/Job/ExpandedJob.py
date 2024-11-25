@@ -51,13 +51,13 @@ class ExpandedJob(Job):
 
     def setTotalInChunk(self, totalInChunk):
         """
-        Associate the information about the total infoCrates in the current chunk.
+        Associate the information about the total elements in the current chunk.
         """
         self.__totalInChunk = totalInChunk
 
     def totalInChunk(self):
         """
-        Return the information about the total of infoCrates in the current chunk.
+        Return the information about the total of elements in the current chunk.
         """
         return self.__totalInChunk
 

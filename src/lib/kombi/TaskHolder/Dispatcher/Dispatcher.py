@@ -113,7 +113,7 @@ class Dispatcher(object):
         """
         return list(self.__options.keys())
 
-    def dispatch(self, taskHolder, infoCrates=[]):
+    def dispatch(self, taskHolder, elements=[]):
         """
         Run the dispatcher.
 
@@ -127,11 +127,11 @@ class Dispatcher(object):
         # setting the verbose output to the tasks in place
         self.__setReporter(clonedTaskHolder)
 
-        clonedTaskHolder.addInfoCrates(infoCrates)
+        clonedTaskHolder.addElements(elements)
 
-        # in case the task does not have any infoCrates means there is nothing
+        # in case the task does not have any elements means there is nothing
         # to be executed, returning right away.
-        if len(clonedTaskHolder.task().infoCrates()) == 0:
+        if len(clonedTaskHolder.task().elements()) == 0:
             return []
 
         return self._perform(clonedTaskHolder)

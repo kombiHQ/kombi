@@ -1,4 +1,4 @@
-from ...InfoCrate.Fs import FileInfoCrate
+from ...Element.Fs import FileElement
 from ..Task import Task
 from .CreateDataTask import CreateDataTask
 
@@ -11,16 +11,16 @@ class AppendToVersionTask(CreateDataTask):
         """
         Return the root path where the data directory and json files should exist.
         """
-        assert self.infoCrates(), "Need input infoCrates to figure out root path."
-        return self.infoCrates()[0].var("versionPath")
+        assert self.elements(), "Need input elements to figure out root path."
+        return self.elements()[0].var("versionPath")
 
     def _perform(self):
         """
         Perform the task.
         """
-        for infoCrate in self.infoCrates():
-            if isinstance(infoCrate, FileInfoCrate):
-                self.addFile(infoCrate.var("filePath"))
+        for element in self.elements():
+            if isinstance(element, FileElement):
+                self.addFile(element.var("filePath"))
 
         return super(AppendToVersionTask, self)._perform()
 

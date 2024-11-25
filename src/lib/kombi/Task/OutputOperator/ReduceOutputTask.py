@@ -2,12 +2,12 @@ from ..Task import Task
 
 class ReduceOutputTask(Task):
     """
-    Task used to modify the output by reducing the number of infoCrates.
+    Task used to modify the output by reducing the number of elements.
     """
 
     def __init__(self, *args, **kwargs):
         """
-        Create a modify infoCrates task object.
+        Create a modify elements task object.
         """
         super(ReduceOutputTask, self).__init__(*args, **kwargs)
 
@@ -17,7 +17,7 @@ class ReduceOutputTask(Task):
         """
         Perform the task.
         """
-        return self.infoCrates()[:self.option('total')]
+        return self.elements()[:self.option('total')]
 
 
 Task.register('reduceOutput', ReduceOutputTask)

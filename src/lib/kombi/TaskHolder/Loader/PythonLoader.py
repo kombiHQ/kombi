@@ -1,7 +1,7 @@
 import os
 import glob
 from ...Task import Task
-from ...InfoCrate import InfoCrate, VarExtractor
+from ...Element import Element, VarExtractor
 from ...Template import Template
 from ...TaskHolder import TaskHolder
 from ...Resource import Resource
@@ -31,8 +31,8 @@ class PythonLoader(Loader):
                 "type"
             ]
           },
-          "infoCrates": {
-            "myCustomInfoCrateType < png": "{job:3}_{shot:3}_{seq:3}_{plateName}_{vendorVersion:3i}.####.png"
+          "elements": {
+            "myCustomElementType < png": "{job:3}_{shot:3}_{seq:3}_{plateName}_{vendorVersion:3i}.####.png"
           },
           "tasks": [
             {
@@ -40,7 +40,7 @@ class PythonLoader(Loader):
               "target": "{prefix}/foo/sequences/{seq}/{shot}/online/publish/elements/{plateName}/(newver <parent>).(pad {frame} 4).exr",
               "filter": "",
               "status": "execute",
-              "export": "{prefix}/result/{sessionId}/resultInfoCratesFromConvertImage.json"
+              "export": "{prefix}/result/{sessionId}/resultElementsFromConvertImage.json"
               "metadata": {
                 "match.types": [
                     "dpxPlate"
@@ -118,8 +118,8 @@ class PythonLoader(Loader):
 
         contextVars = dict(list(contextVars.items()) + list(self.__parseVars(contents).items()))
 
-        # parsing inline infoCrates
-        self.__parseInlineInfoCrates(contents)
+        # parsing inline elements
+        self.__parseInlineElements(contents)
 
         # task holders checking
         if not isinstance(contents['tasks'], list):
@@ -332,36 +332,36 @@ class PythonLoader(Loader):
         return result
 
     @classmethod
-    def __parseInlineInfoCrates(cls, contents):
+    def __parseInlineElements(cls, contents):
         """
-        Parse the custom inline infoCrates defined in the contents.
+        Parse the custom inline elements defined in the contents.
         """
-        if 'infoCrates' in contents:
+        if 'elements' in contents:
             # vars checking
-            if not isinstance(contents['infoCrates'], dict):
+            if not isinstance(contents['elements'], dict):
                 raise PythonLoaderContentError('Expecting a list of vars!')
 
-            for infoCrateKey, varExtractorExpression in contents['infoCrates'].items():
-                parts = infoCrateKey.split('<')
-                BaseInfoCrate = InfoCrate
+            for elementKey, varExtractorExpression in contents['elements'].items():
+                parts = elementKey.split('<')
+                BaseElement = Element
                 if len(parts) > 1:
-                    BaseInfoCrate = InfoCrate.registeredType(parts[1].strip())
+                    BaseElement = Element.registeredType(parts[1].strip())
 
-                InfoCrate.register(
+                Element.register(
                     parts[0].strip(),
-                    cls.__customInlineInfoCrate(varExtractorExpression, BaseInfoCrate)
+                    cls.__customInlineElement(varExtractorExpression, BaseElement)
                 )
 
     @classmethod
-    def __customInlineInfoCrate(cls, varExtractionExpression, BaseInfoCrate):
+    def __customInlineElement(cls, varExtractionExpression, BaseElement):
         """
-        Return a custom infoCrate class.
+        Return a custom element class.
         """
-        class _CustomInfoCrate(BaseInfoCrate):
+        class _CustomElement(BaseElement):
             namePattern = varExtractionExpression
 
             def __init__(self, *args, **kwargs):
-                super(_CustomInfoCrate, self).__init__(*args, **kwargs)
+                super(_CustomElement, self).__init__(*args, **kwargs)
 
                 # assigning variables
                 self.assignVars(
@@ -372,11 +372,11 @@ class PythonLoader(Loader):
                 )
 
             @classmethod
-            def test(cls, data, parentInfoCrate=None):
+            def test(cls, data, parentElement=None):
                 # perform the tests for the base classes
-                if super(_CustomInfoCrate, cls).test(data, parentInfoCrate):
+                if super(_CustomElement, cls).test(data, parentElement):
                     return VarExtractor(data.baseName(), cls.namePattern).match()
 
                 return False
 
-        return _CustomInfoCrate
+        return _CustomElement

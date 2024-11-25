@@ -2,9 +2,9 @@ import os
 import sys
 from io import StringIO
 from ..External.NukeTask import NukeTask
-from ...InfoCrate import InfoCrate
-from ...InfoCrate.Fs import FsInfoCrate
-from ...InfoCrate.Fs.Image import ImageInfoCrate
+from ...Element import Element
+from ...Element.Fs import FsElement
+from ...Element.Fs.Image import ImageElement
 
 class NukeRenderTask(NukeTask):
     """
@@ -27,9 +27,9 @@ class NukeRenderTask(NukeTask):
         self.setOption("script", "")
 
     @classmethod
-    def toRenderInfoCrates(cls, writeNode, startFrame=None, endFrame=None):
+    def toRenderElements(cls, writeNode, startFrame=None, endFrame=None):
         """
-        Return hashmap infoCrates containing the write node information used by this task.
+        Return hashmap elements containing the write node information used by this task.
 
         TODO: we want to have a specific application types to describe this information
         """
@@ -40,12 +40,12 @@ class NukeRenderTask(NukeTask):
 
         result = []
         currentFile = writeNode['file'].evaluate()
-        renderOutputInfoCrate = FsInfoCrate.createFromPath(currentFile)
-        if isinstance(renderOutputInfoCrate, ImageInfoCrate) and renderOutputInfoCrate.isSequence():
+        renderOutputElement = FsElement.createFromPath(currentFile)
+        if isinstance(renderOutputElement, ImageElement) and renderOutputElement.isSequence():
             for i in range(startFrame, endFrame + 1):
-                result.append(cls.__renderHashmapInfoCrate(writeNode, i, i))
+                result.append(cls.__renderHashmapElement(writeNode, i, i))
         else:
-            result.append(cls.__renderHashmapInfoCrate(writeNode, startFrame, endFrame))
+            result.append(cls.__renderHashmapElement(writeNode, startFrame, endFrame))
 
         return result
 
@@ -68,25 +68,25 @@ class NukeRenderTask(NukeTask):
         """
         import nuke
 
-        infoCrates = self.infoCrates()
+        elements = self.elements()
         self.__totalFrames = 0
         self.__renderedFrames = 0
         nuke.addAfterFrameRender(self.__onAfterFrameRender)
 
         # loading nuke script
-        script = self.templateOption('script', infoCrates[0])
+        script = self.templateOption('script', elements[0])
         if os.path.exists(script):
             nuke.scriptOpen(script)
 
         createdFiles = []
-        for infoCrateGroup in InfoCrate.group(infoCrates):
-            startFrame = infoCrateGroup[0]['startFrame']
-            endFrame = infoCrateGroup[-1]['endFrame']
+        for elementGroup in Element.group(elements):
+            startFrame = elementGroup[0]['startFrame']
+            endFrame = elementGroup[-1]['endFrame']
             self.__totalFrames += (endFrame - startFrame) + 1
-            writeNode = nuke.toNode(infoCrateGroup[0]['name'])
+            writeNode = nuke.toNode(elementGroup[0]['name'])
 
             if not writeNode:
-                raise Exception('Could not find write node: {}'.format(infoCrateGroup[0]['name']))
+                raise Exception('Could not find write node: {}'.format(elementGroup[0]['name']))
 
             # creating render directory if necessary
             currentFile = writeNode['file'].evaluate()
@@ -98,16 +98,16 @@ class NukeRenderTask(NukeTask):
             # executing render
             nuke.execute(writeNode, startFrame, endFrame)
 
-            renderOutputInfoCrate = FsInfoCrate.createFromPath(currentFile)
-            if isinstance(renderOutputInfoCrate, ImageInfoCrate) and renderOutputInfoCrate.isSequence():
-                currentFileSprintf = renderOutputInfoCrate.tag('groupSprintf')
+            renderOutputElement = FsElement.createFromPath(currentFile)
+            if isinstance(renderOutputElement, ImageElement) and renderOutputElement.isSequence():
+                currentFileSprintf = renderOutputElement.tag('groupSprintf')
 
                 for frame in range(startFrame, endFrame + 1):
                     bufferString = StringIO()
                     bufferString.write(currentFileSprintf % frame)
                     createdFiles.append(
                         os.path.join(
-                            os.path.dirname(renderOutputInfoCrate.var('fullPath')),
+                            os.path.dirname(renderOutputElement.var('fullPath')),
                             bufferString.getvalue()
                         )
                     )
@@ -116,14 +116,14 @@ class NukeRenderTask(NukeTask):
             else:
                 createdFiles.append(currentFile)
 
-        return list(map(FsInfoCrate.createFromPath, createdFiles))
+        return list(map(FsElement.createFromPath, createdFiles))
 
     @classmethod
-    def __renderHashmapInfoCrate(cls, writeNode, startFrame, endFrame):
+    def __renderHashmapElement(cls, writeNode, startFrame, endFrame):
         """
-        Return a hashmap infoCrate for the input write node start and end frame.
+        Return a hashmap element for the input write node start and end frame.
         """
-        hashmapInfoCrate = InfoCrate.create(
+        hashmapElement = Element.create(
             {
                 'name': writeNode.fullName(),
                 'type': 'sequence',
@@ -131,9 +131,9 @@ class NukeRenderTask(NukeTask):
                 'endFrame': endFrame,
             }
         )
-        hashmapInfoCrate.setVar('dataLayout', 'nukeRender')
-        hashmapInfoCrate.setTag('group', writeNode.fullName())
-        hashmapInfoCrate.setVar(
+        hashmapElement.setVar('dataLayout', 'nukeRender')
+        hashmapElement.setTag('group', writeNode.fullName())
+        hashmapElement.setVar(
             'fullPath',
             '{} {}-{}'.format(
                 writeNode.fullName(),
@@ -142,7 +142,7 @@ class NukeRenderTask(NukeTask):
             )
         )
 
-        return hashmapInfoCrate
+        return hashmapElement
 
 
 # registering task

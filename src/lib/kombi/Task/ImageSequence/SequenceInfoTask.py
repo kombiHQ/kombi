@@ -1,9 +1,9 @@
 from ...Task import Task
-from ...InfoCrate import InfoCrate
+from ...Element import Element
 
 class SequenceInfoTask(Task):
     """
-    Task used to assign infoCrate variables about the sequence first, last and total frames.
+    Task used to assign element variables about the sequence first, last and total frames.
     """
 
     def __init__(self, *args, **kwargs):
@@ -22,25 +22,25 @@ class SequenceInfoTask(Task):
         """
         result = []
 
-        for infoCrateGroup in InfoCrate.group(self.infoCrates()):
-            firstInfoCrate = infoCrateGroup[0]
-            lastInfoCrate = infoCrateGroup[-1]
+        for elementGroup in Element.group(self.elements()):
+            firstElement = elementGroup[0]
+            lastElement = elementGroup[-1]
 
-            for infoCrate in infoCrateGroup:
-                newInfoCrate = infoCrate.clone()
-                newInfoCrate.setVar(
-                    self.templateOption('firstName', infoCrate),
-                    firstInfoCrate.var('frame')
+            for element in elementGroup:
+                newElement = element.clone()
+                newElement.setVar(
+                    self.templateOption('firstName', element),
+                    firstElement.var('frame')
                 )
-                newInfoCrate.setVar(
-                    self.templateOption('lastName', infoCrate),
-                    lastInfoCrate.var('frame')
+                newElement.setVar(
+                    self.templateOption('lastName', element),
+                    lastElement.var('frame')
                 )
-                newInfoCrate.setVar(
-                    self.templateOption('totalName', infoCrate),
-                    len(infoCrateGroup)
+                newElement.setVar(
+                    self.templateOption('totalName', element),
+                    len(elementGroup)
                 )
-                result.append(newInfoCrate)
+                result.append(newElement)
 
         return result
 

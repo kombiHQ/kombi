@@ -189,7 +189,7 @@ class CreateDataTask(Task):
 
     def add(self, *args, **kwargs):
         """
-        Cache the static information about the first infoCrate you add.
+        Cache the static information about the first element you add.
         """
         super(CreateDataTask, self).add(*args, **kwargs)
         self.__loadStaticData()
@@ -231,11 +231,11 @@ class CreateDataTask(Task):
         """
         Load static information.
         """
-        if self.__loadedStaticData or not self.infoCrates():
+        if self.__loadedStaticData or not self.elements():
             return
 
         self.__loadedStaticData = True
 
-        infoCrate = self.infoCrates()[0]
-        self.__rootPath = self.target(infoCrate)
-        self.__configDirectory = infoCrate.var('configDirectory')
+        element = self.elements()[0]
+        self.__rootPath = self.target(element)
+        self.__configDirectory = element.var('configDirectory')

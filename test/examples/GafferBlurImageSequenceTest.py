@@ -3,8 +3,8 @@ import shutil
 import unittest
 from ..BaseTestCase import BaseTestCase
 from kombi.TaskHolder.Loader import Loader
-from kombi.InfoCrate import InfoCrate
-from kombi.InfoCrate.Fs.FsInfoCrate import FsInfoCrate
+from kombi.Element import Element
+from kombi.Element.Fs.FsElement import FsElement
 
 class GafferBlurImageSequenceTest(BaseTestCase):
     """Test for example gaffer blur image sequence."""
@@ -61,19 +61,19 @@ class GafferBlurImageSequenceTest(BaseTestCase):
         )
 
         # loading input data for the execution
-        infoCrateGroups = InfoCrate.group(
-            FsInfoCrate.createFromPath(
+        elementGroups = Element.group(
+            FsElement.createFromPath(
                 os.path.join(self.__exampleDirectory, 'imageSequence')
             ).globFromParent()
         )
 
-        resultInfoCrates = []
-        for group in infoCrateGroups:
-            if isinstance(group[0], InfoCrate.registeredType('png')):
-                resultInfoCrates += taskHolder.run(group)
+        resultElements = []
+        for group in elementGroups:
+            if isinstance(group[0], Element.registeredType('png')):
+                resultElements += taskHolder.run(group)
 
         targetFilePaths = list(sorted(filter(lambda x: len(x), map(lambda x: x.strip(), self.__generatedData.split('\n')))))
-        createdFilePaths = list(sorted(map(lambda x: x.var('fullPath')[len(self.__exampleTargetPrefixDirectory) + 1:].replace('\\', '/'), resultInfoCrates)))
+        createdFilePaths = list(sorted(map(lambda x: x.var('fullPath')[len(self.__exampleTargetPrefixDirectory) + 1:].replace('\\', '/'), resultElements)))
 
         self.assertListEqual(targetFilePaths, createdFilePaths)
 

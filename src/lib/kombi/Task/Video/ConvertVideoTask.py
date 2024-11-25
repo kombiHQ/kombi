@@ -30,8 +30,8 @@ class ConvertVideoTask(Task):
         audioArgs = self.option('audioArgs')
         bitRate = self.option('bitRate')
 
-        for infoCrate in self.infoCrates():
-            targetFilePath = self.target(infoCrate)
+        for element in self.elements():
+            targetFilePath = self.target(element)
 
             # creating any necessary directories
             parentDirectory = os.path.dirname(targetFilePath)
@@ -44,7 +44,7 @@ class ConvertVideoTask(Task):
             # ffmpeg command
             ffmpegCommand = '{ffmpeg} -loglevel error {audioArgs} -i "{input}" -b {bitRate}M -minrate {bitRate}M -maxrate {bitRate}M {videoArgs} -y -strict -2 "{output}"'.format(
                 ffmpeg=self.__ffmpegExecutable,
-                input=infoCrate.var('filePath'),
+                input=element.var('filePath'),
                 output=targetFilePath,
                 videoArgs=videoArgs,
                 bitRate=bitRate,

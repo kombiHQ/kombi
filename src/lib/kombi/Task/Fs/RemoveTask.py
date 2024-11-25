@@ -17,8 +17,8 @@ class RemoveTask(Task):
         """
         Perform the task.
         """
-        for infoCrate in self.infoCrates():
-            filePath = self.target(infoCrate)
+        for element in self.elements():
+            filePath = self.target(element)
 
             os.remove(filePath)
 

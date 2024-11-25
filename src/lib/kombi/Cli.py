@@ -3,9 +3,9 @@ import sys
 import argparse
 import subprocess
 import fileinput
-from .InfoCrate.Fs.FsInfoCrate import FsInfoCrate
-from .InfoCrate.Fs.DirectoryInfoCrate import DirectoryInfoCrate
-from .InfoCrate import InfoCrate
+from .Element.Fs.FsElement import FsElement
+from .Element.Fs.DirectoryElement import DirectoryElement
+from .Element import Element
 from .TaskHolder.Loader import Loader
 from .TaskHolder.Dispatcher import Dispatcher
 
@@ -57,8 +57,8 @@ class Cli(object):
                 "No task holders were found in the config path!"
             )
 
-        # collecting infoCrates
-        infoCrates = self.__loadInfoCrates(parseArgs.source)
+        # collecting elements
+        elements = self.__loadElements(parseArgs.source)
 
         # creating dispatcher
         dispatcher = Dispatcher.create('local')
@@ -69,57 +69,57 @@ class Cli(object):
 
         # dispatching task holders
         for taskHolder in loader.taskHolders():
-            for infoCratesGroup in InfoCrate.group(infoCrates):
+            for elementsGroup in Element.group(elements):
                 dispatcher.dispatch(
                     taskHolder,
-                    infoCratesGroup
+                    elementsGroup
                 )
 
-    def __loadInfoCrates(self, sourcePaths):
+    def __loadElements(self, sourcePaths):
         """
-        Return the source infoCrates.
+        Return the source elements.
         """
-        infoCrates = []
-        globDirectoryInfoCrates = True
+        elements = []
+        globDirectoryElements = True
 
         # source through argument
         if sourcePaths:
             for sourcePath in sourcePaths:
-                infoCrate = FsInfoCrate.createFromPath(sourcePath)
-                infoCrates.append(infoCrate)
+                element = FsElement.createFromPath(sourcePath)
+                elements.append(element)
 
         # source through stdin
         elif not sys.stdin.isatty():
             for line in fileinput.input(files=[]):
                 # in case the sdtin is reading a kombi
                 # output, it is defined in columns:
-                # taskName, infoCrateType and fullPath.
+                # taskName, elementType and fullPath.
                 outputParts = tuple(filter(lambda x: x != '', line.strip().split('\t')))
-                infoCrateFullPath = outputParts[-1]
+                elementFullPath = outputParts[-1]
 
                 # when stdin is reading kombi output
-                infoCrate = None
+                element = None
                 if len(outputParts) == 3:
-                    globDirectoryInfoCrates = False
-                    infoCrate = FsInfoCrate.createFromPath(
-                        infoCrateFullPath,
+                    globDirectoryElements = False
+                    element = FsElement.createFromPath(
+                        elementFullPath,
                         outputParts[1]
                     )
 
                 # otherwise when stdin is reading a list of paths
                 else:
-                    infoCrate = FsInfoCrate.createFromPath(infoCrateFullPath)
+                    element = FsElement.createFromPath(elementFullPath)
 
-                infoCrates.append(infoCrate)
+                elements.append(element)
         else:
             raise CliError("Cannot determine source!")
 
         # when a directory is detected as input. We glob
         # by default. The only exception is when
-        # the infoCrate type is defined (reading a kombi output)
-        if globDirectoryInfoCrates:
-            for infoCrate in list(infoCrates):
-                if isinstance(infoCrate, DirectoryInfoCrate):
-                    infoCrates += infoCrate.glob()
+        # the element type is defined (reading a kombi output)
+        if globDirectoryElements:
+            for element in list(elements):
+                if isinstance(element, DirectoryElement):
+                    elements += element.glob()
 
-        return infoCrates
+        return elements

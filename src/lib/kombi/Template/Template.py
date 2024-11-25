@@ -1,7 +1,7 @@
 import re
 import os
 import uuid
-from ..InfoCrate import InfoCrateInvalidVarError
+from ..Element import ElementInvalidVarError
 
 class TemplateError(Exception):
     """Template error."""
@@ -22,10 +22,10 @@ class Template(object):
     """
     Creates a template object based on a string defined using template syntax.
 
-    A template string can contain infoCrate variables using the syntax
-    {infoCrateVariable}. Procedures can be used through the syntax (myprocedure),
+    A template string can contain element variables using the syntax
+    {elementVariable}. Procedures can be used through the syntax (myprocedure),
     arguments can be passed to procedures after the procedure name,
-    for instance (myprocedure {infoCrateVariable}) where the arguments must be
+    for instance (myprocedure {elementVariable}) where the arguments must be
     separated by space:
         "/tmp/{myVariable}/(myprocedure {myVariable} 'second arg' 3)"
 
@@ -84,9 +84,9 @@ class Template(object):
         """
         return self.__varNames
 
-    def valueFromInfoCrate(self, infoCrate, extraVars={}):
+    def valueFromElement(self, element, extraVars={}):
         """
-        Return the value of the template based on a infoCrate.
+        Return the value of the template based on a element.
         """
         allVars = {}
         for varName in self.varNames():
@@ -94,8 +94,8 @@ class Template(object):
                 allVars[varName] = extraVars[varName]
             else:
                 try:
-                    allVars[varName] = infoCrate.var(varName)
-                except InfoCrateInvalidVarError:
+                    allVars[varName] = element.var(varName)
+                except ElementInvalidVarError:
 
                     # in case any information about the config
                     # is available including them
@@ -103,7 +103,7 @@ class Template(object):
                     if 'contextConfig' in extraVars:
                         contextConfig = extraVars['contextConfig']
                     elif 'contextConfig' in self.varNames():
-                        contextConfig = infoCrate.var('contextConfig')
+                        contextConfig = element.var('contextConfig')
                     if contextConfig:
                         contextConfig = ' by the config "{}"'.format(contextConfig)
 
@@ -117,18 +117,18 @@ class Template(object):
 
         return self.value(allVars)
 
-    def value(self, infoCrateVars={}):
+    def value(self, elementVars={}):
         """
         Return the value of the template based on the input variables.
         """
-        assert isinstance(infoCrateVars, dict), "invalid infoCrateVars type!"
+        assert isinstance(elementVars, dict), "invalid elementVars type!"
 
-        # converting the infoCrate values to string
-        templateInfoCrateVars = {}
-        for key, value in infoCrateVars.items():
-            templateInfoCrateVars[key] = '' if value is None else str(value)
+        # converting the element values to string
+        templateElementVars = {}
+        for key, value in elementVars.items():
+            templateElementVars[key] = '' if value is None else str(value)
 
-        self.__validateTemplateVariables(templateInfoCrateVars)
+        self.__validateTemplateVariables(templateElementVars)
 
         # resolving variables values
         resolvedTemplate = self.inputString()
@@ -136,7 +136,7 @@ class Template(object):
         # resolving function values
         finalResolvedTemplate = self.__resolveTemplate(
             resolvedTemplate,
-            templateInfoCrateVars
+            templateElementVars
         )
 
         # resolving required path levels
@@ -306,13 +306,13 @@ class Template(object):
                 finalPath.append(pathLevel)
         return os.sep.join(finalPath)
 
-    def __resolveTemplate(self, resolvedTemplate, infoCrateVars):
+    def __resolveTemplate(self, resolvedTemplate, elementVars):
         """
         Return a resolved template by processing all variables, tokens and procedures.
         """
-        infoCrateVars = self.__resolveVariables(infoCrateVars)
+        elementVars = self.__resolveVariables(elementVars)
 
-        infoCrateVarsEnclosing = dict(map(lambda x:  ('{' + x[0] + '}', x[1]), infoCrateVars.items()))
+        elementVarsEnclosing = dict(map(lambda x:  ('{' + x[0] + '}', x[1]), elementVars.items()))
         finalResolvedTemplate = ""
         tokens = {}
         requiredLevelToken = self.__generatePlaceHolderId()
@@ -351,7 +351,7 @@ class Template(object):
                 templateLastPart = templatePart[endIndex + 1:]
                 rawTemplateProcedure = self.__resolveData(
                     rawTemplateProcedure,
-                    list(tokens.items()) + list(infoCrateVarsEnclosing.items()),
+                    list(tokens.items()) + list(elementVarsEnclosing.items()),
                     procedure=True
                 )
 
@@ -368,30 +368,30 @@ class Template(object):
 
                 templateLastPart = self.__resolveData(
                     templateLastPart,
-                    list(tokens.items()) + list(infoCrateVarsEnclosing.items())
+                    list(tokens.items()) + list(elementVarsEnclosing.items())
                 )
                 finalResolvedTemplate += procedureValue + templateLastPart
 
             else:
                 templatePart = self.__resolveData(
                     templatePart,
-                    list(tokens.items()) + list(infoCrateVarsEnclosing.items())
+                    list(tokens.items()) + list(elementVarsEnclosing.items())
                 )
                 finalResolvedTemplate += templatePart
 
         return finalResolvedTemplate
 
-    def __resolveVariables(self, infoCrateVars):
+    def __resolveVariables(self, elementVars):
         """
-        Resolve infoCrate variables containing a value referencing another infoCrate variables.
+        Resolve element variables containing a value referencing another element variables.
         """
-        infoCrateVars = dict(infoCrateVars)
+        elementVars = dict(elementVars)
         circularReferenceKeys = []
         unresolved = True
         while unresolved:
             unresolved = False
-            for mainVarName, mainVarValue in infoCrateVars.items():
-                for currentVarName, currentVarValue in infoCrateVars.items():
+            for mainVarName, mainVarValue in elementVars.items():
+                for currentVarName, currentVarValue in elementVars.items():
 
                     # ignoring same variable
                     if mainVarName == currentVarName:
@@ -406,7 +406,7 @@ class Template(object):
                         # checking for circular references
                         if circularReferenceKey in circularReferenceKeys:
                             raise TemplateVarCircularReferenceError(
-                                'Found circular reference between the infoCrate variables: {{{0}}} and {{{1}}}'.format(
+                                'Found circular reference between the element variables: {{{0}}} and {{{1}}}'.format(
                                     circularReferenceKey[0],
                                     circularReferenceKey[1]
                                 )
@@ -414,13 +414,13 @@ class Template(object):
                         circularReferenceKeys.append(circularReferenceKey)
 
                         # replacing mainVariable name for its value
-                        infoCrateVars[currentVarName] = currentVarValue.replace(searchVarName, mainVarValue)
+                        elementVars[currentVarName] = currentVarValue.replace(searchVarName, mainVarValue)
 
                         # restarting the process again until there is nothing left
                         # to be resolved
                         unresolved = True
 
-        return infoCrateVars
+        return elementVars
 
     def __resolveData(self, template, resultData, procedure=False):
         """
@@ -445,19 +445,19 @@ class Template(object):
 
         return template
 
-    def __validateTemplateVariables(self, infoCrateVars):
+    def __validateTemplateVariables(self, elementVars):
         """
         Make sure the variables used by template are available, otherwise raise an exception (TemplateVarNotFoundError).
         """
         for requiredVarName in self.varNames():
-            if requiredVarName not in infoCrateVars:
+            if requiredVarName not in elementVars:
 
                 # in case any information about the config
                 # is available including them
                 contextConfig = ''
-                if 'contextConfig' in infoCrateVars:
+                if 'contextConfig' in elementVars:
                     contextConfig = ' by the config "{}"'.format(
-                        infoCrateVars['contextConfig']
+                        elementVars['contextConfig']
                     )
 
                 raise TemplateVarNotFoundError(

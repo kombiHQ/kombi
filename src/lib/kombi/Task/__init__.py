@@ -1,4 +1,4 @@
-from .Task import Task, TaskError, TaskValidationError, TaskTypeNotFoundError, TaskInvalidInfoCrateError, TaskInvalidOptionError, TaskInvalidMetadataError
+from .Task import Task, TaskError, TaskValidationError, TaskTypeNotFoundError, TaskInvalidElementError, TaskInvalidOptionError, TaskInvalidMetadataError
 from . import Fs
 from . import External
 from . import Image

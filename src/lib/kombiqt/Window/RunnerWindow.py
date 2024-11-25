@@ -15,10 +15,10 @@ from kombi.ProcessExecution import ProcessExecution
 from kombi.TaskHolder.Loader import Loader
 from kombi.Template import Template
 from kombi.TaskHolder.Dispatcher import Dispatcher
-from kombi.InfoCrate import InfoCrate, InfoCrateContext, PathHolder
+from kombi.Element import Element, ElementContext, PathHolder
 from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget, ExecutionSettingsWidgetRequiredError
 from ..Widget.DispatcherListWidget import DispatcherListWidget
-from ..Widget.FilterInfoCrateVarWidget import FilterInfoCrateVarWidget
+from ..Widget.FilterElementVarWidget import FilterElementVarWidget
 from ..Widget.RenderfarmDispatcherPriorityWidget import RenderfarmDispatcherPriorityWidget
 from ..Widget.ComboBoxInputDialog import ComboBoxInputDialog
 from ..Resource import Resource
@@ -26,9 +26,9 @@ from ..Resource import Resource
 try:
     import OpenImageIO # noqa: W0611
 except ImportError:
-    ImageInfoCrateViewer = None
+    ImageElementViewer = None
 else:
-    from ..Widget.ImageInfoCrateViewer import ImageInfoCrateViewer
+    from ..Widget.ImageElementViewer import ImageElementViewer
 
 class RunnerWindow(QtWidgets.QMainWindow):
     """
@@ -41,7 +41,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
     __pickerLocation = os.environ.get('KOMBI_GUI_PICKER_LOCATION', '')
     __overridePreviousSelectedLocation = None
 
-    def __init__(self, taskHolders, sourcePaths=[], customHeader='', customInfoCrates=[], **kwargs):
+    def __init__(self, taskHolders, sourcePaths=[], customHeader='', customElements=[], **kwargs):
         """
         Create a Kombi app.
         """
@@ -53,12 +53,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         self.__iconCache = {}
         self.__configurationDirectory = ""
-        self.__imageInfoCrateViewerAlreadyDisplayed = False
+        self.__imageElementViewerAlreadyDisplayed = False
         self.__uiHintSourceColumns = []
         self.__customHeader = customHeader
         self.__verticalSourceScrollBarLatestPos = 0
-        self.__customInfoCrates = customInfoCrates
-        self.__infoCrateList = None
+        self.__customElements = customElements
+        self.__elementList = None
         self.__messageBox = None
         self.__showVars = False
         self.__showTags = False
@@ -135,12 +135,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__sourceFilterMenu.clear()
         self.__sourceOverrides = self.__loadSourceOverrides()
 
-        if not paths and not self.__customInfoCrates:
+        if not paths and not self.__customElements:
             return
 
-        # we want to list in the interface only the infoCrate types used by the main tasks
+        # we want to list in the interface only the element types used by the main tasks
         filterTypes = []
-        sourceDirectoryInfoCrateType = None
+        sourceDirectoryElementType = None
         validSourcePath = True
         categoryVarName = None
         collectionVarName = None
@@ -154,11 +154,11 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 if '__uiHintSourceValidationError' in taskHolder.varNames():
                     validationErrorMessage = taskHolder.var('__uiHintSourceValidationError')
 
-            if '__uiHintShowPreview' in taskHolder.varNames() and taskHolder.var('__uiHintShowPreview') and self.__imageInfoCrateViewer and not self.__imageInfoCrateViewerAlreadyDisplayed:
+            if '__uiHintShowPreview' in taskHolder.varNames() and taskHolder.var('__uiHintShowPreview') and self.__imageElementViewer and not self.__imageElementViewerAlreadyDisplayed:
                 self.__onToggleImageViewer(True)
 
-            if '__uiHintSourceDirectoryInfoCrateType' in taskHolder.varNames():
-                sourceDirectoryInfoCrateType = taskHolder.var('__uiHintSourceDirectoryInfoCrateType')
+            if '__uiHintSourceDirectoryElementType' in taskHolder.varNames():
+                sourceDirectoryElementType = taskHolder.var('__uiHintSourceDirectoryElementType')
 
             if '__uiHintCategoryVarName' in taskHolder.varNames():
                 categoryVarName = taskHolder.var('__uiHintCategoryVarName')
@@ -185,7 +185,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
             matchTypes = taskHolder.matcher().matchTypes()
 
-            # if there is a task holder that does not have any type specified to it, then we display all infoCrates by
+            # if there is a task holder that does not have any type specified to it, then we display all elements by
             # passing an empty list to the filter
             if len(matchTypes) == 0:
                 filterTypes = []
@@ -206,11 +206,11 @@ class RunnerWindow(QtWidgets.QMainWindow):
             )
             return
 
-        # globbing infoCrates
-        with InfoCrateContext():
-            if self.__infoCrateList is None or self.__currentSourcePath != paths:
+        # globbing elements
+        with ElementContext():
+            if self.__elementList is None or self.__currentSourcePath != paths:
                 self.__currentSourcePath = paths
-                self.__infoCrateList = []
+                self.__elementList = []
                 for path in paths.split(";"):
                     if not path:
                         continue
@@ -218,55 +218,55 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     if os.path.exists(path):
                         path = PathHolder(path)
 
-                    globInfoCrates = []
-                    infoCrate = InfoCrate.registeredType(sourceDirectoryInfoCrateType)(path) if sourceDirectoryInfoCrateType else InfoCrate.create(path)
-                    if sourceDirectoryInfoCrateType:
-                        infoCrate.setVar('type', sourceDirectoryInfoCrateType)
+                    globElements = []
+                    element = Element.registeredType(sourceDirectoryElementType)(path) if sourceDirectoryElementType else Element.create(path)
+                    if sourceDirectoryElementType:
+                        element.setVar('type', sourceDirectoryElementType)
 
-                    if infoCrate.var('type') in filterTypes:
-                        globInfoCrates.append(infoCrate)
-                    globInfoCrates += infoCrate.glob(filterTypes)
+                    if element.var('type') in filterTypes:
+                        globElements.append(element)
+                    globElements += element.glob(filterTypes)
 
-                    # filtering the result of the glob, but now using the infoCrate matcher
+                    # filtering the result of the glob, but now using the element matcher
                     # this will match the variable types.
                     for taskHolder in self.__taskHolders:
-                        for infoCrateFound in globInfoCrates:
-                            if infoCrateFound in self.__infoCrateList:
+                        for elementFound in globElements:
+                            if elementFound in self.__elementList:
                                 continue
 
-                            if taskHolder.matcher().match(infoCrateFound):
-                                self.__infoCrateList.append(infoCrateFound)
+                            if taskHolder.matcher().match(elementFound):
+                                self.__elementList.append(elementFound)
 
-                if self.__customInfoCrates:
-                    # filtering the result of the glob, but now using the infoCrate matcher
+                if self.__customElements:
+                    # filtering the result of the glob, but now using the element matcher
                     # this will match the variable types.
                     for taskHolder in self.__taskHolders:
-                        for infoCrateFound in self.__customInfoCrates:
-                            if infoCrateFound in self.__infoCrateList:
+                        for elementFound in self.__customElements:
+                            if elementFound in self.__elementList:
                                 continue
 
-                            if taskHolder.matcher().match(infoCrateFound):
-                                self.__infoCrateList.append(infoCrateFound)
+                            if taskHolder.matcher().match(elementFound):
+                                self.__elementList.append(elementFound)
 
                 # sorting result by name
-                self.__infoCrateList.sort(key=lambda x: x.var('name').lower() if 'group' not in x.tagNames() else x.tag('group').lower())
+                self.__elementList.sort(key=lambda x: x.var('name').lower() if 'group' not in x.tagNames() else x.tag('group').lower())
 
                 # updating categories (if available)
                 if categoryVarName:
-                    self.__categoriesDock.widget().refresh(categoryVarName, self.__infoCrateList)
+                    self.__categoriesDock.widget().refresh(categoryVarName, self.__elementList)
                 self.__categoriesDock.setVisible(bool(categoryVarName))
             else:
                 # in case the user has decided to hit the back button, lets avoid
                 # sending back the user to the target options (since the user may
-                # want to look the source infoCrates)
+                # want to look the source elements)
                 skipSourceStep = False
 
-        with InfoCrateContext():
+        with ElementContext():
             checked = True
             for taskHolder in filter(lambda x: '__uiHintCheckedByDefault' in x.varNames(), self.__taskHolders):
                 checked = taskHolder.var('__uiHintCheckedByDefault')
 
-            self.__updateSourceTreeInfoCrateList(self.__infoCrateList, collectionVarName, checked)
+            self.__updateSourceTreeElementList(self.__elementList, collectionVarName, checked)
             self.__onSourceFiltersChanged()
             QtWidgets.QApplication.restoreOverrideCursor()
 
@@ -278,14 +278,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Update the target tree.
         """
-        checkedInfoCrates = self.__checkedInfoCrates()
+        checkedElements = self.__checkedElements()
         dispatcherName = self.__selectedDispatcher.selectedDispatcher()
         self.__selectedRenderfarmPriority.setVisible(dispatcherName.lower() == "renderfarm")
 
         # applying overrides
         self.__applySourceOverrides(
             self.__loadSourceOverrides(),
-            checkedInfoCrates
+            checkedElements
         )
 
         self.__targetAreaWidget.setVisible(True)
@@ -297,7 +297,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__backButton.setVisible(True)
         self.__runButton.setVisible(True)
 
-        self.__targetTree.updateTarget(checkedInfoCrates, self.__taskHolders, self.__checkedViewMode == 'Group')
+        self.__targetTree.updateTarget(checkedElements, self.__taskHolders, self.__checkedViewMode == 'Group')
 
     def dispatcherWidget(self):
         """
@@ -366,7 +366,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         # filter
         self.__sourceFilterButton = QtWidgets.QPushButton("Visibility")
-        self.__sourceFilterButton.setToolTip('Filters out specific infoCrate types')
+        self.__sourceFilterButton.setToolTip('Filters out specific element types')
         self.__sourceFilterButton.setIcon(
             Resource.icon("icons/filterView.png")
         )
@@ -442,21 +442,21 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__categoriesDock.setMinimumWidth(150)
         self.__categoriesDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
 
-        self.__categoriesDock.setWidget(FilterInfoCrateVarWidget())
+        self.__categoriesDock.setWidget(FilterElementVarWidget())
         self.__categoriesDock.setVisible(False)
         self.__categoriesDock.widget().filterChangedSignal.connect(self.__onSourceFiltersChanged)
 
         sourceControlMain.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.__categoriesDock)
 
         # image viewer
-        self.__imageInfoCrateViewer = None
-        if ImageInfoCrateViewer:
-            self.__imageInfoCrateViewer = QtWidgets.QDockWidget("Preview")
-            self.__imageInfoCrateViewer.setMinimumWidth(300)
-            self.__imageInfoCrateViewer.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
+        self.__imageElementViewer = None
+        if ImageElementViewer:
+            self.__imageElementViewer = QtWidgets.QDockWidget("Preview")
+            self.__imageElementViewer.setMinimumWidth(300)
+            self.__imageElementViewer.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
 
-            self.__imageInfoCrateViewer.setWidget(ImageInfoCrateViewer([], 640, 480))
-            self.__imageInfoCrateViewer.setVisible(False)
+            self.__imageElementViewer.setWidget(ImageElementViewer([], 640, 480))
+            self.__imageElementViewer.setVisible(False)
 
             imageViewerButton = QtWidgets.QPushButton("Preview Panel")
             imageViewerButton.setToolTip('Toggles the display of the preview panel')
@@ -464,7 +464,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 Resource.icon("icons/imageViewer.png")
             )
 
-            sourceControlMain.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.__imageInfoCrateViewer)
+            sourceControlMain.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.__imageElementViewer)
             sourceBarLayout.addWidget(imageViewerButton)
 
             imageViewerButton.clicked.connect(self.__onToggleImageViewer)
@@ -526,34 +526,34 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 viewAction.setChecked(True)
 
     def __onSourceTreeSelectionChanged(self):
-        if not (self.__imageInfoCrateViewer and self.__imageInfoCrateViewer.isVisible()):
+        if not (self.__imageElementViewer and self.__imageElementViewer.isVisible()):
             return
 
-        infoCrates = []
+        elements = []
         for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
             selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
 
-            if hasattr(selectedItem, 'infoCrates'):
-                for infoCrate in selectedItem.infoCrates:
-                    if infoCrate.isLeaf():
-                        infoCrates.append(infoCrate)
+            if hasattr(selectedItem, 'elements'):
+                for element in selectedItem.elements:
+                    if element.isLeaf():
+                        elements.append(element)
                     else:
-                        with InfoCrateContext():
-                            for chilInfoCrate in infoCrate.children():
-                                infoCrates.append(chilInfoCrate)
+                        with ElementContext():
+                            for chilElement in element.children():
+                                elements.append(chilElement)
 
-        self.__imageInfoCrateViewer.widget().setInfoCrates(infoCrates)
+        self.__imageElementViewer.widget().setElements(elements)
 
     def __onToggleImageViewer(self, forceVisibility=False):
         """
         Slot triggered when the image preview button is pressed.
         """
-        self.__imageInfoCrateViewer.setVisible(not self.__imageInfoCrateViewer.isVisible() or forceVisibility)
+        self.__imageElementViewer.setVisible(not self.__imageElementViewer.isVisible() or forceVisibility)
 
-        if self.__imageInfoCrateViewer.isVisible() or forceVisibility:
-            if not self.__imageInfoCrateViewerAlreadyDisplayed:
-                self.__imageInfoCrateViewerAlreadyDisplayed = True
-                self.__imageInfoCrateViewer.parent().resizeDocks([self.__imageInfoCrateViewer], [400], QtCore.Qt.Horizontal)
+        if self.__imageElementViewer.isVisible() or forceVisibility:
+            if not self.__imageElementViewerAlreadyDisplayed:
+                self.__imageElementViewerAlreadyDisplayed = True
+                self.__imageElementViewer.parent().resizeDocks([self.__imageElementViewer], [400], QtCore.Qt.Horizontal)
                 self.resize(self.width() + 300, self.height())
 
             self.__onSourceTreeSelectionChanged()
@@ -589,20 +589,20 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 )
             )
 
-    def __updateSourceTreeInfoCrateList(self, infoCrateList, collectionVarName, checked=True):
+    def __updateSourceTreeElementList(self, elementList, collectionVarName, checked=True):
         """
-        Update the infoCrates displayed in the source tree.
+        Update the elements displayed in the source tree.
         """
-        infoCrateTypes = set()
-        infoCrateTags = {}
+        elementTypes = set()
+        elementTags = {}
         collectionParents = OrderedDict()
 
         # processing collections
         if collectionVarName:
             collections = set()
-            for infoCrate in infoCrateList:
-                if collectionVarName in infoCrate.varNames():
-                    collectionName = infoCrate.var(collectionVarName)
+            for element in elementList:
+                if collectionVarName in element.varNames():
+                    collectionName = element.var(collectionVarName)
                     collections.add(collectionName)
 
             for collectionName in sorted(collections, key=lambda x: str(x).lower()):
@@ -618,14 +618,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         # group
         if self.__checkedViewMode == "Group":
-            groupedInfoCrates = self.__groupInfoCrates(infoCrateList)
+            groupedElements = self.__groupElements(elementList)
 
-            for groupName in groupedInfoCrates.keys():
+            for groupName in groupedElements.keys():
                 if groupName:
-                    parent = QtWidgets.QTreeWidgetItem(collectionParents[groupedInfoCrates[0].var(collectionVarName)] if collectionParents and collectionVarName in groupedInfoCrates[0].varNames() else self.__sourceTree)
-                    self.__updateIcon(parent, groupedInfoCrates[groupName][0])
-                    parent.infoCrates = list(groupedInfoCrates[groupName])
-                    parent.setExpanded(len(groupedInfoCrates) == 2 and not groupedInfoCrates[None])
+                    parent = QtWidgets.QTreeWidgetItem(collectionParents[groupedElements[0].var(collectionVarName)] if collectionParents and collectionVarName in groupedElements[0].varNames() else self.__sourceTree)
+                    self.__updateIcon(parent, groupedElements[groupName][0])
+                    parent.elements = list(groupedElements[groupName])
+                    parent.setExpanded(len(groupedElements) == 2 and not groupedElements[None])
 
                     # visible data
                     visibleGroupName = groupName + '   '
@@ -635,31 +635,31 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     parent.setData(0, QtCore.Qt.EditRole, visibleGroupName)
 
                     # adding column information
-                    self.__addSourceTreeColumnData(groupedInfoCrates[groupName][0], parent, groupedInfoCrates[groupName])
+                    self.__addSourceTreeColumnData(groupedElements[groupName][0], parent, groupedElements[groupName])
 
                     parent.setFlags(parent.flags() | QtCore.Qt.ItemIsUserCheckable)
 
                     # check state
                     parent.setCheckState(0, QtCore.Qt.Checked if checked else QtCore.Qt.Unchecked)
 
-                    for infoCrate in groupedInfoCrates[groupName]:
+                    for element in groupedElements[groupName]:
                         self.__createSourceTreeChildItem(
-                            infoCrate,
+                            element,
                             parent,
-                            infoCrateTypes,
-                            infoCrateTags
+                            elementTypes,
+                            elementTags
                         )
 
                 else:
-                    for infoCrate in groupedInfoCrates[groupName]:
+                    for element in groupedElements[groupName]:
                         child = self.__createSourceTreeChildItem(
-                            infoCrate,
-                            collectionParents[infoCrate.var(collectionVarName)] if collectionParents and collectionVarName in infoCrate.varNames() else self.__sourceTree,
-                            infoCrateTypes,
-                            infoCrateTags
+                            element,
+                            collectionParents[element.var(collectionVarName)] if collectionParents and collectionVarName in element.varNames() else self.__sourceTree,
+                            elementTypes,
+                            elementTags
                         )
 
-                        if groupName is None and len(groupedInfoCrates) == 1 and len(groupedInfoCrates[None]) == 1:
+                        if groupName is None and len(groupedElements) == 1 and len(groupedElements[None]) == 1:
                             child.setExpanded(True)
 
                         child.setFlags(child.flags() | QtCore.Qt.ItemIsUserCheckable)
@@ -667,82 +667,82 @@ class RunnerWindow(QtWidgets.QMainWindow):
                         # check state
                         child.setCheckState(0, QtCore.Qt.Checked if checked else QtCore.Qt.Unchecked)
 
-                        self.__addSourceTreeColumnData(infoCrate, child)
+                        self.__addSourceTreeColumnData(element, child)
 
         # flat
         else:
-            for infoCrate in sorted(infoCrateList, key=lambda x: x.var('fullPath')):
+            for element in sorted(elementList, key=lambda x: x.var('fullPath')):
 
-                # only testing with the first infoCrate when grouped
-                if isinstance(infoCrate, list):
-                    infoCrate = infoCrate[0]
+                # only testing with the first element when grouped
+                if isinstance(element, list):
+                    element = element[0]
 
-                child = self.__createSourceTreeChildItem(infoCrate, self.__sourceTree, infoCrateTypes, infoCrateTags)
+                child = self.__createSourceTreeChildItem(element, self.__sourceTree, elementTypes, elementTags)
                 child.setFlags(child.flags() | QtCore.Qt.ItemIsUserCheckable)
 
                 # check state
                 child.setCheckState(0, QtCore.Qt.Checked if checked else QtCore.Qt.Unchecked)
 
-                self.__addSourceTreeColumnData(infoCrate, child)
+                self.__addSourceTreeColumnData(element, child)
 
-        # infoCrate info
-        self.__infoCrateInfoMenu = self.__sourceFilterMenu.addMenu('InfoCrate Info')
+        # element info
+        self.__elementInfoMenu = self.__sourceFilterMenu.addMenu('Element Info')
 
         # vars
-        self.__showVarsAction = self.__infoCrateInfoMenu.addAction('Vars')
+        self.__showVarsAction = self.__elementInfoMenu.addAction('Vars')
         self.__showVarsAction.setCheckable(True)
         self.__showVarsAction.setChecked(self.__showVars)
         self.__showVarsAction.triggered.connect(self.__onFilterShowVars)
 
         # tags
-        self.__showTagsAction = self.__infoCrateInfoMenu.addAction('Tags')
+        self.__showTagsAction = self.__elementInfoMenu.addAction('Tags')
         self.__showTagsAction.setCheckable(True)
         self.__showTagsAction.setChecked(self.__showTags)
         self.__showTagsAction.triggered.connect(self.__onFilterShowTags)
 
-        # infoCrate types
-        self.__infoCrateTypesMenu = self.__sourceFilterMenu.addMenu('InfoCrate Types')
+        # element types
+        self.__elementTypesMenu = self.__sourceFilterMenu.addMenu('Element Types')
 
-        allAction = self.__infoCrateTypesMenu.addAction('ALL')
+        allAction = self.__elementTypesMenu.addAction('ALL')
         allAction.triggered.connect(self.__onFilterSelectAll)
 
-        noneAction = self.__infoCrateTypesMenu.addAction('NONE')
+        noneAction = self.__elementTypesMenu.addAction('NONE')
         noneAction.triggered.connect(self.__onFilterSelectNone)
-        self.__infoCrateTypesMenu.addSeparator()
+        self.__elementTypesMenu.addSeparator()
 
         # workaround to improve the performance of the rendering:
         # restoring the visibility of the widget
         self.__sourceTree.setVisible(True)
 
-        for infoCrateType in sorted(infoCrateTypes):
-            action = self.__infoCrateTypesMenu.addAction(infoCrateType)
+        for elementType in sorted(elementTypes):
+            action = self.__elementTypesMenu.addAction(elementType)
             action.setCheckable(True)
             action.setChecked(True)
             action.changed.connect(self.__onSourceFiltersChanged)
 
         self.__sourceTree.resizeColumnToContents(0)
 
-    def __groupInfoCrates(self, infoCrates):
+    def __groupElements(self, elements):
         """
-        Return a dictionary containing the matched infoCrates grouped.
+        Return a dictionary containing the matched elements grouped.
         """
-        groupedInfoCrates = OrderedDict()
-        groupedInfoCrates[None] = []
-        for infoCrateList in InfoCrate.group(infoCrates):
-            for infoCrate in infoCrateList:
+        groupedElements = OrderedDict()
+        groupedElements[None] = []
+        for elementList in Element.group(elements):
+            for element in elementList:
                 # group
-                if self.__checkedViewMode == 'Group' and 'group' in infoCrate.tagNames():
-                    groupName = infoCrate.tag('group')
-                    if groupName not in groupedInfoCrates:
-                        groupedInfoCrates[groupName] = []
+                if self.__checkedViewMode == 'Group' and 'group' in element.tagNames():
+                    groupName = element.tag('group')
+                    if groupName not in groupedElements:
+                        groupedElements[groupName] = []
 
-                    groupedInfoCrates[groupName].append(infoCrate)
+                    groupedElements[groupName].append(element)
 
                 # flat
                 else:
-                    groupedInfoCrates[None].append(infoCrate)
+                    groupedElements[None].append(element)
 
-        return groupedInfoCrates
+        return groupedElements
 
     def __showInFileManager(self, filePaths):
         """
@@ -805,9 +805,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         return sourceTree
 
-    def __checkedInfoCrates(self):
+    def __checkedElements(self):
         """
-        Return a list of checked infoCrates in the source tree.
+        Return a list of checked elements in the source tree.
         """
         totalRows = self.__sourceTree.model().rowCount()
         result = []
@@ -816,15 +816,15 @@ class RunnerWindow(QtWidgets.QMainWindow):
             item = self.__sourceTree.topLevelItem(i)
 
             # collections
-            if not hasattr(item, 'infoCrates'):
+            if not hasattr(item, 'elements'):
                 for childIndex in range(item.childCount()):
                     childItem = item.child(childIndex)
-                    if childItem.checkState(0) and hasattr(childItem, 'infoCrates'):
-                        result.extend(childItem.infoCrates)
+                    if childItem.checkState(0) and hasattr(childItem, 'elements'):
+                        result.extend(childItem.elements)
 
             # root items
-            elif item.checkState(0) and hasattr(item, 'infoCrates'):
-                result.extend(item.infoCrates)
+            elif item.checkState(0) and hasattr(item, 'elements'):
+                result.extend(item.elements)
 
         return list(map(lambda x: x.clone(), result))
 
@@ -845,7 +845,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
     def __loadSourceOverrides(self):
         """
-        Load infoCrate overrides in the source tree.
+        Load element overrides in the source tree.
         """
         result = {}
 
@@ -857,34 +857,34 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         return result
 
-    def __applySourceOverrides(self, overrides, infoCrates):
+    def __applySourceOverrides(self, overrides, elements):
         """
         Apply overrides overrides on the source tree.
         """
         if not overrides:
             return
 
-        with InfoCrateContext():
-            def __allInfoCrates(childInfoCrate):
-                fullPath = childInfoCrate.var('fullPath')
+        with ElementContext():
+            def __allElements(childElement):
+                fullPath = childElement.var('fullPath')
                 if fullPath in overrides:
                     for varName, varValue in overrides[fullPath].items():
-                        childInfoCrate.setVar(
+                        childElement.setVar(
                             varName,
                             varValue,
-                            varName in childInfoCrate.contextVarNames()
+                            varName in childElement.contextVarNames()
                         )
 
-                if not childInfoCrate.isLeaf():
-                    for infoCrate in childInfoCrate.children():
-                        __allInfoCrates(infoCrate)
+                if not childElement.isLeaf():
+                    for element in childElement.children():
+                        __allElements(element)
 
-            for infoCrate in infoCrates:
-                __allInfoCrates(infoCrate)
+            for element in elements:
+                __allElements(element)
 
-    def __addSourceTreeColumnData(self, infoCrate, treeItem, groupedInfoCrates=None):
+    def __addSourceTreeColumnData(self, element, treeItem, groupedElements=None):
         """
-        Add infoCrate information to a column in the source tree.
+        Add element information to a column in the source tree.
         """
         # adding column information
         for index, column in enumerate(self.__uiHintSourceColumns):
@@ -893,16 +893,16 @@ class RunnerWindow(QtWidgets.QMainWindow):
             value = ''
             columnLabel = ''
             mixedValues = False
-            for infoCrateIndex, checkInfoCrate in enumerate(groupedInfoCrates if groupedInfoCrates else [infoCrate]):
+            for elementIndex, checkElement in enumerate(groupedElements if groupedElements else [element]):
                 currentValue = ''
-                if checkInfoCrate.var('fullPath') in self.__sourceOverrides and column in self.__sourceOverrides[checkInfoCrate.var('fullPath')]:
-                    currentValue = self.__sourceOverrides[checkInfoCrate.var('fullPath')][column]
+                if checkElement.var('fullPath') in self.__sourceOverrides and column in self.__sourceOverrides[checkElement.var('fullPath')]:
+                    currentValue = self.__sourceOverrides[checkElement.var('fullPath')][column]
                     hasOverride = True
-                if column in checkInfoCrate.varNames():
+                if column in checkElement.varNames():
                     if not hasOverride:
-                        currentValue = checkInfoCrate.var(column)
+                        currentValue = checkElement.var(column)
 
-                if currentValue != value and infoCrateIndex:
+                if currentValue != value and elementIndex:
                     mixedValues = True
                     break
                 value = currentValue
@@ -910,15 +910,15 @@ class RunnerWindow(QtWidgets.QMainWindow):
             columnLabel = ('mixed' if mixedValues else str(value)) + '   '
 
             # creating custom widget to show the presets
-            if '{}.button'.format(column) in infoCrate.tagNames():
+            if '{}.button'.format(column) in element.tagNames():
                 columnButton = QtWidgets.QPushButton(self)
                 columnButton.setObjectName('columnButton')
                 columnButton.setText(str(value))
-                columnButton.clicked.connect(functools.partial(self.__onColumnButton, weakref.ref(treeItem), infoCrate.tag('{}.button'.format(column))))
+                columnButton.clicked.connect(functools.partial(self.__onColumnButton, weakref.ref(treeItem), element.tag('{}.button'.format(column))))
                 self.__sourceTree.setItemWidget(treeItem, index + 1, columnButton)
 
             # creating custom widget to show the presets
-            elif '{}.presets'.format(column) in infoCrate.tagNames() or value is not None and isinstance(value, bool):
+            elif '{}.presets'.format(column) in element.tagNames() or value is not None and isinstance(value, bool):
                 columnLabel += "          "
                 presetsHolderWidget = QtWidgets.QWidget(self)
                 presetsHolderWidget.setObjectName('presetTreeHolder')
@@ -948,8 +948,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     QtGui.QBrush(QtGui.QColor(100, 100, 100))
                 )
 
-            elif value == '' and column in infoCrate.varNames() and \
-                    (not infoCrate.tag('{}.allowEmpty'.format(column)) if '{}.allowEmpty'.format(column) in infoCrate.tagNames() else True):
+            elif value == '' and column in element.varNames() and \
+                    (not element.tag('{}.allowEmpty'.format(column)) if '{}.allowEmpty'.format(column) in element.tagNames() else True):
                 font = QtGui.QFont()
                 font.setBold(True)
 
@@ -982,22 +982,22 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     QtGui.QBrush(QtGui.QColor(255, 152, 28))
                 )
 
-    def __createSourceTreeChildItem(self, infoCrate, parent, infoCrateTypes, infoCrateTags):
+    def __createSourceTreeChildItem(self, element, parent, elementTypes, elementTags):
         """
         Create a new child item in the source tree.
         """
         child = QtWidgets.QTreeWidgetItem(parent)
-        child.infoCrates = [infoCrate]
-        self.__updateIcon(child, infoCrate)
+        child.elements = [element]
+        self.__updateIcon(child, element)
 
         # visible data
-        child.setData(0, QtCore.Qt.EditRole, infoCrate.var('baseName') + '   ')
-        self.__addSourceTreeColumnData(infoCrate, child)
+        child.setData(0, QtCore.Qt.EditRole, element.var('baseName') + '   ')
+        self.__addSourceTreeColumnData(element, child)
 
-        infoCrateTypes.add(infoCrate.var('type'))
+        elementTypes.add(element.var('type'))
 
         ####
-        if not infoCrate.isLeaf():
+        if not element.isLeaf():
             childEntries = QtWidgets.QTreeWidgetItem(child)
             childEntries.setData(
                 0,
@@ -1005,12 +1005,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 'children'
             )
             childEntries.setExpanded(True)
-            groupedInfoCrates = self.__groupInfoCrates(infoCrate.children())
-            for groupName in groupedInfoCrates.keys():
+            groupedElements = self.__groupElements(element.children())
+            for groupName in groupedElements.keys():
                 if groupName:
                     parent = QtWidgets.QTreeWidgetItem(childEntries)
-                    parent.infoCrates = list(groupedInfoCrates[groupName])
-                    self.__updateIcon(parent, groupedInfoCrates[groupName][0])
+                    parent.elements = list(groupedElements[groupName])
+                    self.__updateIcon(parent, groupedElements[groupName][0])
 
                     # visible data
                     visibleGroupName = groupName + '   '
@@ -1020,21 +1020,21 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     parent.setData(0, QtCore.Qt.EditRole, visibleGroupName)
 
                     # adding column information
-                    self.__addSourceTreeColumnData(groupedInfoCrates[groupName][0], parent, groupedInfoCrates[groupName])
-                    for childInfoCrate in groupedInfoCrates[groupName]:
+                    self.__addSourceTreeColumnData(groupedElements[groupName][0], parent, groupedElements[groupName])
+                    for childElement in groupedElements[groupName]:
                         self.__createSourceTreeChildItem(
-                            childInfoCrate,
+                            childElement,
                             parent,
-                            infoCrateTypes,
-                            infoCrateTags
+                            elementTypes,
+                            elementTags
                         )
                 else:
-                    for childInfoCrate in groupedInfoCrates[groupName]:
+                    for childElement in groupedElements[groupName]:
                         self.__createSourceTreeChildItem(
-                            childInfoCrate,
+                            childElement,
                             childEntries,
-                            infoCrateTypes,
-                            infoCrateTags
+                            elementTypes,
+                            elementTags
                         )
 
         if self.__showVars:
@@ -1044,7 +1044,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 QtCore.Qt.EditRole,
                 'vars'
             )
-            for varName in sorted(infoCrate.varNames()):
+            for varName in sorted(element.varNames()):
                 if varName in ['path']:
                     continue
 
@@ -1052,7 +1052,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 variablesChild.setData(
                     0,
                     QtCore.Qt.EditRole,
-                    '{0}={1}'.format(varName, infoCrate.var(varName))
+                    '{0}={1}'.format(varName, element.var(varName))
                 )
 
         if self.__showTags:
@@ -1063,21 +1063,21 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 'tags'
             )
 
-            for tagName in infoCrate.tagNames():
-                tagValue = infoCrate.tag(tagName)
+            for tagName in element.tagNames():
+                tagValue = element.tag(tagName)
                 if not isinstance(tagValue, str):
                     continue
 
-                if tagName not in infoCrateTags:
-                    infoCrateTags[tagName] = set()
-                infoCrateTags[tagName].add(tagValue)
+                if tagName not in elementTags:
+                    elementTags[tagName] = set()
+                elementTags[tagName].add(tagValue)
 
-            for tagName in sorted(infoCrate.tagNames()):
+            for tagName in sorted(element.tagNames()):
                 tagChild = QtWidgets.QTreeWidgetItem(tags)
                 tagChild.setData(
                     0,
                     QtCore.Qt.EditRole,
-                    '{0}={1}'.format(tagName, infoCrate.tag(tagName))
+                    '{0}={1}'.format(tagName, element.tag(tagName))
                 )
 
         return child
@@ -1126,7 +1126,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
             dispatcherPriority = self.__selectedRenderfarmPriority.selectedPriorityValue()
 
         try:
-            for taskHolder, infoCratesGroup in self.__targetTree.executionTaskHolders():
+            for taskHolder, elementsGroup in self.__targetTree.executionTaskHolders():
 
                 # replacing the priority for the tasks
                 if dispatcherPriority:
@@ -1138,13 +1138,13 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 # applying overrides
                 self.__applySourceOverrides(
                     self.__loadSourceOverrides(),
-                    infoCratesGroup
+                    elementsGroup
                 )
 
                 # default label
                 label = "{}/{} [{}]".format(
                     os.path.basename(taskHolder.var('configDirectory')),
-                    infoCratesGroup[0].tag('group') if 'group' in infoCratesGroup[0].tagNames() else infoCratesGroup[0].var('baseName'),
+                    elementsGroup[0].tag('group') if 'group' in elementsGroup[0].tagNames() else elementsGroup[0].var('baseName'),
                     datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 )
 
@@ -1155,12 +1155,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
                             taskHolder.task().metadata('dispatch.label'),
                             datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         )
-                    ).valueFromInfoCrate(infoCratesGroup[0])
+                    ).valueFromElement(elementsGroup[0])
 
                 dispatcher.setOption('label', label)
                 dispatcher.setOption('priority', 20)
 
-                for result in dispatcher.dispatch(taskHolder, infoCratesGroup):
+                for result in dispatcher.dispatch(taskHolder, elementsGroup):
                     if isinstance(result, ProcessExecution):
                         output += result.stdoutContent()
                     else:
@@ -1226,20 +1226,20 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Slot triggered when the column button is clicked.
         """
-        infoCrates = treeItemWeakRef().infoCrates
+        elements = treeItemWeakRef().elements
 
         # executing callable
-        for index, infoCrate in enumerate(infoCrates):
-            if hasattr(infoCrate, callableName):
+        for index, element in enumerate(elements):
+            if hasattr(element, callableName):
                 try:
-                    getattr(infoCrates[0], callableName)(index, len(infoCrates))
+                    getattr(elements[0], callableName)(index, len(elements))
                 except Exception as err:
                     traceback.print_exc()
 
                     QtWidgets.QMessageBox.critical(
                         None,
                         "Kombi",
-                        "Error during the execution {}:\n\n{}".format(str(infoCrate), str(err)),
+                        "Error during the execution {}:\n\n{}".format(str(element), str(err)),
                         QtWidgets.QMessageBox.Ok
                     )
 
@@ -1248,9 +1248,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.critical(
                     None,
                     "Kombi",
-                    'Could not find callable "{0}" in infoCrate "{1}"'.format(
+                    'Could not find callable "{0}" in element "{1}"'.format(
                         callableName,
-                        str(infoCrates[0].var('type'))
+                        str(elements[0].var('type'))
                     ),
                     QtWidgets.QMessageBox.Ok
                 )
@@ -1266,7 +1266,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if currentIndex not in self.__sourceTree.selectionModel().selectedIndexes():
             self.__sourceTree.selectionModel().select(currentIndex, QtCore.QItemSelectionModel.SelectCurrent)
 
-        self.__onChangeInfoCrateValue()
+        self.__onChangeElementValue()
 
     def __onSourceTreeContextMenu(self, point=None):
         """
@@ -1290,14 +1290,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 # action.triggered.connect(self.__onShowFolder)
             else:
                 action = menu.addAction('Override Value')
-                action.triggered.connect(self.__onChangeInfoCrateValue)
+                action.triggered.connect(self.__onChangeElementValue)
 
                 action = menu.addAction('Reset Value')
-                action.triggered.connect(self.__onResetInfoCrateValue)
+                action.triggered.connect(self.__onResetElementValue)
 
             menu.exec_(self.__sourceTree.mapToGlobal(point) if point is not None else QtGui.QCursor.pos())
 
-    def __onChangeInfoCrateValue(self):
+    def __onChangeElementValue(self):
         """
         Slot triggered when an override in the source tree is triggered.
         """
@@ -1307,10 +1307,10 @@ class RunnerWindow(QtWidgets.QMainWindow):
         for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
             selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
 
-            infoCrates = []
-            if hasattr(selectedItem, 'infoCrates'):
-                infoCrates = selectedItem.infoCrates[:]
-            if not infoCrates:
+            elements = []
+            if hasattr(selectedItem, 'elements'):
+                elements = selectedItem.elements[:]
+            if not elements:
                 continue
 
             selectedColumn = selectedIndex.column()
@@ -1318,9 +1318,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
             hintValue = ""
             fileChooserName = '{}.fileChooserOnOverride'.format(columnName)
-            showFileChooser = fileChooserName in infoCrates[0].tagNames() and infoCrates[0].tag(fileChooserName)
-            if columnName in infoCrates[0].varNames():
-                hintValue = infoCrates[0].var(columnName)
+            showFileChooser = fileChooserName in elements[0].tagNames() and elements[0].tag(fileChooserName)
+            if columnName in elements[0].varNames():
+                hintValue = elements[0].var(columnName)
 
             if value is None:
                 allPresets = []
@@ -1330,15 +1330,15 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     allPresets.append('False')
                 else:
                     presetsName = '{}.presets'.format(columnName)
-                    for infoCrateItem in infoCrates:
-                        if presetsName not in infoCrateItem.tagNames():
+                    for elementItem in elements:
+                        if presetsName not in elementItem.tagNames():
                             continue
 
-                        for presetValue in infoCrateItem.tag(presetsName):
+                        for presetValue in elementItem.tag(presetsName):
                             if presetValue not in allPresets:
                                 allPresets.append(presetValue)
 
-                    if len(infoCrates) > 1:
+                    if len(elements) > 1:
                         allPresets.sort(key=lambda x: str(x).lower())
 
                 if allPresets:
@@ -1354,15 +1354,15 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 else:
                     if showFileChooser:
                         ext = None
-                        if '{}.fileChooserOnOverrideAllowedExt'.format(columnName) in infoCrates[0].tagNames():
+                        if '{}.fileChooserOnOverrideAllowedExt'.format(columnName) in elements[0].tagNames():
                             ext = "{ext} (*.{ext})".format(
-                                ext=infoCrates[0].tag('{}.fileChooserOnOverrideAllowedExt'.format(columnName))
+                                ext=elements[0].tag('{}.fileChooserOnOverrideAllowedExt'.format(columnName))
                             )
 
                         value = QtWidgets.QFileDialog.getOpenFileName(
                             self,
                             "Select a file to override: {}".format(
-                                infoCrates[0].var('baseName')
+                                elements[0].var('baseName')
                             ),
                             self.__overridePreviousSelectedLocation,
                             ext
@@ -1389,20 +1389,20 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
                 value = type(hintValue)(value) if type(hintValue) is not bool else value.lower() == 'true'
 
-            for infoCrateItem in infoCrates:
-                infoCrateFullPath = infoCrateItem.var('fullPath')
+            for elementItem in elements:
+                elementFullPath = elementItem.var('fullPath')
 
-                # skipping the same value that is currently set in the infoCrate
-                if value == infoCrateItem.var(columnName):
-                    if infoCrateFullPath in overrides and columnName in overrides[infoCrateFullPath]:
-                        del overrides[infoCrateFullPath][columnName]
+                # skipping the same value that is currently set in the element
+                if value == elementItem.var(columnName):
+                    if elementFullPath in overrides and columnName in overrides[elementFullPath]:
+                        del overrides[elementFullPath][columnName]
                     continue
 
                 # adding
-                if infoCrateFullPath not in overrides:
-                    overrides[infoCrateFullPath] = {}
+                if elementFullPath not in overrides:
+                    overrides[elementFullPath] = {}
 
-                overrides[infoCrateFullPath][columnName] = value
+                overrides[elementFullPath][columnName] = value
 
         if not os.path.exists(os.path.dirname(self.__sourceOverridesConfig())):
             os.mkdir(os.path.dirname(self.__sourceOverridesConfig()))
@@ -1418,30 +1418,30 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if value is not None:
             self.__onRefreshSourceDir()
 
-    def __onResetInfoCrateValue(self):
+    def __onResetElementValue(self):
         """
         Slot triggered when an override in the source tree is removed.
         """
         overrides = dict(self.__sourceOverrides)
 
-        selectedInfoCrates = set()
+        selectedElements = set()
         columnNames = set()
         for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
             selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
 
-            infoCrates = []
-            if hasattr(selectedItem, 'infoCrates'):
-                infoCrates = selectedItem.infoCrates[:]
-            if not infoCrates:
+            elements = []
+            if hasattr(selectedItem, 'elements'):
+                elements = selectedItem.elements[:]
+            if not elements:
                 continue
 
             selectedColumn = selectedIndex.column()
             columnName = self.__uiHintSourceColumns[selectedColumn - 1]
 
-            selectedInfoCrates.update(infoCrates)
+            selectedElements.update(elements)
             columnNames.add(columnName)
 
-        for fullPath in map(lambda x: x.var('fullPath'), selectedInfoCrates):
+        for fullPath in map(lambda x: x.var('fullPath'), selectedElements):
             if fullPath not in overrides:
                 continue
 
@@ -1464,57 +1464,57 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
     def __onShowFolder(self):
         """
-        Slot triggered when show folder for the selected infoCrates is triggered.
+        Slot triggered when show folder for the selected elements is triggered.
         """
         folderPaths = set()
-        for infoCrate in self.__selectedInfoCrates():
-            if infoCrate.isLeaf():
-                folderPaths.add(os.path.dirname(infoCrate.var('fullPath')))
+        for element in self.__selectedElements():
+            if element.isLeaf():
+                folderPaths.add(os.path.dirname(element.var('fullPath')))
             else:
-                folderPaths.add(infoCrate.var('fullPath'))
+                folderPaths.add(element.var('fullPath'))
 
         for folderPath in folderPaths:
             self.__showInFileManager(
                 folderPath
             )
 
-    def __selectedInfoCrates(self):
+    def __selectedElements(self):
         """
-        Return a list of selected infoCrates.
+        Return a list of selected elements.
         """
-        selectedInfoCrates = set()
+        selectedElements = set()
         for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
             selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
 
-            infoCrates = []
-            if hasattr(selectedItem, 'infoCrates'):
-                infoCrates = selectedItem.infoCrates[:]
-            if not infoCrates:
+            elements = []
+            if hasattr(selectedItem, 'elements'):
+                elements = selectedItem.elements[:]
+            if not elements:
                 continue
 
-            selectedInfoCrates.update(infoCrates)
+            selectedElements.update(elements)
 
-        return list(selectedInfoCrates)
+        return list(selectedElements)
 
     def __onOpenSelected(self):
         """
         Slot triggered when open the select file is triggered.
         """
-        infoCrates = self.__selectedInfoCrates()
-        if not infoCrates:
+        elements = self.__selectedElements()
+        if not elements:
             return
-        self.__showInFileManager(list(map(lambda x: x.var('fullPath'), infoCrates)))
+        self.__showInFileManager(list(map(lambda x: x.var('fullPath'), elements)))
 
     def __onPlayInRV(self):
         """
         Slot triggered when the option play in rv is selected.
         """
-        infoCrates = self.__selectedInfoCrates()
-        if not infoCrates:
+        elements = self.__selectedElements()
+        if not elements:
             return
 
         commonPaths = {}
-        for filePath in map(lambda x: x.var('fullPath'), infoCrates):
+        for filePath in map(lambda x: x.var('fullPath'), elements):
             parentDir = os.path.dirname(filePath)
             if parentDir not in commonPaths:
                 commonPaths[parentDir] = set()
@@ -1571,7 +1571,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         # refreshing tree
         if force:
-            self.__infoCrateList = None
+            self.__elementList = None
 
         self.updateSource(self.__sourcePath.text())
 
@@ -1614,14 +1614,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Slot triggered when select none filter is triggered.
         """
-        for action in self.__infoCrateTypesMenu.actions():
+        for action in self.__elementTypesMenu.actions():
             action.setChecked(False)
 
     def __onFilterSelectAll(self):
         """
         Slot triggered when select all filter is triggered.
         """
-        for action in self.__infoCrateTypesMenu.actions():
+        for action in self.__elementTypesMenu.actions():
             action.setChecked(True)
 
     def __onSourceFilterSearch(self, *args, **kwargs):
@@ -1635,7 +1635,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         Slot triggered a filter is changed in the source tree.
         """
         visibleTypes = []
-        for action in self.__infoCrateTypesMenu.actions():
+        for action in self.__elementTypesMenu.actions():
             if action.isChecked():
                 visibleTypes.append(action.text())
 
@@ -1647,19 +1647,19 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         allTreeItems = self.__sourceTree.findItems("*", QtCore.Qt.MatchWildcard | QtCore.Qt.MatchWrap | QtCore.Qt.MatchRecursive, 1)
         filterSearch = list(self.__sourceFilterSearch.text().lower().strip().split(' '))
-        infoCrateItems = []
+        elementItems = []
         for treeItem in allTreeItems:
             # in case of collections we always want to hide the root item
             if not treeItem.parent():
                 treeItem.setHidden(True)
 
-            if not hasattr(treeItem, 'infoCrates'):
+            if not hasattr(treeItem, 'elements'):
                 continue
 
             treeItem.setHidden(True)
-            infoCrateItems.append(treeItem)
+            elementItems.append(treeItem)
 
-            if treeItem.infoCrates[0].var('type') not in visibleTypes:
+            if treeItem.elements[0].var('type') not in visibleTypes:
                 break
 
             for filterWord in filterSearch:
@@ -1669,12 +1669,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
             if filterVarName:
                 treeItem.setHidden(
-                    not (treeItem.infoCrates[0].var(filterVarName) in filterVarValues if filterVarName in treeItem.infoCrates[0].varNames() and (not filterSearch or not treeItem.isHidden()) else False)
+                    not (treeItem.elements[0].var(filterVarName) in filterVarValues if filterVarName in treeItem.elements[0].varNames() and (not filterSearch or not treeItem.isHidden()) else False)
                 )
 
-        for infoCrateItem in infoCrateItems:
-            if not infoCrateItem.isHidden():
-                parentItem = infoCrateItem
+        for elementItem in elementItems:
+            if not elementItem.isHidden():
+                parentItem = elementItem
                 while parentItem:
                     parentItem = parentItem.parent()
 
@@ -1682,11 +1682,11 @@ class RunnerWindow(QtWidgets.QMainWindow):
                         break
                     parentItem.setHidden(False)
 
-    def __updateIcon(self, item, infoCrate, columnIndex=0):
+    def __updateIcon(self, item, element, columnIndex=0):
         """
-        Set the icon based on the infoCrate for the tree item.
+        Set the icon based on the element for the tree item.
         """
-        iconPath = infoCrate.tag('icon') if 'icon' in infoCrate.tagNames() else None
+        iconPath = element.tag('icon') if 'icon' in element.tagNames() else None
         if not iconPath:
             return
 
@@ -1713,7 +1713,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
             selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
 
-            if hasattr(selectedItem, 'infoCrates'):
+            if hasattr(selectedItem, 'elements'):
                 selectedItem.setCheckState(0, currentItem.checkState(0))
 
         self.__ignoreCheckedEvents = False

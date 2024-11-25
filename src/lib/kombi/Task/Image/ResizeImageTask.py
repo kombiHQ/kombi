@@ -3,7 +3,7 @@ import os
 import multiprocessing
 from ...Template import Template
 from ..Task import Task
-from ... import InfoCrate
+from ... import Element
 
 class ResizeImageTask(Task):
     """
@@ -33,23 +33,23 @@ class ResizeImageTask(Task):
         """
         import OpenImageIO as oiio
 
-        for infoCrate in self.infoCrates():
+        for element in self.elements():
             width = self.option('width')
             height = self.option('height')
 
             # resolving template
             if isinstance(width, str):
-                width = int(Template(width).valueFromInfoCrate(
-                    infoCrate
+                width = int(Template(width).valueFromElement(
+                    element
                 ))
 
             if isinstance(height, str):
-                height = int(Template(height).valueFromInfoCrate(
-                    infoCrate
+                height = int(Template(height).valueFromElement(
+                    element
                 ))
 
-            targetFilePath = InfoCrate.Fs.Image.OiioInfoCrate.supportedString(
-                self.target(infoCrate)
+            targetFilePath = Element.Fs.Image.OiioElement.supportedString(
+                self.target(element)
             )
 
             # trying to create the directory automatically in case it does not exist
@@ -60,8 +60,8 @@ class ResizeImageTask(Task):
 
             # opening the source image to generate a resized image
             inputImageBuf = oiio.ImageBuf(
-                InfoCrate.Fs.Image.OiioInfoCrate.supportedString(
-                    infoCrate.var('filePath')
+                Element.Fs.Image.OiioElement.supportedString(
+                    element.var('filePath')
                 )
             )
             inputSpec = inputImageBuf.spec()

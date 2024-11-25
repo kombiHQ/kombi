@@ -2,8 +2,8 @@ import unittest
 import os
 from ...BaseTestCase import BaseTestCase
 from kombi.Task import Task
-from kombi.InfoCrate.Fs import FsInfoCrate
-from kombi.InfoCrate.Fs.Image import ExrInfoCrate
+from kombi.Element.Fs import FsElement
+from kombi.Element.Fs.Image import ExrElement
 
 class CopyTaskTest(BaseTestCase):
     """Test Copy task."""
@@ -15,17 +15,17 @@ class CopyTaskTest(BaseTestCase):
         """
         Test that the copy task works properly.
         """
-        infoCrate = FsInfoCrate.createFromPath(self.__sourcePath)
+        element = FsElement.createFromPath(self.__sourcePath)
         copyTask = Task.create('copy')
-        copyTask.add(infoCrate, self.__targetPath)
+        copyTask.add(element, self.__targetPath)
         result = copyTask.output()
         self.assertEqual(len(result), 1)
-        infoCrate = result[0]
-        self.assertEqual(infoCrate.var("filePath"), self.__targetPath)
-        self.assertTrue(os.path.isfile(infoCrate.var("filePath")))
-        self.assertIsInstance(infoCrate, ExrInfoCrate)
-        self.assertEqual(infoCrate.var("width"), infoCrate.var("width"))
-        self.assertEqual(infoCrate.var("height"), infoCrate.var("height"))
+        element = result[0]
+        self.assertEqual(element.var("filePath"), self.__targetPath)
+        self.assertTrue(os.path.isfile(element.var("filePath")))
+        self.assertIsInstance(element, ExrElement)
+        self.assertEqual(element.var("width"), element.var("width"))
+        self.assertEqual(element.var("height"), element.var("height"))
 
     @classmethod
     def tearDownClass(cls):

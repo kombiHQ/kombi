@@ -18,7 +18,7 @@ class SlackOutputTask(ExternalTask):
         self.setOption('channel', '')
         self.setOption('users', [])
         self.setOption('messageHeader', '')
-        self.setOption('messageInfoCrates', True)
+        self.setOption('messageElements', True)
         self.setOption('addExtraLineAtTheEnd', True)
         self.setOption('slackToken', self.__slackToken)
         self.setMetadata('wrapper.name', 'python')
@@ -82,21 +82,21 @@ class SlackOutputTask(ExternalTask):
         import slack
 
         content = []
-        infoCrate = self.infoCrates()[0]
-        header = self.templateOption('messageHeader', infoCrate)
+        element = self.elements()[0]
+        header = self.templateOption('messageHeader', element)
         if header:
             content.append(header)
 
-        if self.templateOption('messageInfoCrates', infoCrate):
-            content += list(map(lambda x: os.path.normpath(x.var('fullPath')).replace("\\", "/"), self.infoCrates()))
+        if self.templateOption('messageElements', element):
+            content += list(map(lambda x: os.path.normpath(x.var('fullPath')).replace("\\", "/"), self.elements()))
 
-        if self.templateOption('addExtraLineAtTheEnd', infoCrate):
+        if self.templateOption('addExtraLineAtTheEnd', element):
             content.append('')
 
-        client = slack.WebClient(token=self.templateOption('slackToken', infoCrate))
+        client = slack.WebClient(token=self.templateOption('slackToken', element))
 
         # sending message to the channel
-        channel = self.templateOption('channel', infoCrate)
+        channel = self.templateOption('channel', element)
         if channel:
             try:
                 client.chat_postMessage(
@@ -112,7 +112,7 @@ class SlackOutputTask(ExternalTask):
                 sys.stdout.flush()
 
         # sending slack messages
-        for user in self.templateOption('users', infoCrate):
+        for user in self.templateOption('users', element):
             try:
                 client.chat_postMessage(
                     channel="@{}".format(user),

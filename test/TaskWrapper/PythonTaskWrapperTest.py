@@ -4,7 +4,7 @@ import OpenImageIO
 from ..BaseTestCase import BaseTestCase
 from kombi.Task import Task
 from kombi.TaskWrapper import TaskWrapper
-from kombi.InfoCrate.Fs import FsInfoCrate
+from kombi.Element.Fs import FsElement
 from kombi.Resource import Resource
 
 class PythonTaskWrapperTest(BaseTestCase):
@@ -19,9 +19,9 @@ class PythonTaskWrapperTest(BaseTestCase):
         """
         resource = Resource.get()
         resource.load(self.__taskPath)
-        infoCrate = FsInfoCrate.createFromPath(self.__sourcePath)
+        element = FsElement.createFromPath(self.__sourcePath)
         dummyTask = Task.create('pythonTestTask')
-        dummyTask.add(infoCrate)
+        dummyTask.add(element)
         dummyTask.setOption("runPython", True)
         wrapper = TaskWrapper.create('python')
         result = wrapper.run(dummyTask)
@@ -35,9 +35,9 @@ class PythonTaskWrapperTest(BaseTestCase):
         """
         resource = Resource.get()
         resource.load(self.__taskPath)
-        infoCrate = FsInfoCrate.createFromPath(self.__sourcePath)
+        element = FsElement.createFromPath(self.__sourcePath)
         dummyTask = Task.create('pythonTestTask')
-        dummyTask.add(infoCrate)
+        dummyTask.add(element)
         dummyTask.setOption("runPython", False)
         wrapper = TaskWrapper.create('python')
         result = wrapper.run(dummyTask)

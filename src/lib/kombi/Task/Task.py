@@ -1,8 +1,8 @@
 import json
 from collections import OrderedDict
 from ..Resource import Resource
-from ..InfoCrate.Fs import FsInfoCrate
-from ..InfoCrate import InfoCrate
+from ..Element.Fs import FsElement
+from ..Element import Element
 from ..Template import Template
 from ..TaskReporter import TaskReporter
 
@@ -15,8 +15,8 @@ class TaskTypeNotFoundError(TaskError):
 class TaskValidationError(TaskError):
     """Task validation error."""
 
-class TaskInvalidInfoCrateError(TaskError):
-    """Task Invalid infoCrate error."""
+class TaskInvalidElementError(TaskError):
+    """Task Invalid element error."""
 
 class TaskInvalidOptionError(TaskError):
     """Task invalid option error."""
@@ -40,7 +40,7 @@ class Task(object):
         """
         Create a task object.
         """
-        self.__infoCrates = OrderedDict()
+        self.__elements = OrderedDict()
         self.__metadata = {}
         self.__taskType = taskType
         self.__options = OrderedDict()
@@ -143,7 +143,7 @@ class Task(object):
 
         return self.__options[name]
 
-    def templateOption(self, name, infoCrate=None, extraVars={}):
+    def templateOption(self, name, element=None, extraVars={}):
         """
         Return the resolved value of an option.
         """
@@ -153,17 +153,17 @@ class Task(object):
         if isinstance(optionValue, dict):
             result = {}
             for key, value in optionValue.items():
-                result[key] = self.__resolveTemplateValue(value, infoCrate, extraVars)
+                result[key] = self.__resolveTemplateValue(value, element, extraVars)
             return result
 
         # 2d array
         elif isinstance(optionValue, (list, tuple)):
             result = []
             for value in optionValue:
-                result.append(self.__resolveTemplateValue(value, infoCrate, extraVars))
+                result.append(self.__resolveTemplateValue(value, element, extraVars))
             return result
 
-        return self.__resolveTemplateValue(optionValue, infoCrate, extraVars)
+        return self.__resolveTemplateValue(optionValue, element, extraVars)
 
     def setOption(self, name, value):
         """
@@ -186,50 +186,50 @@ class Task(object):
         """
         return list(self.__options.keys())
 
-    def target(self, infoCrate):
+    def target(self, element):
         """
-        Return the target file path for infoCrate.
+        Return the target file path for element.
         """
-        if infoCrate not in self.__infoCrates:
-            raise TaskInvalidInfoCrateError(
-                'InfoCrate is not part of the task!'
+        if element not in self.__elements:
+            raise TaskInvalidElementError(
+                'Element is not part of the task!'
             )
 
-        return self.__infoCrates[infoCrate]
+        return self.__elements[element]
 
-    def infoCrates(self):
+    def elements(self):
         """
-        Return a list of infoCrates associated with the task.
+        Return a list of elements associated with the task.
         """
-        return list(self.__infoCrates.keys())
+        return list(self.__elements.keys())
 
-    def add(self, infoCrate, targetFilePath=''):
+    def add(self, element, targetFilePath=''):
         """
-        Add a infoCrate to the task.
+        Add a element to the task.
 
-        A target file path can be associated with the infoCrate. It should be
+        A target file path can be associated with the element. It should be
         used by tasks that generate files. This information may be provided
         by tasks executed through a task holder where the template in the
         task holder is resolved and passed as target when adding
-        the infoCrate to the task.
+        the element to the task.
         """
-        assert isinstance(infoCrate, InfoCrate), \
-            "Invalid InfoCrate!"
+        assert isinstance(element, Element), \
+            "Invalid Element!"
 
         assert isinstance(targetFilePath, str), \
             "targetFilePath needs to be defined as string"
 
-        self.__infoCrates[infoCrate] = targetFilePath
+        self.__elements[element] = targetFilePath
 
     def clear(self):
         """
-        Remove all infoCrates associated with the task.
+        Remove all elements associated with the task.
         """
-        self.__infoCrates.clear()
+        self.__elements.clear()
 
     def output(self, taskReporter=None):
         """
-        Perform and result a list of infoCrates created by task.
+        Perform and result a list of elements created by task.
         """
         reporterName = self.hasMetadata('output.reporter') and self.metadata('output.reporter')
         reporter = None
@@ -237,24 +237,24 @@ class Task(object):
             reporter = TaskReporter.create(reporterName, self.type())
 
         contextVars = {}
-        for infoCrate in self.infoCrates():
-            for ctxVarName in infoCrate.contextVarNames():
+        for element in self.elements():
+            for ctxVarName in element.contextVarNames():
                 if ctxVarName not in contextVars:
-                    contextVars[ctxVarName] = infoCrate.var(ctxVarName)
+                    contextVars[ctxVarName] = element.var(ctxVarName)
 
         # validating input
-        self.validate(self.infoCrates())
+        self.validate(self.elements())
 
         # performing task
-        outputInfoCrates = self._perform()
+        outputElements = self._perform()
 
-        # Copy all context variables to output infoCrates
-        for outputInfoCrate in outputInfoCrates:
+        # Copy all context variables to output elements
+        for outputElement in outputElements:
             if reporter:
-                reporter.addInfoCrate(outputInfoCrate)
+                reporter.addElement(outputElement)
 
-            for ctxVarName in filter(lambda x: x not in outputInfoCrate.varNames(), contextVars):
-                outputInfoCrate.setVar(
+            for ctxVarName in filter(lambda x: x not in outputElement.varNames(), contextVars):
+                outputElement.setVar(
                     ctxVarName,
                     contextVars[ctxVarName],
                     True
@@ -263,7 +263,7 @@ class Task(object):
         if reporter:
             reporter.display()
 
-        return outputInfoCrates
+        return outputElements
 
     def clone(self):
         """
@@ -279,9 +279,9 @@ class Task(object):
         for metadataName in self.metadataNames():
             clone.setMetadata(metadataName, self.metadata(metadataName))
 
-        # copying infoCrates
-        for infoCrate in self.infoCrates():
-            clone.add(infoCrate, self.target(infoCrate))
+        # copying elements
+        for element in self.elements():
+            clone.add(element, self.target(element))
 
         return clone
 
@@ -301,12 +301,12 @@ class Task(object):
         for optionName in self.optionNames():
             options[optionName] = self.option(optionName)
 
-        # infoCrate data
-        infoCrateData = []
-        for infoCrate in self.infoCrates():
-            infoCrateData.append({
-                'filePath': self.target(infoCrate),
-                'serializedInfoCrate': infoCrate.toJson()
+        # element data
+        elementData = []
+        for element in self.elements():
+            elementData.append({
+                'filePath': self.target(element),
+                'serializedElement': element.toJson()
             })
 
         # custom resources
@@ -319,8 +319,8 @@ class Task(object):
         if len(options):
             contents['options'] = options
 
-        if len(infoCrateData):
-            contents['infoCrateData'] = infoCrateData
+        if len(elementData):
+            contents['elementData'] = elementData
 
         if len(loadedResources):
             contents['resources'] = loadedResources
@@ -371,7 +371,7 @@ class Task(object):
         taskType = contents["type"]
         taskOptions = contents.get("options", {})
         taskMetadata = contents.get("metadata", {})
-        infoCrateData = contents.get("infoCrateData", [])
+        elementData = contents.get("elementData", [])
         loadResources = contents.get("resources", [])
 
         # loading resources
@@ -391,32 +391,32 @@ class Task(object):
         for metadataName, metadataValue in taskMetadata.items():
             task.setMetadata(metadataName, metadataValue)
 
-        # adding infoCrates
-        for infoCrateDataItem in infoCrateData:
-            filePath = infoCrateDataItem['filePath']
-            infoCrate = InfoCrate.createFromJson(
-                infoCrateDataItem['serializedInfoCrate']
+        # adding elements
+        for elementDataItem in elementData:
+            filePath = elementDataItem['filePath']
+            element = Element.createFromJson(
+                elementDataItem['serializedElement']
             )
-            task.add(infoCrate, filePath)
+            task.add(element, filePath)
 
         return task
 
     def _perform(self):
         """
-        For re-implementation: should implement the computation of the task and return a list of infoCrates as output.
+        For re-implementation: should implement the computation of the task and return a list of elements as output.
 
-        The default implementation return a list of infoCrates based on the target filePath (The filePath is provided by
-        by the template). In case none file path has not been specified then returns an empty list of infoCrates.
+        The default implementation return a list of elements based on the target filePath (The filePath is provided by
+        by the template). In case none file path has not been specified then returns an empty list of elements.
         """
         filePaths = []
-        for infoCrate in self.infoCrates():
-            filePath = self.target(infoCrate)
+        for element in self.elements():
+            filePath = self.target(element)
             if filePath and filePath not in filePaths:
                 filePaths.append(filePath)
 
-        return list(map(FsInfoCrate.createFromPath, filePaths))
+        return list(map(FsElement.createFromPath, filePaths))
 
-    def validate(self, infoCrates=None):
+    def validate(self, elements=None):
         """
         For re-implementation: should implement a check for the task.
 
@@ -427,13 +427,13 @@ class Task(object):
         with the message about the failure. Otherwise, in case of no failure then no result is needed.
         """
 
-    def __resolveTemplateValue(self, value, infoCrate, extraVars):
+    def __resolveTemplateValue(self, value, element, extraVars):
         """
         Resolve the template value.
         """
         if not isinstance(value, str):
             return value
-        elif infoCrate is not None:
-            return Template(value).valueFromInfoCrate(infoCrate, extraVars)
+        elif element is not None:
+            return Template(value).valueFromElement(element, extraVars)
 
         return Template(value).value(extraVars)

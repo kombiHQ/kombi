@@ -3,8 +3,8 @@ import re
 import json
 from ..Task import Task, TaskError, TaskValidationError
 from ...Template import Template
-from ...InfoCrate import InfoCrate
-from ...InfoCrate.Fs.FsInfoCrate import FsInfoCrate
+from ...Element import Element
+from ...Element.Fs.FsElement import FsElement
 
 class GafferExportTemplateTaskError(TaskError):
     """
@@ -70,13 +70,13 @@ class GafferExportTemplateTask(Task):
             }
         )
 
-    def setup(self, infoCrates):
+    def setup(self, elements):
         """
         Setting the initial value for output dir.
         """
         self.setOption(
             'outputDir',
-            infoCrates[0].var('outputDir')
+            elements[0].var('outputDir')
         )
 
         outputDirs = []
@@ -105,60 +105,60 @@ class GafferExportTemplateTask(Task):
 
         self.setMetadata('ui.options.outputName.presets', list(sorted(outputNames)))
 
-    def validate(self, infoCrates=None):
+    def validate(self, elements=None):
         """
-        Validating then updating infoCrate information with the new output dir.
+        Validating then updating element information with the new output dir.
         """
-        if not infoCrates:
+        if not elements:
             return
 
-        # updating infoCrates with the new output dir
-        for infoCrate in infoCrates:
-            infoCrate.setVar('outputDir', self.option('outputDir'))
-            infoCrate.setVar('outputName', self.option('outputName'))
+        # updating elements with the new output dir
+        for element in elements:
+            element.setVar('outputDir', self.option('outputDir'))
+            element.setVar('outputName', self.option('outputName'))
 
-            if not infoCrate.var('outputName'):
+            if not element.var('outputName'):
                 raise TaskValidationError(
-                    'Output name cannot be empty for {}'.format(infoCrate.var('baseName'))
+                    'Output name cannot be empty for {}'.format(element.var('baseName'))
                 )
             elif len(self.option('description')) < 10:
                 raise TaskValidationError(
-                    'Description is too short. It requires at least 10 characters: {}'.format(infoCrate.var('baseName'))
+                    'Description is too short. It requires at least 10 characters: {}'.format(element.var('baseName'))
                 )
-            elif not re.match('^[a-zA-Z0-9-]+$', infoCrate.var('outputName')):
+            elif not re.match('^[a-zA-Z0-9-]+$', element.var('outputName')):
                 raise TaskValidationError(
-                    'Output name cannot contain special characters (except from dash): {}'.format(infoCrate.var('outputName'))
+                    'Output name cannot contain special characters (except from dash): {}'.format(element.var('outputName'))
                 )
-            elif not infoCrate.var('outputDir'):
+            elif not element.var('outputDir'):
                 raise TaskValidationError(
                     'Output location cannot be empty!'
                 )
-            elif not os.path.exists(infoCrate.var('outputDir')):
+            elif not os.path.exists(element.var('outputDir')):
                 raise TaskValidationError(
-                    'Output location does not exist: {}'.format(infoCrate.var('outputDir'))
+                    'Output location does not exist: {}'.format(element.var('outputDir'))
                 )
-            elif self.option('outputRegexValidation') and not re.match(self.templateOption('outputRegexValidation', infoCrate), infoCrate.var('outputDir')):
+            elif self.option('outputRegexValidation') and not re.match(self.templateOption('outputRegexValidation', element), element.var('outputDir')):
                 raise TaskValidationError(
-                    self.templateOption('outputRegexValidationFailMessage', infoCrate)
+                    self.templateOption('outputRegexValidationFailMessage', element)
                 )
 
     def _perform(self):
         """
         Perform the task.
         """
-        infoCrates = self.infoCrates()
-        sceneFullPath = self.templateOption('scene', infoCrates[0])
+        elements = self.elements()
+        sceneFullPath = self.templateOption('scene', elements[0])
 
         if not os.path.exists(sceneFullPath):
             raise GafferExportTemplateTaskError('Invalid Scene: {}'.format(sceneFullPath))
 
         result = []
-        for index, infoCrate in enumerate(self.infoCrates()):
-            targetPath = self.target(infoCrate)
+        for index, element in enumerate(self.elements()):
+            targetPath = self.target(element)
 
             # copying file
             byteCopyTask = self.create('byteCopy')
-            byteCopyTask.add(FsInfoCrate.createFromPath(sceneFullPath), targetPath)
+            byteCopyTask.add(FsElement.createFromPath(sceneFullPath), targetPath)
             byteCopyTask.output()
 
             # writing info file
@@ -169,7 +169,7 @@ class GafferExportTemplateTask(Task):
                 infoData['gafferVersion'] = os.environ.get('BVER_GAFFER_VERSION')
                 infoData['arnoldVersion'] = os.environ.get('BVER_GAFFER_ARNOLD_VERSION')
 
-                with open(self.templateOption('info', FsInfoCrate.createFromPath(targetPath)), 'w') as f:
+                with open(self.templateOption('info', FsElement.createFromPath(targetPath)), 'w') as f:
                     json.dump(
                         infoData,
                         f,
@@ -177,29 +177,29 @@ class GafferExportTemplateTask(Task):
                         sort_keys=True
                     )
 
-            result.append(FsInfoCrate.createFromPath(targetPath))
+            result.append(FsElement.createFromPath(targetPath))
 
         return result
 
     @classmethod
-    def toTemplateInfoCrate(cls, outputDir=''):
+    def toTemplateElement(cls, outputDir=''):
         """
-        Return a hashmap infoCrate for the input selection.
+        Return a hashmap element for the input selection.
         """
         # checking gaffer box node
-        hashmapInfoCrate = InfoCrate.create({})
-        hashmapInfoCrate.setVar('dataLayout', 'gafferTemplate')
-        hashmapInfoCrate.setVar('baseName', 'template')
-        hashmapInfoCrate.setVar('outputName', '')
-        hashmapInfoCrate.setTag('outputName.allowEmpty', False)
-        hashmapInfoCrate.setVar('outputDir', outputDir)
+        hashmapElement = Element.create({})
+        hashmapElement.setVar('dataLayout', 'gafferTemplate')
+        hashmapElement.setVar('baseName', 'template')
+        hashmapElement.setVar('outputName', '')
+        hashmapElement.setTag('outputName.allowEmpty', False)
+        hashmapElement.setVar('outputDir', outputDir)
 
-        hashmapInfoCrate.setVar(
+        hashmapElement.setVar(
             'fullPath',
             '/template'
         )
 
-        return hashmapInfoCrate
+        return hashmapElement
 
 
 # registering task

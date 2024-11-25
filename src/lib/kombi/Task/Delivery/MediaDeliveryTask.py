@@ -15,10 +15,10 @@ class MediaDeliveryTask(NukeTemplateTask):
         # calling the super class that knows how to produce a media
         super(NukeTemplateTask, self)._perform()
 
-        targetInfoCrate = self.infoCrates()[0]
-        mediaInfoJson = self.templateOption('mediaInfo', infoCrate=targetInfoCrate)
-        clientShot = self.templateOption('clientShot', infoCrate=targetInfoCrate)
-        targetFilePath = self.target(targetInfoCrate)
+        targetElement = self.elements()[0]
+        mediaInfoJson = self.templateOption('mediaInfo', element=targetElement)
+        clientShot = self.templateOption('clientShot', element=targetElement)
+        targetFilePath = self.target(targetElement)
 
         # updating any existing file
         mediaInfo = {}
@@ -29,23 +29,23 @@ class MediaDeliveryTask(NukeTemplateTask):
         createdFilePath = targetFilePath[len(mediaInfoJson[:-4]):]
         createdFilePath = createdFilePath[:createdFilePath.find("/")]
 
-        mediaInfo[createdFilePath] = targetInfoCrate.var('sgShot')
+        mediaInfo[createdFilePath] = targetElement.var('sgShot')
         mediaInfo[createdFilePath]['clientShot'] = clientShot
-        mediaInfo[createdFilePath]['step'] = targetInfoCrate.var('step')
-        mediaInfo[createdFilePath]['isMatte'] = targetInfoCrate.var('isMatte')
+        mediaInfo[createdFilePath]['step'] = targetElement.var('step')
+        mediaInfo[createdFilePath]['isMatte'] = targetElement.var('isMatte')
         # Tag the current shot/version combo so we can match matte renders with their comp in the delivery spreadsheet.
         mediaInfo[createdFilePath]['internalVersion'] = '{}_{}'.format(
-            targetInfoCrate.var('shot'),
-            targetInfoCrate.var('version')
+            targetElement.var('shot'),
+            targetElement.var('version')
         )
 
         with open(mediaInfoJson, 'w') as outfile:
             json.dump(mediaInfo, outfile, indent=4)
 
-        result = [targetInfoCrate.createFromPath(mediaInfoJson)]
+        result = [targetElement.createFromPath(mediaInfoJson)]
 
         if os.path.exists(targetFilePath):
-            result.append(targetInfoCrate.createFromPath(targetFilePath))
+            result.append(targetElement.createFromPath(targetFilePath))
 
         return result
 

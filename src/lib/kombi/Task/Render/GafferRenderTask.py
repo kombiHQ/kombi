@@ -1,6 +1,6 @@
 import sys
 from ..External.GafferTask import GafferTask
-from ...InfoCrate import InfoCrate
+from ...Element import Element
 
 class GafferRenderTask(GafferTask):
     """
@@ -27,11 +27,11 @@ class GafferRenderTask(GafferTask):
         self.setOption('switchBeforeRender', {})
 
     @classmethod
-    def toRenderInfoCrates(cls, gafferTask, script, startFrame=None, endFrame=None):
+    def toRenderElements(cls, gafferTask, script, startFrame=None, endFrame=None):
         """
-        Return hashmap infoCrates containing the write node information used by this task.
+        Return hashmap elements containing the write node information used by this task.
 
-        TODO: we want to have a specific application types to describe this information (gafferNodeInfoCrate)
+        TODO: we want to have a specific application types to describe this information (gafferNodeElement)
         """
         import Gaffer
         import GafferDispatch
@@ -62,9 +62,9 @@ class GafferRenderTask(GafferTask):
                 GafferCycles is not None and isinstance(gafferTask, GafferCycles.CyclesRender) or \
                 GafferArnold is not None and isinstance(gafferTask, GafferArnold.ArnoldRender):
             for i in range(startFrame, endFrame + 1):
-                result.append(cls.__renderHashmapInfoCrate(gafferTask, i, i))
+                result.append(cls.__renderHashmapElement(gafferTask, i, i))
         else:
-            result.append(cls.__renderHashmapInfoCrate(gafferTask, startFrame, endFrame))
+            result.append(cls.__renderHashmapElement(gafferTask, startFrame, endFrame))
 
         return result
 
@@ -75,24 +75,24 @@ class GafferRenderTask(GafferTask):
         import Gaffer
         import GafferScene
         import GafferDispatch
-        infoCrates = self.infoCrates()
+        elements = self.elements()
 
         # loading gaffer scene
         script = Gaffer.ScriptNode()
-        script['fileName'].setValue(self.templateOption('scene', infoCrates[0]))
+        script['fileName'].setValue(self.templateOption('scene', elements[0]))
         script.load()
 
         # switching
-        for switchName, switchValue in self.templateOption('switchBeforeRender', infoCrates[0]).items():
+        for switchName, switchValue in self.templateOption('switchBeforeRender', elements[0]).items():
             sys.stdout.write('Switching {} to {}\n'.format(switchName, switchValue))
             sys.stdout.flush()
             script.getChild(str(switchName))['index'].setValue(int(switchValue))
 
         nodes = script.children(GafferDispatch.TaskNode)
-        for infoCrateGroup in InfoCrate.group(infoCrates):
-            taskNodeName = infoCrateGroup[0]['name']
-            startFrame = infoCrateGroup[0]['startFrame']
-            endFrame = infoCrateGroup[-1]['endFrame']
+        for elementGroup in Element.group(elements):
+            taskNodeName = elementGroup[0]['name']
+            startFrame = elementGroup[0]['startFrame']
+            endFrame = elementGroup[-1]['endFrame']
 
             script['frameRange']['start'].setValue(startFrame)
             script['frameRange']['end'].setValue(endFrame)
@@ -119,27 +119,27 @@ class GafferRenderTask(GafferTask):
                         taskNodeName
                     )
 
-        return self.infoCrates()
+        return self.elements()
 
     @classmethod
-    def __renderHashmapInfoCrate(cls, gafferTask, startFrame, endFrame):
+    def __renderHashmapElement(cls, gafferTask, startFrame, endFrame):
         """
-        Return a hashmap infoCrate for the input write node start and end frame.
+        Return a hashmap element for the input write node start and end frame.
         """
-        hashmapInfoCrate = InfoCrate.create(
+        hashmapElement = Element.create(
             {
                 'name': gafferTask.getName(),
                 'startFrame': startFrame,
                 'endFrame': endFrame,
             }
         )
-        hashmapInfoCrate.setVar('dataLayout', 'gafferRender')
-        hashmapInfoCrate.setVar('baseName', gafferTask.getName())
-        hashmapInfoCrate.setTag('group', gafferTask.getName())
-        hashmapInfoCrate.setVar('startFrame', str(startFrame).zfill(10))
-        hashmapInfoCrate.setVar('endFrame', str(endFrame).zfill(10))
+        hashmapElement.setVar('dataLayout', 'gafferRender')
+        hashmapElement.setVar('baseName', gafferTask.getName())
+        hashmapElement.setTag('group', gafferTask.getName())
+        hashmapElement.setVar('startFrame', str(startFrame).zfill(10))
+        hashmapElement.setVar('endFrame', str(endFrame).zfill(10))
 
-        hashmapInfoCrate.setVar(
+        hashmapElement.setVar(
             'fullPath',
             '{} {}-{}'.format(
                 gafferTask.getName(),
@@ -148,7 +148,7 @@ class GafferRenderTask(GafferTask):
             )
         )
 
-        return hashmapInfoCrate
+        return hashmapElement
 
 
 # registering task

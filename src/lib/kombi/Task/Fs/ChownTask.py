@@ -25,15 +25,15 @@ class ChownTask(Task):
         import pwd
 
         alreadyDone = set()
-        infoCrates = self.infoCrates()
+        elements = self.elements()
 
-        user = self.templateOption('user', infoCrates)
-        group = self.templateOption('group', infoCrates)
+        user = self.templateOption('user', elements)
+        group = self.templateOption('group', elements)
         user = pwd.getpwnam(user).pw_uid
         group = grp.getgrnam(group).gr_gid
 
-        for infoCrate in infoCrates:
-            filePath = infoCrate.var('filePath')
+        for element in elements:
+            filePath = element.var('filePath')
 
             if filePath in alreadyDone:
                 continue

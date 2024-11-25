@@ -22,7 +22,7 @@
           "target": "(tmp)/{name}.jpg",
           "metadata": {
             "match.types": [
-              "testInfoCrate"
+              "testElement"
             ],
             "match.vars": {
               "imageType": [

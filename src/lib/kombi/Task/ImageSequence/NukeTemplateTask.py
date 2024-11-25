@@ -1,9 +1,9 @@
 import os
 from ..External.NukeTask import NukeTask
 from ..Task import Task
-from ...InfoCrate import InfoCrate
-from ...InfoCrate.Fs import FsInfoCrate
-from ...InfoCrate.Fs.Image import ImageInfoCrate
+from ...Element import Element
+from ...Element.Fs import FsElement
+from ...Element.Fs.Image import ImageElement
 
 class NukeTemplateTask(NukeTask):
     r"""
@@ -102,29 +102,29 @@ class NukeTemplateTask(NukeTask):
         """
         import nuke
 
-        infoCrates = self.infoCrates()
+        elements = self.elements()
 
         # loading nuke script
-        nuke.scriptOpen(self.templateOption('script', infoCrates[0]))
+        nuke.scriptOpen(self.templateOption('script', elements[0]))
 
         result = []
-        for infoCrateGroup in InfoCrate.group(infoCrates) if self.option('group') else [self.infoCrates()]:
-            sourceInfoCrate = infoCrateGroup[0]
-            targetInfoCrate = FsInfoCrate.createFromPath(self.target(sourceInfoCrate))
-            startFrame = infoCrateGroup[0].var('frame') - int(self.templateOption('beginExtraFrames', infoCrateGroup[0]))
-            endFrame = infoCrateGroup[-1].var('frame') + int(self.templateOption('endExtraFrames', infoCrateGroup[0]))
-            renderOffsetFrames = int(self.templateOption('renderOffsetFrames', infoCrateGroup[0]))
+        for elementGroup in Element.group(elements) if self.option('group') else [self.elements()]:
+            sourceElement = elementGroup[0]
+            targetElement = FsElement.createFromPath(self.target(sourceElement))
+            startFrame = elementGroup[0].var('frame') - int(self.templateOption('beginExtraFrames', elementGroup[0]))
+            endFrame = elementGroup[-1].var('frame') + int(self.templateOption('endExtraFrames', elementGroup[0]))
+            renderOffsetFrames = int(self.templateOption('renderOffsetFrames', elementGroup[0]))
 
             # setting up nuke
             nuke.root()['first_frame'].setValue(startFrame)
             nuke.root()['last_frame'].setValue(endFrame)
-            self.__setInternalData(sourceInfoCrate, targetInfoCrate)
+            self.__setInternalData(sourceElement, targetElement)
 
             # giving a change for third-party apis to extend this task
             self._beforeRender()
 
             # exporting nuke script before the execution
-            exportNukeScript = self.templateOption('exportNukeScript', infoCrateGroup[0])
+            exportNukeScript = self.templateOption('exportNukeScript', elementGroup[0])
             if exportNukeScript and not os.path.exists(exportNukeScript):
                 # creating directories if necessary
                 try:
@@ -143,24 +143,24 @@ class NukeTemplateTask(NukeTask):
                 if writeNode['disable'].value():
                     continue
 
-                # adding infoCrate to the task
-                renderInfoCrates = nukeRenderTask.toRenderInfoCrates(
+                # adding element to the task
+                renderElements = nukeRenderTask.toRenderElements(
                     writeNode,
                     int(writeNode['first'].getValue()) if writeNode['use_limit'].getValue() else startFrame + renderOffsetFrames,
                     int(writeNode['last'].getValue()) if writeNode['use_limit'].getValue() else endFrame + renderOffsetFrames
                 )
 
-                # adding infoCrate to render task
-                for renderInfoCrate in renderInfoCrates:
-                    nukeRenderTask.add(renderInfoCrate)
+                # adding element to render task
+                for renderElement in renderElements:
+                    nukeRenderTask.add(renderElement)
 
             # executing write nodes
             result += nukeRenderTask.output()
 
-        # adding the slate description as a infoCrate var. So it can be used later
+        # adding the slate description as a element var. So it can be used later
         if '_slateDescription' in self.optionNames():
-            for resultInfoCrate in result:
-                resultInfoCrate.setVar(
+            for resultElement in result:
+                resultElement.setVar(
                     'slateDescription',
                     self.option('_slateDescription'),
                     True
@@ -168,7 +168,7 @@ class NukeTemplateTask(NukeTask):
 
         return result
 
-    def __setInternalData(self, sourceInfoCrate, targetInfoCrate):
+    def __setInternalData(self, sourceElement, targetElement):
         """
         Set the data task data internally under the root node.
         """
@@ -196,16 +196,16 @@ class NukeTemplateTask(NukeTask):
 
         # converting frame padding to the mask # digits notation
         sourceFilePath = os.path.join(
-            os.path.dirname(sourceInfoCrate.var('fullPath')),
-            sourceInfoCrate.tag('group')
+            os.path.dirname(sourceElement.var('fullPath')),
+            sourceElement.tag('group')
         )
 
         # converting frame padding in target to the springf notation
-        targetFilePath = targetInfoCrate.var('fullPath')
-        if isinstance(targetInfoCrate, ImageInfoCrate) and targetInfoCrate.isSequence():
+        targetFilePath = targetElement.var('fullPath')
+        if isinstance(targetElement, ImageElement) and targetElement.isSequence():
             targetFilePath = os.path.join(
-                os.path.dirname(targetInfoCrate.var('fullPath')),
-                targetInfoCrate.tag('groupSprintf')
+                os.path.dirname(targetElement.var('fullPath')),
+                targetElement.tag('groupSprintf')
             )
 
         # source/target knobs
@@ -219,7 +219,7 @@ class NukeTemplateTask(NukeTask):
             if isinstance(optionValue, str) and optionName != '_slateDescription':
                 optionValue = self.templateOption(
                     optionName,
-                    sourceInfoCrate
+                    sourceElement
                 )
 
             __set(optionName, optionValue)

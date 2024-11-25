@@ -1,6 +1,6 @@
 import os
 from ..Task import Task
-from ...InfoCrate.Fs.Image.OiioInfoCrate import OiioInfoCrate
+from ...Element.Fs.Image.OiioElement import OiioElement
 
 class UpdateImageMetadataTask(Task):
     """
@@ -28,14 +28,14 @@ class UpdateImageMetadataTask(Task):
         """
         import OpenImageIO as oiio
 
-        for infoCrate in self.infoCrates():
-            targetFilePath = OiioInfoCrate.supportedString(
-                self.target(infoCrate)
+        for element in self.elements():
+            targetFilePath = OiioElement.supportedString(
+                self.target(element)
             )
 
             # converting image using open image io
-            inputImageFilePath = OiioInfoCrate.supportedString(
-                infoCrate.var('filePath')
+            inputImageFilePath = OiioElement.supportedString(
+                element.var('filePath')
             )
 
             # trying to create the directory automatically in case it does not exist
@@ -45,7 +45,7 @@ class UpdateImageMetadataTask(Task):
                 pass
 
             # metadata
-            metadata = self.templateOption('data', infoCrate)
+            metadata = self.templateOption('data', element)
 
             """
             args = ''
@@ -70,7 +70,7 @@ class UpdateImageMetadataTask(Task):
             imageInput = oiio.ImageInput.open(inputImageFilePath)
             inputSpec = imageInput.spec()
 
-            self.updateMetadata(inputSpec, infoCrate, metadata)
+            self.updateMetadata(inputSpec, element, metadata)
 
             # writing image with updated metadata
             outImage = oiio.ImageOutput.create(targetFilePath)
@@ -97,7 +97,7 @@ class UpdateImageMetadataTask(Task):
         return super(UpdateImageMetadataTask, self)._perform()
 
     @classmethod
-    def updateMetadata(cls, spec, infoCrate, metadata):
+    def updateMetadata(cls, spec, element, metadata):
         """
         Update the spec with the image metadata information.
         """
@@ -106,8 +106,8 @@ class UpdateImageMetadataTask(Task):
 
         for name, value in metadata.items():
             spec.attribute(
-                OiioInfoCrate.supportedString(name),
-                OiioInfoCrate.supportedString(value) if isinstance(value, str) else value
+                OiioElement.supportedString(name),
+                OiioElement.supportedString(value) if isinstance(value, str) else value
             )
 
 

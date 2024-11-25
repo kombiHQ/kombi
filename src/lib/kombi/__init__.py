@@ -1,7 +1,7 @@
 import sys
 from .ProcessExecution import ProcessExecution
 from .EnvModifier import EnvModifier, EnvModifierError, EnvModifierInvalidVarError, EnvModifierInvalidVarValueError
-from . import InfoCrate
+from . import Element
 from . import Template
 from . import Task
 from . import TaskReporter
