@@ -62,6 +62,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__messageBox = None
         self.__showVars = False
         self.__showTags = False
+        self.__uiHintGlobRecursively = True
         self.__ignoreCheckedEvents = False
         self.__currentSourcePath = None
         self.__buildWidgets()
@@ -180,6 +181,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
             if '__uiHintDispatcher' in taskHolder.varNames():
                 self.__selectedDispatcher.selectDispatcher(taskHolder.var('__uiHintDispatcher'))
 
+            if '__uiHintGlobRecursively' in taskHolder.varNames():
+                self.__uiHintGlobRecursively = taskHolder.var('__uiHintGlobRecursively')
+
             if not validSourcePath:
                 break
 
@@ -225,7 +229,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
                     if element.var('type') in filterTypes:
                         globElements.append(element)
-                    globElements += element.glob(filterTypes)
+                    globElements += element.glob(filterTypes, recursive=self.__uiHintGlobRecursively)
 
                     # filtering the result of the glob, but now using the element matcher
                     # this will match the variable types.
