@@ -415,12 +415,12 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 folderPicker = QtWidgets.QPushButton('Select Directory')
                 folderPicker.clicked.connect(functools.partial(self.__onPickerSelectDir, editableWidget))
                 folderPicker.setIcon(
-                    folderPicker.style().standardIcon(QtWidgets.QStyle.SP_DirIcon)
+                    self.style().standardIcon(QtWidgets.QStyle.SP_DirIcon)
                 )
 
                 w = QtWidgets.QWidget(self)
                 layout = QtWidgets.QHBoxLayout()
-                layout.setMargin(0)
+                layout.setMargin(2)
                 layout.addWidget(editableWidget, 10)
                 layout.addWidget(folderPicker, 0)
                 w.setLayout(layout)
@@ -519,8 +519,6 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         for optionName in taskHolder.task().optionNames():
             parentEntry = advancedEntry
-
-            ####
             optionDisplayName = self.__camelCaseToSpaced(optionName)
             uiOptionMetadataName = 'ui.options.{}'.format(optionName)
 
