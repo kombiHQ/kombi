@@ -108,6 +108,16 @@ def different(a, b):
     """
     return int(a != b)
 
+def splitPart(input, string, resultIndex=0):
+    """
+    Return the part of the split string.
+    \todo: needs test
+    """
+    try:
+        return input.split(string)[int(resultIndex)]
+    except IndexError:
+        return ''
+
 
 # slice
 Template.registerProcedure(
@@ -203,4 +213,10 @@ Template.registerProcedure(
 Template.registerProcedure(
     'different',
     different
+)
+
+# split part
+Template.registerProcedure(
+    'splitpart',
+    splitPart
 )
