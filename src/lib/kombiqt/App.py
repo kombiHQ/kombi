@@ -1,6 +1,7 @@
 import os
 import sys
 from Qt import QtWidgets
+from kombi.Element import Element
 from .Window.RunnerWindow import RunnerWindow
 from .Resource import Resource
 from .Style import Style
@@ -39,12 +40,16 @@ class App(QtWidgets.QApplication):
         # loading task holders
         taskHolders = RunnerWindow.loadConfigurationTaskHolders(configurationDirectory)
 
-        # source element paths
-        sourcePaths = []
+        # source element path
+        rootElement = None
         if len(sys.argv) > 2:
-            sourcePaths = sys.argv[2:]
+            rootElement = Element.create(sys.argv[2:3])
+            # wrapping the leaf element a collection element, so it can be
+            # displayed in the UI
+            if rootElement.isLeaf():
+                rootElement = Element.create([rootElement])
 
-        self.__mainWindow = RunnerWindow(taskHolders, sourcePaths)
+        self.__mainWindow = RunnerWindow(taskHolders, rootElement)
         self.__mainWindow.setWindowIcon(Resource.icon('icons/kombi.png'))
         self.__mainWindow.show()
         self.__mainWindow.activateWindow()
