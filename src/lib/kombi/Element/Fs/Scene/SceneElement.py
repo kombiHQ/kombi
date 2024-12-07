@@ -13,6 +13,9 @@ class SceneElement(FileElement):
 
         self.setVar('category', 'scene')
 
+        # setting icon
+        self.setTag('icon', 'icons/elements/scene.png')
+
     @classmethod
     def extensions(cls):
         """
