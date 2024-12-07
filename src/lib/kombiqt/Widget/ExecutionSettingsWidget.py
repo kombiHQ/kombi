@@ -1,11 +1,15 @@
 import os
 import re
+import datetime
 import functools
 import traceback
 import weakref
 from .CheckComboBox import CheckComboBox
+from ..Resource import Resource
 from kombi.Element import Element
 from kombi.Task import Task, TaskValidationError
+from kombi.Template import Template
+from kombi.ProcessExecution import ProcessExecution
 from Qt import QtCore, QtWidgets, QtGui
 
 class ExecutionSettingsWidgetError(Exception):
@@ -50,7 +54,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         Create a target widget.
         """
         super(ExecutionSettingsWidget, self).__init__(*args, **kwargs)
-
+        self.__messageBox = None
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 
         header = QtWidgets.QTreeWidgetItem(['Target'])
@@ -67,8 +71,13 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         Update the target tree.
         """
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        self.setVisible(False)
         self.clear()
+
+        self.setHeaderItem(
+            QtWidgets.QTreeWidgetItem(
+                ("", "")
+            )
+        )
 
         for index, taskHolder in enumerate(taskHolders):
             try:
@@ -146,7 +155,6 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 except Exception:
                     traceback.print_exc()
 
-        self.setVisible(True)
         self.resizeColumnToContents(0)
         QtWidgets.QApplication.restoreOverrideCursor()
 
@@ -231,6 +239,97 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 result.append((item.taskHolder, item.elementList))
 
         return result
+
+    def execute(self, dispatcher, showOutput=True, showDispatchedMessage=True):
+        """
+        Execute the task holders.
+        """
+        if self.__messageBox:
+            self.__messageBox.reject()
+        if not self.model().rowCount():
+            QtWidgets.QMessageBox.information(
+                self,
+                "Kombi",
+                "There are no tasks available for the current selection!",
+                QtWidgets.QMessageBox.Ok
+            )
+            return
+
+        output = ''
+        dispatchedMessage = ''
+        try:
+            for taskHolder, elementsGroup in self.executionTaskHolders():
+                # default label
+                label = "{}/{} [{}]".format(
+                    os.path.basename(taskHolder.var('configDirectory')),
+                    elementsGroup[0].tag('group') if 'group' in elementsGroup[0].tagNames() else elementsGroup[0].var('baseName'),
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                )
+
+                # custom label
+                if taskHolder.task().hasMetadata('dispatch.label'):
+                    label = Template(
+                        "{} [{}]".format(
+                            taskHolder.task().metadata('dispatch.label'),
+                            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        )
+                    ).valueFromElement(elementsGroup[0])
+
+                dispatcher.setOption('label', label)
+                dispatchedMessage = dispatcher.option('dispatchedMessage')
+                for result in dispatcher.dispatch(taskHolder, elementsGroup):
+                    if isinstance(result, ProcessExecution):
+                        output += result.stdoutContent()
+                    else:
+                        output += 'Dispatched to {}: {}'.format(dispatcher.type(), result)
+
+        except Exception as err:
+            traceback.print_exc()
+
+            self.__messageBox = QtWidgets.QMessageBox(
+                self,
+                "Execution",
+                QtWidgets.QMessageBox.Ok
+            )
+            self.__messageBox.setWindowModality(QtCore.Qt.NonModal)
+            self.__messageBox.setIcon(QtWidgets.QMessageBox.Critical)
+            self.__messageBox.setText('Failed during execution')
+            self.__messageBox.setDetailedText(str(err))
+
+            if isinstance(err, ExecutionSettingsWidgetRequiredError):
+                self.__messageBox.setWindowTitle('Failed on validating task: {}'.format(err.task().type()))
+                self.__messageBox.setIcon(QtWidgets.QMessageBox.NoIcon)
+                self.__messageBox.setText(str(err))
+
+                horizontalSpacer = QtWidgets.QSpacerItem(1000, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+                layout = self.__messageBox.layout()
+                layout.addItem(horizontalSpacer, layout.rowCount(), 0, 1, layout.columnCount())
+
+                self.__messageBox.show()
+                return False
+
+            self.__messageBox.show()
+            raise err
+
+        else:
+            if showDispatchedMessage:
+                QtWidgets.QMessageBox.information(
+                    self,
+                    "Execution",
+                    dispatchedMessage,
+                    QtWidgets.QMessageBox.Ok
+                )
+
+            if showOutput:
+                self.__outputWidget = QtWidgets.QPlainTextEdit()
+                self.__outputWidget.setPlainText(output)
+                self.__outputWidget.setWindowTitle('Output')
+                self.__outputWidget.setMinimumWidth(920)
+                self.__outputWidget.setMinimumHeight(600)
+                self.__outputWidget.setVisible(True)
+                self.__outputWidget.setReadOnly(True)
+
+        return True
 
     def __createSubtasks(self, parentEntry, taskHolder, mainOptions, path):
         """
@@ -414,9 +513,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 signal = editableWidget.currentTextChanged if len(presets) > 1 else editableWidget.textChanged
                 folderPicker = QtWidgets.QPushButton('Select Directory')
                 folderPicker.clicked.connect(functools.partial(self.__onPickerSelectDir, editableWidget))
-                folderPicker.setIcon(
-                    self.style().standardIcon(QtWidgets.QStyle.SP_DirIcon)
-                )
+                folderPicker.setIcon(Resource.icon("icons/folder.png"))
 
                 w = QtWidgets.QWidget(self)
                 layout = QtWidgets.QHBoxLayout()
