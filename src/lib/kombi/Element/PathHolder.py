@@ -60,7 +60,7 @@ class PathHolder(object):
         if self.__basename is None:
             name = os.path.basename(self.path())
             if not name:
-                name = os.sep
+                name = os.sep if os.name == 'posix' else self.path()[:2]
 
             self.__basename = name
 
