@@ -101,6 +101,7 @@ class Element(object):
             self.setVar('fullPath', '/')
 
         self.setVar('name', name)
+        self.setTag('icon', 'icons/elements/base.png')
         self.__globCache = {}
 
     def isLeaf(self):
@@ -157,6 +158,7 @@ class Element(object):
         The cache is only enabled when using the context manager ElementContext.
         """
         self.__childrenCache = None
+        self.__globCache = {}
 
     def varNames(self):
         """
@@ -245,7 +247,7 @@ class Element(object):
             "contextVarNames": [],
             "tags": {},
             "children": None,
-            "initializationData": self.initializationData()
+            "serializeInitializationData": self.serializeInitializationData()
         }
 
         # serializing the children as well when caching is enabled
@@ -272,11 +274,18 @@ class Element(object):
             separators=(',', ': ')
         )
 
-    def initializationData(self):
+    def serializeInitializationData(self):
         """
-        Define the data passed during the initialization of the element.
+        Define the data passed during the initialization of the element in a format that can be serialized into json.
         """
         return self.var('fullPath')
+
+    @classmethod
+    def parseInitializationData(cls, data):
+        """
+        Parse the serialized initialization data.
+        """
+        return data
 
     def glob(self, filterTypes=[], recursive=True, useCache=True):
         """
@@ -430,10 +439,11 @@ class Element(object):
         """
         contents = json.loads(jsonContents)
         elementType = contents["vars"]["type"]
-        initializationData = contents['initializationData']
+        serializeInitializationData = contents['serializeInitializationData']
 
         # creating element
-        element = Element.__registeredTypes[elementType](initializationData)
+        registeredClass = Element.__registeredTypes[elementType]
+        element = registeredClass(registeredClass.parseInitializationData(serializeInitializationData))
 
         # loading baked children elements
         if not element.isLeaf() and contents['children'] is not None:
