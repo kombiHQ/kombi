@@ -13,3 +13,4 @@ from . import OutputOperator
 from . import Slack
 from . import Ftrack
 from . import Gaffer
+from . import Desktop
