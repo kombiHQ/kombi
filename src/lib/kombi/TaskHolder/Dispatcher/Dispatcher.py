@@ -65,6 +65,12 @@ class Dispatcher(object):
             ''
         )
 
+        # messaged used to tell when dispatcher has been executed
+        self.setOption(
+            'dispatchedMessage',
+            'Execution completed!'
+        )
+
     def type(self):
         """
         Return the dispatcher type.
