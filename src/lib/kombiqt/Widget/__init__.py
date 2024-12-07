@@ -6,3 +6,4 @@ from .ComboBoxInputDialog import ComboBoxInputDialog
 from .CheckComboBox import CheckComboBox
 from .RenderfarmDispatcherPriorityWidget import RenderfarmDispatcherPriorityWidget
 from .FilterElementVarWidget import FilterElementVarWidget
+from .ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
