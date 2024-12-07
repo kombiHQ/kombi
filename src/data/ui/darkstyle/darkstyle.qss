@@ -359,47 +359,53 @@ QTextEdit:focus, QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus{
 }
 
 QTextEdit#infoArea{
-    border-color: rgb(33, 34, 43);
-    background-color: rgb(49, 51, 63);
+  border-color: rgb(33, 34, 43);
+  background-color: rgb(49, 51, 63);
 }
 
 QTextEdit#infoAreaHidden{
-    display: none;
+  display: none;
 }
 
 QPushButton#columnButton {
-    padding: 2px;
-    margin: 2px;
-    min-width: 0;
+  padding: 2px;
+  margin: 2px;
+  min-width: 0;
 }
 
 QPushButton#presetTreeButton {
-    padding: 0;
-    margin:0;
-    min-width: 0;
-    border: 1px solid #222
+  padding: 0;
+  margin:0;
+  min-width: 0;
+  border: 1px solid #222
 }
 
 QPushButton#presetTreeButton:hover {
-    background-color: rgba(255, 255, 255, 50)
+  background-color: rgba(255, 255, 255, 50)
 }
 
 QWidget#presetTreeHolder {
-    background-color: transparent;
-    border: 1px solid #222
+  background-color: transparent;
+  border: 1px solid #222
 }
 
 QPushButton#filterElementVar, QPushButton#filterElementVar:checked{
-    text-align: left;
-    border-radius: 5px;
-    margin: 1px;
-    padding: 2px;
-    background-color: #252525;
-    border: 1px solid #252525;
-    padding-left: 5px;
+  text-align: left;
+  border-radius: 5px;
+  margin: 1px;
+  padding: 2px;
+  background-color: #252525;
+  border: 1px solid #252525;
+  padding-left: 5px;
 }
 
 QPushButton#filterElementVar:checked{
-    background-color:rgb(200, 99, 38);
-    border: 1px solid rgb(200, 99, 38);
+  background-color:rgb(200, 99, 38);
+  border: 1px solid rgb(200, 99, 38);
+}
+
+QFrame#elementsLevelNavigation {
+  background-color:rgb(100, 100, 100);
+  border: 1px solid #888;
+  border-radius: 5px;
 }
