@@ -37,7 +37,7 @@ class PackTaskTest(BaseTestCase):
             self.assertListEqual(
                 sorted(f.namelist()),
                 sorted(
-                   [
+                    [
                         'glob/images/',
                         'glob/images/RND-TST-SHT_comp_compName_output_v010_tk.1001.exr',
                         'glob/images/RND-TST-SHT_lighting_beauty_sr.1001.exr',
