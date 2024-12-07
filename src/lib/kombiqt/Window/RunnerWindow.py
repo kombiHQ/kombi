@@ -2,25 +2,20 @@ import os
 import re
 import json
 import getpass
-import datetime
 import traceback
-import platform
 import functools
-import hashlib
 import weakref
-import subprocess
 from collections import OrderedDict
 from Qt import QtCore, QtGui, QtWidgets
-from kombi.ProcessExecution import ProcessExecution
 from kombi.TaskHolder.Loader import Loader
-from kombi.Template import Template
 from kombi.TaskHolder.Dispatcher import Dispatcher
-from kombi.Element import Element, ElementContext, PathHolder
-from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget, ExecutionSettingsWidgetRequiredError
+from kombi.Task import TaskValidationError
+from kombi.Element import Element, ElementContext
+from kombi.Element.Fs import FsElement
+from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
-from ..Widget.FilterElementVarWidget import FilterElementVarWidget
-from ..Widget.RenderfarmDispatcherPriorityWidget import RenderfarmDispatcherPriorityWidget
 from ..Widget.ComboBoxInputDialog import ComboBoxInputDialog
+from ..Widget.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
 from ..Resource import Resource
 
 try:
@@ -41,7 +36,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
     __pickerLocation = os.environ.get('KOMBI_GUI_PICKER_LOCATION', '')
     __overridePreviousSelectedLocation = None
 
-    def __init__(self, taskHolders, sourcePaths=[], customHeader='', customElements=[], **kwargs):
+    def __init__(self, taskHolders, rootElement=None, customHeader='', **kwargs):
         """
         Create a Kombi app.
         """
@@ -51,20 +46,17 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         self.__taskHolders = taskHolders
 
-        self.__iconCache = {}
         self.__configurationDirectory = ""
         self.__imageElementViewerAlreadyDisplayed = False
         self.__uiHintSourceColumns = []
         self.__customHeader = customHeader
         self.__verticalSourceScrollBarLatestPos = 0
-        self.__customElements = customElements
-        self.__elementList = None
-        self.__messageBox = None
         self.__showVars = False
         self.__showTags = False
-        self.__uiHintGlobRecursively = True
+        self.__uiHintGlobRecursively = False
         self.__ignoreCheckedEvents = False
-        self.__currentSourcePath = None
+        self.__checkableState = None
+        self.__rootElements = []
         self.__buildWidgets()
 
         # task holders
@@ -77,9 +69,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
             self.__configurationDirectory = self.__taskHolders[0].var('configDirectory')
             self.setWindowTitle('Kombi ({0})'.format(self.__configurationDirectory))
 
-        # getting source files directory from the args
-        if sourcePaths:
-            self.__sourcePath.setText(';'.join(sourcePaths))
+        self.updateSource(rootElement)
 
     @classmethod
     def pickConfigurationDirectory(cls, configurationDirectory='', startLocation=""):
@@ -128,47 +118,41 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         return taskHolderLoader.taskHolders()
 
-    def updateSource(self, paths):
+    def updateSource(self, rootElement):
+        """
+        Update the source tree.
+        """
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        try:
+            self.__onUpdateSource(rootElement)
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
+
+    def __onUpdateSource(self, rootElement):
         """
         Update the source tree.
         """
         self.__sourceTree.clear()
         self.__sourceFilterMenu.clear()
-        self.__sourceOverrides = self.__loadSourceOverrides()
+        self.__sourceOverrides = {}
 
-        if not paths and not self.__customElements:
+        if rootElement is None:
             return
+
+        try:
+            index = self.__rootElements.index(rootElement)
+        except ValueError:
+            self.__rootElements = [rootElement]
+        else:
+            del self.__rootElements[index + 1:]
+
+        self.__elementsLevelNavigationWidget.setElements(self.__rootElements)
 
         # we want to list in the interface only the element types used by the main tasks
         filterTypes = []
-        sourceDirectoryElementType = None
-        validSourcePath = True
-        categoryVarName = None
-        collectionVarName = None
-        skipSourceStep = False
-        validationErrorMessage = "The source path is not compatible with the requirement to run the kombi configuration"
         for taskHolder in self.__taskHolders:
-            # checking for source path validation
-            if '__uiHintSourceRegExValidation' in taskHolder.varNames():
-                validSourcePath = re.match(taskHolder.var('__uiHintSourceRegExValidation'), paths)
-
-                if '__uiHintSourceValidationError' in taskHolder.varNames():
-                    validationErrorMessage = taskHolder.var('__uiHintSourceValidationError')
-
             if '__uiHintShowPreview' in taskHolder.varNames() and taskHolder.var('__uiHintShowPreview') and self.__imageElementViewer and not self.__imageElementViewerAlreadyDisplayed:
                 self.__onToggleImageViewer(True)
-
-            if '__uiHintSourceDirectoryElementType' in taskHolder.varNames():
-                sourceDirectoryElementType = taskHolder.var('__uiHintSourceDirectoryElementType')
-
-            if '__uiHintCategoryVarName' in taskHolder.varNames():
-                categoryVarName = taskHolder.var('__uiHintCategoryVarName')
-
-            if '__uiHintCollectionVarName' in taskHolder.varNames():
-                collectionVarName = taskHolder.var('__uiHintCollectionVarName')
-
-            if '__uiHintSkipSourceStep' in taskHolder.varNames():
-                skipSourceStep = taskHolder.var('__uiHintSkipSourceStep')
 
             if '__uiHintTitle' in taskHolder.varNames():
                 self.__logo.setTextFormat(QtCore.Qt.RichText)
@@ -177,6 +161,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
             if '__uiHintIconSize' in taskHolder.varNames():
                 iconSize = taskHolder.var('__uiHintIconSize')
                 self.__sourceTree.setIconSize(QtCore.QSize(iconSize, iconSize))
+            self.__sourceTree.setIconSize(QtCore.QSize(32, 32))
 
             if '__uiHintDispatcher' in taskHolder.varNames():
                 self.__selectedDispatcher.selectDispatcher(taskHolder.var('__uiHintDispatcher'))
@@ -184,107 +169,50 @@ class RunnerWindow(QtWidgets.QMainWindow):
             if '__uiHintGlobRecursively' in taskHolder.varNames():
                 self.__uiHintGlobRecursively = taskHolder.var('__uiHintGlobRecursively')
 
-            if not validSourcePath:
-                break
-
-            matchTypes = taskHolder.matcher().matchTypes()
+            skipSourceStep = False
+            if '__uiHintSkipSourceStep' in taskHolder.varNames():
+                skipSourceStep = taskHolder.var('__uiHintSkipSourceStep')
 
             # if there is a task holder that does not have any type specified to it, then we display all elements by
             # passing an empty list to the filter
-            if len(matchTypes) == 0:
+            if len(taskHolder.matcher().matchTypes()) == 0:
                 filterTypes = []
                 break
 
             filterTypes += taskHolder.matcher().matchTypes()
 
-        # checking for valid source path
-        if not validSourcePath:
-            QtWidgets.QMessageBox.critical(
-                None,
-                "Kombi",
-                "{}:\n{}".format(
-                    validationErrorMessage,
-                    paths
-                ),
-                QtWidgets.QMessageBox.Ok
-            )
-            return
-
         # globbing elements
+        for taskHolder in filter(lambda x: '__uiHintCheckedByDefault' in x.varNames(), self.__taskHolders):
+            self.__checkableState = taskHolder.var('__uiHintCheckedByDefault')
+            self.__sourceOverrides = self.__loadSourceOverrides()
+        self.__nextButton.setVisible(self.__checkableState is not None)
+        self.__selectedDispatcher.setVisible(self.__checkableState is not None)
+
         with ElementContext():
-            if self.__elementList is None or self.__currentSourcePath != paths:
-                self.__currentSourcePath = paths
-                self.__elementList = []
-                for path in paths.split(";"):
-                    if not path:
+            elementList = []
+            # filtering the result of the glob, but now using the element matcher
+            # this will match the variable types.
+            for taskHolder in self.__taskHolders:
+                for elementFound in rootElement.glob(filterTypes, recursive=self.__uiHintGlobRecursively):
+                    if not taskHolder.matcher().match(elementFound):
                         continue
+                    # since we may have several task holders we need to only
+                    # include the element once
+                    if elementFound not in elementList:
+                        elementList.append(elementFound)
 
-                    if os.path.exists(path):
-                        path = PathHolder(path)
-
-                    globElements = []
-                    element = Element.registeredType(sourceDirectoryElementType)(path) if sourceDirectoryElementType else Element.create(path)
-                    if sourceDirectoryElementType:
-                        element.setVar('type', sourceDirectoryElementType)
-
-                    if element.var('type') in filterTypes:
-                        globElements.append(element)
-                    globElements += element.glob(filterTypes, recursive=self.__uiHintGlobRecursively)
-
-                    # filtering the result of the glob, but now using the element matcher
-                    # this will match the variable types.
-                    for taskHolder in self.__taskHolders:
-                        for elementFound in globElements:
-                            if elementFound in self.__elementList:
-                                continue
-
-                            if taskHolder.matcher().match(elementFound):
-                                self.__elementList.append(elementFound)
-
-                if self.__customElements:
-                    # filtering the result of the glob, but now using the element matcher
-                    # this will match the variable types.
-                    for taskHolder in self.__taskHolders:
-                        for elementFound in self.__customElements:
-                            if elementFound in self.__elementList:
-                                continue
-
-                            if taskHolder.matcher().match(elementFound):
-                                self.__elementList.append(elementFound)
-
-                # sorting result by name
-                self.__elementList.sort(key=lambda x: x.var('name').lower() if 'group' not in x.tagNames() else x.tag('group').lower())
-
-                # updating categories (if available)
-                if categoryVarName:
-                    self.__categoriesDock.widget().refresh(categoryVarName, self.__elementList)
-                self.__categoriesDock.setVisible(bool(categoryVarName))
-            else:
-                # in case the user has decided to hit the back button, lets avoid
-                # sending back the user to the target options (since the user may
-                # want to look the source elements)
-                skipSourceStep = False
-
-        with ElementContext():
-            checked = True
-            for taskHolder in filter(lambda x: '__uiHintCheckedByDefault' in x.varNames(), self.__taskHolders):
-                checked = taskHolder.var('__uiHintCheckedByDefault')
-
-            self.__updateSourceTreeElementList(self.__elementList, collectionVarName, checked)
+            self.__updateSourceTreeElementList(elementList)
             self.__onSourceFiltersChanged()
-            QtWidgets.QApplication.restoreOverrideCursor()
 
-            # forcing kombi to start at the target (next) interface
-            if skipSourceStep:
-                self.updateTarget()
+        # forcing kombi to start at the target (next) interface
+        if skipSourceStep:
+            self.updateTarget()
 
     def updateTarget(self):
         """
         Update the target tree.
         """
         checkedElements = self.__checkedElements()
-        dispatcherName = self.__selectedDispatcher.selectedDispatcher()
-        self.__selectedRenderfarmPriority.setVisible(dispatcherName.lower() == "renderfarm")
 
         # applying overrides
         self.__applySourceOverrides(
@@ -344,8 +272,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         sourceControlMain = QtWidgets.QMainWindow()
         sourceBarLayout = QtWidgets.QHBoxLayout()
 
-        self.__sourcePath = QtWidgets.QLineEdit()
-        self.__sourcePath.setReadOnly(True)
+        self.__elementsLevelNavigationWidget = ElementsLevelNavigationWidget()
         self.__sourceDirButton = QtWidgets.QPushButton()
         self.__sourceDirButton.setToolTip('Selects a source directory')
         self.__sourceDirButton.setIcon(
@@ -380,12 +307,13 @@ class RunnerWindow(QtWidgets.QMainWindow):
         # filter search
         self.__sourceFilterSearch = QtWidgets.QLineEdit("")
         self.__sourceFilterSearch.setPlaceholderText("Filter...")
+        self.__sourceFilterSearch.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.__sourceFilterSearch.setClearButtonEnabled(True)
         self.__sourceFilterSearch.setFixedWidth(150)
 
         self.__sourceDirButton.clicked.connect(self.__onSelectSourceDir)
         self.__sourceRefreshButton.clicked.connect(functools.partial(self.__onRefreshSourceDir, True))
-        self.__sourcePath.textChanged.connect(self.updateSource)
+        self.__elementsLevelNavigationWidget.levelClicked.connect(self.updateSource)
         self.__sourceFilterSearchTimer = QtCore.QTimer()
         self.__sourceFilterSearchTimer.setSingleShot(True)
         self.__sourceFilterSearchTimer.timeout.connect(self.__onSourceFiltersChanged)
@@ -393,7 +321,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         sourceBarLayout.addWidget(self.__sourceDirButton)
         sourceBarLayout.addWidget(self.__sourceRefreshButton)
-        sourceBarLayout.addWidget(self.__sourcePath)
+        sourceBarLayout.addWidget(self.__elementsLevelNavigationWidget)
         sourceBarLayout.addWidget(self.__sourceFilterSearch)
         sourceBarLayout.addWidget(self.__sourceFilterButton)
         sourceBarLayout.addWidget(self.__sourceViewModeButton)
@@ -423,8 +351,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__targetAreaWidget.setLayout(targetLayout)
 
         self.__selectedDispatcher = DispatcherListWidget()
-        self.__selectedRenderfarmPriority = RenderfarmDispatcherPriorityWidget()
-        self.__selectedRenderfarmPriority.setVisible(False)
 
         targetBarLayout = QtWidgets.QHBoxLayout()
         targetLayout.addLayout(targetBarLayout)
@@ -432,25 +358,15 @@ class RunnerWindow(QtWidgets.QMainWindow):
         treeArea.addWidget(self.__sourceAreaWidget)
         treeArea.addWidget(self.__targetAreaWidget)
 
-        self.__sourceTree = self.__treeWidget(["Source"])
+        self.__sourceTree = self.__treeWidget([""])
         self.__sourceTree.itemChanged.connect(self.__onSourceTreeItemCheckedChanged)
         self.__sourceTree.itemSelectionChanged.connect(self.__onSourceTreeSelectionChanged)
         self.__sourceTree.customContextMenuRequested.connect(self.__onSourceTreeContextMenu)
+        self.__sourceTree.itemDoubleClicked.connect(self.__onSourceTreeDoubleClick)
 
         self.__targetTree = ExecutionSettingsWidget()
 
         sourceControlMain.setCentralWidget(self.__sourceTree)
-
-        # categories dock
-        self.__categoriesDock = QtWidgets.QDockWidget("Show Categories")
-        self.__categoriesDock.setMinimumWidth(150)
-        self.__categoriesDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
-
-        self.__categoriesDock.setWidget(FilterElementVarWidget())
-        self.__categoriesDock.setVisible(False)
-        self.__categoriesDock.widget().filterChangedSignal.connect(self.__onSourceFiltersChanged)
-
-        sourceControlMain.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.__categoriesDock)
 
         # image viewer
         self.__imageElementViewer = None
@@ -491,7 +407,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 if not os.path.isabs(logoFilePath):
                     logoFilePath = os.path.realpath(os.path.join(self.__taskHolders[0].var('configDirectory'), logoFilePath))
 
-            self.__logo.setPixmap(Resource.pixmap(logoFilePath).scaledToHeight(64, QtCore.Qt.SmoothTransformation))
+            self.__logo.setPixmap(Resource.pixmap(logoFilePath).scaledToHeight(48, QtCore.Qt.SmoothTransformation))
         self.__logo.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
 
         headerLayout.addWidget(self.__logo)
@@ -510,8 +426,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__runButton.clicked.connect(self.__onPerformTasks)
 
         buttonLayout.addWidget(self.__selectedDispatcher)
-        buttonLayout.addWidget(self.__selectedRenderfarmPriority)
-
         buttonLayout.addStretch()
         buttonLayout.addWidget(self.__backButton)
         buttonLayout.addWidget(self.__nextButton)
@@ -529,7 +443,21 @@ class RunnerWindow(QtWidgets.QMainWindow):
             if (viewMode == self.__viewModes[0]):
                 viewAction.setChecked(True)
 
+    def __onPerformTasks(self):
+        """
+        Slog triggered by the run button.
+        """
+        dispatcher = Dispatcher.create(self.__selectedDispatcher.selectedDispatcher())
+        self.__targetTree.execute(
+            dispatcher,
+            showOutput=False,
+            showDispatchedMessage=True
+        )
+
     def __onSourceTreeSelectionChanged(self):
+        """
+        Slot called when selection changes on the source tree.
+        """
         if not (self.__imageElementViewer and self.__imageElementViewer.isVisible()):
             return
 
@@ -537,14 +465,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
         for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
             selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
 
-            if hasattr(selectedItem, 'elements'):
-                for element in selectedItem.elements:
-                    if element.isLeaf():
-                        elements.append(element)
-                    else:
-                        with ElementContext():
-                            for chilElement in element.children():
-                                elements.append(chilElement)
+            if not hasattr(selectedItem, 'elements'):
+                continue
+            for element in selectedItem.elements:
+                if element.isLeaf():
+                    elements.append(element)
+                else:
+                    with ElementContext():
+                        elements.extend(element.children())
 
         self.__imageElementViewer.widget().setElements(elements)
 
@@ -580,44 +508,21 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if columns != self.__uiHintSourceColumns:
             self.__uiHintSourceColumns = columns
             header = QtWidgets.QTreeWidgetItem(
-                ["Source"] + list(map(self.__camelCaseToSpaced, self.__uiHintSourceColumns))
+                [""] + list(map(self.__camelCaseToSpaced, self.__uiHintSourceColumns))
             )
 
             self.__sourceTree.setHeaderItem(
                 header
             )
 
-            self.__targetTree.setHeaderItem(
-                QtWidgets.QTreeWidgetItem(
-                    ("", "")
-                )
-            )
-
-    def __updateSourceTreeElementList(self, elementList, collectionVarName, checked=True):
+    def __updateSourceTreeElementList(self, elementList):
         """
         Update the elements displayed in the source tree.
         """
         elementTypes = set()
         elementTags = {}
-        collectionParents = OrderedDict()
-
-        # processing collections
-        if collectionVarName:
-            collections = set()
-            for element in elementList:
-                if collectionVarName in element.varNames():
-                    collectionName = element.var(collectionVarName)
-                    collections.add(collectionName)
-
-            for collectionName in sorted(collections, key=lambda x: str(x).lower()):
-                collectionParent = QtWidgets.QTreeWidgetItem(self.__sourceTree)
-                collectionParent.setExpanded(True)
-                collectionParent.setFlags(collectionParent.flags() & ~QtCore.Qt.ItemIsUserCheckable)
-                collectionParent.setData(0, QtCore.Qt.EditRole, collectionName)
-                collectionParents[collectionName] = collectionParent
 
         # workaround necessary to improve the rendering speed
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         self.__sourceTree.setVisible(False)
 
         # group
@@ -626,7 +531,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
             for groupName in groupedElements.keys():
                 if groupName:
-                    parent = QtWidgets.QTreeWidgetItem(collectionParents[groupedElements[0].var(collectionVarName)] if collectionParents and collectionVarName in groupedElements[0].varNames() else self.__sourceTree)
+                    parent = QtWidgets.QTreeWidgetItem(self.__sourceTree)
                     self.__updateIcon(parent, groupedElements[groupName][0])
                     parent.elements = list(groupedElements[groupName])
                     parent.setExpanded(len(groupedElements) == 2 and not groupedElements[None])
@@ -641,10 +546,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     # adding column information
                     self.__addSourceTreeColumnData(groupedElements[groupName][0], parent, groupedElements[groupName])
 
-                    parent.setFlags(parent.flags() | QtCore.Qt.ItemIsUserCheckable)
-
-                    # check state
-                    parent.setCheckState(0, QtCore.Qt.Checked if checked else QtCore.Qt.Unchecked)
+                    if self.__checkableState is not None:
+                        parent.setFlags(parent.flags() | QtCore.Qt.ItemIsUserCheckable)
+                        parent.setCheckState(0, QtCore.Qt.Checked if self.__checkableState else QtCore.Qt.Unchecked)
 
                     for element in groupedElements[groupName]:
                         self.__createSourceTreeChildItem(
@@ -658,7 +562,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     for element in groupedElements[groupName]:
                         child = self.__createSourceTreeChildItem(
                             element,
-                            collectionParents[element.var(collectionVarName)] if collectionParents and collectionVarName in element.varNames() else self.__sourceTree,
+                            self.__sourceTree,
                             elementTypes,
                             elementTags
                         )
@@ -666,26 +570,25 @@ class RunnerWindow(QtWidgets.QMainWindow):
                         if groupName is None and len(groupedElements) == 1 and len(groupedElements[None]) == 1:
                             child.setExpanded(True)
 
-                        child.setFlags(child.flags() | QtCore.Qt.ItemIsUserCheckable)
-
-                        # check state
-                        child.setCheckState(0, QtCore.Qt.Checked if checked else QtCore.Qt.Unchecked)
+                        if self.__checkableState is not None:
+                            child.setFlags(child.flags() | QtCore.Qt.ItemIsUserCheckable)
+                            child.setCheckState(0, QtCore.Qt.Checked if self.__checkableState else QtCore.Qt.Unchecked)
 
                         self.__addSourceTreeColumnData(element, child)
 
         # flat
         else:
-            for element in sorted(elementList, key=lambda x: x.var('fullPath')):
+            for element in elementList:
 
                 # only testing with the first element when grouped
                 if isinstance(element, list):
                     element = element[0]
 
                 child = self.__createSourceTreeChildItem(element, self.__sourceTree, elementTypes, elementTags)
-                child.setFlags(child.flags() | QtCore.Qt.ItemIsUserCheckable)
 
-                # check state
-                child.setCheckState(0, QtCore.Qt.Checked if checked else QtCore.Qt.Unchecked)
+                if self.__checkableState is not None:
+                    child.setFlags(child.flags() | QtCore.Qt.ItemIsUserCheckable)
+                    child.setCheckState(0, QtCore.Qt.Checked if self.__checkableState else QtCore.Qt.Unchecked)
 
                 self.__addSourceTreeColumnData(element, child)
 
@@ -748,55 +651,11 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         return groupedElements
 
-    def __showInFileManager(self, filePaths):
-        """
-        Open the input file path in the default app.
-        """
-        args = []
-        commonPaths = {}
-        for filePath in filePaths:
-            parentDir = os.path.dirname(filePath)
-            if parentDir not in commonPaths:
-                commonPaths[parentDir] = set()
-            commonPaths[parentDir].add(filePath)
-
-        finalPaths = []
-        for commonPath, paths in commonPaths.items():
-            if len(paths) > 1:
-                finalPaths.append(commonPath)
-            else:
-                finalPaths.append(list(paths)[0])
-
-        # linux
-        if platform.system() == 'Linux':
-            # args = ('xdg-open', filePath)
-            args.append('nautilus')
-            args += finalPaths
-        # windows
-        elif platform.system() == 'Windows':
-            args = ('explorer.exe', '/select,' + filePaths[0].replace('/', '\\'))
-        # macos
-        elif platform.system() == 'Darwin':
-            args = ('open', filePaths)
-
-        assert args
-
-        env = dict(os.environ)
-        if 'PYTHONHOME' in env:
-            del env['PYTHONHOME']
-
-        if 'LD_LIBRARY_PATH' in env:
-            del env['LD_LIBRARY_PATH']
-
-        subprocess.Popen(args, env=env)
-
     def __treeWidget(self, columns=[]):
         """
         Return a tree widget used by source and target.
         """
         sourceTree = QtWidgets.QTreeWidget()
-        sourceTree.sortByColumn(0, QtCore.Qt.AscendingOrder)
-        sourceTree.setSortingEnabled(True)
         sourceTree.setAlternatingRowColors(True)
 
         sourceTree.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
@@ -836,14 +695,11 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Return the full path about the location for the override files.
         """
-        sourcePath = self.__sourcePath.text()
-
         return os.path.join(
             self.__configurationDirectory,
             "overrides",
-            "{}_{}.json".format(
-                getpass.getuser(),
-                hashlib.md5(sourcePath.encode('utf-8')).hexdigest()
+            "{}.json".format(
+                getpass.getuser()
             )
         )
 
@@ -1000,47 +856,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         elementTypes.add(element.var('type'))
 
-        ####
-        if not element.isLeaf():
-            childEntries = QtWidgets.QTreeWidgetItem(child)
-            childEntries.setData(
-                0,
-                QtCore.Qt.EditRole,
-                'children'
-            )
-            childEntries.setExpanded(True)
-            groupedElements = self.__groupElements(element.children())
-            for groupName in groupedElements.keys():
-                if groupName:
-                    parent = QtWidgets.QTreeWidgetItem(childEntries)
-                    parent.elements = list(groupedElements[groupName])
-                    self.__updateIcon(parent, groupedElements[groupName][0])
-
-                    # visible data
-                    visibleGroupName = groupName + '   '
-                    if visibleGroupName.startswith(os.sep):
-                        visibleGroupName = visibleGroupName[1:]
-
-                    parent.setData(0, QtCore.Qt.EditRole, visibleGroupName)
-
-                    # adding column information
-                    self.__addSourceTreeColumnData(groupedElements[groupName][0], parent, groupedElements[groupName])
-                    for childElement in groupedElements[groupName]:
-                        self.__createSourceTreeChildItem(
-                            childElement,
-                            parent,
-                            elementTypes,
-                            elementTags
-                        )
-                else:
-                    for childElement in groupedElements[groupName]:
-                        self.__createSourceTreeChildItem(
-                            childElement,
-                            childEntries,
-                            elementTypes,
-                            elementTags
-                        )
-
         if self.__showVars:
             variables = QtWidgets.QTreeWidgetItem(child)
             variables.setData(
@@ -1091,7 +906,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         Slot triggered when back button is triggered.
         """
         self.__selectedDispatcher.setVisible(False)
-        self.__selectedRenderfarmPriority.setVisible(False)
         self.__backButton.setVisible(False)
         self.__nextButton.setVisible(True)
         self.__runButton.setVisible(False)
@@ -1106,125 +920,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if checkedAction and checkedAction.text() != self.__checkedViewMode:
             self.__checkedViewMode = self.__viewModeActionGroup.checkedAction().text()
             self.__onRefreshSourceDir()
-
-    def __onPerformTasks(self):
-        """
-        Slot triggered when run button is triggered.
-        """
-        if self.__messageBox:
-            self.__messageBox.reject()
-        self.__runButton.setEnabled(False)
-        if not self.__targetTree.model().rowCount():
-            QtWidgets.QMessageBox.information(
-                self,
-                "Kombi",
-                "No targets available (refresh the targets)!",
-                QtWidgets.QMessageBox.Ok
-            )
-            return
-
-        output = ''
-        dispatcherName = self.__selectedDispatcher.selectedDispatcher()
-        dispatcherPriority = None
-        if dispatcherName.lower() == "renderfarm":
-            dispatcherPriority = self.__selectedRenderfarmPriority.selectedPriorityValue()
-
-        try:
-            for taskHolder, elementsGroup in self.__targetTree.executionTaskHolders():
-
-                # replacing the priority for the tasks
-                if dispatcherPriority:
-                    for childTask in taskHolder.childTasks():
-                        childTask.setMetadata("dispatch.renderFarm.priority", dispatcherPriority)
-
-                dispatcher = Dispatcher.create(dispatcherName)
-
-                # applying overrides
-                self.__applySourceOverrides(
-                    self.__loadSourceOverrides(),
-                    elementsGroup
-                )
-
-                # default label
-                label = "{}/{} [{}]".format(
-                    os.path.basename(taskHolder.var('configDirectory')),
-                    elementsGroup[0].tag('group') if 'group' in elementsGroup[0].tagNames() else elementsGroup[0].var('baseName'),
-                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                )
-
-                # custom label
-                if taskHolder.task().hasMetadata('dispatch.label'):
-                    label = Template(
-                        "{} [{}]".format(
-                            taskHolder.task().metadata('dispatch.label'),
-                            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        )
-                    ).valueFromElement(elementsGroup[0])
-
-                dispatcher.setOption('label', label)
-                dispatcher.setOption('priority', 20)
-
-                for result in dispatcher.dispatch(taskHolder, elementsGroup):
-                    if isinstance(result, ProcessExecution):
-                        output += result.stdoutContent()
-                    else:
-                        output += 'Dispatched to {}: {}'.format(dispatcherName, result)
-
-        except Exception as err:
-            traceback.print_exc()
-
-            self.__messageBox = QtWidgets.QMessageBox(
-                self,
-                "Kombi",
-                QtWidgets.QMessageBox.Ok
-            )
-            self.__messageBox.setWindowModality(QtCore.Qt.NonModal)
-            self.__messageBox.setIcon(QtWidgets.QMessageBox.Critical)
-            self.__messageBox.setText('Failed during execution')
-            self.__messageBox.setDetailedText(str(err))
-
-            if isinstance(err, ExecutionSettingsWidgetRequiredError):
-                self.__messageBox.setWindowTitle('Failed on validating task: {}'.format(err.task().type()))
-                self.__messageBox.setIcon(QtWidgets.QMessageBox.NoIcon)
-                self.__messageBox.setText(str(err))
-
-                horizontalSpacer = QtWidgets.QSpacerItem(1000, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-                layout = self.__messageBox.layout()
-                layout.addItem(horizontalSpacer, layout.rowCount(), 0, 1, layout.columnCount())
-
-                self.__runButton.setEnabled(True)
-                self.__messageBox.show()
-                return
-
-            self.__messageBox.show()
-
-            raise err
-
-        else:
-            if not ('__uiHintCloseAfterExecution' not in taskHolder.varNames() or bool(taskHolder.var('__uiHintCloseAfterExecution')) is False):
-                self.close()
-                return
-
-            message = "Execution completed!"
-            if dispatcherName == 'renderFarm':
-                message = "Execution submitted to the farm!"
-
-            QtWidgets.QMessageBox.information(
-                self,
-                "Kombi",
-                message,
-                QtWidgets.QMessageBox.Ok
-            )
-
-            # showing the output for local executions
-            if not dispatcherName == 'renderFarm':
-                self.__outputWidget = QtWidgets.QPlainTextEdit()
-                self.__outputWidget.setPlainText(output)
-                self.__outputWidget.setWindowTitle('Output')
-                self.__outputWidget.setMinimumWidth(920)
-                self.__outputWidget.setMinimumHeight(600)
-                self.__outputWidget.setVisible(True)
-                self.__outputWidget.setReadOnly(True)
 
     def __onColumnButton(self, treeItemWeakRef, callableName):
         """
@@ -1272,6 +967,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         self.__onChangeElementValue()
 
+    def __onSourceTreeDoubleClick(self, item):
+        """
+        Slot triggered when an item is double clicked on the source tree.
+        """
+        if not item.elements[0].isLeaf():
+            self.__rootElements.append(item.elements[0])
+            self.updateSource(item.elements[0])
+
     def __onSourceTreeContextMenu(self, point=None):
         """
         Slot triggered when context menu from source tree is triggered.
@@ -1279,27 +982,106 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__sourceTree.resizeColumnToContents(0)
 
         selectedIndexes = self.__sourceTree.selectionModel().selectedIndexes()
+        if not selectedIndexes:
+            return
 
-        if selectedIndexes:
-            selectedColumn = selectedIndexes[0].column()
-            menu = QtWidgets.QMenu(self)
-            if selectedColumn == 0:
-                action = menu.addAction('Show in file manager')
-                action.triggered.connect(self.__onOpenSelected)
+        selectedColumn = selectedIndexes[0].column()
+        menu = QtWidgets.QMenu(self)
+        if selectedColumn == 0:
+            elements = self.__selectedElements()
+            for index, taskHolder in enumerate(self.__taskHolders):
+                filteredElements = []
+                for element in elements:
+                    if not taskHolder.matcher().match(element):
+                        continue
+                    filteredElements.append(element)
 
-                action = menu.addAction('Play in RV')
-                action.triggered.connect(self.__onPlayInRV)
+                if not filteredElements:
+                    continue
 
-                # action = menu.addAction('Show Folder')
-                # action.triggered.connect(self.__onShowFolder)
-            else:
-                action = menu.addAction('Override Value')
-                action.triggered.connect(self.__onChangeElementValue)
+                try:
+                    taskHolder.task().validate(filteredElements)
+                except Exception as err:
+                    if not isinstance(err, TaskValidationError):
+                        traceback.print_exc()
+                else:
+                    taskName = self.__camelCaseToSpaced(taskHolder.task().metadata('name'))
+                    if taskHolder.task().hasMetadata('ui.task.showExecutionSettings') and not taskHolder.task().metadata('ui.task.showExecutionSettings'):
+                        pass
+                    else:
+                        taskName += ' ...'
+                    action = menu.addAction(taskName)
+                    action.triggered.connect(functools.partial(self.__onRunTaskHolder, taskName, index, filteredElements))
+        elif self.__checkableState is not None:
+            action = menu.addAction('Override Value')
+            action.triggered.connect(self.__onChangeElementValue)
 
-                action = menu.addAction('Reset Value')
-                action.triggered.connect(self.__onResetElementValue)
+            action = menu.addAction('Reset Value')
+            action.triggered.connect(self.__onResetElementValue)
 
+        if len(menu.actions()):
             menu.exec_(self.__sourceTree.mapToGlobal(point) if point is not None else QtGui.QCursor.pos())
+
+    def __onRunTaskHolder(self, title, index, elements):
+        """
+        Slog triggered by the context menu action to run the task holders.
+        """
+        taskHolder = self.__taskHolders[index]
+        self.__dialog = None
+        showExecutionSettings = True
+        executionSettingsWidget = ExecutionSettingsWidget()
+        executionSettingsWidget.updateTarget(elements, [taskHolder], True)
+        if taskHolder.task().hasMetadata('ui.task.showExecutionSettings'):
+            showExecutionSettings = taskHolder.task().metadata('ui.task.showExecutionSettings')
+
+        selectedDispatcher = DispatcherListWidget()
+        selectedDispatcher.selectDispatcher('runtime')
+        if '__uiHintDispatcher' in taskHolder.varNames():
+            # this will take care of the checkings but the exception needs to be handled
+            # showExecutionSettings. executionTaskHolders()
+            selectedDispatcher.selectDispatcher(taskHolder.var('__uiHintDispatcher'))
+
+        def __performExecuteSettings():
+            dispatcher = Dispatcher.create(selectedDispatcher.selectedDispatcher())
+            success = executionSettingsWidget.execute(
+                dispatcher,
+                showOutput=False,
+                showDispatchedMessage=False
+            )
+
+            if self.__dialog and success:
+                self.__dialog.close()
+
+        if showExecutionSettings:
+            layout = QtWidgets.QVBoxLayout()
+            layout.addWidget(executionSettingsWidget)
+
+            runButton = QtWidgets.QPushButton('Execute')
+            runButton.setToolTip('Performs the task')
+            runButton.setIcon(
+                Resource.icon("icons/run.png")
+            )
+
+            runLayout = QtWidgets.QHBoxLayout()
+            runLayout.addWidget(selectedDispatcher)
+            runLayout.addStretch()
+            runLayout.addWidget(runButton)
+            layout.addLayout(runLayout)
+
+            self.__dialog = QtWidgets.QDialog()
+            self.__dialog.resize(800, 600)
+
+            self.__dialog.setWindowTitle(f"Execute {title}")
+            self.__dialog.setStyleSheet(Resource.stylesheet())
+            self.__dialog.setLayout(layout)
+
+            runButton.clicked.connect(__performExecuteSettings)
+            self.__dialog.exec_()
+
+            self.__onRefreshSourceDir(force=True)
+        else:
+            executionSettingsWidget.setVisible(False)
+            __performExecuteSettings()
 
     def __onChangeElementValue(self):
         """
@@ -1397,7 +1179,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 elementFullPath = elementItem.var('fullPath')
 
                 # skipping the same value that is currently set in the element
-                if value == elementItem.var(columnName):
+                if columnName in elementItem.varNames() and value == elementItem.var(columnName):
                     if elementFullPath in overrides and columnName in overrides[elementFullPath]:
                         del overrides[elementFullPath][columnName]
                     continue
@@ -1413,7 +1195,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         with open(self.__sourceOverridesConfig(), 'w') as sourceFile:
             data = {
-                "sourcePath": self.__sourcePath.text(),
                 "overrides": overrides
             }
 
@@ -1459,28 +1240,11 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if os.path.exists(os.path.dirname(self.__sourceOverridesConfig())):
             with open(self.__sourceOverridesConfig(), 'w') as sourceFile:
                 data = {
-                    "sourcePath": self.__sourcePath.text(),
                     "overrides": overrides
                 }
                 json.dump(data, sourceFile, indent=4)
 
             self.__onRefreshSourceDir()
-
-    def __onShowFolder(self):
-        """
-        Slot triggered when show folder for the selected elements is triggered.
-        """
-        folderPaths = set()
-        for element in self.__selectedElements():
-            if element.isLeaf():
-                folderPaths.add(os.path.dirname(element.var('fullPath')))
-            else:
-                folderPaths.add(element.var('fullPath'))
-
-        for folderPath in folderPaths:
-            self.__showInFileManager(
-                folderPath
-            )
 
     def __selectedElements(self):
         """
@@ -1500,52 +1264,15 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         return list(selectedElements)
 
-    def __onOpenSelected(self):
-        """
-        Slot triggered when open the select file is triggered.
-        """
-        elements = self.__selectedElements()
-        if not elements:
-            return
-        self.__showInFileManager(list(map(lambda x: x.var('fullPath'), elements)))
-
-    def __onPlayInRV(self):
-        """
-        Slot triggered when the option play in rv is selected.
-        """
-        elements = self.__selectedElements()
-        if not elements:
-            return
-
-        commonPaths = {}
-        for filePath in map(lambda x: x.var('fullPath'), elements):
-            parentDir = os.path.dirname(filePath)
-            if parentDir not in commonPaths:
-                commonPaths[parentDir] = set()
-            commonPaths[parentDir].add(filePath)
-
-        finalPaths = []
-        for commonPath, paths in commonPaths.items():
-            if len(paths) > 1:
-                finalPaths.append(commonPath)
-            else:
-                finalPaths.append(list(paths)[0])
-
-        env = dict(os.environ)
-        if 'PYTHONHOME' in env:
-            del env['PYTHONHOME']
-
-        if 'LD_LIBRARY_PATH' in env:
-            del env['LD_LIBRARY_PATH']
-
-        subprocess.Popen(' '.join(['rv'] + finalPaths), shell=True, env=env)
-
     def __onSelectSourceDir(self):
         """
         Slot triggered when select source button is triggered.
         """
         self.__verticalSourceScrollBarLatestPos = 0
-        currentDir = self.__sourcePath.text() or self.__pickerLocation
+        currentDir = self.__pickerLocation
+        if self.__rootElements and isinstance(self.__rootElements[0], FsElement):
+            currentDir = self.__rootElements[0].var('fullPath')
+
         selectedDirectory = QtWidgets.QFileDialog.getExistingDirectory(
             self,
             "Select source directory",
@@ -1553,9 +1280,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
             QtWidgets.QFileDialog.ShowDirsOnly
         )
 
-        if selectedDirectory not in ['', '/']:
-            self.__sourcePath.setText(selectedDirectory)
-            self.__sourcePath.setText(selectedDirectory)
+        if selectedDirectory:
+            self.updateSource(FsElement.createFromPath(selectedDirectory))
 
     def __onRefreshSourceDir(self, force=False):
         """
@@ -1575,9 +1301,11 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         # refreshing tree
         if force:
-            self.__elementList = None
+            for rootElement in self.__rootElements:
+                rootElement.flushChildrenCache()
 
-        self.updateSource(self.__sourcePath.text())
+        if self.__rootElements:
+            self.updateSource(self.__rootElements[-1])
 
         # reapplying the state
         for index in range(self.__sourceTree.topLevelItemCount()):
@@ -1585,7 +1313,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
             key = (index, item.text(0))
 
             if key in treeData:
-                if bool(item.flags() & QtCore.Qt.ItemIsUserCheckable):
+                if self.__checkableState is not None and bool(item.flags() & QtCore.Qt.ItemIsUserCheckable):
                     item.setCheckState(0, treeData[key]["checked"])
                 item.setExpanded(treeData[key]["expanded"])
 
@@ -1643,12 +1371,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
             if action.isChecked():
                 visibleTypes.append(action.text())
 
-        # custom filter
-        filterVarName = self.__categoriesDock.widget().filterVarName()
-        filterVarValues = []
-        if filterVarName:
-            filterVarValues = self.__categoriesDock.widget().checkedFilterVarValues()
-
         allTreeItems = self.__sourceTree.findItems("*", QtCore.Qt.MatchWildcard | QtCore.Qt.MatchWrap | QtCore.Qt.MatchRecursive, 1)
         filterSearch = list(self.__sourceFilterSearch.text().lower().strip().split(' '))
         elementItems = []
@@ -1671,11 +1393,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     treeItem.setHidden(False)
                     break
 
-            if filterVarName:
-                treeItem.setHidden(
-                    not (treeItem.elements[0].var(filterVarName) in filterVarValues if filterVarName in treeItem.elements[0].varNames() and (not filterSearch or not treeItem.isHidden()) else False)
-                )
-
         for elementItem in elementItems:
             if not elementItem.isHidden():
                 parentItem = elementItem
@@ -1694,10 +1411,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if not iconPath:
             return
 
-        if iconPath not in self.__iconCache:
-            self.__iconCache[iconPath] = QtGui.QIcon(QtGui.QPixmap.fromImage(iconPath))
-
-        item.setIcon(columnIndex, self.__iconCache[iconPath])
+        item.setIcon(columnIndex, Resource.icon(iconPath))
 
     def __camelCaseToSpaced(self, text):
         """

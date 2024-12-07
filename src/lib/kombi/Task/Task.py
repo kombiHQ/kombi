@@ -360,7 +360,10 @@ class Task(object):
                     taskType
                 )
             )
-        return Task.__registered[taskType](taskType, *args, **kwargs)
+        task = Task.__registered[taskType](taskType, *args, **kwargs)
+        if not task.hasMetadata('name'):
+            task.setMetadata('name', taskType)
+        return task
 
     @staticmethod
     def createFromJson(jsonContents):

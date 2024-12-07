@@ -28,6 +28,9 @@ class ShotRenderElement(ExrRenderElement):
             True
         )
 
+        # setting icon
+        self.setTag('icon', 'icons/elements/render.png')
+
     @classmethod
     def test(cls, pathHolder, parentElement):
         """

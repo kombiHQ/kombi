@@ -18,7 +18,11 @@ class Resource(object):
             cls.__cache["icon"] = {}
 
         if name not in cls.__cache["icon"]:
-            cls.__cache["icon"][name] = QtGui.QIcon(os.path.join(cls.__resourcesLocation, name))
+            resourceLocation = os.path.join(cls.__resourcesLocation, name)
+            if not os.path.exists(resourceLocation):
+                resourceLocation = name
+
+            cls.__cache["icon"][name] = QtGui.QIcon(resourceLocation)
 
         return cls.__cache["icon"][name]
 
@@ -32,7 +36,11 @@ class Resource(object):
 
         key = (name, width, height)
         if key not in cls.__cache["pixmap"]:
-            cls.__cache["pixmap"][key] = QtGui.QPixmap(os.path.join(cls.__resourcesLocation, name))
+            resourceLocation = os.path.join(cls.__resourcesLocation, name)
+            if not os.path.exists(resourceLocation):
+                resourceLocation = name
+
+            cls.__cache["pixmap"][key] = QtGui.QPixmap(resourceLocation)
 
             # resizing pixmap
             if width or height:

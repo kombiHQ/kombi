@@ -10,3 +10,4 @@ from . import Ascii
 from . import Render
 from . import Texture
 from . import Scene
+from . import Exchange3dData

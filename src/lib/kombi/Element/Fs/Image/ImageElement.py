@@ -13,8 +13,11 @@ class ImageElement(FileElement):
 
         self.setVar('category', 'image')
 
-        # setting a video tag
+        # setting a image tag
         self.setVar('imageType', 'single')
+
+        # setting icon
+        self.setTag('icon', 'icons/elements/image.png')
 
         self.__computeImageSequence()
 

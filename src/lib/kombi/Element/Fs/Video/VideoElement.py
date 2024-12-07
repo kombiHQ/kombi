@@ -19,10 +19,10 @@ class VideoElement(FileElement):
         self.setVar('category', 'video')
 
         # setting a video tag
-        self.setTag(
-            'video',
-            self.pathHolder().baseName()
-        )
+        self.setTag('video', self.pathHolder().baseName())
+
+        # setting icon
+        self.setTag('icon', 'icons/elements/video.png')
 
     def var(self, name):
         """

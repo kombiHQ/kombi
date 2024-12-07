@@ -37,6 +37,9 @@ class TextureElement(OiioElement):
         self.setVar("udim", self.__parseUDIM(self.pathHolder()))
         self.setVar("variant", "default")
 
+        # setting icon
+        self.setTag('icon', 'icons/elements/texture.png')
+
     def setVar(self, name, value, *args, **kwargs):
         """
         Override setVar to be able to hook when mapType is assigned.

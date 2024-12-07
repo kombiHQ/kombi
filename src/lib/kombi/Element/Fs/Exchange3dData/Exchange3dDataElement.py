@@ -1,20 +1,20 @@
 from ..FileElement import FileElement
 
-class SceneElement(FileElement):
+class Exchange3dDataElement(FileElement):
     """
-    Abstracted scene element.
+    Abstracted exchange 3d Data element.
     """
 
     def __init__(self, *args, **kwargs):
         """
-        Create a Scene object.
+        Create an Exchange3dDataElement object.
         """
-        super(SceneElement, self).__init__(*args, **kwargs)
+        super(Exchange3dDataElement, self).__init__(*args, **kwargs)
 
-        self.setVar('category', 'scene')
+        self.setVar('category', 'exchange3dData')
 
         # setting icon
-        self.setTag('icon', 'icons/elements/scene.png')
+        self.setTag('icon', 'icons/elements/geo.png')
 
     @classmethod
     def extensions(cls):

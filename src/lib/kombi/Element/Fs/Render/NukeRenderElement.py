@@ -28,6 +28,9 @@ class NukeRenderElement(ExrRenderElement):
         isMatte = 'matte' in self.var('output').lower()
         self.setVar('isMatte', int(isMatte))
 
+        # setting icon
+        self.setTag('icon', 'icons/elements/render.png')
+
     @classmethod
     def test(cls, pathHolder, parentElement):
         """

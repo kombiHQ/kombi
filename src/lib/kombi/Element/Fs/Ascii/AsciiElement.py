@@ -12,6 +12,9 @@ class AsciiElement(FileElement):
         super(AsciiElement, self).__init__(*args, **kwargs)
         self.__parsedContents = None
 
+        # setting icon
+        self.setTag('icon', 'icons/elements/ascii.png')
+
         self.setVar('category', 'ascii')
 
     def _runParser(self):

@@ -80,7 +80,7 @@ class HashmapElement(Element):
         """
         return self.var('data').values()
 
-    def initializationData(self):
+    def serializeInitializationData(self):
         """
         Define the data passed during the initialization of the element.
         """

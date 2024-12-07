@@ -15,3 +15,6 @@ class ExrRenderElement(ExrElement):
 
         parts = self.var("name").split("_")
         self.setVar('renderType', parts[-1])
+
+        # setting icon
+        self.setTag('icon', 'icons/elements/render.png')

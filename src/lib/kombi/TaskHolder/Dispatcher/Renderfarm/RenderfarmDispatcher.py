@@ -36,6 +36,7 @@ class RenderfarmDispatcher(Dispatcher):
         self.setOption('priority', self.__defaultPriority)
         self.setOption('expandOnTheFarm', self.__defaultExpandOnTheFarm)
         self.setOption('chunkifyOnTheFarm', self.__defaultChunkifyOnTheFarm)
+        self.setOption('dispatchedMessage', 'Execution submitted to the farm!')
 
     def extendDependencyIds(self, jobId, dependencyIds, task=None):
         """
