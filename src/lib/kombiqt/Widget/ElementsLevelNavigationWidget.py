@@ -17,7 +17,7 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
         self.setObjectName('elementsLevelNavigation')
         self.__elements = []
         self.setLayout(QtWidgets.QHBoxLayout())
-        self.layout().setMargin(0)
+        self.layout().setContentsMargins(0, 0, 0, 0)
 
         self.refresh()
 
