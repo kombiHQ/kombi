@@ -517,7 +517,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
                 w = QtWidgets.QWidget(self)
                 layout = QtWidgets.QHBoxLayout()
-                layout.setMargin(2)
+                layout.setContentsMargin(2, 2, 2, 2)
                 layout.addWidget(editableWidget, 10)
                 layout.addWidget(folderPicker, 0)
                 w.setLayout(layout)
