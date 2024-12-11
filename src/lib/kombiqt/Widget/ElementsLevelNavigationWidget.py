@@ -1,5 +1,6 @@
 import functools
-from Qt import QtCore, QtWidgets
+from Qt import QtCore, QtWidgets, QtGui
+from kombi.Config import Config
 from kombi.Element import Element
 from ..Resource import Resource
 
@@ -9,7 +10,7 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
     """
     levelClicked = QtCore.Signal(object)
 
-    def __init__(self) -> None:
+    def __init__(self, showBookmarks=True) -> None:
         """
         Create a ElementsLevelNavigationWidget object.
         """
@@ -18,8 +19,22 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
         self.__elements = []
         self.setLayout(QtWidgets.QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
+        self.setShowBookmarks(showBookmarks)
+        self.__bookmarksConfig = Config('elementsLevelNavigationBookmarks')
 
         self.refresh()
+
+    def setShowBookmarks(self, display):
+        """
+        Tells if the bookmarks button should be display on the navigation bar.
+        """
+        self.__displayBookmarks = display
+
+    def showBookmarks(self):
+        """
+        Return if the bookmarks button is being displayed.
+        """
+        return self.__displayBookmarks
 
     def refresh(self):
         """
@@ -44,8 +59,19 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
             if element != self.__elements[-1]:
                 navigationLayout.addWidget(QtWidgets.QLabel('/'))
 
-        navigationLayout.addStretch(1000)
+        navigationLayout.addStretch(100)
         self.layout().addLayout(navigationLayout)
+
+        if self.showBookmarks() and self.elements():
+            currentLevel = '/'.join(map(lambda x: x.var('name'), self.elements()))
+            bookmarkIcon = 'icons/bookmark.png'
+            if currentLevel in self.__bookmarks():
+                bookmarkIcon = 'icons/addedToBookmark.png'
+            bookmarksButton = QtWidgets.QPushButton(Resource.icon(bookmarkIcon), '')
+            bookmarksButton.setFlat(True)
+            bookmarksButton.setToolTip('Bookmarks')
+            bookmarksButton.clicked.connect(self.__displayBookmarksMenu)
+            self.layout().addWidget(bookmarksButton)
 
     def setElements(self, elements):
         """
@@ -62,6 +88,104 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
         Return the list of elements displayed by this widget.
         """
         return self.__elements
+
+    def __displayBookmarksMenu(self):
+        """
+        Triggered when bookmarks button is pressed.
+        """
+        if not self.elements():
+            return
+
+        menu = QtWidgets.QMenu(self)
+
+        currentLevel = '/'.join(map(lambda x: x.var('name'), self.elements()))
+        if currentLevel in self.__bookmarks():
+            action = menu.addAction('Remove current from Bookmarks')
+            action.triggered.connect(self.__removeFromBookmark)
+        else:
+            action = menu.addAction('Add current to Bookmarks')
+            action.triggered.connect(self.__addToBookmark)
+
+        menu.addSeparator()
+
+        for bookmark in self.__bookmarks():
+            if not bookmark.startswith(self.elements()[0].var('name') + '/'):
+                continue
+
+            action = menu.addAction(bookmark)
+            action.triggered.connect(functools.partial(self.__gotoBookmark, bookmark))
+
+        menu.exec_(QtGui.QCursor.pos())
+
+    def __gotoBookmark(self, bookmark):
+        """
+        Change the level to the input bookmark path.
+        """
+        levelNames = bookmark.split('/')[1:]
+        newLevelElements = [self.elements()[0]]
+        for levelName in levelNames:
+            found = False
+            for childLevel in newLevelElements[-1].children():
+                if childLevel.var('name') == levelName:
+                    newLevelElements.append(childLevel)
+                    found = True
+
+            if not found:
+                break
+
+        self.setElements(newLevelElements)
+        self.__onNavigationClicked(newLevelElements[-1])
+
+    def __addToBookmark(self):
+        """
+        Add the current level to the config.
+        """
+        fullLevelPath = '/'.join(map(lambda x: x.var('name'), self.elements()))
+        rootType = self.__elements[0].var('type')
+
+        bookmarks = []
+        if self.__bookmarksConfig.hasKey(rootType):
+            bookmarks = self.__bookmarksConfig.value(rootType)
+
+        if fullLevelPath in bookmarks:
+            bookmarks.remove(fullLevelPath)
+
+        bookmarks.insert(0, fullLevelPath)
+        self.__bookmarksConfig.setValue(rootType, bookmarks)
+
+        self.refresh()
+
+    def __removeFromBookmark(self):
+        """
+        Remove the current level from the config.
+        """
+        fullLevelPath = '/'.join(map(lambda x: x.var('name'), self.elements()))
+        rootType = self.__elements[0].var('type')
+
+        bookmarks = []
+        if self.__bookmarksConfig.hasKey(rootType):
+            bookmarks = self.__bookmarksConfig.value(rootType)
+
+        if fullLevelPath in bookmarks:
+            bookmarks.remove(fullLevelPath)
+
+        self.__bookmarksConfig.setValue(rootType, bookmarks)
+
+        self.refresh()
+
+    def __bookmarks(self):
+        """
+        Returns a list of all bookmarks.
+        """
+        if not self.elements():
+            return []
+
+        rootType = self.__elements[0].var('type')
+        bookmarks = []
+        if self.__bookmarksConfig.hasKey(rootType):
+            bookmarks = self.__bookmarksConfig.value(rootType)
+
+        return bookmarks
 
     def __onNavigationClicked(self, element):
         """
