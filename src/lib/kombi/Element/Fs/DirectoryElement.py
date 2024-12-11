@@ -1,5 +1,4 @@
 import os
-import sys
 import re
 from .FsElement import FsElement
 from .. import Element, PathHolder
@@ -63,8 +62,9 @@ class DirectoryElement(FsElement):
         def __sortElement(x):
             name = x.var('name').lower() if 'group' not in x.tagNames() else x.tag('group').lower()
             # in case of a version folder v#### we want to sort the recent versions on top
-            if not x.isLeaf() and x.var('name').lower().startswith('v') and x.var('name')[1:].isdigit():
-                name = sys.maxsize - int(x.var('name')[1:])
+            if not x.isLeaf() and name.lower().startswith('v') and name[1:].isdigit():
+                totalDigits = len(name[1:])
+                name = name[:1] + str(int('9' * totalDigits) - int(name[1:])).zfill(totalDigits)
 
             return (int(x.isLeaf()), name)
 
