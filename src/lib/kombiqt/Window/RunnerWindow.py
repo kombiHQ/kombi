@@ -139,6 +139,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if rootElement is None:
             return
 
+        if self.__elementsLevelNavigationWidget.elements():
+            self.__rootElements = self.__elementsLevelNavigationWidget.elements()
+
         try:
             index = self.__rootElements.index(rootElement)
         except ValueError:
@@ -1037,8 +1040,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         selectedDispatcher = DispatcherListWidget()
         selectedDispatcher.selectDispatcher('runtime')
         if '__uiHintDispatcher' in taskHolder.varNames():
-            # this will take care of the checkings but the exception needs to be handled
-            # showExecutionSettings. executionTaskHolders()
             selectedDispatcher.selectDispatcher(taskHolder.var('__uiHintDispatcher'))
 
         def __performExecuteSettings():

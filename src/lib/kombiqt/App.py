@@ -1,6 +1,7 @@
 import os
 import sys
 from Qt import QtWidgets
+from kombi.Element.Fs.FsElement import FsElement
 from kombi.Element import Element
 from .Window.RunnerWindow import RunnerWindow
 from .Resource import Resource
@@ -43,7 +44,7 @@ class App(QtWidgets.QApplication):
         # source element path
         rootElement = None
         if len(sys.argv) > 2:
-            rootElement = Element.create(sys.argv[2:3])
+            rootElement = FsElement.createFromPath(sys.argv[2])
             # wrapping the leaf element a collection element, so it can be
             # displayed in the UI
             if rootElement.isLeaf():
