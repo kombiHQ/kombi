@@ -1387,7 +1387,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
             elementItems.append(treeItem)
 
             if treeItem.elements[0].var('type') not in visibleTypes:
-                break
+                continue
 
             for filterWord in filterSearch:
                 if filterWord in str(treeItem.data(0, QtCore.Qt.EditRole)).lower():
