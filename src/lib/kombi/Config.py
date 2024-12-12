@@ -122,7 +122,7 @@ class Config(object):
 
         applicationData = None
         if sys.platform == 'win32':
-            applicationData = home / 'AppData/Roaming'
+            applicationData = pathlib.Path(os.path.expandvars('%APPDATA%'))
         elif os.name == 'posix':
             applicationData = home / '.local/share'
         elif sys.platform == 'darwin':
