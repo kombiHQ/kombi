@@ -300,13 +300,11 @@ class Element(object):
         if not filterTypes:
             return self.__globCache[cacheKey]
 
-        filteredElements = set()
+        subClasses = tuple()
         for filterType in filterTypes:
-            subClasses = tuple(Element.registeredSubclasses(filterType))
-            filteredElements.update(
-                filter(lambda x: isinstance(x, subClasses), self.__globCache[cacheKey])
-            )
-        return list(filteredElements)
+            subClasses += tuple(Element.registeredSubclasses(filterType))
+
+        return list(filter(lambda x: isinstance(x, subClasses), self.__globCache[cacheKey]))
 
     def __repr__(self):
         """
