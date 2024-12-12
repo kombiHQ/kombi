@@ -59,7 +59,7 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
             if element != self.__elements[-1]:
                 navigationLayout.addWidget(QtWidgets.QLabel('/'))
 
-        navigationLayout.addStretch(100)
+        navigationLayout.addStretch(1000)
         self.layout().addLayout(navigationLayout)
 
         if self.showBookmarks() and self.elements():
