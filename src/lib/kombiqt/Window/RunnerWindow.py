@@ -290,7 +290,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         )
 
         # view mode
-        self.__sourceViewModeButton = QtWidgets.QPushButton("View Mode")
+        self.__sourceViewModeButton = QtWidgets.QPushButton()
         self.__sourceViewModeButton.setToolTip('Changes the view mode')
         self.__sourceViewModeButton.setIcon(
             Resource.icon("icons/viewMode.png")
@@ -299,7 +299,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__sourceViewModeButton.setMenu(self.__sourceViewModeMenu)
 
         # filter
-        self.__sourceFilterButton = QtWidgets.QPushButton("Visibility")
+        self.__sourceFilterButton = QtWidgets.QPushButton()
         self.__sourceFilterButton.setToolTip('Filters out specific element types')
         self.__sourceFilterButton.setIcon(
             Resource.icon("icons/filterView.png")
@@ -323,11 +323,11 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__sourceFilterSearch.textChanged.connect(self.__onSourceFilterSearch)
 
         sourceBarLayout.addWidget(self.__sourceDirButton)
-        sourceBarLayout.addWidget(self.__sourceRefreshButton)
         sourceBarLayout.addWidget(self.__elementsLevelNavigationWidget)
-        sourceBarLayout.addWidget(self.__sourceFilterSearch)
+        sourceBarLayout.addWidget(self.__sourceRefreshButton)
         sourceBarLayout.addWidget(self.__sourceFilterButton)
         sourceBarLayout.addWidget(self.__sourceViewModeButton)
+        sourceBarLayout.addWidget(self.__sourceFilterSearch)
 
         sourceLayout.addLayout(sourceBarLayout)
 
