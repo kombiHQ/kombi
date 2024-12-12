@@ -129,6 +129,7 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
                 if childLevel.var('name') == levelName:
                     newLevelElements.append(childLevel)
                     found = True
+                    break
 
             if not found:
                 break
