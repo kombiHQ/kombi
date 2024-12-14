@@ -32,6 +32,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
     Deprecation Notice: This interface is going to be phase out in future releases.
     """
 
+    preRenderElements = QtCore.Signal(list)
     __viewModes = ["group", "flat"]
     __pickerLocation = os.environ.get('KOMBI_GUI_PICKER_LOCATION', '')
     __overridePreviousSelectedLocation = None
@@ -204,6 +205,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     if elementFound not in elementList:
                         elementList.append(elementFound)
 
+            self.preRenderElements.emit(elementList)
             self.__updateSourceTreeElementList(elementList)
             self.__onSourceFiltersChanged()
 
@@ -773,11 +775,16 @@ class RunnerWindow(QtWidgets.QMainWindow):
             columnLabel = ('mixed' if mixedValues else str(value)) + '   '
 
             # creating custom widget to show the presets
-            if '{}.button'.format(column) in element.tagNames():
+            if '{}.button'.format(column) in element.tagNames() or '{}.icon'.format(column) in element.tagNames():
                 columnButton = QtWidgets.QPushButton(self)
+                if '{}.icon'.format(column) in element.tagNames():
+                    columnButton.setIcon(Resource.icon(element.tag('{}.icon'.format(column))))
                 columnButton.setObjectName('columnButton')
                 columnButton.setText(str(value))
-                columnButton.clicked.connect(functools.partial(self.__onColumnButton, weakref.ref(treeItem), element.tag('{}.button'.format(column))))
+                columnButton.setFixedSize(columnButton.minimumSizeHint())
+                columnButton.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+                if '{}.button'.format(column) in element.tagNames():
+                    columnButton.clicked.connect(functools.partial(self.__onColumnButton, weakref.ref(treeItem), element.tag('{}.button'.format(column))))
                 self.__sourceTree.setItemWidget(treeItem, index + 1, columnButton)
 
             # creating custom widget to show the presets
