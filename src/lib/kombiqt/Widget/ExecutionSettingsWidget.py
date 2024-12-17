@@ -547,6 +547,11 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 signal = w.currentTextChanged
             else:
                 w = QtWidgets.QLineEdit(str(value))
+
+                regex = '{}.regex'.format(uiOptionMetadataName)
+                if taskHolder.task().hasMetadata(regex):
+                    w.setValidator(QtGui.QRegExpValidator(taskHolder.task().metadata(regex)))
+
                 signal = w.editingFinished
 
         if signal:
