@@ -1,11 +1,11 @@
 import os
-import re
 import json
 import time
 from glob import glob
 from ..Task import Task, TaskError, TaskValidationError
 from ..External.GafferTask import GafferTask
 from ...Element import Element
+from ...Template import Template
 from ...Element.Fs.FsElement import FsElement
 
 class GafferLoadTaskError(TaskError):
@@ -82,7 +82,7 @@ class GafferLoadTask(Task):
 
         output = []
         for key, value in jsonContents.items():
-            output.append("{}: {}".format(self.__camelCaseToSpaced(key), value))
+            output.append("{}: {}".format(Template.runProcedure('camelcasetospaced', key), value))
 
         return '\n'.join(output)
 
@@ -294,13 +294,6 @@ class GafferLoadTask(Task):
         )
 
         return hashmapElement
-
-    @classmethod
-    def __camelCaseToSpaced(cls, text):
-        """
-        Return the input camelCase string to spaced.
-        """
-        return text[0].upper() + re.sub(r"([a-z])([A-Z])", r"\g<1> \g<2>", text[1:])
 
 
 # registering task

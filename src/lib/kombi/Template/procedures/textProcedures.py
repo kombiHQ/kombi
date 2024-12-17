@@ -2,6 +2,7 @@
 Basic text functions.
 """
 
+import re
 from ..Template import Template
 from fnmatch import fnmatch
 
@@ -118,6 +119,12 @@ def splitPart(input, string, resultIndex=0):
     except IndexError:
         return ''
 
+def camelCaseToSpaced(text):
+    """
+    Return the input camelCase string to spaced.
+    """
+    return text[0].upper() + re.sub(r"([a-z])([A-Z])", r"\g<1> \g<2>", text[1:])
+
 
 # slice
 Template.registerProcedure(
@@ -219,4 +226,9 @@ Template.registerProcedure(
 Template.registerProcedure(
     'splitpart',
     splitPart
+)
+
+Template.registerProcedure(
+    'camelcasetospaced',
+    camelCaseToSpaced
 )

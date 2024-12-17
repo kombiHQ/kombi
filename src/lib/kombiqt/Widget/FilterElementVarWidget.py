@@ -1,4 +1,4 @@
-import re
+from kombi.Template import Template
 from collections import OrderedDict
 from Qt import QtCore, QtWidgets
 
@@ -55,7 +55,7 @@ class FilterElementVarWidget(QtWidgets.QWidget):
         # creating check box list
         newCheckBoxes = OrderedDict()
         for varName in sorted(varValues):
-            widget = QtWidgets.QPushButton(self.__camelCaseToSpaced(str(varName)).capitalize())
+            widget = QtWidgets.QPushButton(Template.runProcedure('camelcasetospaced', str(varName)).capitalize())
             widget.setObjectName('filterElementVar')
             widget.setCheckable(True)
             widget.setChecked(self.__currentCheckBoxes[varName].isChecked() if varName in self.__currentCheckBoxes else False)
@@ -104,9 +104,3 @@ class FilterElementVarWidget(QtWidgets.QWidget):
 
         # emitting the filter changed signal
         self.filterChangedSignal.emit()
-
-    def __camelCaseToSpaced(cls, text):
-        """
-        Return the input camelCase string to spaced.
-        """
-        return text[0].upper() + re.sub(r"([a-z])([A-Z])", r"\g<1> \g<2>", text[1:])

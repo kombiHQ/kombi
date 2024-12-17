@@ -1,5 +1,4 @@
 import os
-import re
 import datetime
 import functools
 import traceback
@@ -51,11 +50,12 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
     def __init__(self, *args, **kwargs):
         """
-        Create a target widget.
+        Create a ExecutionSettingsWidget object.
         """
         super(ExecutionSettingsWidget, self).__init__(*args, **kwargs)
         self.__messageBox = None
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.header().hide()
 
         header = QtWidgets.QTreeWidgetItem(['Target'])
         self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
@@ -66,9 +66,9 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         self.taskHolderOptionChangedSignal.connect(self.__onTaskHolderOptionChanged)
 
-    def updateTarget(self, elements, taskHolders, groupElements=True):
+    def refresh(self, elements, taskHolders):
         """
-        Update the target tree.
+        Update the execution settings.
         """
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         self.clear()
@@ -402,7 +402,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
                 # label option
                 uiOptionLabelName = "{}.items.{}.label".format(uiOptionMainName, '.'.join(map(str, assignToItem)))
-                labelOption = taskHolder.task().metadata(uiOptionLabelName) if taskHolder.task().hasMetadata(uiOptionLabelName) and taskHolder.task().metadata(uiOptionLabelName) else self.__camelCaseToSpaced(str(index))
+                labelOption = taskHolder.task().metadata(uiOptionLabelName) if taskHolder.task().hasMetadata(uiOptionLabelName) and taskHolder.task().metadata(uiOptionLabelName) else Template.runProcedure('camelcasetospaced', str(index))
 
                 # check custom label name option here
                 childItem.setText(0, str(labelOption))
@@ -442,7 +442,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
                 # label option
                 uiOptionLabelName = '{}.items.{}.label'.format(uiOptionMainName, '.'.join(map(str, assignToItem)))
-                labelOption = taskHolder.task().metadata(uiOptionLabelName) if taskHolder.task().hasMetadata(uiOptionLabelName) and taskHolder.task().metadata(uiOptionLabelName) else self.__camelCaseToSpaced(str(key))
+                labelOption = taskHolder.task().metadata(uiOptionLabelName) if taskHolder.task().hasMetadata(uiOptionLabelName) and taskHolder.task().metadata(uiOptionLabelName) else Template.runProcedure('camelcasetospaced', str(key))
 
                 # check custom label name option here
                 childItem.setText(0, str(labelOption))
@@ -567,14 +567,14 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         taskName = taskHolder.task().type()
 
         taskChild = QtWidgets.QTreeWidgetItem(parentEntry)
-        taskChild.setData(0, QtCore.Qt.EditRole, self.__camelCaseToSpaced(taskName))
+        taskChild.setData(0, QtCore.Qt.EditRole, Template.runProcedure('camelcasetospaced', taskName))
         taskChild.setData(1, QtCore.Qt.EditRole, suffix)
         isRootTask = mainOptions is None
         taskChild.setExpanded(isRootTask)
 
         # creating the path
         path = path if not path else '{}/'.format(path)
-        path += self.__camelCaseToSpaced(taskName)
+        path += Template.runProcedure('camelcasetospaced', taskName)
 
         # options
         if mainOptions is None:
@@ -616,7 +616,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         for optionName in taskHolder.task().optionNames():
             parentEntry = advancedEntry
-            optionDisplayName = self.__camelCaseToSpaced(optionName)
+            optionDisplayName = Template.runProcedure('camelcasetospaced', optionName)
             uiOptionMetadataName = 'ui.options.{}'.format(optionName)
 
             # main option
@@ -626,7 +626,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 parentEntry = mainOptions
                 tooltip = "{}: {}".format(
                     '/'.join(path.split('/')),
-                    self.__camelCaseToSpaced(optionName)
+                    Template.runProcedure('camelcasetospaced', optionName)
                 )
 
             # custom label
@@ -841,7 +841,3 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 editableWidget.setText(selectedFolder)
             else:
                 editableWidget.setCurrentText(selectedFolder)
-
-    @classmethod
-    def __camelCaseToSpaced(cls, text):
-        return text[0].upper() + re.sub(r"([a-z])([A-Z])", r"\g<1> \g<2>", text[1:])
