@@ -191,7 +191,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 break
 
             filterTypes += taskHolder.matcher().matchTypes()
-        filterTypes += filterDefaultTypes
+
+        if filterTypes:
+            filterTypes.extend(filterDefaultTypes) 
 
         # globbing elements
         for taskHolder in filter(lambda x: '__uiHintCheckedByDefault' in x.varNames(), self.__taskHolders):
