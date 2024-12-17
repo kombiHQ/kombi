@@ -382,7 +382,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__nextButton.setIcon(
             Resource.icon("icons/next.png")
         )
-        self.__nextButton.clicked.connect(self.refreshExecutionSettings)
+        self.__nextButton.clicked.connect(lambda x: self.refreshExecutionSettings())
 
         self.__backButton = QtWidgets.QPushButton("Back")
         self.__backButton.setIcon(
