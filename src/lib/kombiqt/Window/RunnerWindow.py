@@ -148,9 +148,13 @@ class RunnerWindow(QtWidgets.QMainWindow):
         filterTypes = []
         filterDefaultTypes = ['directory']
         skipSourceStep = False
+        self.__closeAfterExecution = False
         self.__splitter.setOrientation(QtCore.Qt.Horizontal)
         self.__executionSettingsEmptyMessage = ''
         for taskHolder in self.__taskHolders:
+            if '__uiHintCloseAfterExecution' in taskHolder.varNames():
+                self.__closeAfterExecution = taskHolder.var('__uiHintCloseAfterExecution')
+
             if '__uiHintShowPreview' in taskHolder.varNames() and taskHolder.var('__uiHintShowPreview'):
                 self.__onToggleImageViewer(True)
 
@@ -469,11 +473,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
         Slog triggered by the run button.
         """
         dispatcher = Dispatcher.create(self.__selectedDispatcher.selectedDispatcher())
-        self.__executionSettings.execute(
-            dispatcher,
-            showOutput=False,
-            showDispatchedMessage=True
-        )
+        if self.__executionSettings.execute(dispatcher, showOutput=False, showDispatchedMessage=True) and self.__closeAfterExecution:
+            self.close()
 
     def __onSourceTreeSelectionChanged(self):
         """
