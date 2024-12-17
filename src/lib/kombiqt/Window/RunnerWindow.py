@@ -1,5 +1,4 @@
 import os
-import re
 import json
 import getpass
 import traceback
@@ -12,24 +11,18 @@ from kombi.TaskHolder.Dispatcher import Dispatcher
 from kombi.Task import TaskValidationError
 from kombi.Element import Element, ElementContext
 from kombi.Element.Fs import FsElement
+from kombi.Template import Template
 from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
 from ..Widget.ComboBoxInputDialog import ComboBoxInputDialog
 from ..Widget.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
+from ..Widget.RunTaskHoldersWidget import RunTaskHoldersWidget
 from ..Resource import Resource
-
-try:
-    import OpenImageIO # noqa: W0611
-except ImportError:
-    ImageElementViewer = None
-else:
-    from ..Widget.ImageElementViewer import ImageElementViewer
+from ..Widget.ImageElementViewer import ImageElementViewer
 
 class RunnerWindow(QtWidgets.QMainWindow):
     """
     Basic graphical interface to pick files to run through a kombi configuration.
-
-    Deprecation Notice: This interface is going to be phase out in future releases.
     """
 
     preRenderElements = QtCore.Signal(list)
@@ -48,7 +41,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__taskHolders = taskHolders
 
         self.__configurationDirectory = ""
-        self.__imageElementViewerAlreadyDisplayed = False
         self.__uiHintSourceColumns = []
         self.__customHeader = customHeader
         self.__verticalSourceScrollBarLatestPos = 0
@@ -154,8 +146,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         # we want to list in the interface only the element types used by the main tasks
         filterTypes = []
+        filterDefaultTypes = ['directory']
+        skipSourceStep = False
+        self.__splitter.setOrientation(QtCore.Qt.Horizontal)
+        self.__executionSettingsEmptyMessage = ''
         for taskHolder in self.__taskHolders:
-            if '__uiHintShowPreview' in taskHolder.varNames() and taskHolder.var('__uiHintShowPreview') and self.__imageElementViewer and not self.__imageElementViewerAlreadyDisplayed:
+            if '__uiHintShowPreview' in taskHolder.varNames() and taskHolder.var('__uiHintShowPreview'):
                 self.__onToggleImageViewer(True)
 
             if '__uiHintTitle' in taskHolder.varNames():
@@ -165,17 +161,28 @@ class RunnerWindow(QtWidgets.QMainWindow):
             if '__uiHintIconSize' in taskHolder.varNames():
                 iconSize = taskHolder.var('__uiHintIconSize')
                 self.__sourceTree.setIconSize(QtCore.QSize(iconSize, iconSize))
-            self.__sourceTree.setIconSize(QtCore.QSize(32, 32))
 
             if '__uiHintDispatcher' in taskHolder.varNames():
                 self.__selectedDispatcher.selectDispatcher(taskHolder.var('__uiHintDispatcher'))
 
+            if '__uiHintFilterDefaultTypes' in taskHolder.varNames():
+                filterDefaultTypes = taskHolder.var('__uiHintFilterDefaultTypes')
+
             if '__uiHintGlobRecursively' in taskHolder.varNames():
                 self.__uiHintGlobRecursively = taskHolder.var('__uiHintGlobRecursively')
 
-            skipSourceStep = False
-            if '__uiHintSkipSourceStep' in taskHolder.varNames():
+            if '__uiHintBottomExecutionSettings' in taskHolder.varNames() and taskHolder.var('__uiHintBottomExecutionSettings'):
+                self.__splitter.setOrientation(QtCore.Qt.Vertical)
+                self.__executionSettingsAreaWidget.setVisible(True)
+                self.refreshExecutionSettings()
+                if '__uiHintBottomExecutionSettingsEmptyMessage' in taskHolder.varNames():
+                    self.__executionSettingsEmptyMessage = taskHolder.var('__uiHintBottomExecutionSettingsEmptyMessage')
+
+            elif '__uiHintSkipSourceStep' in taskHolder.varNames():
                 skipSourceStep = taskHolder.var('__uiHintSkipSourceStep')
+
+            if '__uiHintExecuteButtonLabel' in taskHolder.varNames():
+                self.__executeButton.setText(taskHolder.var('__uiHintExecuteButtonLabel'))
 
             # if there is a task holder that does not have any type specified to it, then we display all elements by
             # passing an empty list to the filter
@@ -184,13 +191,20 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 break
 
             filterTypes += taskHolder.matcher().matchTypes()
+        filterTypes += filterDefaultTypes
 
         # globbing elements
         for taskHolder in filter(lambda x: '__uiHintCheckedByDefault' in x.varNames(), self.__taskHolders):
             self.__checkableState = taskHolder.var('__uiHintCheckedByDefault')
             self.__sourceOverrides = self.__loadSourceOverrides()
+
         self.__nextButton.setVisible(self.__checkableState is not None)
         self.__selectedDispatcher.setVisible(self.__checkableState is not None)
+
+        if self.__checkableState is not None:
+            self.__sourceTree.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        else:
+            self.__sourceTree.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
 
         with ElementContext():
             elementList = []
@@ -198,7 +212,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
             # this will match the variable types.
             for taskHolder in self.__taskHolders:
                 for elementFound in rootElement.glob(filterTypes, recursive=self.__uiHintGlobRecursively):
-                    if not taskHolder.matcher().match(elementFound):
+                    if elementFound.var('type') not in filterDefaultTypes and not taskHolder.matcher().match(elementFound):
                         continue
                     # since we may have several task holders we need to only
                     # include the element once
@@ -209,15 +223,15 @@ class RunnerWindow(QtWidgets.QMainWindow):
             self.__updateSourceTreeElementList(elementList)
             self.__onSourceFiltersChanged()
 
-        # forcing kombi to start at the target (next) interface
+        # forcing kombi to start at the execution settings (next) interface
         if skipSourceStep:
-            self.updateTarget()
+            self.refreshExecutionSettings()
 
-    def updateTarget(self):
+    def refreshExecutionSettings(self, elements=None):
         """
-        Update the target tree.
+        Update the execution settings.
         """
-        checkedElements = self.__checkedElements()
+        checkedElements = self.__checkedElements() if elements is None else elements
 
         # applying overrides
         self.__applySourceOverrides(
@@ -225,16 +239,20 @@ class RunnerWindow(QtWidgets.QMainWindow):
             checkedElements
         )
 
-        self.__targetAreaWidget.setVisible(True)
+        self.__executionSettingsAreaWidget.setVisible(True)
         self.__selectedDispatcher.setVisible(True)
-        self.__sourceAreaWidget.setVisible(False)
-        self.__runButton.setEnabled(True)
+        self.__sourceAreaWidget.setVisible(self.__splitter.orientation() == QtCore.Qt.Vertical)
+        self.__executeButton.setEnabled(True)
 
         self.__nextButton.setVisible(False)
-        self.__backButton.setVisible(True)
-        self.__runButton.setVisible(True)
+        self.__backButton.setVisible(self.__splitter.orientation() == QtCore.Qt.Horizontal)
+        self.__executeButton.setVisible(True)
 
-        self.__targetTree.updateTarget(checkedElements, self.__taskHolders, self.__checkedViewMode == 'Group')
+        self.__executionSettings.refresh(checkedElements, self.__taskHolders)
+
+        if self.__executionSettings.topLevelItemCount() == 0:
+            self.__executionSettings.addTopLevelItem(QtWidgets.QTreeWidgetItem(['']))
+            self.__executionSettings.addTopLevelItem(QtWidgets.QTreeWidgetItem([self.__executionSettingsEmptyMessage]))
 
     def dispatcherWidget(self):
         """
@@ -271,9 +289,10 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(centralWidget)
 
         centralWidget.setLayout(QtWidgets.QVBoxLayout())
-        treeArea = QtWidgets.QSplitter()
+        self.__splitter = QtWidgets.QSplitter()
 
         sourceLayout = QtWidgets.QVBoxLayout()
+        sourceLayout.setContentsMargins(0, 0, 0, 0)
         sourceControlMain = QtWidgets.QMainWindow()
         sourceBarLayout = QtWidgets.QHBoxLayout()
 
@@ -327,6 +346,26 @@ class RunnerWindow(QtWidgets.QMainWindow):
         sourceBarLayout.addWidget(self.__sourceDirButton)
         sourceBarLayout.addWidget(self.__elementsLevelNavigationWidget)
         sourceBarLayout.addWidget(self.__sourceRefreshButton)
+
+        # image viewer
+        self.__imageElementViewer = QtWidgets.QDockWidget("Preview")
+        self.__imageElementViewer.setMinimumWidth(300)
+        self.__imageElementViewer.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
+
+        self.__imageElementViewer.setWidget(ImageElementViewer([]))
+        self.__imageElementViewer.setVisible(False)
+
+        imageViewerButton = QtWidgets.QPushButton()
+        imageViewerButton.setToolTip('Toggles the display of the preview panel')
+        imageViewerButton.setIcon(
+            Resource.icon("icons/imageViewer.png")
+        )
+
+        sourceControlMain.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.__imageElementViewer)
+        sourceBarLayout.addWidget(imageViewerButton)
+
+        imageViewerButton.clicked.connect(self.__onToggleImageViewer)
+
         sourceBarLayout.addWidget(self.__sourceFilterButton)
         sourceBarLayout.addWidget(self.__sourceViewModeButton)
         sourceBarLayout.addWidget(self.__sourceFilterSearch)
@@ -336,13 +375,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__sourceAreaWidget = QtWidgets.QWidget()
         self.__sourceAreaWidget.setLayout(sourceLayout)
 
-        targetLayout = QtWidgets.QVBoxLayout()
+        executionSettingsLayout = QtWidgets.QVBoxLayout()
+        executionSettingsLayout.setContentsMargins(0, 0, 0, 0)
 
         self.__nextButton = QtWidgets.QPushButton("Next")
         self.__nextButton.setIcon(
             Resource.icon("icons/next.png")
         )
-        self.__nextButton.clicked.connect(self.updateTarget)
+        self.__nextButton.clicked.connect(self.refreshExecutionSettings)
 
         self.__backButton = QtWidgets.QPushButton("Back")
         self.__backButton.setIcon(
@@ -351,51 +391,28 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__backButton.setVisible(False)
         self.__backButton.clicked.connect(self.__onBack)
 
-        self.__targetAreaWidget = QtWidgets.QWidget()
-        self.__targetAreaWidget.setVisible(False)
-        self.__targetAreaWidget.setLayout(targetLayout)
+        self.__executionSettingsAreaWidget = QtWidgets.QWidget()
+        self.__executionSettingsAreaWidget.setVisible(False)
+        self.__executionSettingsAreaWidget.setLayout(executionSettingsLayout)
 
         self.__selectedDispatcher = DispatcherListWidget()
 
-        targetBarLayout = QtWidgets.QHBoxLayout()
-        targetLayout.addLayout(targetBarLayout)
-
-        treeArea.addWidget(self.__sourceAreaWidget)
-        treeArea.addWidget(self.__targetAreaWidget)
+        self.__splitter.addWidget(self.__sourceAreaWidget)
+        self.__splitter.addWidget(self.__executionSettingsAreaWidget)
 
         self.__sourceTree = self.__treeWidget([""])
         self.__sourceTree.itemChanged.connect(self.__onSourceTreeItemCheckedChanged)
         self.__sourceTree.itemSelectionChanged.connect(self.__onSourceTreeSelectionChanged)
         self.__sourceTree.customContextMenuRequested.connect(self.__onSourceTreeContextMenu)
         self.__sourceTree.itemDoubleClicked.connect(self.__onSourceTreeDoubleClick)
+        self.__sourceTree.setIconSize(QtCore.QSize(32, 32))
 
-        self.__targetTree = ExecutionSettingsWidget()
+        self.__executionSettings = ExecutionSettingsWidget()
 
         sourceControlMain.setCentralWidget(self.__sourceTree)
 
-        # image viewer
-        self.__imageElementViewer = None
-        if ImageElementViewer:
-            self.__imageElementViewer = QtWidgets.QDockWidget("Preview")
-            self.__imageElementViewer.setMinimumWidth(300)
-            self.__imageElementViewer.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
-
-            self.__imageElementViewer.setWidget(ImageElementViewer([], 640, 480))
-            self.__imageElementViewer.setVisible(False)
-
-            imageViewerButton = QtWidgets.QPushButton("Preview Panel")
-            imageViewerButton.setToolTip('Toggles the display of the preview panel')
-            imageViewerButton.setIcon(
-                Resource.icon("icons/imageViewer.png")
-            )
-
-            sourceControlMain.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.__imageElementViewer)
-            sourceBarLayout.addWidget(imageViewerButton)
-
-            imageViewerButton.clicked.connect(self.__onToggleImageViewer)
-
         sourceLayout.addWidget(sourceControlMain)
-        targetLayout.addWidget(self.__targetTree)
+        executionSettingsLayout.addWidget(self.__executionSettings)
 
         # header
         headerLayout = QtWidgets.QHBoxLayout()
@@ -418,23 +435,20 @@ class RunnerWindow(QtWidgets.QMainWindow):
         headerLayout.addWidget(self.__logo)
         headerLayout.addStretch()
 
-        centralWidget.layout().addWidget(treeArea)
+        centralWidget.layout().addWidget(self.__splitter)
         buttonLayout = QtWidgets.QHBoxLayout()
         centralWidget.layout().addLayout(buttonLayout)
 
-        self.__runButton = QtWidgets.QPushButton('Run')
-        self.__runButton.setVisible(False)
-        self.__runButton.setToolTip('Performs the tasks')
-        self.__runButton.setIcon(
-            Resource.icon("icons/run.png")
-        )
-        self.__runButton.clicked.connect(self.__onPerformTasks)
+        self.__executeButton = QtWidgets.QPushButton('Execute')
+        self.__executeButton.setVisible(False)
+        self.__executeButton.setToolTip('Performs the tasks')
+        self.__executeButton.clicked.connect(self.__onPerformTasks)
 
         buttonLayout.addWidget(self.__selectedDispatcher)
         buttonLayout.addStretch()
         buttonLayout.addWidget(self.__backButton)
         buttonLayout.addWidget(self.__nextButton)
-        buttonLayout.addWidget(self.__runButton)
+        buttonLayout.addWidget(self.__executeButton)
 
         # updating view mode
         self.__viewModeActionGroup = QtWidgets.QActionGroup(self)
@@ -453,7 +467,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         Slog triggered by the run button.
         """
         dispatcher = Dispatcher.create(self.__selectedDispatcher.selectedDispatcher())
-        self.__targetTree.execute(
+        self.__executionSettings.execute(
             dispatcher,
             showOutput=False,
             showDispatchedMessage=True
@@ -463,9 +477,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Slot called when selection changes on the source tree.
         """
-        if not (self.__imageElementViewer and self.__imageElementViewer.isVisible()):
-            return
-
         elements = []
         for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
             selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
@@ -473,11 +484,13 @@ class RunnerWindow(QtWidgets.QMainWindow):
             if not hasattr(selectedItem, 'elements'):
                 continue
             for element in selectedItem.elements:
-                if element.isLeaf():
-                    elements.append(element)
-                else:
-                    with ElementContext():
-                        elements.extend(element.children())
+                elements.append(element)
+
+        if self.__splitter.orientation() == QtCore.Qt.Vertical:
+            self.refreshExecutionSettings(elements)
+
+        if not (self.__imageElementViewer and self.__imageElementViewer.isVisible()):
+            return
 
         self.__imageElementViewer.widget().setElements(elements)
 
@@ -488,10 +501,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__imageElementViewer.setVisible(not self.__imageElementViewer.isVisible() or forceVisibility)
 
         if self.__imageElementViewer.isVisible() or forceVisibility:
-            if not self.__imageElementViewerAlreadyDisplayed:
-                self.__imageElementViewerAlreadyDisplayed = True
-                self.__imageElementViewer.parent().resizeDocks([self.__imageElementViewer], [400], QtCore.Qt.Horizontal)
-                self.resize(self.width() + 300, self.height())
+            self.__imageElementViewer.parent().resizeDocks([self.__imageElementViewer], [400], QtCore.Qt.Horizontal)
+            self.resize(self.width() + 300, self.height())
 
             self.__onSourceTreeSelectionChanged()
 
@@ -506,14 +517,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 columns.append(columnName)
 
         # fix-me: workaround necessary to avoid the bug of not showing
-        # the options properly inside of the target tree
+        # the options properly inside of the execution settings
         if not len(columns):
             columns.append(' ')
 
         if columns != self.__uiHintSourceColumns:
             self.__uiHintSourceColumns = columns
             header = QtWidgets.QTreeWidgetItem(
-                [""] + list(map(self.__camelCaseToSpaced, self.__uiHintSourceColumns))
+                [''] + list(map(lambda x: Template.runProcedure('camelcasetospaced', x), self.__uiHintSourceColumns))
             )
 
             self.__sourceTree.setHeaderItem(
@@ -539,7 +550,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     parent = QtWidgets.QTreeWidgetItem(self.__sourceTree)
                     self.__updateIcon(parent, groupedElements[groupName][0])
                     parent.elements = list(groupedElements[groupName])
-                    parent.setExpanded(len(groupedElements) == 2 and not groupedElements[None])
 
                     # visible data
                     visibleGroupName = groupName + '   '
@@ -571,9 +581,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
                             elementTypes,
                             elementTags
                         )
-
-                        if groupName is None and len(groupedElements) == 1 and len(groupedElements[None]) == 1:
-                            child.setExpanded(True)
 
                         if self.__checkableState is not None:
                             child.setFlags(child.flags() | QtCore.Qt.ItemIsUserCheckable)
@@ -658,7 +665,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
     def __treeWidget(self, columns=[]):
         """
-        Return a tree widget used by source and target.
+        Return a tree widget used by source and execution settings.
         """
         sourceTree = QtWidgets.QTreeWidget()
         sourceTree.setAlternatingRowColors(True)
@@ -918,9 +925,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__selectedDispatcher.setVisible(False)
         self.__backButton.setVisible(False)
         self.__nextButton.setVisible(True)
-        self.__runButton.setVisible(False)
+        self.__executeButton.setVisible(False)
         self.__sourceAreaWidget.setVisible(True)
-        self.__targetAreaWidget.setVisible(False)
+        self.__executionSettingsAreaWidget.setVisible(False)
 
     def __onChangeView(self):
         """
@@ -970,7 +977,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         currentIndex = self.__sourceTree.indexFromItem(treeItemWeakRef(), columnIndex)
 
-        # reseting the selection in case the clicked item is not part of
+        # resetting the selection in case the clicked item is not part of
         # the selection
         if currentIndex not in self.__sourceTree.selectionModel().selectedIndexes():
             self.__sourceTree.selectionModel().select(currentIndex, QtCore.QItemSelectionModel.SelectCurrent)
@@ -1015,13 +1022,13 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     if not isinstance(err, TaskValidationError):
                         traceback.print_exc()
                 else:
-                    taskName = self.__camelCaseToSpaced(taskHolder.task().metadata('name'))
+                    taskName = Template.runProcedure('camelcasetospaced', taskHolder.task().metadata('name'))
                     if taskHolder.task().hasMetadata('ui.task.showExecutionSettings') and not taskHolder.task().metadata('ui.task.showExecutionSettings'):
                         pass
                     else:
                         taskName += ' ...'
                     action = menu.addAction(taskName)
-                    action.triggered.connect(functools.partial(self.__onRunTaskHolder, taskName, index, filteredElements))
+                    action.triggered.connect(functools.partial(self.__onRunTaskHolder, index, filteredElements))
         elif self.__checkableState is not None:
             action = menu.addAction('Override Value')
             action.triggered.connect(self.__onChangeElementValue)
@@ -1032,64 +1039,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if len(menu.actions()):
             menu.exec_(self.__sourceTree.mapToGlobal(point) if point is not None else QtGui.QCursor.pos())
 
-    def __onRunTaskHolder(self, title, index, elements):
+    def __onRunTaskHolder(self, index, elements):
         """
         Slog triggered by the context menu action to run the task holders.
         """
-        taskHolder = self.__taskHolders[index]
-        self.__dialog = None
-        showExecutionSettings = True
-        executionSettingsWidget = ExecutionSettingsWidget()
-        executionSettingsWidget.updateTarget(elements, [taskHolder], True)
-        if taskHolder.task().hasMetadata('ui.task.showExecutionSettings'):
-            showExecutionSettings = taskHolder.task().metadata('ui.task.showExecutionSettings')
-
-        selectedDispatcher = DispatcherListWidget()
-        selectedDispatcher.selectDispatcher('runtime')
-        if '__uiHintDispatcher' in taskHolder.varNames():
-            selectedDispatcher.selectDispatcher(taskHolder.var('__uiHintDispatcher'))
-
-        def __performExecuteSettings():
-            dispatcher = Dispatcher.create(selectedDispatcher.selectedDispatcher())
-            success = executionSettingsWidget.execute(
-                dispatcher,
-                showOutput=False,
-                showDispatchedMessage=False
-            )
-
-            if self.__dialog and success:
-                self.__dialog.close()
-
-        if showExecutionSettings:
-            layout = QtWidgets.QVBoxLayout()
-            layout.addWidget(executionSettingsWidget)
-
-            runButton = QtWidgets.QPushButton('Execute')
-            runButton.setToolTip('Performs the task')
-            runButton.setIcon(
-                Resource.icon("icons/run.png")
-            )
-
-            runLayout = QtWidgets.QHBoxLayout()
-            runLayout.addWidget(selectedDispatcher)
-            runLayout.addStretch()
-            runLayout.addWidget(runButton)
-            layout.addLayout(runLayout)
-
-            self.__dialog = QtWidgets.QDialog()
-            self.__dialog.resize(800, 600)
-
-            self.__dialog.setWindowTitle(f"Execute {title}")
-            self.__dialog.setStyleSheet(Resource.stylesheet())
-            self.__dialog.setLayout(layout)
-
-            runButton.clicked.connect(__performExecuteSettings)
-            self.__dialog.exec_()
-
+        if RunTaskHoldersWidget.run([self.__taskHolders[index]], elements, parent=self):
             self.__onRefreshSourceDir(force=True)
-        else:
-            executionSettingsWidget.setVisible(False)
-            __performExecuteSettings()
 
     def __onChangeElementValue(self):
         """
@@ -1420,12 +1375,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
             return
 
         item.setIcon(columnIndex, Resource.icon(iconPath))
-
-    def __camelCaseToSpaced(self, text):
-        """
-        Return the input camelCase string to spaced.
-        """
-        return text[0].upper() + re.sub(r"([a-z])([A-Z])", r"\g<1> \g<2>", text[1:])
 
     def __onSourceTreeItemCheckedChanged(self, currentItem):
         """
