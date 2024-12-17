@@ -1,5 +1,4 @@
 import os
-import re
 import json
 import sys
 import time
@@ -63,7 +62,7 @@ class GafferVersionUpdateTask(Task):
 
         output = []
         for key, value in jsonContents.items():
-            output.append("{}: {}".format(self.__camelCaseToSpaced(key), value))
+            output.append("{}: {}".format(Template.runProcedure('camelcasetospaced', key), value))
 
         return '\n'.join(output)
 
@@ -311,13 +310,6 @@ class GafferVersionUpdateTask(Task):
             )
 
         return result
-
-    @classmethod
-    def __camelCaseToSpaced(cls, text):
-        """
-        Return the input camelCase string to spaced.
-        """
-        return text[0].upper() + re.sub(r"([a-z])([A-Z])", r"\g<1> \g<2>", text[1:])
 
 
 # registering task
