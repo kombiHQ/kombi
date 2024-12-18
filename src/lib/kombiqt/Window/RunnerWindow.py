@@ -273,7 +273,10 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__backButton.setVisible(self.__splitter.orientation() == QtCore.Qt.Horizontal)
         self.__executeButton.setVisible(True)
 
-        self.__executionSettings.refresh(checkedElements, self.__taskHolders)
+        if self.__taskHolders and '__uiHintBottomExecutionSettings' in self.__taskHolders[0].varNames() and self.__taskHolders[0].var('__uiHintBottomExecutionSettings'):
+            self.__executionSettings.refresh(checkedElements, [self.__taskHolders[0]])
+        else:
+            self.__executionSettings.refresh(checkedElements, self.__taskHolders)
 
         if self.__executionSettings.topLevelItemCount() == 0:
             self.__executionSettingsEmptyMessageLabel.setVisible(True)
