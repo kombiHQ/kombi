@@ -168,7 +168,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
         skipSourceStep = False
         self.__closeAfterExecution = False
         self.__splitter.setOrientation(QtCore.Qt.Horizontal)
-        self.__executionSettingsEmptyMessage = ''
+        self.__executionSettingsEmptyMessageLabel.setText('')
+        self.__executionSettingsEmptyMessageLabel.setVisible(False)
         for taskHolder in self.__taskHolders:
             if '__uiHintCloseAfterExecution' in taskHolder.varNames():
                 self.__closeAfterExecution = taskHolder.var('__uiHintCloseAfterExecution')
@@ -197,7 +198,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 self.__splitter.setOrientation(QtCore.Qt.Vertical)
                 self.__executionSettingsAreaWidget.setVisible(True)
                 if '__uiHintBottomExecutionSettingsEmptyMessage' in taskHolder.varNames():
-                    self.__executionSettingsEmptyMessage = taskHolder.var('__uiHintBottomExecutionSettingsEmptyMessage')
+                    self.__executionSettingsEmptyMessageLabel.setText(taskHolder.var('__uiHintBottomExecutionSettingsEmptyMessage'))
                 self.refreshExecutionSettings()
 
             elif '__uiHintSkipSourceStep' in taskHolder.varNames():
@@ -275,7 +276,10 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__executionSettings.refresh(checkedElements, self.__taskHolders)
 
         if self.__executionSettings.topLevelItemCount() == 0:
-            self.__executionSettings.addTopLevelItem(QtWidgets.QTreeWidgetItem([self.__executionSettingsEmptyMessage]))
+            self.__executionSettingsEmptyMessageLabel.setVisible(True)
+            self.__executionSettingsEmptyMessageLabel.setFixedSize(self.__executionSettingsEmptyMessageLabel.minimumSizeHint())
+        else:
+            self.__executionSettingsEmptyMessageLabel.setFixedSize(0,0)
 
     def dispatcherWidget(self):
         """
@@ -431,11 +435,13 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__sourceTree.setIconSize(QtCore.QSize(32, 32))
 
         self.__executionSettings = ExecutionSettingsWidget()
-
         sourceControlMain.setCentralWidget(self.__sourceTree)
 
         sourceLayout.addWidget(sourceControlMain)
         executionSettingsLayout.addWidget(self.__executionSettings)
+        self.__executionSettingsEmptyMessageLabel = QtWidgets.QLabel('', self.__executionSettings)
+        self.__executionSettingsEmptyMessageLabel.move(10, 10)
+        self.__executionSettingsEmptyMessageLabel.setVisible(False)
 
         # header
         headerLayout = QtWidgets.QHBoxLayout()
