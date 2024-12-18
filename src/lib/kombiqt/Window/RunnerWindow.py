@@ -196,9 +196,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
             if '__uiHintBottomExecutionSettings' in taskHolder.varNames() and taskHolder.var('__uiHintBottomExecutionSettings'):
                 self.__splitter.setOrientation(QtCore.Qt.Vertical)
                 self.__executionSettingsAreaWidget.setVisible(True)
-                self.refreshExecutionSettings()
                 if '__uiHintBottomExecutionSettingsEmptyMessage' in taskHolder.varNames():
                     self.__executionSettingsEmptyMessage = taskHolder.var('__uiHintBottomExecutionSettingsEmptyMessage')
+                self.refreshExecutionSettings()
 
             elif '__uiHintSkipSourceStep' in taskHolder.varNames():
                 skipSourceStep = taskHolder.var('__uiHintSkipSourceStep')
@@ -275,7 +275,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__executionSettings.refresh(checkedElements, self.__taskHolders)
 
         if self.__executionSettings.topLevelItemCount() == 0:
-            self.__executionSettings.addTopLevelItem(QtWidgets.QTreeWidgetItem(['']))
             self.__executionSettings.addTopLevelItem(QtWidgets.QTreeWidgetItem([self.__executionSettingsEmptyMessage]))
 
     def dispatcherWidget(self):
