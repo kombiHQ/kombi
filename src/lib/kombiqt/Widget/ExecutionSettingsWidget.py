@@ -104,7 +104,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             alreadyFailed = False
             for elementList in Element.group(matchedElements):
                 nameSuffix = "{} ({} total)".format(
-                    elementList[0].tag('group') if 'group' in elementList[0].tagNames() else elementList[0].var('baseName'),
+                    elementList[0].tag('group') if 'group' in elementList[0].tagNames() else elementList[0].var('name'),
                     len(elementList)
                 )
 
@@ -262,7 +262,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 # default label
                 label = "{}/{} [{}]".format(
                     os.path.basename(taskHolder.var('configDirectory')),
-                    elementsGroup[0].tag('group') if 'group' in elementsGroup[0].tagNames() else elementsGroup[0].var('baseName'),
+                    elementsGroup[0].tag('group') if 'group' in elementsGroup[0].tagNames() else elementsGroup[0].var('name'),
                     datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 )
 
