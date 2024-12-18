@@ -898,7 +898,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__updateIcon(child, element)
 
         # visible data
-        child.setData(0, QtCore.Qt.EditRole, element.var('baseName') + '   ')
+        child.setData(0, QtCore.Qt.EditRole, element.var('name') + '   ')
         self.__addSourceTreeColumnData(element, child)
 
         elementTypes.add(element.var('type'))
@@ -1141,7 +1141,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
                         value = QtWidgets.QFileDialog.getOpenFileName(
                             self,
                             "Select a file to override: {}".format(
-                                elements[0].var('baseName')
+                                elements[0].var('name')
                             ),
                             self.__overridePreviousSelectedLocation,
                             ext
