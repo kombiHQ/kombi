@@ -22,7 +22,7 @@ class FsElement(Element):
         self.setVar('fullPath', pathHolder.path())
         self.setVar('ext', pathHolder.ext())
         self.setVar('baseName', pathHolder.baseName())
-        self.setVar('name', os.path.splitext(pathHolder.baseName())[0])
+        self.setVar('name', pathHolder.baseName())
         if 'sourceDirectory' not in self.varNames():
             path = pathHolder.path()
             if not pathHolder.isDirectory():
