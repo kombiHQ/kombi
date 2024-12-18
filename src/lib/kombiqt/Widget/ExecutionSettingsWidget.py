@@ -590,7 +590,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         # options
         if mainOptions is None:
             mainOptions = QtWidgets.QTreeWidgetItem(taskChild)
-            mainOptions.setData(0, QtCore.Qt.EditRole, 'Main')
+            mainOptions.setData(0, QtCore.Qt.EditRole, 'Options')
             mainOptions.setExpanded(True)
             mainOptions.setHidden(True)
 
