@@ -111,6 +111,24 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         return taskHolderLoader.taskHolders()
 
+    def gotoPath(self, fullPath, selectLeaf=True):
+        """
+        Change the navigation to the input path.
+        """
+        if selectLeaf:
+            self.__elementsLevelNavigationWidget.gotoPath(os.path.dirname(fullPath))
+
+            baseName = os.path.basename(fullPath)
+            for index in range(self.__sourceTree.topLevelItemCount()):
+                item = self.__sourceTree.topLevelItem(index)
+                for element in item.elements:
+                    if element.var('name') != baseName:
+                        continue
+                    self.__sourceTree.setCurrentItem(item, 0)
+                    break
+        else:
+            self.__elementsLevelNavigationWidget.gotoPath(fullPath)
+
     def updateSource(self, rootElement):
         """
         Update the source tree.
@@ -197,7 +215,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
             filterTypes += taskHolder.matcher().matchTypes()
 
         if filterTypes:
-            filterTypes.extend(filterDefaultTypes) 
+            filterTypes.extend(filterDefaultTypes)
 
         # globbing elements
         for taskHolder in filter(lambda x: '__uiHintCheckedByDefault' in x.varNames(), self.__taskHolders):

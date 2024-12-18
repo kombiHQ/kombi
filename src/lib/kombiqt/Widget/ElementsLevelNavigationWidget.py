@@ -89,6 +89,28 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
         """
         return self.__elements
 
+    def gotoPath(self, fullPath):
+        """
+        Change the level to the input fullPath.
+        """
+        levelNames = fullPath.split('/')[1:]
+        newLevelElements = [self.elements()[0]]
+        for levelName in levelNames:
+            found = False
+            for childLevel in newLevelElements[-1].children():
+                if childLevel.var('name') == levelName:
+                    newLevelElements.append(childLevel)
+                    found = True
+                    break
+
+            if not found:
+                break
+
+        self.setElements(newLevelElements)
+        self.__onNavigationClicked(newLevelElements[-1])
+
+        return newLevelElements[-1]
+
     def __displayBookmarksMenu(self):
         """
         Triggered when bookmarks button is pressed.
@@ -113,29 +135,9 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
                 continue
 
             action = menu.addAction(bookmark)
-            action.triggered.connect(functools.partial(self.__gotoBookmark, bookmark))
+            action.triggered.connect(functools.partial(self.gotoPath, bookmark))
 
         menu.exec_(QtGui.QCursor.pos())
-
-    def __gotoBookmark(self, bookmark):
-        """
-        Change the level to the input bookmark path.
-        """
-        levelNames = bookmark.split('/')[1:]
-        newLevelElements = [self.elements()[0]]
-        for levelName in levelNames:
-            found = False
-            for childLevel in newLevelElements[-1].children():
-                if childLevel.var('name') == levelName:
-                    newLevelElements.append(childLevel)
-                    found = True
-                    break
-
-            if not found:
-                break
-
-        self.setElements(newLevelElements)
-        self.__onNavigationClicked(newLevelElements[-1])
 
     def __addToBookmark(self):
         """
