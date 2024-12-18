@@ -253,7 +253,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 "There are no tasks available for the current selection!",
                 QtWidgets.QMessageBox.Ok
             )
-            return
+            return False
 
         output = ''
         dispatchedMessage = ''
