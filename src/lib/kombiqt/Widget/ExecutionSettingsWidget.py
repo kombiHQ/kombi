@@ -552,6 +552,12 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 if taskHolder.task().hasMetadata(regex):
                     w.setValidator(QtGui.QRegExpValidator(taskHolder.task().metadata(regex)))
 
+                caseStyle = '{}.caseStyle'.format(uiOptionMetadataName)
+                if taskHolder.task().hasMetadata(caseStyle):
+                    def __toUpper(w, case, text):
+                        w.setText(text.upper() if case == 'uppercase' else text.lower())
+                    w.textEdited.connect(functools.partial(__toUpper, w, taskHolder.task().metadata(caseStyle)))
+
                 signal = w.editingFinished
 
         if signal:
