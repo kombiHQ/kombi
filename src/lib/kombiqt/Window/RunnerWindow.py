@@ -498,8 +498,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Slog triggered by the run button.
         """
-        dispatcher = Dispatcher.create(self.__selectedDispatcher.selectedDispatcher())
-        if self.__executionSettings.execute(dispatcher, showOutput=False, showDispatchedMessage=True) and self.__closeAfterExecution:
+        selectedDispatcher = self.__selectedDispatcher.selectedDispatcher()
+        dispatcher = Dispatcher.create(selectedDispatcher)
+        if self.__executionSettings.execute(dispatcher, showOutput=False, showDispatchedMessage=selectedDispatcher != 'runtime') and self.__closeAfterExecution:
             self.close()
 
     def __onSourceTreeSelectionChanged(self):
