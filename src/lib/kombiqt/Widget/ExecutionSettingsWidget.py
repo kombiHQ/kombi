@@ -558,7 +558,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                         w.setText(text.upper() if case == 'uppercase' else text.lower())
                     w.textEdited.connect(functools.partial(__toCase, w, taskHolder.task().metadata(caseStyle)))
 
-                signal = w.editingFinished
+                signal = w.textEdited
 
         if signal:
             signal.connect(functools.partial(self.__editOption, signalWidget or w, optionName, taskHolder, assignTo))
