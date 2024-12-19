@@ -103,10 +103,13 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
             alreadyFailed = False
             for elementList in Element.group(matchedElements):
-                nameSuffix = "{} ({} total)".format(
-                    elementList[0].tag('group') if 'group' in elementList[0].tagNames() else elementList[0].var('name'),
-                    len(elementList)
-                )
+                nameSuffix = elementList[0].var('name')
+
+                if 'group' in elementList[0].tagNames():
+                    nameSuffix = "{} ({} total)".format(
+                        elementList[0].tag('group'),
+                        len(elementList)
+                    )
 
                 clonedTaskHolder = taskHolder.clone()
 
