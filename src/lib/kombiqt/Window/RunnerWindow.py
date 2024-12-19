@@ -274,6 +274,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__executeButton.setVisible(True)
 
         if self.__taskHolders and '__uiHintBottomExecutionSettings' in self.__taskHolders[0].varNames() and self.__taskHolders[0].var('__uiHintBottomExecutionSettings'):
+            if not checkedElements and self.__rootElements:
+                checkedElements = [self.__rootElements[-1]]
             self.__executionSettings.refresh(checkedElements, [self.__taskHolders[0]])
         else:
             self.__executionSettings.refresh(checkedElements, self.__taskHolders)
