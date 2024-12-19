@@ -33,14 +33,42 @@ import os
 import re
 from ..Template import Template
 
-DEFAULT_VERSION_PATTERN = "v###"
+
+def defaultVersionPattern():
+    """
+    Return the default version pattern.
+    """
+    return os.environ.get('KOMBI_VERSION_PATTERN', 'v####')
+
+def isVersion(version, versionPattern=''):
+    """
+    Return if the input is a version.
+    """
+    if not versionPattern:
+        versionPattern = defaultVersionPattern()
+
+    patternParts = __splitVersionPattern(versionPattern)
+    version = str(version)
+    if patternParts['prefix'] and not version.startswith(patternParts['prefix']):
+        return 0
+
+    if patternParts['suffix'] and not version.endswith(patternParts['suffix']):
+        return 0
+
+    if patternParts['prefix']:
+        version = version[len(patternParts['prefix']):]
+
+    if patternParts['suffix']:
+        version = version[:-len(patternParts['suffix'])]
+
+    return int(version.isdigit())
 
 def verPrefix(version, versionPattern=''):
     """
     Return the version prefix.
     """
     if not versionPattern:
-        versionPattern = os.environ.get('KOMBI_VERSION_PATTERN', DEFAULT_VERSION_PATTERN)
+        versionPattern = defaultVersionPattern()
 
     patternParts = __splitVersionPattern(versionPattern)
     return str(version)[:len(patternParts['prefix'])]
@@ -50,7 +78,7 @@ def verNumber(version, versionPattern=''):
     Return the version number.
     """
     if not versionPattern:
-        versionPattern = os.environ.get('KOMBI_VERSION_PATTERN', DEFAULT_VERSION_PATTERN)
+        versionPattern = defaultVersionPattern()
 
     patternParts = __splitVersionPattern(versionPattern)
     return str(version)[len(patternParts['prefix']): len(patternParts['prefix']) + len(patternParts['padding'])]
@@ -60,7 +88,7 @@ def verSuffix(version, versionPattern=''):
     Return the version suffix.
     """
     if not versionPattern:
-        versionPattern = os.environ.get('KOMBI_VERSION_PATTERN', DEFAULT_VERSION_PATTERN)
+        versionPattern = defaultVersionPattern()
 
     patternParts = __splitVersionPattern(versionPattern)
     return str(version)[len(patternParts['prefix']) + len(patternParts['padding']):]
@@ -70,7 +98,7 @@ def label(versionNumber, versionPattern=''):
     Return a version using the pattern.
     """
     if not versionPattern:
-        versionPattern = os.environ.get('KOMBI_VERSION_PATTERN', DEFAULT_VERSION_PATTERN)
+        versionPattern = defaultVersionPattern()
 
     return __buildVersion(
         int(versionNumber),
@@ -82,7 +110,7 @@ def new(versionsPath, versionPattern=''):
     Return a new version.
     """
     if not versionPattern:
-        versionPattern = os.environ.get('KOMBI_VERSION_PATTERN', DEFAULT_VERSION_PATTERN)
+        versionPattern = defaultVersionPattern()
 
     version = __queryLatest(versionsPath, versionPattern)
     return label(
@@ -95,7 +123,7 @@ def latest(versionsPath, versionPattern=''):
     Return a new version, in case none version is found it version 0, for instance v000.
     """
     if not versionPattern:
-        versionPattern = os.environ.get('KOMBI_VERSION_PATTERN', DEFAULT_VERSION_PATTERN)
+        versionPattern = defaultVersionPattern()
 
     version = __queryLatest(versionsPath, versionPattern)
     return label(
@@ -187,4 +215,10 @@ Template.registerProcedure(
 Template.registerProcedure(
     'latestver',
     latest
+)
+
+# is version procedure
+Template.registerProcedure(
+    'isver',
+    isVersion
 )
