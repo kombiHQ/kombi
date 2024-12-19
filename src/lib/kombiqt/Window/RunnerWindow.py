@@ -533,9 +533,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__imageElementViewer.setVisible(not self.__imageElementViewer.isVisible() or forceVisibility)
 
         if self.__imageElementViewer.isVisible() or forceVisibility:
-            self.__imageElementViewer.parent().resizeDocks([self.__imageElementViewer], [400], QtCore.Qt.Horizontal)
-            self.resize(self.width() + 300, self.height())
-
             self.__onSourceTreeSelectionChanged()
 
     def __updateSourceColumns(self, taskHolders):
