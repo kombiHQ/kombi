@@ -284,7 +284,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
             self.__executionSettingsEmptyMessageLabel.setVisible(True)
             self.__executionSettingsEmptyMessageLabel.setFixedSize(self.__executionSettingsEmptyMessageLabel.minimumSizeHint())
         else:
-            self.__executionSettingsEmptyMessageLabel.setFixedSize(0,0)
+            self.__executionSettingsEmptyMessageLabel.setFixedSize(0, 0)
 
     def dispatcherWidget(self):
         """
