@@ -578,7 +578,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         taskName = taskHolder.task().type()
 
         taskChild = QtWidgets.QTreeWidgetItem(parentEntry)
-        taskChild.setData(0, QtCore.Qt.EditRole, Template.runProcedure('camelcasetospaced', taskName))
+        taskChild.setData(0, QtCore.Qt.EditRole, Template.runProcedure('camelcasetospaced', taskName) + '   ')
         taskChild.setData(1, QtCore.Qt.EditRole, suffix)
         isRootTask = mainOptions is None
         taskChild.setExpanded(isRootTask)
