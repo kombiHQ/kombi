@@ -1042,22 +1042,16 @@ class RunnerWindow(QtWidgets.QMainWindow):
                         continue
                     filteredElements.append(element)
 
-                if not filteredElements:
+                if not filteredElements or taskHolder.task().hasMetadata('ui.task.showInContextMenu') and not taskHolder.task().metadata('ui.task.showInContextMenu'):
                     continue
 
-                try:
-                    taskHolder.task().validate(filteredElements)
-                except Exception as err:
-                    if not isinstance(err, TaskValidationError):
-                        traceback.print_exc()
+                taskName = Template.runProcedure('camelcasetospaced', taskHolder.task().metadata('name'))
+                if taskHolder.task().hasMetadata('ui.task.showExecutionSettings') and not taskHolder.task().metadata('ui.task.showExecutionSettings'):
+                    pass
                 else:
-                    taskName = Template.runProcedure('camelcasetospaced', taskHolder.task().metadata('name'))
-                    if taskHolder.task().hasMetadata('ui.task.showExecutionSettings') and not taskHolder.task().metadata('ui.task.showExecutionSettings'):
-                        pass
-                    else:
-                        taskName += ' ...'
-                    action = menu.addAction(taskName)
-                    action.triggered.connect(functools.partial(self.__onRunTaskHolder, index, filteredElements))
+                    taskName += ' ...'
+                action = menu.addAction(taskName)
+                action.triggered.connect(functools.partial(self.__onRunTaskHolder, index, filteredElements))
         elif self.__checkableState is not None:
             action = menu.addAction('Override Value')
             action.triggered.connect(self.__onChangeElementValue)
