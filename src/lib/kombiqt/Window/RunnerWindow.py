@@ -8,7 +8,6 @@ from collections import OrderedDict
 from Qt import QtCore, QtGui, QtWidgets
 from kombi.TaskHolder.Loader import Loader
 from kombi.TaskHolder.Dispatcher import Dispatcher
-from kombi.Task import TaskValidationError
 from kombi.Element import Element, ElementContext
 from kombi.Element.Fs import FsElement
 from kombi.Template import Template
@@ -235,8 +234,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
             elementList = []
             # filtering the result of the glob, but now using the element matcher
             # this will match the variable types.
-            for taskHolder in self.__taskHolders:
-                for elementFound in rootElement.glob(filterTypes, recursive=self.__uiHintGlobRecursively):
+            for elementFound in rootElement.glob(filterTypes, recursive=self.__uiHintGlobRecursively):
+                for taskHolder in self.__taskHolders:
                     if elementFound.var('type') not in filterDefaultTypes and not taskHolder.matcher().match(elementFound):
                         continue
                     # since we may have several task holders we need to only
