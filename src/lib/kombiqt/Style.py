@@ -30,6 +30,8 @@ class Style(object):
         """
         Apply the default font.
         """
+        Resource.loadFonts()
+
         defaultFont = QtWidgets.QApplication.font()
         widget.setFont(defaultFont)
 

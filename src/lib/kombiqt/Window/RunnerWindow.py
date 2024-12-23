@@ -18,6 +18,7 @@ from ..Widget.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
 from ..Widget.RunTaskHoldersWidget import RunTaskHoldersWidget
 from ..Resource import Resource
 from ..Widget.ImageElementViewer import ImageElementViewer
+from ..Widget.ScriptEditorWidget import ScriptEditorWidget
 
 class RunnerWindow(QtWidgets.QMainWindow):
     """
@@ -328,6 +329,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         sourceBarLayout = QtWidgets.QHBoxLayout()
 
         self.__elementsLevelNavigationWidget = ElementsLevelNavigationWidget()
+        self.__scriptEditor = ScriptEditorWidget()
         self.__sourceDirButton = QtWidgets.QPushButton()
         self.__sourceDirButton.setToolTip('Selects a source directory')
         self.__sourceDirButton.setIcon(
@@ -397,9 +399,17 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         imageViewerButton.clicked.connect(self.__onToggleImageViewer)
 
+        scriptEditorButton = QtWidgets.QPushButton()
+        scriptEditorButton.setToolTip('Toogles the display of the script editor')
+        scriptEditorButton.setIcon(
+            Resource.icon("icons/python.png")
+        )
+        scriptEditorButton.clicked.connect(self.__onToggleScriptEditor)
+
         sourceBarLayout.addWidget(self.__sourceFilterButton)
         sourceBarLayout.addWidget(self.__sourceViewModeButton)
         sourceBarLayout.addWidget(self.__sourceFilterSearch)
+        sourceBarLayout.addWidget(scriptEditorButton)
 
         sourceLayout.addLayout(sourceBarLayout)
 
@@ -430,6 +440,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         self.__splitter.addWidget(self.__sourceAreaWidget)
         self.__splitter.addWidget(self.__executionSettingsAreaWidget)
+        self.__splitter.addWidget(self.__scriptEditor)
+
+        self.__scriptEditor.setVisible(False)
 
         self.__sourceTree = self.__treeWidget([""])
         self.__sourceTree.itemChanged.connect(self.__onSourceTreeItemCheckedChanged)
@@ -524,6 +537,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
             return
 
         self.__imageElementViewer.widget().setElements(elements)
+
+    def __onToggleScriptEditor(self):
+        """
+        Slot triggered when the script editor button is pressed.
+        """
+        self.__scriptEditor.setVisible(not self.__scriptEditor.isVisible())
 
     def __onToggleImageViewer(self, forceVisibility=False):
         """
