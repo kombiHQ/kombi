@@ -191,19 +191,19 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         elif event.key() == QtCore.Qt.Key_Return:
             cursor = self.textCursor()
             cursor.movePosition(QtGui.QTextCursor.EndOfBlock)
-            current_line = cursor.block().text()
-            indentation = len(current_line) - len(current_line.lstrip())
+            currentLine = cursor.block().text()
+            indentation = len(currentLine) - len(currentLine.lstrip())
             cursor.insertBlock()
-            cursor.insertText(' ' * indentation + ('    ' if current_line and current_line[-1] == ':' else ''))
+            cursor.insertText(' ' * indentation + ('    ' if currentLine and currentLine[-1] == ':' else ''))
             self.setTextCursor(cursor)
         # Backspace: Remove indentation if the line is empty
         elif event.key() == QtCore.Qt.Key_Backspace:
             cursor = self.textCursor()
             cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
-            current_line = cursor.block().text()
-            if current_line.strip() == "":
-                indent_length = len(current_line)
-                if indent_length >= 4:
+            currentLine = cursor.block().text()
+            if currentLine.strip() == "":
+                indentLength = len(currentLine)
+                if indentLength >= 4:
                     cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
                     cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, 4)
                     cursor.removeSelectedText()
@@ -214,17 +214,55 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         # Tab: Insert 4 spaces
         elif event.key() == QtCore.Qt.Key_Tab:
             cursor = self.textCursor()
-            cursor.insertText('    ')
-            self.setTextCursor(cursor)
+            selectedText = cursor.selectedText()
+            selectionStart = cursor.selectionStart()
+            if selectedText:
+                # Split the selected text into lines
+                lines = selectedText.splitlines()
+                newLines = []
+                for line in lines:
+                    newLines.append('    ' + line)  # Keep the line as it is
+
+                # Replace the selected text with the new lines
+                cursor.insertText('\n'.join(newLines))
+
+                # Select the newly inserted lines
+                cursor.setPosition(selectionStart)  # Start of the selection
+                cursor.setPosition(selectionStart + len('\n'.join(newLines)), QtGui.QTextCursor.KeepAnchor)  # End of the selection
+                self.setTextCursor(cursor)
+            else:
+                cursor.insertText('    ')
+                self.setTextCursor(cursor)
         # Shift+Tab: Remove 4 spaces if they exist at the start of the line
         elif event.key() == QtCore.Qt.Key_Backtab:
             cursor = self.textCursor()
-            cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
-            text = cursor.block().text()
-            if text.startswith('    '):
-                cursor.movePosition(QtGui.QTextCursor.EndOfBlock, QtGui.QTextCursor.KeepAnchor)
-                cursor.insertText(text[4:])
+            selectedText = cursor.selectedText()
+            selectionStart = cursor.selectionStart()
+            if selectedText:
+                # Split the selected text into lines
+                lines = selectedText.splitlines()
+                newLines = []
+                for line in lines:
+                    # Check if the line starts with 4 spaces
+                    if line.startswith("    "):  # 4 spaces
+                        newLines.append(line[4:])  # Remove the first 4 spaces
+                    else:
+                        newLines.append(line)  # Keep the line as it is
+
+                # Replace the selected text with the new lines
+                cursor.insertText('\n'.join(newLines))
+
+                # Select the newly inserted lines
+                cursor.setPosition(selectionStart)  # Start of the selection
+                cursor.setPosition(selectionStart + len('\n'.join(newLines)), QtGui.QTextCursor.KeepAnchor)  # End of the selection
                 self.setTextCursor(cursor)
+            else:
+                cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+                text = cursor.block().text()
+                if text.startswith('    '):
+                    cursor.movePosition(QtGui.QTextCursor.EndOfBlock, QtGui.QTextCursor.KeepAnchor)
+                    cursor.insertText(text[4:])
+                    self.setTextCursor(cursor)
         # Default behavior for other keys
         else:
             super().keyPressEvent(event)
