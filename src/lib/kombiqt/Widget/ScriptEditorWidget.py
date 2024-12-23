@@ -13,8 +13,6 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         Initialize the ScriptEditorWidget.
         """
         super().__init__(parent)
-        self.__locals = {}  # Local variables for script execution
-        self.__globals = {}  # Global variables for script execution
 
         self.__buildWidget()
 
@@ -89,7 +87,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
             print(code)
             try:
                 compiledCode = compile(code, 'script editor', 'exec')
-                exec(compiledCode, self.__globals, self.__locals)
+                exec(compiledCode, globals())
             except Exception:
                 print('Error:')
                 print('\n'.join(traceback.format_exc().splitlines()[3:]))
