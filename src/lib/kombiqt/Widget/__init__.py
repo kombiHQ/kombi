@@ -8,3 +8,4 @@ from .RenderfarmDispatcherPriorityWidget import RenderfarmDispatcherPriorityWidg
 from .FilterElementVarWidget import FilterElementVarWidget
 from .ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
 from .RunTaskHoldersWidget import RunTaskHoldersWidget
+from .ScriptEditorWidget import ScriptEditorWidget
