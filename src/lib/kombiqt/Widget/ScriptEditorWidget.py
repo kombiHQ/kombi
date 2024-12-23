@@ -65,6 +65,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         self.__mainLayout = QtWidgets.QVBoxLayout()  # Main layout
         self.__mainLayout.setContentsMargins(0, 0, 0, 0)
         self.__codeEditor = _CodeEditorWidget()  # Code editor widget
+        self.__codeEditor.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.__codeEditor.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.__codeEditor.setFont(font)
         self.__codeEditor.textChanged.connect(self.__onCodeEditorChanged)
