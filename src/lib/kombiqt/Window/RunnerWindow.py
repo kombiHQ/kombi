@@ -329,7 +329,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         sourceBarLayout = QtWidgets.QHBoxLayout()
 
         self.__elementsLevelNavigationWidget = ElementsLevelNavigationWidget()
-        self.__scriptEditor = ScriptEditorWidget()
+        self.__scriptEditor = None
         self.__sourceDirButton = QtWidgets.QPushButton()
         self.__sourceDirButton.setToolTip('Selects a source directory')
         self.__sourceDirButton.setIcon(
@@ -440,9 +440,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         self.__splitter.addWidget(self.__sourceAreaWidget)
         self.__splitter.addWidget(self.__executionSettingsAreaWidget)
-        self.__splitter.addWidget(self.__scriptEditor)
-
-        self.__scriptEditor.setVisible(False)
 
         self.__sourceTree = self.__treeWidget([""])
         self.__sourceTree.itemChanged.connect(self.__onSourceTreeItemCheckedChanged)
@@ -542,6 +539,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Slot triggered when the script editor button is pressed.
         """
+        if self.__scriptEditor is None:
+            self.__scriptEditor = ScriptEditorWidget()
+            self.__scriptEditor.setVisible(True)
+            self.__splitter.addWidget(self.__scriptEditor)
+            return
+
         self.__scriptEditor.setVisible(not self.__scriptEditor.isVisible())
 
     def __onToggleImageViewer(self, forceVisibility=False):
