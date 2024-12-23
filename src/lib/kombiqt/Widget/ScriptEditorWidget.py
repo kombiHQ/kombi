@@ -23,6 +23,28 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         if self.__scriptEditorConfig.hasKey('code'):
             self.setCode(self.__scriptEditorConfig.value('code'))
 
+    def wheelEvent(self, event):
+        """
+        Control the script editor font size.
+        """
+        if event.modifiers() == QtCore.Qt.ControlModifier:
+            currentFont = self.__outputWidget.font()
+            currentSize = currentFont.pointSize()
+
+            # zoom in or out depending on the direction of the scroll wheel
+            newSize = None
+            if event.angleDelta().y() > 0:
+                newSize = currentSize + 1
+            elif currentSize > 1:
+                newSize = currentSize - 1
+
+            if newSize is not None:
+                currentFont.setPointSize(newSize)
+                self.__outputWidget.setFont(currentFont)
+                self.__codeEditor.setFont(currentFont)
+
+        super().wheelEvent(event)
+
     def __buildWidget(self):
         """
         Build the base widgets.
