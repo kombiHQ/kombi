@@ -1,4 +1,5 @@
 import os
+from glob import glob
 from Qt import QtCore, QtGui
 
 class Resource(object):
@@ -52,6 +53,14 @@ class Resource(object):
                 )
 
         return cls.__cache["pixmap"][key]
+
+    @classmethod
+    def loadFonts(cls):
+        """
+        Load the custom fonts to the runtime.
+        """
+        for ttfFilePath in glob(os.path.join(cls.__resourcesLocation, "fonts", "*.ttf")):
+            QtGui.QFontDatabase.addApplicationFont(ttfFilePath)
 
     @classmethod
     def stylesheet(cls):
