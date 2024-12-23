@@ -2,10 +2,11 @@ from io import StringIO
 from contextlib import redirect_stdout
 from Qt import QtCore, QtGui, QtWidgets
 import traceback
+from ..Resource import Resource
 from kombi.Config import Config
 
 class ScriptEditorWidget(QtWidgets.QWidget):
-    __font = QtGui.QFont('JetBrainsMono')
+    __fontName = 'JetBrains Mono'
 
     def __init__(self, parent=None) -> None:
         """
@@ -26,15 +27,28 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         Build the base widgets.
         """
+        fontFound = False
+        database = QtGui.QFontDatabase()
+        for family in database.families():
+            if family == self.__fontName:
+                fontFound = True
+
+        if not fontFound:
+            Resource.loadFonts()
+        font = QtGui.QFont(self.__fontName)
+        font.setFixedPitch(True)
+        font.setStyleHint(QtGui.QFont.TypeWriter)
+
         self.__splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)  # Splitter to separate code editor and output
         self.__mainLayout = QtWidgets.QVBoxLayout()  # Main layout
         self.__mainLayout.setContentsMargins(0, 0, 0, 0)
         self.__codeEditor = _CodeEditorWidget()  # Code editor widget
-        self.__codeEditor.setFont(self.__font)
+        self.__codeEditor.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.__codeEditor.setFont(font)
         self.__codeEditor.textChanged.connect(self.__onCodeEditorChanged)
         self.__outputWidget = QtWidgets.QTextEdit()  # Output widget
         self.__outputWidget.setAcceptRichText(False)
-        self.__outputWidget.setFont(self.__font)
+        self.__outputWidget.setFont(font)
         self.__outputWidget.setReadOnly(True)
         self.__outputWidget.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.__mainLayout.addWidget(self.__splitter)
@@ -127,11 +141,11 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
     __lineAreaActiveLine = QtGui.QColor(120, 120, 120)
     __lineAreaInactiveLine = QtGui.QColor(50, 50, 50)
 
-    def __init__(self):
+    def __init__(self, parent=None):
         """
         Initialize the CodeEditorWidget and set up the line number area.
         """
-        super(_CodeEditorWidget, self).__init__()
+        super(_CodeEditorWidget, self).__init__(parent)
         self.__lineNumberArea = _LineNumberAreaWidget(self)
 
         self.document().blockCountChanged.connect(self.updateLineNumberAreaWidth)
