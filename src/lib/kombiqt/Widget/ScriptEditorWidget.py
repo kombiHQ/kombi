@@ -1,9 +1,11 @@
+import re
 from io import StringIO
 from contextlib import redirect_stdout
 from Qt import QtCore, QtGui, QtWidgets
 import traceback
 from ..Resource import Resource
 from kombi.Config import Config
+
 
 class ScriptEditorWidget(QtWidgets.QWidget):
     __fontName = 'JetBrains Mono'
@@ -59,15 +61,15 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         font.setFixedPitch(True)
         font.setStyleHint(QtGui.QFont.TypeWriter)
 
-        self.__splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)  # Splitter to separate code editor and output
-        self.__mainLayout = QtWidgets.QVBoxLayout()  # Main layout
+        self.__splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        self.__mainLayout = QtWidgets.QVBoxLayout()
         self.__mainLayout.setContentsMargins(0, 0, 0, 0)
-        self.__codeEditor = _CodeEditorWidget()  # Code editor widget
+        self.__codeEditor = _CodeEditorWidget()
         self.__codeEditor.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.__codeEditor.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.__codeEditor.setFont(font)
         self.__codeEditor.textChanged.connect(self.__onCodeEditorChanged)
-        self.__outputWidget = QtWidgets.QTextEdit()  # Output widget
+        self.__outputWidget = QtWidgets.QTextEdit()
         self.__outputWidget.setAcceptRichText(False)
         self.__outputWidget.setFont(font)
         self.__outputWidget.setReadOnly(True)
@@ -159,14 +161,16 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
     """
 
     executeCode = QtCore.Signal(str)
-    __lineAreaActiveLine = QtGui.QColor(120, 120, 120)
-    __lineAreaInactiveLine = QtGui.QColor(50, 50, 50)
+    __lineAreaActiveLine = QtGui.QColor(131, 137, 150)
+    __lineAreaInactiveLine = QtGui.QColor(91, 97, 110)
+    __backgroundColor = QtGui.QColor(40, 44, 52)
 
     def __init__(self, parent=None):
         """
         Initialize the CodeEditorWidget and set up the line number area.
         """
         super(_CodeEditorWidget, self).__init__(parent)
+        self.setObjectName('codeEditor')
         self.__lineNumberArea = _LineNumberAreaWidget(self)
 
         self.document().blockCountChanged.connect(self.updateLineNumberAreaWidth)
@@ -174,6 +178,8 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         self.textChanged.connect(self.updateLineNumberArea)
         self.cursorPositionChanged.connect(self.updateLineNumberArea)
         self.setAcceptRichText(False)  # Only accept plain text
+
+        _PythonSyntaxHighlighter(self.document())
 
         self.updateLineNumberAreaWidth(0)  # Initialize the line number area width
 
@@ -188,7 +194,7 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             if selectedText:
                 self.executeCode.emit(selectedText)
         # Enter: Insert a new line with proper indentation
-        elif event.key() == QtCore.Qt.Key_Return:
+        elif event.key() == QtCore.Qt.Key_Return and (self.textCursor().block().blockNumber() or self.textCursor().position()):
             cursor = self.textCursor()
             cursor.movePosition(QtGui.QTextCursor.EndOfBlock)
             currentLine = cursor.block().text()
@@ -330,7 +336,7 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         """
         self.verticalScrollBar().setSliderPosition(self.verticalScrollBar().sliderPosition())
         painter = QtGui.QPainter(self.__lineNumberArea)
-        painter.fillRect(event.rect(), QtCore.Qt.lightGray)
+        painter.fillRect(event.rect(), self.__backgroundColor)
         blockNumber = self.firstVisibleBlockId()
         block = self.document().findBlockByNumber(blockNumber)
         if blockNumber > 0:
@@ -361,3 +367,57 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             top = bottom
             bottom = top + int(self.document().documentLayout().blockBoundingRect(block).height())
             blockNumber += 1
+
+class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
+    """
+    Implement a basic python syntax highlighter.
+    """
+    __keywords = r"\b(def|class|if|else|elif|for|while|try|except|finally|with|import|from|return|yield|pass|break|continue|del|global|lambda|assert|raise|True|False|None)\b"
+    __comments = r"#.*"
+    __numeric = r"[0-9]"
+    __strings = r"\"[^\"]*\"|\'[^\']*\'"
+    __functions = r"\b[A-Za-z_][A-Za-z0-9_]*\b(?=\()"
+
+    def __init__(self, parent=None):
+        """
+        Create ab _PythonSyntaxHighlighter object.
+        """
+        super().__init__(parent)
+
+        self.__defaultFormat = QtGui.QTextCharFormat()
+        self.__defaultFormat.setForeground(QtGui.QColor(171, 178, 191))
+
+        self.__numericFormat = QtGui.QTextCharFormat()
+        self.__numericFormat.setForeground(QtGui.QColor(204, 151, 87))
+
+        self.__keywordFormat = QtGui.QTextCharFormat()
+        self.__keywordFormat.setForeground(QtGui.QColor(198, 120, 221))
+        self.__keywordFormat.setFontWeight(QtGui.QFont.Bold)
+
+        self.__commentFormat = QtGui.QTextCharFormat()
+        self.__commentFormat.setForeground(QtGui.QColor(91, 97, 110))
+
+        self.__stringFormat = QtGui.QTextCharFormat()
+        self.__stringFormat.setForeground(QtGui.QColor(137, 192, 114))
+
+        self.__functionFormat = QtGui.QTextCharFormat()
+        self.__functionFormat.setForeground(QtGui.QColor(97, 175, 238))
+
+    def highlightBlock(self, text):
+        """
+        Compute the highlighting for the input text block.
+        """
+        self.__applyHighlight('.*', text, self.__defaultFormat)
+        self.__applyHighlight(self.__numeric, text, self.__numericFormat)
+        self.__applyHighlight(self.__keywords, text, self.__keywordFormat)
+        self.__applyHighlight(self.__functions, text, self.__functionFormat)
+        self.__applyHighlight(self.__strings, text, self.__stringFormat)
+        self.__applyHighlight(self.__comments, text, self.__commentFormat)
+
+    def __applyHighlight(self, pattern, text, text_format):
+        """
+        Apply the syntax highlighting using the provided regular expression pattern.
+        """
+        for match in re.finditer(pattern, text):
+            start, end = match.span()
+            self.setFormat(start, end - start, text_format)
