@@ -411,9 +411,9 @@ QFrame#elementsLevelNavigation {
 }
 
 QTextEdit#codeEditor {
-    background-color: #282c34
+    background-color: #282c34;
+    color: #abb2bf
 }
-
 
 QTextEdit#codeEditor:focus {
     border: 1px solid #182131

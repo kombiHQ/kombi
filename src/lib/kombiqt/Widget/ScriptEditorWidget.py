@@ -23,6 +23,28 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         if self.__scriptEditorConfig.hasKey('code'):
             self.setCode(self.__scriptEditorConfig.value('code'))
 
+    def keyPressEvent(self, event):
+        """
+        Control the script editor font size by detecting ctr + = and ctrl + -.
+        """
+        if event.modifiers() == QtCore.Qt.ControlModifier and event.key() in (QtCore.Qt.Key_Equal, QtCore.Qt.Key_Minus):
+            currentFont = self.__outputWidget.font()
+            size = currentFont.pointSize()
+
+            if event.key() == QtCore.Qt.Key_Equal:
+                size += 1
+            elif event.key() == QtCore.Qt.Key_Minus:
+                size -= 1
+
+            if size < 1:
+                size = 1
+
+            currentFont.setPointSize(size)
+            self.__outputWidget.setFont(currentFont)
+            self.__codeEditor.setFont(currentFont)
+
+        super().keyPressEvent(event)
+
     def wheelEvent(self, event):
         """
         Control the script editor font size.
@@ -70,6 +92,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         self.__codeEditor.setFont(font)
         self.__codeEditor.textChanged.connect(self.__onCodeEditorChanged)
         self.__outputWidget = QtWidgets.QTextEdit()
+        self.__outputWidget.setObjectName('codeEditor')
         self.__outputWidget.setAcceptRichText(False)
         self.__outputWidget.setFont(font)
         self.__outputWidget.setReadOnly(True)
@@ -194,7 +217,7 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             if selectedText:
                 self.executeCode.emit(selectedText)
         # Enter: Insert a new line with proper indentation
-        elif event.key() == QtCore.Qt.Key_Return and (self.textCursor().block().blockNumber() or self.textCursor().position()):
+        elif event.key() == QtCore.Qt.Key_Return and self.textCursor().block().length() - 1 == self.textCursor().positionInBlock():
             cursor = self.textCursor()
             cursor.movePosition(QtGui.QTextCursor.EndOfBlock)
             currentLine = cursor.block().text()
@@ -384,9 +407,6 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         """
         super().__init__(parent)
 
-        self.__defaultFormat = QtGui.QTextCharFormat()
-        self.__defaultFormat.setForeground(QtGui.QColor(171, 178, 191))
-
         self.__numericFormat = QtGui.QTextCharFormat()
         self.__numericFormat.setForeground(QtGui.QColor(204, 151, 87))
 
@@ -407,7 +427,6 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         """
         Compute the highlighting for the input text block.
         """
-        self.__applyHighlight('.*', text, self.__defaultFormat)
         self.__applyHighlight(self.__numeric, text, self.__numericFormat)
         self.__applyHighlight(self.__keywords, text, self.__keywordFormat)
         self.__applyHighlight(self.__functions, text, self.__functionFormat)
