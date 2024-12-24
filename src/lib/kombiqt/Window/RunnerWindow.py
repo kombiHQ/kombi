@@ -541,8 +541,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         if self.__scriptEditor is None:
             self.__scriptEditor = ScriptEditorWidget()
-            self.__scriptEditor.setVisible(True)
             self.__splitter.addWidget(self.__scriptEditor)
+            self.__scriptEditor.setVisible(True)
             return
 
         self.__scriptEditor.setVisible(not self.__scriptEditor.isVisible())
