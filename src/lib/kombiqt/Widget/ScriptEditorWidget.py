@@ -229,9 +229,10 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         # Control+Enter: Execute selected code
         if event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Return:
             cursor = self.textCursor()
-            selectedText = cursor.selectedText().replace('\u2029', '\n')
-            if selectedText:
-                self.executeCode.emit(selectedText)
+            code = cursor.selectedText()
+            if not code:
+                code = self.toPlainText()
+            self.executeCode.emit(code.replace('\u2029', '\n'))
         # Enter: Insert a new line with proper indentation
         elif event.key() == QtCore.Qt.Key_Return and self.textCursor().block().length() - 1 == self.textCursor().positionInBlock():
             cursor = self.textCursor()
