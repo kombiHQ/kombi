@@ -113,15 +113,26 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         Execute the code using exec() and capture any output.
         """
         f = StringIO()
+        failed = False
+        self.__outputWidget.append(code)
+
         with redirect_stdout(f):
-            print(code)
             try:
                 exec(code, codeExecutionGlobals)
             except Exception:
+                failed = True
                 errorLines = traceback.format_exc().splitlines()
                 del errorLines[1:3]
                 print('\n'.join(errorLines))
+
+        if failed:
+            self.__outputWidget.setFontWeight(QtGui.QFont.Bold)
+            self.__outputWidget.setTextColor(QtGui.QColor(224, 108, 117))
+        else:
+            self.__outputWidget.setTextColor(QtGui.QColor(220, 220, 220))
         self.__outputWidget.append(f.getvalue())
+        self.__outputWidget.setFontWeight(QtGui.QFont.Normal)
+        self.__outputWidget.setTextColor(QtGui.QColor(171, 178, 191))
 
     def code(self):
         """
