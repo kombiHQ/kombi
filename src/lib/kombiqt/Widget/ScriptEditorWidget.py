@@ -395,7 +395,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     """
     Implement a basic python syntax highlighter.
     """
-    __keywords = r"\b(def|class|if|else|elif|for|while|try|except|finally|with|import|from|return|yield|pass|break|continue|del|global|lambda|assert|raise|True|False|None)\b"
+    __keywords = r"\b(def|class|in|not|and|or|if|else|elif|for|while|try|except|finally|with|import|from|return|yield|pass|break|continue|del|global|lambda|assert|raise|True|False|None)\b"
     __comments = r"#.*"
     __numeric = r"[0-9]"
     __strings = r"\"[^\"]*\"|\'[^\']*\'"
