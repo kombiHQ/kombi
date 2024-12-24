@@ -1,8 +1,13 @@
 import re
 from io import StringIO
 from contextlib import redirect_stdout
-from Qt import QtCore, QtGui, QtWidgets
 import traceback
+
+# making a copy of the globals at this point. This will be shared with the
+# code execution
+codeExecutionGlobals = dict(globals())
+
+from Qt import QtCore, QtGui, QtWidgets
 from ..Resource import Resource
 from kombi.Config import Config
 
@@ -111,11 +116,11 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         with redirect_stdout(f):
             print(code)
             try:
-                compiledCode = compile(code, 'script editor', 'exec')
-                exec(compiledCode, globals())
+                exec(code, codeExecutionGlobals)
             except Exception:
-                print('Error:')
-                print('\n'.join(traceback.format_exc().splitlines()[3:]))
+                errorLines = traceback.format_exc().splitlines()
+                del errorLines[1:3]
+                print('\n'.join(errorLines))
         self.__outputWidget.append(f.getvalue())
 
     def code(self):
