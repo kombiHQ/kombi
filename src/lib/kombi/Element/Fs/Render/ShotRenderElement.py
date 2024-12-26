@@ -32,14 +32,14 @@ class ShotRenderElement(ExrRenderElement):
         self.setTag('icon', 'icons/elements/render.png')
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains a shot render.
+        Test if the path contains a shot render.
         """
-        if not super(ShotRenderElement, cls).test(pathHolder, parentElement):
+        if not super(ShotRenderElement, cls).test(path, parentElement):
             return False
 
-        renderType = pathHolder.baseName().split(".")[0].split("_")[-1]
+        renderType = path.name.split(".")[0].split("_")[-1]
 
         return renderType == "sr"
 

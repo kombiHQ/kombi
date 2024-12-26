@@ -2,7 +2,7 @@ import os
 import unittest
 from ....BaseTestCase import BaseTestCase
 from kombi.Element import Element
-from kombi.Element.PathHolder import PathHolder
+from pathlib import Path
 from kombi.Element.Fs.Ascii import JsonElement
 
 class JsonElementTest(BaseTestCase):
@@ -14,14 +14,14 @@ class JsonElementTest(BaseTestCase):
         """
         Test that the Json element test works properly.
         """
-        element = Element.create(PathHolder(self.__jsonFile))
+        element = Element.create(Path(self.__jsonFile))
         self.assertIsInstance(element, JsonElement)
 
     def testJsonVariables(self):
         """
         Test that variables are set properly.
         """
-        element = Element.create(PathHolder(self.__jsonFile))
+        element = Element.create(Path(self.__jsonFile))
         self.assertEqual(element.var("type"), "json")
         self.assertEqual(element.var("category"), "ascii")
 
@@ -29,7 +29,7 @@ class JsonElementTest(BaseTestCase):
         """
         Test that json files are parsed properly.
         """
-        element = Element.create(PathHolder(self.__jsonFile))
+        element = Element.create(Path(self.__jsonFile))
         testData = {
             "testList": [1, 1.2, "value"],
             "testDict": {"key": "value", "number": 1},

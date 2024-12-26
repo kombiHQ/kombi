@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # running lint
-python -m pylama src/lib/kombi src/lib/kombiqt src/bin test
+python3 -m pylama src/lib/kombi src/lib/kombiqt src/bin test

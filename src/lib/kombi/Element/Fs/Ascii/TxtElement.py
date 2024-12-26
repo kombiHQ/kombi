@@ -6,14 +6,14 @@ class TxtElement(AsciiElement):
     """
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains a txt file.
+        Test if the path contains a txt file.
         """
-        if not super(AsciiElement, cls).test(pathHolder, parentElement):
+        if not super(AsciiElement, cls).test(path, parentElement):
             return False
 
-        return pathHolder.ext() in ['txt']
+        return path.suffix[1:] in ['txt']
 
 
 # registration

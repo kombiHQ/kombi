@@ -4,7 +4,7 @@ from ...BaseTestCase import BaseTestCase
 from kombi.Element import Element
 from kombi.Element.Fs import FsElement
 from kombi.Element.Fs import FileElement
-from kombi.Element.PathHolder import PathHolder
+from pathlib import Path
 from kombi.Element.Fs.Render import ExrRenderElement
 from kombi.Element.Fs.Image import ExrElement
 from kombi.Element.Element import ElementInvalidVarError
@@ -21,17 +21,17 @@ class FsElementTest(BaseTestCase):
         """
         Test that the fs element test works.
         """
-        pathHolder = PathHolder(self.__dir)
-        self.assertTrue(FsElement.test(pathHolder, None))
+        path = Path(self.__dir)
+        self.assertTrue(FsElement.test(path, None))
 
-        notAPathHolder = {}
-        self.assertFalse(FsElement.test(notAPathHolder, None))
+        notAPath = {}
+        self.assertFalse(FsElement.test(notAPath, None))
 
     def testFsElementGlob(self):
         """
         Test the glob functionality.
         """
-        element = Element.create(PathHolder(self.__dir))
+        element = Element.create(Path(self.__dir))
         elements = element.glob()
         result = self.collectFiles(self.__dir)
         result = list(map(lambda x: x.rstrip("/"), result))
@@ -54,7 +54,7 @@ class FsElementTest(BaseTestCase):
         result = list(map(lambda x: x.rstrip("/"), result))
         self.assertCountEqual(result, elementPaths)
 
-        element = Element.create(PathHolder(self.__turntableFile))
+        element = Element.create(Path(self.__turntableFile))
         otherElements = element.globFromParent(filterTypes=[ExrRenderElement])
         elementPaths = list(map(lambda x: x.var("filePath"), elements))
         otherElementPaths = list(map(lambda x: x.var("filePath"), otherElements))
@@ -64,7 +64,7 @@ class FsElementTest(BaseTestCase):
         """
         Test that the element variables are set properly.
         """
-        element = Element.create(PathHolder(self.__turntableFile))
+        element = Element.create(Path(self.__turntableFile))
         name, ext = os.path.splitext(self.__turntableFile)
         self.assertEqual(element.var('filePath'), self.__turntableFile)
         self.assertEqual(element.var('ext'), ext.lstrip("."))
@@ -77,7 +77,7 @@ class FsElementTest(BaseTestCase):
         """
         Test that the Element tags are set properly.
         """
-        element = Element.create(PathHolder(self.__turntableFile))
+        element = Element.create(Path(self.__turntableFile))
         self.assertRaises(ElementInvalidTagError, element.tag, "dummyTag")
 
     def testElementRegistration(self):
@@ -86,7 +86,7 @@ class FsElementTest(BaseTestCase):
         """
         class DummyElement(FileElement):
             @classmethod
-            def test(cls, pathHolder, parentElement):
+            def test(cls, path, parentElement):
                 return False
 
         Element.register("dummy", DummyElement)
@@ -98,7 +98,7 @@ class FsElementTest(BaseTestCase):
         """
         Test that cloning elements works.
         """
-        element = Element.create(PathHolder(self.__turntableFile))
+        element = Element.create(Path(self.__turntableFile))
         clone = element.clone()
         self.assertCountEqual(element.varNames(), clone.varNames())
         self.assertCountEqual(element.contextVarNames(), clone.contextVarNames())
@@ -108,7 +108,7 @@ class FsElementTest(BaseTestCase):
         """
         Test that you can convert a element to json and back.
         """
-        element = Element.create(PathHolder(self.__turntableFile))
+        element = Element.create(Path(self.__turntableFile))
         jsonResult = element.toJson()
         elementResult = Element.createFromJson(jsonResult)
         self.assertCountEqual(element.varNames(), elementResult.varNames())
@@ -122,16 +122,16 @@ class FsElementTest(BaseTestCase):
         element = FsElement.createFromPath(self.__turntableFile, "exr")
         self.assertIsInstance(element, ExrElement)
 
-    def testPathHolder(self):
+    def testPath(self):
         """
-        Test PathHolder functions.
+        Test Path functions.
         """
-        pathHolder = PathHolder(self.__turntableFile)
-        self.assertEqual(pathHolder.size(), 5430903)
-        self.assertEqual(pathHolder.name(), "RND_ass_lookdev_default_beauty_tt.1001")
-        self.assertTrue(pathHolder.exists())
-        pathHolder = PathHolder("/")
-        self.assertEqual(pathHolder.baseName(), os.sep)
+        path = Path(self.__turntableFile)
+        self.assertEqual(path.stat().st_size, 5430903)
+        self.assertEqual(path.name, "RND_ass_lookdev_default_beauty_tt.1001.exr")
+        self.assertTrue(path.exists())
+        path = Path("/")
+        self.assertEqual(path.name, os.sep)
 
 
 if __name__ == "__main__":

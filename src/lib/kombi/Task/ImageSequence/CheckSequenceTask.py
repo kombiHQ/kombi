@@ -112,7 +112,7 @@ class CheckSequenceTask(Task):
                         )
 
                 # minimum file size check
-                if self.option("minimumFileSize") != -1 and element.pathHolder().size() < self.option("minimumFileSize"):
+                if self.option("minimumFileSize") != -1 and element.path().stat().st_size < self.option("minimumFileSize"):
                     raise CheckSequenceTaskMinimumFileSizeError(
                         "Frame file size does not match the minimum required size (perhaps corruped):\n    {}".format(
                             element.var('fullPath')
@@ -120,7 +120,7 @@ class CheckSequenceTask(Task):
                     )
 
                 # minimum file size check
-                if self.option("minimumFileSize") != -1 and element.pathHolder().size() < self.option("minimumFileSize"):
+                if self.option("minimumFileSize") != -1 and element.path().stat().st_size < self.option("minimumFileSize"):
                     raise CheckSequenceTaskMinimumFileSizeError(
                         "Frame file size does not match the minimum required size (perhaps corruped):\n    {}".format(
                             element.var('fullPath')

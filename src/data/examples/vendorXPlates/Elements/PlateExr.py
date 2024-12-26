@@ -33,7 +33,7 @@ class PlateExr(ExrElement):
         """
         # perform the tests for the base classes
         if super(PlateExr, cls).test(data, parentElement):
-            return VarExtractor(data.baseName(), cls.namePattern).match()
+            return VarExtractor(data.name, cls.namePattern).match()
 
         return False
 

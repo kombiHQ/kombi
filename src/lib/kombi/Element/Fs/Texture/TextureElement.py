@@ -11,8 +11,8 @@ class TextureElement(OiioElement):
     ```python
     class YourClawler(TextureElement):
         @classmethod
-        def test(cls, pathHolder, parentElement):
-            if not super(YourClawler, cls).test(pathHolder, parentElement, enable=True):
+        def test(cls, path, parentElement):
+            if not super(YourClawler, cls).test(path, parentElement, enable=True):
                 return False
 
             # your implementation...
@@ -34,7 +34,7 @@ class TextureElement(OiioElement):
 
         self.setVar("assetName", parts[0])
         self.setVar("mapType", parts[1])
-        self.setVar("udim", self.__parseUDIM(self.pathHolder()))
+        self.setVar("udim", self.__parseUDIM(self.path()))
         self.setVar("variant", "default")
 
         # setting icon
@@ -55,27 +55,27 @@ class TextureElement(OiioElement):
             self.__updateGroupTag()
 
     @classmethod
-    def test(cls, pathHolder, parentElement, enable=False):
+    def test(cls, path, parentElement, enable=False):
         """
-        Test if the path holder contains a texture exr or tif file.
+        Test if the path contains a texture exr or tif file.
         """
         if not enable:
             return False
 
-        if not super(TextureElement, cls).test(pathHolder, parentElement):
+        if not super(TextureElement, cls).test(path, parentElement):
             return False
 
-        if pathHolder.ext() not in ['exr', 'tif']:
+        if path.suffix[1:] not in ['exr', 'tif']:
             return False
 
-        return (cls.__parseUDIM(pathHolder) is not None)
+        return (cls.__parseUDIM(path) is not None)
 
     @classmethod
-    def __parseUDIM(cls, pathHolder):
+    def __parseUDIM(cls, path):
         """
         Return an integer about the udim found in the texture name (or none).
         """
-        name = pathHolder.baseName()[:-(len(pathHolder.ext()) + 1)]
+        name = path.name[:-(len(path.suffix[1:]) + 1)]
         parts = name.split("_")
 
         udim = None

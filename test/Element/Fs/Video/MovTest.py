@@ -2,7 +2,7 @@ import os
 import unittest
 from ....BaseTestCase import BaseTestCase
 from kombi.Element import Element
-from kombi.Element.PathHolder import PathHolder
+from pathlib import Path
 from kombi.Element.Fs.Video import MovElement
 
 class MovTest(BaseTestCase):
@@ -15,14 +15,14 @@ class MovTest(BaseTestCase):
         """
         Test that the Mov element test works properly.
         """
-        element = Element.create(PathHolder(self.__movFile))
+        element = Element.create(Path(self.__movFile))
         self.assertIsInstance(element, MovElement)
 
     def testMovVariables(self):
         """
         Test that variables are set properly.
         """
-        element = Element.create(PathHolder(self.__movFile))
+        element = Element.create(Path(self.__movFile))
         self.assertEqual(element.var("type"), "mov")
         self.assertEqual(element.var("category"), "video")
         self.assertEqual(element.var("width"), 1920)
@@ -30,7 +30,7 @@ class MovTest(BaseTestCase):
         self.assertEqual(element.var("firstFrame"), 1)
         self.assertEqual(element.var("lastFrame"), 12)
 
-        element = Element.create(PathHolder(self.__movNoTimecodeFile))
+        element = Element.create(Path(self.__movNoTimecodeFile))
         self.assertEqual(element.var("firstFrame"), 0)
         self.assertEqual(element.var("lastFrame"), 23)
 
@@ -38,7 +38,7 @@ class MovTest(BaseTestCase):
         """
         Test that the tags are set properly.
         """
-        element = Element.create(PathHolder(self.__movFile))
+        element = Element.create(Path(self.__movFile))
         self.assertEqual(element.tag("video"), "video.mov")
 
 

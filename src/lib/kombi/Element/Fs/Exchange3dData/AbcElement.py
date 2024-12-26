@@ -6,14 +6,14 @@ class AbcElement(Exchange3dDataElement):
     """
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains an abc file.
+        Test if the path contains an abc file.
         """
-        if not super(Exchange3dDataElement, cls).test(pathHolder, parentElement):
+        if not super(Exchange3dDataElement, cls).test(path, parentElement):
             return False
 
-        return pathHolder.ext() == 'abc'
+        return path.suffix[1:] == 'abc'
 
 
 # registering element

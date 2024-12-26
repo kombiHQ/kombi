@@ -20,14 +20,14 @@ class MovElement(VideoElement):
         return super(MovElement, self).var(name)
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains a mov file.
+        Test if the path contains a mov file.
         """
-        if not super(MovElement, cls).test(pathHolder, parentElement):
+        if not super(MovElement, cls).test(path, parentElement):
             return False
 
-        return pathHolder.ext() == 'mov'
+        return path.suffix[1:] == 'mov'
 
     def __lazyInfo(self):
         """

@@ -6,14 +6,14 @@ class TiffElement(OiioElement):
     """
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains an tiff file.
+        Test if the path contains an tiff file.
         """
-        if not super(TiffElement, cls).test(pathHolder, parentElement):
+        if not super(TiffElement, cls).test(path, parentElement):
             return False
 
-        return pathHolder.ext() in ('tif', 'tiff')
+        return path.suffix[1:] in ('tif', 'tiff')
 
 
 # registration

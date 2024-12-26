@@ -2,7 +2,7 @@ import os
 import unittest
 from ....BaseTestCase import BaseTestCase
 from kombi.Element import Element
-from kombi.Element.PathHolder import PathHolder
+from pathlib import Path
 from kombi.Element.Fs.Image import JpgElement
 
 class JpgElementTest(BaseTestCase):
@@ -14,14 +14,14 @@ class JpgElementTest(BaseTestCase):
         """
         Test that the Jpg element test works properly.
         """
-        element = Element.create(PathHolder(self.__jpgFile))
+        element = Element.create(Path(self.__jpgFile))
         self.assertIsInstance(element, JpgElement)
 
     def testJpgVariables(self):
         """
         Test that variables are set properly.
         """
-        element = Element.create(PathHolder(self.__jpgFile))
+        element = Element.create(Path(self.__jpgFile))
         self.assertEqual(element.var("type"), "jpg")
         self.assertEqual(element.var("category"), "image")
         self.assertEqual(element.var("imageType"), "single")

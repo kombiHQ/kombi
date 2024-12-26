@@ -7,13 +7,13 @@ class FileElement(FsElement):
     """
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains a file.
+        Test if the path contains a file.
         """
-        if not super(FileElement, cls).test(pathHolder, parentElement):
+        if not super(FileElement, cls).test(path, parentElement):
             return False
-        return pathHolder.isFile()
+        return path.is_file()
 
 
 Element.register(

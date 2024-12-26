@@ -6,14 +6,14 @@ class WavElement(AudioElement):
     """
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains a wav file.
+        Test if the path contains a wav file.
         """
-        if not super(WavElement, cls).test(pathHolder, parentElement):
+        if not super(WavElement, cls).test(path, parentElement):
             return False
 
-        return pathHolder.ext() == 'wav'
+        return path.suffix[1:] == 'wav'
 
 
 # registration

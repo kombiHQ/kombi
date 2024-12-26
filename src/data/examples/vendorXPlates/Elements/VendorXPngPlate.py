@@ -46,7 +46,7 @@ class VendorXPngPlate(PngElement):
         """
         # perform the tests for the base classes
         if super(VendorXPngPlate, cls).test(data, parentElement):
-            return VarExtractor(data.baseName(), cls.namePattern).match()
+            return VarExtractor(data.name, cls.namePattern).match()
 
         return False
 

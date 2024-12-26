@@ -13,14 +13,14 @@ class MayaSceneElement(SceneElement):
         return ['ma', 'mb']
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains a Maya scene.
+        Test if the path contains a Maya scene.
         """
-        if not super(SceneElement, cls).test(pathHolder, parentElement):
+        if not super(SceneElement, cls).test(path, parentElement):
             return False
 
-        return pathHolder.ext() in cls.extensions()
+        return path.suffix[1:] in cls.extensions()
 
 
 # registering element

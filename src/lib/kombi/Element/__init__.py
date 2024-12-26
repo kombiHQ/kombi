@@ -1,4 +1,3 @@
-from .PathHolder import PathHolder
 from .Element import Element, ElementContext, ElementError, ElementInvalidVarError, ElementInvalidTagError, ElementTestError, ElementTypeError
 from . import Fs
 from . import Generic

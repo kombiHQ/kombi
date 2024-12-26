@@ -2,7 +2,7 @@ import os
 import unittest
 from ....BaseTestCase import BaseTestCase
 from kombi.Element.Fs import FsElement
-from kombi.Element.PathHolder import PathHolder
+from pathlib import Path
 from kombi.Element.Fs.Lut import CdlElement
 
 class CdlElementTest(BaseTestCase):
@@ -14,14 +14,14 @@ class CdlElementTest(BaseTestCase):
         """
         Test that the Cdl element test works properly.
         """
-        element = FsElement.create(PathHolder(self.__cdlFile))
+        element = FsElement.create(Path(self.__cdlFile))
         self.assertIsInstance(element, CdlElement)
 
     def testCdlVariables(self):
         """
         Test that variables are set properly.
         """
-        element = FsElement.create(PathHolder(self.__cdlFile))
+        element = FsElement.create(Path(self.__cdlFile))
         self.assertEqual(element.var("type"), "cdl")
         self.assertEqual(element.var("category"), "lut")
         self.assertEqual(element.var("slope"), [1.014, 1.0104, 0.62])

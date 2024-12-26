@@ -1,8 +1,9 @@
 import os
 import re
+import pathlib
 from .FsElement import FsElement
 from ...Template import Template
-from .. import Element, PathHolder
+from .. import Element
 
 class DirectoryElement(FsElement):
     """
@@ -41,23 +42,23 @@ class DirectoryElement(FsElement):
         return False
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains a directory.
+        Test if the path contains a directory.
         """
-        if not super(DirectoryElement, cls).test(pathHolder, parentElement):
+        if not super(DirectoryElement, cls).test(path, parentElement):
             return False
-        return pathHolder.isDirectory()
+        return path.is_dir()
 
     def _computeChildren(self):
         """
         Return the directory contents.
         """
         result = []
-        currentPath = self.pathHolder().path()
+        currentPath = str(self.path())
         for childFile in os.listdir(currentPath):
-            childPathHolder = PathHolder(os.path.join(currentPath, childFile))
-            childElement = Element.create(childPathHolder, self)
+            childPath = pathlib.Path(os.path.join(currentPath, childFile))
+            childElement = Element.create(childPath, self)
             result.append(childElement)
 
         def __sortElement(x):

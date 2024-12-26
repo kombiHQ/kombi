@@ -41,13 +41,13 @@ class OiioElement(ImageElement):
             # parent directory element "1920x1080". For more details take a look
             # at "Directory" element.
             if hasOpenImageIO:
-                imageInput = OpenImageIO.ImageInput.open(self.supportedString(self.pathHolder().path()))
+                imageInput = OpenImageIO.ImageInput.open(self.supportedString(str(self.path())))
 
                 # making sure the image has been successfully loaded
                 if imageInput is None:
                     raise OiioElementReadFileError(
                         "Can't read information from file:\n{}".format(
-                            self.pathHolder().path()
+                            self.path()
                         )
                     )
 

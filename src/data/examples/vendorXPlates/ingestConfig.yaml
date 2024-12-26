@@ -2,19 +2,22 @@
 scripts:
 - "*/*.py"
 vars:
+  __uiHintBottomExecutionSettings: false
   __uiHintSourceColumns:
   - type
   - job
   - seq
   - shot
   prefix: "/tmp"
+  __uiHintBottomExecutionSettingsEmptyMessage: "Select valid element"
 tasks:
 - run: convertImage
   options:
+    bla: ""
     aab:
       bla: 1
       bla2: 2
-      testing3BlaBlaLongName: "bla"
+      testing3BlaBlaLongName: "long name"
       testing2: False
     abc:
       - "Testing"
@@ -33,6 +36,10 @@ tasks:
               main: True
               label: "custom Label"
               visual: "longText"
+        bla:
+          main: True
+          regex: "[a-zA-Z]*"
+          caseStyle: "uppercase"
         abc:
           main: True
           items:
@@ -43,9 +50,9 @@ tasks:
               label: "testing index"
     match.types:
     - vendorXPngPlate
-    match.vars:
-      imageType:
-      - sequence
+    # match.vars:
+    #   imageType:
+    #   - sequence
   target: "{prefix}/jobs/{job}/seq/{seq}/shot/{shot}/plates/{plateName}/(newver <parent> as <ver>)/{width}x{height}_exr/{job}_{seq}_{shot}_<ver>.(pad {frame} 6).exr"
   tasks:
   - run: vendorData

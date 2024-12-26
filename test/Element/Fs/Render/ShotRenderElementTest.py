@@ -2,7 +2,7 @@ import os
 import unittest
 from ....BaseTestCase import BaseTestCase
 from kombi.Element import Element
-from kombi.Element.PathHolder import PathHolder
+from pathlib import Path
 from kombi.Element.Fs.Render import ShotRenderElement
 
 class ShotRenderElementTest(BaseTestCase):
@@ -14,14 +14,14 @@ class ShotRenderElementTest(BaseTestCase):
         """
         Test that the ShotRenderElement element test works properly.
         """
-        element = Element.create(PathHolder(self.__exrFile))
+        element = Element.create(Path(self.__exrFile))
         self.assertIsInstance(element, ShotRenderElement)
 
     def testShotRenderElementVariables(self):
         """
         Test that variables are set properly.
         """
-        element = Element.create(PathHolder(self.__exrFile))
+        element = Element.create(Path(self.__exrFile))
         self.assertEqual(element.var("type"), "shotRender")
         self.assertEqual(element.var("category"), "render")
         self.assertEqual(element.var("renderType"), "sr")
