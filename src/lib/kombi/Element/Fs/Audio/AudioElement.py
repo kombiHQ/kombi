@@ -14,7 +14,7 @@ class AudioElement(FileElement):
         self.setVar('category', 'audio')
 
         # setting a audio tag
-        self.setTag('audio', self.pathHolder().baseName())
+        self.setTag('audio', self.path().name)
 
         # setting icon
         self.setTag('icon', 'icons/elements/audio.png')

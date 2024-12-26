@@ -2,7 +2,7 @@ import os
 import unittest
 from ....BaseTestCase import BaseTestCase
 from kombi.Element import Element
-from kombi.Element.PathHolder import PathHolder
+from pathlib import Path
 from kombi.Element.Fs.Scene import MayaSceneElement
 from kombi.Element.Fs.Scene import SceneElement
 
@@ -17,16 +17,16 @@ class MayaSceneElementTest(BaseTestCase):
         """
         Test that the Maya Scene element test works properly.
         """
-        element = Element.create(PathHolder(self.__maFile))
+        element = Element.create(Path(self.__maFile))
         self.assertIsInstance(element, MayaSceneElement)
-        element = Element.create(PathHolder(self.__mbFile))
+        element = Element.create(Path(self.__mbFile))
         self.assertIsInstance(element, MayaSceneElement)
 
     def testMayaSceneVariables(self):
         """
         Test that variables are set properly.
         """
-        element = Element.create(PathHolder(self.__maFile))
+        element = Element.create(Path(self.__maFile))
         self.assertEqual(element.var("type"), "mayaScene")
         self.assertEqual(element.var("category"), "scene")
 

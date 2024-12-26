@@ -38,7 +38,7 @@ class ImageElement(FileElement):
         """
         Compute the image sequence tags and vars.
         """
-        nameParts = self.pathHolder().baseName().split(".")
+        nameParts = self.path().name.split(".")
         frame = None
         name = None
         frameSep = None
@@ -83,7 +83,7 @@ class ImageElement(FileElement):
                 )
             )
         else:
-            self.setTag('image', self.pathHolder().baseName())
+            self.setTag('image', self.path().name)
 
     def __isStandardSequence(self):
         """
@@ -91,8 +91,8 @@ class ImageElement(FileElement):
 
         The element must follow the standard seq convention: abc.0001.ext
         """
-        nameParts = self.pathHolder().baseName().split(".")
-        isImageSeq = (len(nameParts) >= 3 and self.pathHolder().baseName().split(".")[-2].isdigit())
+        nameParts = self.path().name.split(".")
+        isImageSeq = (len(nameParts) >= 3 and self.path().name.split(".")[-2].isdigit())
 
         return isImageSeq
 
@@ -102,7 +102,7 @@ class ImageElement(FileElement):
 
         This element must follow the ambiguous seq convention: abc_0001.ext
         """
-        nameParts = self.pathHolder().baseName().split(".")
+        nameParts = self.path().name.split(".")
         parts = nameParts[0].split("_")
         isImageSeq = False
         if len(parts) > 1:

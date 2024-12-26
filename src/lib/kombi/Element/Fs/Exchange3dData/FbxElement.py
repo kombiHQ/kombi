@@ -18,14 +18,14 @@ class FbxElement(Exchange3dDataElement):
         self.setTag('icon', icon)
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains a fbx file.
+        Test if the path contains a fbx file.
         """
-        if not super(Exchange3dDataElement, cls).test(pathHolder, parentElement):
+        if not super(Exchange3dDataElement, cls).test(path, parentElement):
             return False
 
-        return pathHolder.ext() == 'fbx'
+        return path.suffix[1:] == 'fbx'
 
 
 # registering element

@@ -1,39 +1,38 @@
 import os
-from .. import Element, PathHolder
+from pathlib import Path
+from .. import Element
 
 class FsElement(Element):
     """
     Abstracted file system Path.
     """
 
-    def __init__(self, filePathOrPathHolder, parentElement=None):
+    def __init__(self, pathStrOrPath, parentElement=None):
         """
         Create a element (use the factory function Path.create instead).
         """
-        if isinstance(filePathOrPathHolder, str):
-            pathHolder = PathHolder(filePathOrPathHolder)
+        if isinstance(pathStrOrPath, str):
+            path = Path(pathStrOrPath)
         else:
-            pathHolder = filePathOrPathHolder
+            path = pathStrOrPath
 
-        super(FsElement, self).__init__(pathHolder.baseName(), parentElement)
+        super(FsElement, self).__init__(path.name, parentElement)
 
-        self.__setPathHolder(pathHolder)
-        self.setVar('filePath', pathHolder.path())
-        self.setVar('fullPath', pathHolder.path())
-        self.setVar('ext', pathHolder.ext())
-        self.setVar('baseName', pathHolder.baseName())
-        self.setVar('name', pathHolder.baseName())
+        self.__setPath(path)
+        self.setVar('filePath', str(path))
+        self.setVar('fullPath', self.var('filePath'))
+        self.setVar('ext', path.suffix[1:])
+        self.setVar('baseName', path.name)
+        self.setVar('name', self.var('baseName'))
         if 'sourceDirectory' not in self.varNames():
-            path = pathHolder.path()
-            if not pathHolder.isDirectory():
-                path = os.path.dirname(path)
-            self.setVar('sourceDirectory', path)
+            if not path.is_dir():
+                self.setVar('sourceDirectory', str(path.parent))
 
-    def pathHolder(self):
+    def path(self):
         """
-        Return the path holder object used to create the element.
+        Return the path object used to create the element.
         """
-        return self.__pathHolder
+        return self.__path
 
     def globFromParent(self, filterTypes=[], useCache=True):
         """
@@ -47,9 +46,9 @@ class FsElement(Element):
     @classmethod
     def test(cls, data=None, parentElement=None):
         """
-        Tests if the data is a path holder.
+        Tests if the data is a Path from pathlib.
         """
-        return isinstance(data, PathHolder)
+        return isinstance(data, Path)
 
     @staticmethod
     def createFromPath(fullPath, elementType=None, parentElement=None):
@@ -60,18 +59,18 @@ class FsElement(Element):
             elementClass = FsElement.registeredType(elementType)
             assert elementClass, "Invalid element type {} for {}".format(elementType, fullPath)
 
-            result = elementClass(PathHolder(fullPath), parentElement)
+            result = elementClass(Path(fullPath), parentElement)
             result.setVar('type', elementType)
 
             return result
         else:
-            return FsElement.create(PathHolder(fullPath), parentElement)
+            return FsElement.create(Path(fullPath), parentElement)
 
-    def __setPathHolder(self, pathHolder):
+    def __setPath(self, path):
         """
-        Set the path holder to the element.
+        Set the path to the element.
         """
-        assert isinstance(pathHolder, PathHolder), \
-            "Invalid PathHolder type"
+        assert isinstance(path, Path), \
+            "Invalid Path type"
 
-        self.__pathHolder = pathHolder
+        self.__path = path

@@ -2,7 +2,7 @@ import os
 import unittest
 from ....BaseTestCase import BaseTestCase
 from kombi.Element.Fs import FsElement
-from kombi.Element.PathHolder import PathHolder
+from pathlib import Path
 from kombi.Element.Fs.Lut import CcElement
 
 class CcElementTest(BaseTestCase):
@@ -14,14 +14,14 @@ class CcElementTest(BaseTestCase):
         """
         Test that the Cc element test works properly.
         """
-        element = FsElement.create(PathHolder(self.__ccFile))
+        element = FsElement.create(Path(self.__ccFile))
         self.assertIsInstance(element, CcElement)
 
     def testCcVariables(self):
         """
         Test that variables are set properly.
         """
-        element = FsElement.create(PathHolder(self.__ccFile))
+        element = FsElement.create(Path(self.__ccFile))
         self.assertEqual(element.var("type"), "cc")
         self.assertEqual(element.var("category"), "lut")
         self.assertEqual(element.var("slope"), [1.2, 1.3, 1.4])

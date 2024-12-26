@@ -6,14 +6,14 @@ class ExrElement(OiioElement):
     """
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains an exr file.
+        Test if the path contains an exr file.
         """
-        if not super(ExrElement, cls).test(pathHolder, parentElement):
+        if not super(ExrElement, cls).test(path, parentElement):
             return False
 
-        return pathHolder.ext() == 'exr'
+        return path.suffix[1:] == 'exr'
 
 
 # registration

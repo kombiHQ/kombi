@@ -6,14 +6,14 @@ class PngElement(OiioElement):
     """
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains an png file.
+        Test if the path contains an png file.
         """
-        if not super(PngElement, cls).test(pathHolder, parentElement):
+        if not super(PngElement, cls).test(path, parentElement):
             return False
 
-        return pathHolder.ext() == 'png'
+        return path.suffix[1:] == 'png'
 
 
 # registration

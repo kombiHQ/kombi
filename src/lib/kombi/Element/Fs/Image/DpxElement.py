@@ -6,14 +6,14 @@ class DpxElement(OiioElement):
     """
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains an dpx file.
+        Test if the path contains an dpx file.
         """
-        if not super(DpxElement, cls).test(pathHolder, parentElement):
+        if not super(DpxElement, cls).test(path, parentElement):
             return False
 
-        return pathHolder.ext() == 'dpx'
+        return path.suffix[1:] == 'dpx'
 
 
 # registration

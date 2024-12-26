@@ -17,14 +17,14 @@ class CcElement(LutElement):
             self.setVar('error', str(err))
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains a lut file.
+        Test if the path contains a lut file.
         """
-        if not super(CcElement, cls).test(pathHolder, parentElement, ignoreExt=True):
+        if not super(CcElement, cls).test(path, parentElement, ignoreExt=True):
             return False
 
-        return pathHolder.ext() == 'cc'
+        return path.suffix[1:] == 'cc'
 
     def __parseXML(self):
         """

@@ -14,14 +14,14 @@ class TestElement(kombi.Element.Fs.Image.ExrElement):
         self.setVar('testVariable', self.var('name') == "testSeq")
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains a testElement file.
+        Test if the path contains a testElement file.
         """
-        if not super(TestElement, cls).test(pathHolder, parentElement):
+        if not super(TestElement, cls).test(path, parentElement):
             return False
 
-        name = pathHolder.baseName()
+        name = path.name
         return name.startswith('testSeq') or name.startswith("test_0")
 
 

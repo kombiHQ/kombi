@@ -16,5 +16,5 @@ class LutElement(XmlElement):
         # setting a lut tag
         self.setTag(
             'lut',
-            self.pathHolder().baseName()
+            self.path().name
         )

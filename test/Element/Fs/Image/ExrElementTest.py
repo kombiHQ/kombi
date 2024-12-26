@@ -3,7 +3,7 @@ import unittest
 import glob
 from ....BaseTestCase import BaseTestCase
 from kombi.Element import Element
-from kombi.Element.PathHolder import PathHolder
+from pathlib import Path
 from kombi.Element.Fs.Image import ExrElement
 
 class ExrElementTest(BaseTestCase):
@@ -17,16 +17,16 @@ class ExrElementTest(BaseTestCase):
         """
         Test that the Exr element test works properly.
         """
-        element = Element.create(PathHolder(self.__exrFile))
+        element = Element.create(Path(self.__exrFile))
         self.assertIsInstance(element, ExrElement)
-        element = Element.create(PathHolder(BaseTestCase.dataTestsDirectory()))
+        element = Element.create(Path(BaseTestCase.dataTestsDirectory()))
         self.assertNotIsInstance(element, ExrElement)
 
     def testExrVariables(self):
         """
         Test that variables are set properly.
         """
-        element = Element.create(PathHolder(self.__exrFile))
+        element = Element.create(Path(self.__exrFile))
         self.assertEqual(element.var("type"), "exr")
         self.assertEqual(element.var("category"), "image")
         self.assertEqual(element.var("imageType"), "single")
@@ -35,7 +35,7 @@ class ExrElementTest(BaseTestCase):
         """
         Test that width and height variables are processed properly.
         """
-        element = Element.create(PathHolder(self.__exrFile))
+        element = Element.create(Path(self.__exrFile))
         self.assertNotIn("width", element.varNames())
         self.assertNotIn("height", element.varNames())
         self.assertEqual(element.var("width"), 1920)
@@ -45,23 +45,23 @@ class ExrElementTest(BaseTestCase):
         """
         Test that detection of an image sequence works properly.
         """
-        element = Element.create(PathHolder(self.__exrFile))
+        element = Element.create(Path(self.__exrFile))
         self.assertFalse(element.isSequence())
-        element = Element.create(PathHolder(self.__exrSeq))
+        element = Element.create(Path(self.__exrSeq))
         self.assertTrue(element.isSequence())
-        element = Element.create(PathHolder(self.__exrAmbiguousSeq))
+        element = Element.create(Path(self.__exrAmbiguousSeq))
         self.assertTrue(element.isSequence())
 
     def testImageSequenceVariables(self):
         """
         Test that the image sequence related variables are set properly.
         """
-        element = Element.create(PathHolder(self.__exrSeq))
+        element = Element.create(Path(self.__exrSeq))
         self.assertEqual(element.var("imageType"), "sequence")
         self.assertEqual(element.var("name"), "testSeq")
         self.assertEqual(element.var("frame"), 1)
         self.assertEqual(element.var("padding"), 4)
-        element = Element.create(PathHolder(self.__exrAmbiguousSeq))
+        element = Element.create(Path(self.__exrAmbiguousSeq))
         self.assertEqual(element.var("imageType"), "sequence")
         self.assertEqual(element.var("name"), "test")
         self.assertEqual(element.var("frame"), 1)
@@ -72,8 +72,8 @@ class ExrElementTest(BaseTestCase):
         Test that an image sequence is grouped properly.
         """
         paths = glob.glob("{}/testSeq.*.exr".format(self.dataTestsDirectory()))
-        elements = list(map(lambda x: Element.create(PathHolder(x)), paths))
-        elements.append(Element.create(PathHolder(self.__exrFile)))
+        elements = list(map(lambda x: Element.create(Path(x)), paths))
+        elements.append(Element.create(Path(self.__exrFile)))
         grouped = ExrElement.group(elements)
         self.assertEqual(len(grouped), 2)
         self.assertEqual(len(grouped[0]), len(paths))

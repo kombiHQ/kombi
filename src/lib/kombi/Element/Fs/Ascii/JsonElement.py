@@ -14,14 +14,14 @@ class JsonElement(AsciiElement):
             return json.load(f)
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains a json file.
+        Test if the path contains a json file.
         """
-        if not super(AsciiElement, cls).test(pathHolder, parentElement):
+        if not super(AsciiElement, cls).test(path, parentElement):
             return False
 
-        return pathHolder.ext() in ['json']
+        return path.suffix[1:] in ['json']
 
 
 # registration

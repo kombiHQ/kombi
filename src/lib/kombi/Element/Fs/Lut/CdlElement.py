@@ -17,14 +17,14 @@ class CdlElement(LutElement):
             self.setVar('error', str(err))
 
     @classmethod
-    def test(cls, pathHolder, parentElement):
+    def test(cls, path, parentElement):
         """
-        Test if the path holder contains a cdl file.
+        Test if the path contains a cdl file.
         """
-        if not super(CdlElement, cls).test(pathHolder, parentElement, ignoreExt=True):
+        if not super(CdlElement, cls).test(path, parentElement, ignoreExt=True):
             return False
 
-        return pathHolder.ext() == 'cdl'
+        return path.suffix[1:] == 'cdl'
 
     def __parseXML(self):
         """

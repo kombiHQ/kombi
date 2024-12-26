@@ -2,7 +2,7 @@ import os
 import unittest
 from ....BaseTestCase import BaseTestCase
 from kombi.Element import Element
-from kombi.Element.PathHolder import PathHolder
+from pathlib import Path
 from kombi.Element.Fs.Image import PngElement
 
 class PngElementTest(BaseTestCase):
@@ -14,14 +14,14 @@ class PngElementTest(BaseTestCase):
         """
         Test that the Png element test works properly.
         """
-        element = Element.create(PathHolder(self.__pngFile))
+        element = Element.create(Path(self.__pngFile))
         self.assertIsInstance(element, PngElement)
 
     def testPngVariables(self):
         """
         Test that variables are set properly.
         """
-        element = Element.create(PathHolder(self.__pngFile))
+        element = Element.create(Path(self.__pngFile))
         self.assertEqual(element.var("type"), "png")
         self.assertEqual(element.var("category"), "image")
         self.assertEqual(element.var("imageType"), "single")
