@@ -5,7 +5,7 @@ import traceback
 
 # making a copy of the globals at this point. This will be shared with the
 # code execution
-codeExecutionGlobals = dict(globals())
+codeExecutionGlobals = dict(globals())  # noqa: E402
 
 from Qt import QtCore, QtGui, QtWidgets
 from ..Resource import Resource
