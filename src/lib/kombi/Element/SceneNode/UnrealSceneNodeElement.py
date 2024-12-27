@@ -19,6 +19,7 @@ class UnrealSceneNodeElement(SceneNodeElement):
         """
         super().__init__(*args, **kwargs)
         self.setVar('name', assetData.package_name)
+        self.setVar('nodeType', assetData.get_class().get_name())
 
         self.__node = assetData
 

@@ -18,7 +18,8 @@ class MayaSceneNodeElement(SceneNodeElement):
         Create a MayaSceneNodeElement object.
         """
         super().__init__(*args, **kwargs)
-        self.setVar('name', pymelObject.name())
+        self.setVar('name', pymelObject.name(long=True))
+        self.setVar('nodeType', pymelObject.type())
 
         self.__node = pymelObject
 
@@ -38,7 +39,7 @@ class MayaSceneNodeElement(SceneNodeElement):
         """
         Define the data passed during the initialization of the element.
         """
-        return self.node().name()
+        return self.node().name(long=True)
 
     @classmethod
     def parseInitializationData(cls, data):

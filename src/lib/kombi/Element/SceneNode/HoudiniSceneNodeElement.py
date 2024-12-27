@@ -19,6 +19,7 @@ class HoudiniSceneNodeElement(SceneNodeElement):
         """
         super().__init__(*args, **kwargs)
         self.setVar('name', houNode.path())
+        self.setVar('nodeType', houNode.type().name())
 
         self.__node = houNode
 
