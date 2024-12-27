@@ -48,11 +48,11 @@ class MayaSceneNodeElement(SceneNodeElement):
         return pm.PyNode(data)
 
     @classmethod
-    def test(cls, pymelObject, parentElement):
+    def test(cls, pymelObject, _):
         """
         Test if the input contains a pymel object.
         """
-        if not pymelAvailable or not super(SceneNodeElement, cls).test(pymelObject, parentElement):
+        if not pymelAvailable:
             return False
 
         return isinstance(pymelObject, pm.PyNode)

@@ -48,11 +48,11 @@ class HoudiniSceneNodeElement(SceneNodeElement):
         return hou.node(data)
 
     @classmethod
-    def test(cls, houNode, parentElement):
+    def test(cls, houNode, _):
         """
         Test if the input contains a houdini node object.
         """
-        if not houdiniAvailable or not super(SceneNodeElement, cls).test(houNode, parentElement):
+        if not houdiniAvailable:
             return False
 
         return isinstance(houNode, hou.Node)

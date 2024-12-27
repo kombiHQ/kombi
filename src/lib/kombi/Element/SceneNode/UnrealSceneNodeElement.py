@@ -48,11 +48,11 @@ class UnrealSceneNodeElement(SceneNodeElement):
         return unreal.EditorAssetLibrary.find_asset_data(data)
 
     @classmethod
-    def test(cls, assetData, parentElement):
+    def test(cls, assetData, _):
         """
         Test if the input contains a unreal asset object.
         """
-        if not unrealAvailable or not super(SceneNodeElement, cls).test(assetData, parentElement):
+        if not unrealAvailable:
             return False
 
         return isinstance(assetData, unreal.AssetData)
