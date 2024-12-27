@@ -32,7 +32,7 @@ class HoudiniSceneNodeElement(SceneNodeElement):
         """
         Select the node.
         """
-        raise self.node().setSelected(True)
+        self.node().setSelected(True)
 
     def serializeInitializationData(self):
         """

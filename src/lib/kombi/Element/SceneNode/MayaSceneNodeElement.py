@@ -32,7 +32,7 @@ class MayaSceneNodeElement(SceneNodeElement):
         """
         Select the node.
         """
-        raise self.node().select()
+        self.node().select()
 
     def serializeInitializationData(self):
         """
