@@ -43,6 +43,13 @@ class HoudiniSceneNodeElement(SceneNodeElement):
         return self.node().path()
 
     @classmethod
+    def createFromName(cls, path):
+        """
+        Create a node element based on the path.
+        """
+        return Element.create(cls.parseInitializationData(path))
+
+    @classmethod
     def parseInitializationData(cls, data):
         """
         Parse the serialized initialization data.

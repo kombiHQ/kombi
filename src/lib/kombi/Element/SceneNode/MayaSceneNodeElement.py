@@ -43,6 +43,13 @@ class MayaSceneNodeElement(SceneNodeElement):
         return self.node().name(long=True)
 
     @classmethod
+    def createFromName(cls, name):
+        """
+        Create a node element based on the name.
+        """
+        return Element.create(cls.parseInitializationData(name))
+
+    @classmethod
     def parseInitializationData(cls, data):
         """
         Parse the serialized initialization data.

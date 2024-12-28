@@ -43,6 +43,13 @@ class UnrealSceneNodeElement(SceneNodeElement):
         return self.node().package_name
 
     @classmethod
+    def createFromName(cls, packageName):
+        """
+        Create a node element based on the package name.
+        """
+        return Element.create(cls.parseInitializationData(packageName))
+
+    @classmethod
     def parseInitializationData(cls, data):
         """
         Parse the serialized initialization data.

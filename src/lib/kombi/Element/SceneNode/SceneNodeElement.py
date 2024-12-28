@@ -13,6 +13,9 @@ class SceneNodeElement(Element):
 
         self.setVar('category', 'sceneNode')
 
+        # this information should be overriding by derived classes.
+        self.setVar('nodeCategory', 'undefined')
+
         # setting icon
         self.setTag('icon', 'icons/elements/sceneNode.png')
 
@@ -25,5 +28,12 @@ class SceneNodeElement(Element):
     def select(self):
         """
         For re-implementation: It should select the object in scene.
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def createFromName(cls, name):
+        """
+        For re-implementation: It should return an instance Element by based on the name through the factory (Element.create).
         """
         raise NotImplementedError
