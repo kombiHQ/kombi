@@ -32,9 +32,9 @@ class UnrealSceneNodeElement(SceneNodeElement):
 
     def select(self):
         """
-        Select the node (disabled).
+        Select the asset in the content browser.
         """
-        pass
+        unreal.EditorAssetLibrary.sync_browser_to_objects([self.node().package_name])
 
     def serializeInitializationData(self):
         """
