@@ -312,7 +312,9 @@ class PythonLoader(Loader):
 
         # setting task metadata
         if 'metadata' in taskHolderInfo:
-            for taskMetadataName, taskMetadataValue in taskHolderInfo['metadata'].items():
+            # merging new metadata with existing metadata
+            mergedMetadata = cls.__dictDeepMerge(task.metadata(), taskHolderInfo['metadata'])
+            for taskMetadataName, taskMetadataValue in mergedMetadata.items():
                 task.setMetadata(taskMetadataName, taskMetadataValue)
 
         return task
@@ -380,3 +382,22 @@ class PythonLoader(Loader):
                 return False
 
         return _CustomElement
+
+    @classmethod
+    def __dictDeepMerge(cls, dict1, dict2):
+        """
+        Merge two dictionaries deeply.
+        """
+        result = dict1.copy()
+        for key, value in dict2.items():
+            if key in result:
+                # merge dictionaries
+                if isinstance(result[key], dict) and isinstance(value, dict):
+                    result[key] = cls.__dictDeepMerge(result[key], value)
+                # if not, overwrite the value
+                else:
+                    result[key] = value
+            # otherwise, if key does not exist in dict1, add it
+            else:
+                result[key] = value
+        return result
