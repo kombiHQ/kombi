@@ -46,7 +46,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
     This widget is used to list the tasks options.
     """
 
-    taskHolderOptionChangedSignal = QtCore.Signal(object)
+    taskHolderOptionChangedSignal = QtCore.Signal(object, str)
 
     def __init__(self, *args, **kwargs):
         """
@@ -63,6 +63,8 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         self.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.setUniformRowHeights(False)
+        self.__elements = []
+        self.__clonedTaskHolders = []
 
         self.taskHolderOptionChangedSignal.connect(self.__onTaskHolderOptionChanged)
 
@@ -70,96 +72,9 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         """
         Update the execution settings.
         """
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        self.clear()
-
-        self.setHeaderItem(
-            QtWidgets.QTreeWidgetItem(
-                ("", "")
-            )
-        )
-
-        for index, taskHolder in enumerate(taskHolders):
-            try:
-                matchedElements = taskHolder.query(elements)
-            except Exception as error:
-                QtWidgets.QApplication.restoreOverrideCursor()
-                traceback.print_exc()
-
-                QtWidgets.QMessageBox.critical(
-                    self,
-                    "Template processing error",
-                    "<nobr>" + str(error).replace("\n", "<br>") + "</nobr>",
-                    QtWidgets.QMessageBox.Ok,
-                )
-                raise error
-
-            if taskHolder.importTemplates():
-                clonedTaskHolder = taskHolder.clone()
-                child = self.__createTask(self, clonedTaskHolder)
-                child.taskHolderIndex = index
-                child.taskHolder = clonedTaskHolder
-                continue
-
-            alreadyFailed = False
-            for elementList in Element.group(matchedElements):
-                nameSuffix = elementList[0].var('name')
-
-                if 'group' in elementList[0].tagNames():
-                    nameSuffix = "{} ({} total)".format(
-                        elementList[0].tag('group'),
-                        len(elementList)
-                    )
-
-                clonedTaskHolder = taskHolder.clone()
-
-                # checking if task has the setup method
-                if hasattr(clonedTaskHolder.task(), 'setup') and \
-                        hasattr(clonedTaskHolder.task().setup, '__call__'):
-
-                    try:
-                        clonedTaskHolder.task().setup(elementList)
-                    except Exception as err:
-                        traceback.print_exc()
-
-                        if not alreadyFailed:
-                            alreadyFailed = True
-                            self.__messageBox = QtWidgets.QMessageBox(
-                                self,
-                                "Task '{}' setup error".format(
-                                    clonedTaskHolder.task().type()
-                                ),
-                                QtWidgets.QMessageBox.Ok
-                            )
-                            self.__messageBox.setWindowModality(QtCore.Qt.NonModal)
-                            self.__messageBox.setIcon(QtWidgets.QMessageBox.Critical)
-                            self.__messageBox.setText(str(err))
-                            self.__messageBox.setDetailedText(str(err))
-                            self.__messageBox.show()
-
-                matchedChild = self.__createTask(
-                    self,
-                    clonedTaskHolder,
-                    nameSuffix
-                )
-
-                # TODO: this needs to change
-                clonedTaskHolder.entry = weakref.ref(matchedChild)
-                matchedChild.taskHolderIndex = index
-                matchedChild.elementList = elementList
-                matchedChild.taskHolder = clonedTaskHolder
-
-                # option to enable the task holder
-                matchedChild.setCheckState(0, QtCore.Qt.Checked)
-
-                # emitting task holder option changed signal
-                try:
-                    self.taskHolderOptionChangedSignal.emit(clonedTaskHolder)
-                except Exception:
-                    traceback.print_exc()
-
-        self.resizeColumnToContents(0)
-        QtWidgets.QApplication.restoreOverrideCursor()
+        self.__clonedTaskHolders = list(map(lambda x: x.clone(), taskHolders))
+        self.__elements = list(elements)
+        self.__refreshWidgets()
 
     def executionTaskHolders(self):
         """
@@ -333,6 +248,98 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 self.__outputWidget.setReadOnly(True)
 
         return True
+
+    def __refreshWidgets(self):
+        """
+        Refresh all tasks/options widgets.
+        """
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        self.clear()
+
+        self.setHeaderItem(
+            QtWidgets.QTreeWidgetItem(
+                ("", "")
+            )
+        )
+
+        for index, taskHolder in enumerate(self.__clonedTaskHolders):
+            try:
+                matchedElements = taskHolder.query(self.__elements)
+            except Exception as error:
+                QtWidgets.QApplication.restoreOverrideCursor()
+                traceback.print_exc()
+
+                QtWidgets.QMessageBox.critical(
+                    self,
+                    "Template processing error",
+                    "<nobr>" + str(error).replace("\n", "<br>") + "</nobr>",
+                    QtWidgets.QMessageBox.Ok,
+                )
+                raise error
+
+            if taskHolder.importTemplates():
+                child = self.__createTask(self, taskHolder)
+                child.taskHolderIndex = index
+                child.taskHolder = taskHolder
+                continue
+
+            alreadyFailed = False
+            for elementList in Element.group(matchedElements):
+                nameSuffix = elementList[0].var('name')
+
+                if 'group' in elementList[0].tagNames():
+                    nameSuffix = "{} ({} total)".format(
+                        elementList[0].tag('group'),
+                        len(elementList)
+                    )
+
+                # checking if task has the setup method
+                if hasattr(taskHolder.task(), 'setup') and \
+                        hasattr(taskHolder.task().setup, '__call__'):
+
+                    try:
+                        taskHolder.task().setup(elementList)
+                    except Exception as err:
+                        traceback.print_exc()
+
+                        if not alreadyFailed:
+                            alreadyFailed = True
+                            self.__messageBox = QtWidgets.QMessageBox(
+                                self,
+                                "Task '{}' setup error".format(
+                                    taskHolder.task().type()
+                                ),
+                                QtWidgets.QMessageBox.Ok
+                            )
+                            self.__messageBox.setWindowModality(QtCore.Qt.NonModal)
+                            self.__messageBox.setIcon(QtWidgets.QMessageBox.Critical)
+                            self.__messageBox.setText(str(err))
+                            self.__messageBox.setDetailedText(str(err))
+                            self.__messageBox.show()
+
+                matchedChild = self.__createTask(
+                    self,
+                    taskHolder,
+                    nameSuffix
+                )
+
+                # TODO: this needs to change
+                taskHolder.entry = weakref.ref(matchedChild)
+                matchedChild.taskHolderIndex = index
+                matchedChild.elementList = elementList
+                matchedChild.taskHolder = taskHolder
+
+                # option to enable the task holder
+                matchedChild.setCheckState(0, QtCore.Qt.Checked)
+
+                # emitting task holder option changed signal
+                try:
+                    self.taskHolderOptionChangedSignal.emit(taskHolder, '')
+                except Exception:
+                    traceback.print_exc()
+
+        self.resizeColumnToContents(0)
+        QtWidgets.QApplication.restoreOverrideCursor()
 
     def __createSubtasks(self, parentEntry, taskHolder, mainOptions, path):
         """
@@ -793,22 +800,27 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         # emitting task holder option changed signal
         try:
-            self.taskHolderOptionChangedSignal.emit(taskHolder)
+            self.taskHolderOptionChangedSignal.emit(taskHolder, optionName)
         except Exception:
             traceback.print_exc()
 
-    def __onTaskHolderOptionChanged(self, taskHolder):
+    def __onTaskHolderOptionChanged(self, taskHolder, optionName):
         """
         Callback called when an option changes the task holder.
         """
+        # in case the option has the rebuild on change ui hint the whole UI will be redraw.
+        if optionName:
+            uiHintResetOnChange = 'ui.options.{}.rebuildOnChange'.format(optionName)
+            if taskHolder.task().hasMetadata(uiHintResetOnChange) and taskHolder.task().metadata(uiHintResetOnChange):
+                self.__refreshWidgets()
+                return
+
         if not self.__hasUpdateInfo(taskHolder):
             return
 
         elements = taskHolder.entry().elementList
         infoWidget = taskHolder.entry().infoWidget()
-
         infoResult = taskHolder.task().updateInfo(elements)
-
         infoWidget.setPlainText(str(infoResult))
 
     def __editStatus(self, widget, taskHolder, value=None):
