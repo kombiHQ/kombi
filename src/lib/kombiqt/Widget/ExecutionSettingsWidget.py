@@ -590,35 +590,30 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         path = path if not path else '{}/'.format(path)
         path += Template.runProcedure('camelcasetospaced', taskName)
 
+        if self.__hasUpdateInfo(taskHolder):
+            infoAreaEntry = QtWidgets.QTreeWidgetItem(taskChild)
+            infoAreaEntry.setData(0, QtCore.Qt.EditRole, '')
+            infoWidget = QtWidgets.QTextEdit(self)
+            infoWidget.setFont(QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont))
+            infoWidget.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
+            infoWidget.setObjectName('infoArea')
+            infoWidget.setMinimumHeight(100)
+            infoWidget.setMaximumHeight(100)
+            infoWidget.setReadOnly(True)
+
+            taskChild.infoWidget = weakref.ref(infoWidget)
+            self.setItemWidget(
+                infoAreaEntry,
+                1,
+                infoWidget
+            )
+
         # options
         if mainOptions is None:
             mainOptions = QtWidgets.QTreeWidgetItem(taskChild)
             mainOptions.setData(0, QtCore.Qt.EditRole, 'Options')
             mainOptions.setExpanded(True)
             mainOptions.setHidden(True)
-
-            if self.__hasUpdateInfo(taskHolder):
-                infoAreaGroup = QtWidgets.QTreeWidgetItem(taskChild)
-                infoAreaGroup.setData(0, QtCore.Qt.EditRole, 'Info')
-                infoAreaGroup.setExpanded(True)
-
-                infoAreaEntry = QtWidgets.QTreeWidgetItem(infoAreaGroup)
-                infoAreaEntry.setData(0, QtCore.Qt.EditRole, '')
-                infoWidget = QtWidgets.QTextEdit(self)
-                infoWidget.setFont(QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont))
-                infoWidget.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
-                infoWidget.setObjectName('infoArea')
-                infoWidget.setMinimumHeight(100)
-                infoWidget.setMaximumHeight(100)
-
-                infoWidget.setReadOnly(True)
-
-                taskChild.infoWidget = weakref.ref(infoWidget)
-                self.setItemWidget(
-                    infoAreaEntry,
-                    1,
-                    infoWidget
-                )
 
         # only showing task advanced in under the root level once
         if isRootTask:
