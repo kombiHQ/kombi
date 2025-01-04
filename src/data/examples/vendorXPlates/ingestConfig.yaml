@@ -13,6 +13,9 @@ vars:
 tasks:
 - run: convertImage
   options:
+    preset: ""
+    preset2: ""
+    preset3: ""
     bla: ""
     aab:
       bla: 1
@@ -29,6 +32,19 @@ tasks:
   metadata:
     ui:
       options:
+        preset:
+          main: True
+          presets: ['A', 'B', 'C']
+          visual: "presets"
+          styleSheet: "background-color: #00FF00; color: #000000"
+        preset2:
+          main: True
+          presets: ['A', 'B', 'C']
+          visual: "presets"
+        preset3:
+          main: True
+          presets: ['A', 'B', 'C']
+          visual: "presets"
         aab:
           main: True
           items:

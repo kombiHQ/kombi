@@ -570,6 +570,12 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
                 signal = w.textEdited
 
+
+        # in case a custom style sheet has been defined for the option
+        customStyleSheet = 'ui.options.{}.styleSheet'.format(optionName)
+        if taskHolder.task().hasMetadata(customStyleSheet):
+            w.setStyleSheet(taskHolder.task().metadata(customStyleSheet))
+
         if signal:
             signal.connect(functools.partial(self.__editOption, signalWidget or w, optionName, taskHolder, assignTo))
 
