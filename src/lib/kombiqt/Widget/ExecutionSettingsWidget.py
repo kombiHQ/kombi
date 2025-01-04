@@ -618,14 +618,14 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         # options
         if mainOptions is None:
             mainOptions = QtWidgets.QTreeWidgetItem(taskChild)
-            mainOptions.setData(0, QtCore.Qt.EditRole, 'Options')
+            mainOptions.setData(0, QtCore.Qt.EditRole, 'Main')
             mainOptions.setExpanded(True)
             mainOptions.setHidden(True)
 
         # only showing task advanced in under the root level once
         if isRootTask:
             advancedEntry = QtWidgets.QTreeWidgetItem(taskChild)
-            advancedEntry.setData(0, QtCore.Qt.EditRole, 'Task advanced')
+            advancedEntry.setData(0, QtCore.Qt.EditRole, 'Advanced')
             advancedEntry.setExpanded(False)
         else:
             advancedEntry = taskChild
