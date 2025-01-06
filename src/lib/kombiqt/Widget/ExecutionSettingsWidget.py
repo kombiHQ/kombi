@@ -3,8 +3,7 @@ import datetime
 import functools
 import traceback
 import weakref
-from .CheckComboBox import CheckComboBox
-from ..Resource import Resource
+from ..OptionVisual import OptionVisual
 from kombi.Element import Element
 from kombi.Task import Task, TaskValidationError
 from kombi.Template import Template
@@ -323,7 +322,6 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                     nameSuffix
                 )
 
-                # TODO: this needs to change
                 taskHolder.entry = weakref.ref(matchedChild)
                 matchedChild.taskHolderIndex = index
                 matchedChild.elementList = elementList
@@ -353,233 +351,19 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             for childTaskHolder in taskHolder.subTaskHolders():
                 self.__createTask(subTaskChild, childTaskHolder, mainOptions=mainOptions, path=path)
 
-    def __buildOptionWidget(self, taskHolder, optionName, value, assignTo, mainOptions):
-        w = None
-        signalWidget = None
-        signal = None
-        assignTo = list(assignTo)
+    def __buildOptionWidget(self, taskHolder, optionName, optionValue):
+        """
+        Create the option widget.
+        """
+        uiHints = {}
         uiOptionMetadataName = 'ui.options.{}'.format(optionName)
-        uiOptionVisualName = '{}.visual'.format(uiOptionMetadataName)
+        if taskHolder.task().hasMetadata(uiOptionMetadataName):
+            uiHints = taskHolder.task().metadata(uiOptionMetadataName)
 
-        # boolean type
-        if isinstance(value, bool):
-            w = QtWidgets.QCheckBox()
-            w.setChecked(value)
-            signal = w.stateChanged
+        optionVisualWidget = OptionVisual.create(optionName, optionValue, uiHints)
+        optionVisualWidget.valueChanged.connect(functools.partial(self.__onEditOption, taskHolder, optionName))
 
-        # array type used as check list
-        elif isinstance(value, (list, tuple)) and taskHolder.task().hasMetadata(uiOptionVisualName) and \
-                taskHolder.task().metadata(uiOptionVisualName) == 'checkList':
-            w = CheckComboBox(self, placeholderText="None")
-            model = w.model()
-
-            values = []
-            uiValuesListName = '{}.values'.format(uiOptionMetadataName)
-            if taskHolder.task().hasMetadata(uiValuesListName):
-                for value in taskHolder.task().metadata(uiValuesListName):
-                    values.append(value)
-
-            w.allValues = values
-            for index, value in enumerate(values):
-                w.addItem(str(value))
-
-                if value in values:
-                    model.item(index).setCheckable(True)
-            signal = model.dataChanged
-
-        # array type
-        elif isinstance(value, (list, tuple)):
-            w = CustomTreeWidget(self)
-            w.setRootIsDecorated(False)
-            w.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-            w.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
-            w.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-            w.setColumnCount(2)
-            w.header().hide()
-            w.setMinimumHeight(200)
-            w.setMaximumHeight(200)
-            w.setAlternatingRowColors(True)
-
-            for index, itemValue in enumerate(value):
-                assignToItem = list(assignTo)
-                assignToItem.append(index)
-
-                # main option
-                uiOptionMainName = 'ui.options.{}'.format(optionName)
-                uiOptionMetadataName = "{}.items.{}.main".format(uiOptionMainName, '.'.join(map(str, assignToItem)))
-                isMainOption = taskHolder.task().hasMetadata(uiOptionMetadataName) and taskHolder.task().metadata(uiOptionMetadataName)
-                childItem = QtWidgets.QTreeWidgetItem(mainOptions if isMainOption else None)
-
-                # label option
-                uiOptionLabelName = "{}.items.{}.label".format(uiOptionMainName, '.'.join(map(str, assignToItem)))
-                labelOption = taskHolder.task().metadata(uiOptionLabelName) if taskHolder.task().hasMetadata(uiOptionLabelName) and taskHolder.task().metadata(uiOptionLabelName) else Template.runProcedure('camelcasetospaced', str(index))
-
-                # check custom label name option here
-                childItem.setText(0, str(labelOption))
-                w.addTopLevelItem(childItem)
-                childWidget = self.__buildOptionWidget(taskHolder, optionName, itemValue, assignToItem, mainOptions)
-
-                # check main option here
-                if isMainOption:
-                    self.setItemWidget(childItem, 1, childWidget)
-                else:
-                    w.setItemWidget(childItem, 1, childWidget)
-            w.resizeColumnToContents(0)
-
-        # hashmap type
-        elif isinstance(value, dict):
-            w = CustomTreeWidget(self)
-            w.setRootIsDecorated(False)
-            w.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-            w.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
-            w.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-            w.setColumnCount(2)
-            w.header().hide()
-            w.setMinimumHeight(200)
-            w.setMaximumHeight(200)
-            w.setAlternatingRowColors(True)
-
-            for key, itemValue in value.items():
-                assignToItem = list(assignTo)
-                assignToItem.append(key)
-
-                # main option
-                uiOptionMainName = 'ui.options.{}'.format(optionName)
-                uiOptionMetadataName = '{}.items.{}.main'.format(uiOptionMainName, '.'.join(map(str, assignToItem)))
-                isMainOption = taskHolder.task().hasMetadata(uiOptionMetadataName) and taskHolder.task().metadata(uiOptionMetadataName)
-
-                childItem = QtWidgets.QTreeWidgetItem(mainOptions if isMainOption else None)
-
-                # label option
-                uiOptionLabelName = '{}.items.{}.label'.format(uiOptionMainName, '.'.join(map(str, assignToItem)))
-                labelOption = taskHolder.task().metadata(uiOptionLabelName) if taskHolder.task().hasMetadata(uiOptionLabelName) and taskHolder.task().metadata(uiOptionLabelName) else Template.runProcedure('camelcasetospaced', str(key))
-
-                # check custom label name option here
-                childItem.setText(0, str(labelOption))
-
-                w.addTopLevelItem(childItem)
-                childWidget = self.__buildOptionWidget(taskHolder, optionName, itemValue, assignToItem, mainOptions)
-
-                # check main option here
-                if isMainOption:
-                    self.setItemWidget(childItem, 1, childWidget)
-                else:
-                    w.setItemWidget(childItem, 1, childWidget)
-
-            w.resizeColumnToContents(0)
-
-        # integer type
-        elif isinstance(value, int):
-            w = QtWidgets.QSpinBox()
-            w.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
-            w.setMaximumWidth(150)
-            w.setRange(-99999999, 99999999)
-            w.setValue(value)
-            signal = w.editingFinished
-
-        # float type
-        elif isinstance(value, float):
-            w = QtWidgets.QDoubleSpinBox()
-            w.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
-            w.setMaximumWidth(150)
-            w.setRange(-99999999, 99999999)
-            w.setValue(value)
-            signal = w.editingFinished
-
-        # string type
-        else:
-            uiOptionMetadataName = 'ui.options.{}'.format(optionName)
-            if assignTo:
-                uiOptionMetadataName = '{}.items.{}'.format(uiOptionMetadataName, '.'.join(map(str, assignTo)))
-
-            uiOptionVisualName = '{}.visual'.format(uiOptionMetadataName)
-            customVisual = taskHolder.task().metadata(uiOptionVisualName) if taskHolder.task().hasMetadata(uiOptionVisualName) else None
-
-            if customVisual == 'longText':
-                w = QtWidgets.QTextEdit(self)
-                w.setMinimumHeight(100)
-                w.setMaximumHeight(100)
-                w.setPlainText(str(value))
-                signal = w.textChanged
-
-            elif customVisual == 'directoryPath':
-                uiPresetListName = '{}.presets'.format(uiOptionMetadataName)
-                presets = [
-                    str(value)
-                ]
-                if taskHolder.task().hasMetadata(uiPresetListName):
-                    for preset in taskHolder.task().metadata(uiPresetListName):
-                        if preset in presets:
-                            continue
-                        presets.append(preset)
-
-                editableWidget = QtWidgets.QComboBox(self) if len(presets) > 1 else QtWidgets.QLineEdit(str(value))
-                editableWidget.setFocusPolicy(QtCore.Qt.ClickFocus)
-                if len(presets) > 1:
-                    editableWidget.addItems(presets)
-                    editableWidget.setEditable(True)
-
-                signalWidget = editableWidget
-                signal = editableWidget.currentTextChanged if len(presets) > 1 else editableWidget.textChanged
-                folderPicker = QtWidgets.QPushButton('Select Directory')
-                folderPicker.clicked.connect(functools.partial(self.__onPickerSelectDir, editableWidget))
-                folderPicker.setIcon(Resource.icon("icons/folder.png"))
-
-                w = QtWidgets.QWidget(self)
-                layout = QtWidgets.QHBoxLayout()
-                layout.setContentsMargins(2, 2, 2, 2)
-                layout.addWidget(editableWidget, 10)
-                layout.addWidget(folderPicker, 0)
-                w.setLayout(layout)
-
-            elif customVisual == 'presets':
-                w = QtWidgets.QComboBox(self)
-                w.setFocusPolicy(QtCore.Qt.ClickFocus)
-
-                presets = [
-                    str(value)
-                ]
-
-                # preset list
-                uiPresetListName = '{}.presets'.format(uiOptionMetadataName)
-                if taskHolder.task().hasMetadata(uiPresetListName):
-                    for preset in taskHolder.task().metadata(uiPresetListName):
-                        if preset in presets:
-                            continue
-                        presets.append(preset)
-
-                # editable presets
-                uiEditableName = '{}.editable'.format(uiOptionMetadataName)
-                if taskHolder.task().hasMetadata(uiEditableName) and taskHolder.task().metadata(uiEditableName):
-                    w.setEditable(True)
-
-                w.addItems(presets)
-                signal = w.currentTextChanged
-            else:
-                w = QtWidgets.QLineEdit(str(value))
-
-                regex = '{}.regex'.format(uiOptionMetadataName)
-                if taskHolder.task().hasMetadata(regex):
-                    w.setValidator(QtGui.QRegExpValidator(taskHolder.task().metadata(regex)))
-
-                caseStyle = '{}.caseStyle'.format(uiOptionMetadataName)
-                if taskHolder.task().hasMetadata(caseStyle):
-                    def __toCase(w, case, text):
-                        w.setText(text.upper() if case == 'uppercase' else text.lower())
-                    w.textEdited.connect(functools.partial(__toCase, w, taskHolder.task().metadata(caseStyle)))
-
-                signal = w.textEdited
-
-
-        # in case a custom style sheet has been defined for the option
-        customStyleSheet = 'ui.options.{}.styleSheet'.format(optionName)
-        if taskHolder.task().hasMetadata(customStyleSheet):
-            w.setStyleSheet(taskHolder.task().metadata(customStyleSheet))
-
-        if signal:
-            signal.connect(functools.partial(self.__editOption, signalWidget or w, optionName, taskHolder, assignTo))
-
-        return w
+        return optionVisualWidget
 
     def __hasUpdateInfo(self, taskHolder):
         """
@@ -661,10 +445,9 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             if tooltip:
                 optionEntry.setToolTip(0, tooltip)
 
-            value = taskHolder.task().option(optionName)
-            w = self.__buildOptionWidget(taskHolder, optionName, value, [], mainOptions)
-
-            self.setItemWidget(optionEntry, 1, w)
+            optionValue = taskHolder.task().option(optionName)
+            optionVisualWidget = self.__buildOptionWidget(taskHolder, optionName, optionValue)
+            self.setItemWidget(optionEntry, 1, optionVisualWidget)
 
         # advanced
         taskSetupEntry = QtWidgets.QTreeWidgetItem(advancedEntry)
@@ -766,43 +549,11 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         return taskChild
 
-    def __editOption(self, widget, optionName, taskHolder, assignTo, value=None, *args):
+    def __onEditOption(self, taskHolder, optionName, optionValue):
         """
         Edit a task holder option.
         """
-        optionValue = taskHolder.task().option(optionName)
-        if isinstance(widget, QtWidgets.QCheckBox):
-            value = widget.isChecked()
-
-        elif isinstance(widget, CheckComboBox):
-            checkedIndices = widget.checkedIndices()
-            value = []
-            for index in checkedIndices:
-                value.append(widget.allValues[index])
-
-        elif isinstance(widget, QtWidgets.QComboBox):
-            value = widget.currentText()
-
-        elif isinstance(widget, QtWidgets.QLineEdit):
-            value = widget.text()
-
-        elif isinstance(widget, QtWidgets.QTextEdit):
-            value = widget.toPlainText()
-
-        elif isinstance(widget, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
-            value = widget.value()
-        else:
-            return
-
-        if assignTo:
-            # changing data in-place
-            currentLevel = optionValue
-            for assignLevel in assignTo[:-1]:
-                currentLevel = currentLevel[assignLevel]
-            currentLevel[assignTo[-1]] = value
-            value = optionValue
-
-        taskHolder.task().setOption(optionName, value)
+        taskHolder.task().setOption(optionName, optionValue)
 
         # emitting task holder option changed signal
         try:
@@ -848,23 +599,3 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         elif template == "export":
             taskHolder.exportTemplate().setInputString(value)
-
-    def __onPickerSelectDir(self, editableWidget, *args, **kwargs):
-        """
-        Callback triggered when select directory button is pressed.
-        """
-        currentPath = editableWidget.text() if isinstance(editableWidget, QtWidgets.QLineEdit) else editableWidget.currentText()
-        initialPath = currentPath if os.path.exists(currentPath) else ""
-
-        selectedFolder = QtWidgets.QFileDialog().getExistingDirectory(
-            self,
-            "Select Directory",
-            initialPath,
-            QtWidgets.QFileDialog.ShowDirsOnly
-        )
-
-        if selectedFolder:
-            if isinstance(editableWidget, QtWidgets.QLineEdit):
-                editableWidget.setText(selectedFolder)
-            else:
-                editableWidget.setCurrentText(selectedFolder)
