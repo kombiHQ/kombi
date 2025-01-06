@@ -1,4 +1,7 @@
 import sys
+from . import OptionVisual
+from . import Widget
+from . import Window
 from .App import App
 
 def init():
