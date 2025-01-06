@@ -18,6 +18,7 @@ tasks:
     bool: True
     float: 0.1
     int: 1
+    hidden: "not visible"
     array:
       - 1
       - 2
@@ -52,6 +53,9 @@ tasks:
           main: True
         int:
           main: True
+        hidden:
+          main: True
+          hidden: True
         array:
           main: True
         longText:

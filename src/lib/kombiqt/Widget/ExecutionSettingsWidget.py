@@ -421,9 +421,15 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             advancedEntry = taskChild
 
         for optionName in taskHolder.task().optionNames():
+            uiOptionMetadataName = 'ui.options.{}'.format(optionName)
+
+            # in case the hidden metadata is defined we don't render it
+            hiddenMetadata = f'{uiOptionMetadataName}.hidden'
+            if taskHolder.task().hasMetadata(hiddenMetadata) and taskHolder.task().metadata(hiddenMetadata):
+                continue
+
             parentEntry = advancedEntry
             optionDisplayName = Template.runProcedure('camelcasetospaced', optionName)
-            uiOptionMetadataName = 'ui.options.{}'.format(optionName)
 
             # main option
             uiOptionMainName = '{}.main'.format(uiOptionMetadataName)
