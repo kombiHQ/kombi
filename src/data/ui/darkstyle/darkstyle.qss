@@ -358,15 +358,6 @@ QTextEdit:focus, QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus{
   border-color:rgb(42, 130, 218);
 }
 
-QTextEdit#infoArea{
-  border-color: rgb(33, 34, 43);
-  background-color: rgb(49, 51, 63);
-}
-
-QTextEdit#infoAreaHidden{
-  display: none;
-}
-
 QPushButton#columnButton {
   padding: 2px;
   margin: 2px;
