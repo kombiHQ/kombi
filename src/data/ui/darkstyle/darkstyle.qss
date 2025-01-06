@@ -418,3 +418,7 @@ QTextEdit#codeEditor {
 QTextEdit#codeEditor:focus {
     border: 1px solid #182131
 }
+
+QWidget#treeItemSeparator {
+    background-color: #555555;
+}

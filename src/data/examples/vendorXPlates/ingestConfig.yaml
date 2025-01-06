@@ -19,6 +19,7 @@ tasks:
     float: 0.1
     int: 1
     hidden: "not visible"
+    separator: "separate me"
     array:
       - 1
       - 2
@@ -56,6 +57,9 @@ tasks:
         hidden:
           main: True
           hidden: True
+        separator:
+          main: True
+          separator: True
         array:
           main: True
         longText:

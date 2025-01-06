@@ -441,12 +441,20 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                     Template.runProcedure('camelcasetospaced', optionName)
                 )
 
+            # in case there is a separator hint
+            hiddenMetadata = f'{uiOptionMetadataName}.separator'
+            if taskHolder.task().hasMetadata(hiddenMetadata) and taskHolder.task().metadata(hiddenMetadata):
+                separatorEntry = QtWidgets.QTreeWidgetItem(parentEntry)
+                self.setItemWidget(separatorEntry, 0, _TreeItemSeparatorWidget())
+                self.setItemWidget(separatorEntry, 1, _TreeItemSeparatorWidget())
+
             # custom label
             uiOptionLabelName = '{}.label'.format(uiOptionMetadataName)
             customLabel = taskHolder.task().metadata(uiOptionLabelName) if taskHolder.task().hasMetadata(uiOptionLabelName) else optionDisplayName
 
             optionEntry = QtWidgets.QTreeWidgetItem(parentEntry)
             optionEntry.setData(0, QtCore.Qt.EditRole, customLabel)
+            optionEntry.setTextAlignment(0, QtCore.Qt.AlignCenter)
 
             if tooltip:
                 optionEntry.setToolTip(0, tooltip)
@@ -605,3 +613,18 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         elif template == "export":
             taskHolder.exportTemplate().setInputString(value)
+
+class _TreeItemSeparatorWidget(QtWidgets.QWidget):
+    """
+    Implements a basic separator widget.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.setLayout(QtWidgets.QVBoxLayout())
+        self.layout().setContentsMargins(0, 0, 0, 0)
+        separatorWidget = QtWidgets.QWidget()
+        separatorWidget.setObjectName('treeItemSeparator')
+        separatorWidget.setFixedHeight(2)
+        self.layout().addWidget(separatorWidget)
