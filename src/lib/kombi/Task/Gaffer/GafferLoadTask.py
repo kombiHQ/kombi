@@ -1,11 +1,8 @@
 import os
-import json
-import time
 from glob import glob
 from ..Task import Task, TaskError, TaskValidationError
 from ..External.GafferTask import GafferTask
 from ...Element import Element
-from ...Template import Template
 from ...Element.Fs.FsElement import FsElement
 
 class GafferLoadTaskError(TaskError):

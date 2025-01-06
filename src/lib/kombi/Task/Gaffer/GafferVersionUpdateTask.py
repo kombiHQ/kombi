@@ -1,7 +1,5 @@
 import os
-import json
 import sys
-import time
 import traceback
 from ..Task import Task, TaskError, TaskValidationError
 from ..External.GafferTask import GafferTask

@@ -8,7 +8,7 @@ from kombi.Element import Element
 from kombi.Task import Task, TaskValidationError
 from kombi.Template import Template
 from kombi.ProcessExecution import ProcessExecution
-from Qt import QtCore, QtWidgets, QtGui
+from Qt import QtCore, QtWidgets
 
 class ExecutionSettingsWidgetError(Exception):
     """
