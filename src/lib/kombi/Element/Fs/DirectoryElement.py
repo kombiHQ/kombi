@@ -41,6 +41,23 @@ class DirectoryElement(FsElement):
         """
         return False
 
+    def join(self, *levelNames):
+        """
+        Return a child element based on the input level path names (if not found return None instead).
+        """
+        current = self
+        for levelName in levelNames:
+            found = False
+            for child in current.children():
+                if child.var('name') == levelName:
+                    current = child
+                    found = True
+                    break
+            if not found:
+                return None
+
+        return current
+
     @classmethod
     def test(cls, path, parentElement):
         """
