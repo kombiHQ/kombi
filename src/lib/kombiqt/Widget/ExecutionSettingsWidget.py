@@ -365,12 +365,6 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         return optionVisualWidget
 
-    def __hasUpdateInfo(self, taskHolder):
-        """
-        Return a boolean telling if the task held by the task holder has the update info method.
-        """
-        return hasattr(taskHolder.task(), 'updateInfo') and hasattr(taskHolder.task().updateInfo, '__call__')
-
     def __createTask(self, parentEntry, taskHolder, suffix='', mainOptions=None, path=''):
         """
         Create the task widget information.
@@ -386,24 +380,6 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         # creating the path
         path = path if not path else '{}/'.format(path)
         path += Template.runProcedure('camelcasetospaced', taskName)
-
-        if self.__hasUpdateInfo(taskHolder):
-            infoAreaEntry = QtWidgets.QTreeWidgetItem(taskChild)
-            infoAreaEntry.setData(0, QtCore.Qt.EditRole, '')
-            infoWidget = QtWidgets.QTextEdit(self)
-            infoWidget.setFont(QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont))
-            infoWidget.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
-            infoWidget.setObjectName('infoArea')
-            infoWidget.setMinimumHeight(100)
-            infoWidget.setMaximumHeight(100)
-            infoWidget.setReadOnly(True)
-
-            taskChild.infoWidget = weakref.ref(infoWidget)
-            self.setItemWidget(
-                infoAreaEntry,
-                1,
-                infoWidget
-            )
 
         # options
         if mainOptions is None:
@@ -580,19 +556,12 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         Callback called when an option changes the task holder.
         """
         # in case the option has the rebuild on change ui hint the whole UI will be redraw.
-        if optionName:
-            uiHintResetOnChange = 'ui.options.{}.rebuildOnChange'.format(optionName)
-            if taskHolder.task().hasMetadata(uiHintResetOnChange) and taskHolder.task().metadata(uiHintResetOnChange):
-                self.__refreshWidgets()
-                return
-
-        if not self.__hasUpdateInfo(taskHolder):
+        if not optionName:
             return
 
-        elements = taskHolder.entry().elementList
-        infoWidget = taskHolder.entry().infoWidget()
-        infoResult = taskHolder.task().updateInfo(elements)
-        infoWidget.setPlainText(str(infoResult))
+        uiHintResetOnChange = 'ui.options.{}.rebuildOnChange'.format(optionName)
+        if taskHolder.task().hasMetadata(uiHintResetOnChange) and taskHolder.task().metadata(uiHintResetOnChange):
+            self.__refreshWidgets()
 
     def __editStatus(self, widget, taskHolder, value=None):
         """

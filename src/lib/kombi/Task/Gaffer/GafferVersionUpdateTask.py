@@ -42,30 +42,6 @@ class GafferVersionUpdateTask(Task):
             }
         )
 
-    def updateInfo(self, elements):
-        """
-        Return a text output displayed in the info area of the element.
-        """
-        versionsPath = elements[0].var('versionsPath')
-        version = self.option('version')
-
-        jsonInfoFilePath = os.path.join(versionsPath, version, 'info.json')
-        jsonContents = {}
-        if os.path.exists(jsonInfoFilePath):
-            with open(jsonInfoFilePath) as f:
-                jsonContents = json.load(f)
-
-            jsonContents['createdTime'] = time.strftime(
-                '%Y-%m-%d %H:%M:%S',
-                time.strptime(time.ctime(os.path.getctime(jsonInfoFilePath)))
-            )
-
-        output = []
-        for key, value in jsonContents.items():
-            output.append("{}: {}".format(Template.runProcedure('camelcasetospaced', key), value))
-
-        return '\n'.join(output)
-
     def setup(self, elements):
         """
         Setting the initial value for output dir.
