@@ -20,16 +20,24 @@ class HashmapOptionVisual(OptionVisual):
         """
         Implement the widget.
         """
-        mainLayout = QtWidgets.QFormLayout()
-        mainLayout.setContentsMargins(2, 2, 2, 2)
-        self.setLayout(mainLayout)
+        formLayout = QtWidgets.QFormLayout()
+        formLayout.setContentsMargins(4, 4, 4, 4)
 
         itemsUiHints = self.uiHints().get('items', {})
         for optionName, optionValue in self.optionValue().items():
             uiHints = itemsUiHints.get(optionName, {})
             itemWidget = OptionVisual.create(optionName, optionValue, uiHints)
             itemWidget.valueChanged.connect(functools.partial(self.__onItemValueChanged, optionName))
-            mainLayout.addRow(uiHints.get('label', optionName), itemWidget)
+            formLayout.addRow(uiHints.get('label', optionName), itemWidget)
+
+        frameWidget = QtWidgets.QFrame()
+        frameWidget.setObjectName('optionVisualContainer')
+        frameWidget.setLayout(formLayout)
+
+        mainLayout = QtWidgets.QHBoxLayout()
+        mainLayout.setContentsMargins(2, 2, 2, 2)
+        mainLayout.addWidget(frameWidget)
+        self.setLayout(mainLayout)
 
     def __onItemValueChanged(self, optionName, newValue):
         """

@@ -413,3 +413,9 @@ QTextEdit#codeEditor:focus {
 QWidget#treeItemSeparator {
     background-color: #555555;
 }
+
+QFrame#optionVisualContainer{
+    border: 1px solid #111111;
+    background-color: #353535;
+    border-radius:4px;
+}
