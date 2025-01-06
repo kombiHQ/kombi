@@ -13,6 +13,20 @@ vars:
 tasks:
 - run: convertImage
   options:
+    filePath: ""
+    filePath2: ""
+    bool: True
+    float: 0.1
+    int: 1
+    array:
+      - 1
+      - 2
+      - 3
+      - True
+      - False
+      - null
+    longText: ""
+    text: ""
     preset: ""
     preset2: ""
     preset3: ""
@@ -32,6 +46,26 @@ tasks:
   metadata:
     ui:
       options:
+        bool:
+          main: True
+        float:
+          main: True
+        int:
+          main: True
+        array:
+          main: True
+        longText:
+          main: True
+          visual: "longText"
+        text:
+          main: True
+        filePath:
+          main: True
+          visual: "directoryPath"
+        filePath2:
+          main: True
+          visual: "directoryPath"
+          presets: ["A", "B", "C"]
         preset:
           main: True
           presets: ['A', 'B', 'C']
