@@ -62,6 +62,9 @@ tasks:
           separator: True
         array:
           main: True
+          items:
+            '1':
+              label: "Custom Label"
         longText:
           main: True
           visual: "longText"

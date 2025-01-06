@@ -30,7 +30,7 @@ class ArrayOptionVisual(OptionVisual):
             uiHints = itemsUiHints.get(optionName, {})
             itemWidget = OptionVisual.create(optionName, optionValue, uiHints)
             itemWidget.valueChanged.connect(functools.partial(self.__onItemValueChanged, i))
-            mainLayout.addRow(optionName, itemWidget)
+            mainLayout.addRow(uiHints.get('label', optionName), itemWidget)
 
     def __onItemValueChanged(self, index, newValue):
         """
