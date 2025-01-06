@@ -78,7 +78,7 @@ class OptionVisual(QtWidgets.QWidget):
             registeredName = 'null'
 
         if registeredName is None:
-            for valueType, fallbackRegisteredName in reversed(cls.__registeredFallbackDefaultVisuals.items()):
+            for valueType, fallbackRegisteredName in reversed(list(cls.__registeredFallbackDefaultVisuals.items())):
                 if isinstance(optionValue, valueType):
                     registeredName = fallbackRegisteredName
                     break
