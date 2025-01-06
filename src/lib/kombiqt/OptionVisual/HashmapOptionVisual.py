@@ -42,4 +42,4 @@ class HashmapOptionVisual(OptionVisual):
 
 
 OptionVisual.register('hashmap', HashmapOptionVisual)
-OptionVisual.registerFallbackDefaultVisual(dict, 'hashmap')
+OptionVisual.registerFallbackDefaultVisual('hashmap', dict)

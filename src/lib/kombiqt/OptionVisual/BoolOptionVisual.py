@@ -38,4 +38,4 @@ class BoolOptionVisual(OptionVisual):
 
 
 OptionVisual.register('bool', BoolOptionVisual)
-OptionVisual.registerFallbackDefaultVisual(bool, 'bool')
+OptionVisual.registerFallbackDefaultVisual('bool', bool)

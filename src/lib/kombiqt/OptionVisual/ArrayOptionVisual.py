@@ -43,5 +43,5 @@ class ArrayOptionVisual(OptionVisual):
 
 
 OptionVisual.register('array', ArrayOptionVisual)
-OptionVisual.registerFallbackDefaultVisual(list, 'array')
-OptionVisual.registerFallbackDefaultVisual(tuple, 'array')
+OptionVisual.registerFallbackDefaultVisual('array', list)
+OptionVisual.registerFallbackDefaultVisual('array', tuple)

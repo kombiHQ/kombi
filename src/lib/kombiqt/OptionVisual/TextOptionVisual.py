@@ -50,4 +50,4 @@ class TextOptionVisual(OptionVisual):
 
 
 OptionVisual.register('text', TextOptionVisual)
-OptionVisual.registerFallbackDefaultVisual(str, 'text')
+OptionVisual.registerFallbackDefaultVisual('text', str)

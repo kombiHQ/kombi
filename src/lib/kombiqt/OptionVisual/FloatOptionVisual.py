@@ -41,4 +41,4 @@ class FloatOptionVisual(OptionVisual):
 
 
 OptionVisual.register('float', FloatOptionVisual)
-OptionVisual.registerFallbackDefaultVisual(float, 'float')
+OptionVisual.registerFallbackDefaultVisual('float', float)

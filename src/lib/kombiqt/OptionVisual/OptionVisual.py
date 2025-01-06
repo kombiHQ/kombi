@@ -98,13 +98,13 @@ class OptionVisual(QtWidgets.QWidget):
         return cls.__registeredOptionVisuals
 
     @classmethod
-    def registerFallbackDefaultVisual(cls, valueType, name):
+    def registerFallbackDefaultVisual(cls, registeredName, valueType):
         """
         Register a fallback default visual which is used when the visual is not defined under the uiHints.
         """
-        assert isinstance(name, str), 'Invalid name str type'
-        assert name in cls.__registeredOptionVisuals, 'Invalid Option Visual (not registered): {}'.format(name)
-        cls.__registeredFallbackDefaultVisuals[valueType] = name
+        assert isinstance(registeredName, str), 'Invalid registeredName str type'
+        assert registeredName in cls.__registeredOptionVisuals, 'Invalid Option Visual (not registered): {}'.format(registeredName)
+        cls.__registeredFallbackDefaultVisuals[valueType] = registeredName
 
     @classmethod
     def register(cls, name, optionVisualClass):

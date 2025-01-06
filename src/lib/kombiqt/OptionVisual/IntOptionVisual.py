@@ -41,4 +41,4 @@ class IntOptionVisual(OptionVisual):
 
 
 OptionVisual.register('int', IntOptionVisual)
-OptionVisual.registerFallbackDefaultVisual(int, 'int')
+OptionVisual.registerFallbackDefaultVisual('int', int)
