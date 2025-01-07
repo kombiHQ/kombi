@@ -1039,6 +1039,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         selectedColumn = selectedIndexes[0].column()
         menu = QtWidgets.QMenu(self)
+        subMenus = {}
         if selectedColumn == 0:
             elements = self.__selectedElements()
             for index, taskHolder in enumerate(self.__taskHolders):
@@ -1056,7 +1057,17 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     pass
                 else:
                     taskName += ' ...'
-                action = menu.addAction(taskName)
+
+                currentLevel = ""
+                currentMenu = menu
+                for level in taskName.split('/')[:-1]:
+                    currentLevel += '/{level}'
+                    if level not in subMenus:
+                        currentMenu = QtWidgets.QMenu(level)
+                        subMenus[currentLevel] = currentMenu
+                    currentMenu = subMenus[currentLevel]
+
+                action = currentMenu.addAction(os.path.basename(taskName) if currentLevel else taskName)
                 action.triggered.connect(functools.partial(self.__onRunTaskHolder, index, filteredElements))
         elif self.__checkableState is not None:
             action = menu.addAction('Override Value')
