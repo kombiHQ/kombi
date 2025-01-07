@@ -430,7 +430,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
             optionEntry = QtWidgets.QTreeWidgetItem(parentEntry)
             optionEntry.setData(0, QtCore.Qt.EditRole, customLabel)
-            optionEntry.setTextAlignment(0, QtCore.Qt.AlignCenter)
+            optionEntry.setTextAlignment(0, QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
 
             if tooltip:
                 optionEntry.setToolTip(0, tooltip)
@@ -446,6 +446,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         if 'contextConfig' in taskHolder.varNames():
             configName = QtWidgets.QTreeWidgetItem(taskSetupEntry)
             configName.setData(0, QtCore.Qt.EditRole, 'Config')
+            configName.setTextAlignment(0, QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
             configName.setData(1, QtCore.Qt.EditRole, taskHolder.var('contextConfig'))
 
         # status
@@ -467,6 +468,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             statusEntry.setToolTip(0, tooltip)
 
         statusEntry.setData(0, QtCore.Qt.EditRole, customLabel)
+        statusEntry.setTextAlignment(0, QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
         statusWidget = QtWidgets.QComboBox()
         statusList = [
             taskHolder.status()
@@ -492,6 +494,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         # target template
         templateEntry = QtWidgets.QTreeWidgetItem(taskSetupEntry)
         templateEntry.setData(0, QtCore.Qt.EditRole, 'Target')
+        templateEntry.setTextAlignment(0, QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
         templateWidget = QtWidgets.QLineEdit(taskHolder.targetTemplate().inputString())
         self.setItemWidget(
             templateEntry,
@@ -503,6 +506,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         # filter template
         filterTemplate = QtWidgets.QTreeWidgetItem(taskSetupEntry)
         filterTemplate.setData(0, QtCore.Qt.EditRole, 'Filter')
+        filterTemplate.setTextAlignment(0, QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
         templateWidget = QtWidgets.QLineEdit(taskHolder.filterTemplate().inputString())
         self.setItemWidget(
             filterTemplate,
@@ -514,6 +518,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         # export
         exportEntry = QtWidgets.QTreeWidgetItem(taskSetupEntry)
         exportEntry.setData(0, QtCore.Qt.EditRole, 'Export')
+        exportEntry.setTextAlignment(0, QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
         templateWidget = QtWidgets.QLineEdit(taskHolder.exportTemplate().inputString())
         self.setItemWidget(
             exportEntry,
@@ -526,6 +531,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         if taskHolder.importTemplates():
             importsChild = QtWidgets.QTreeWidgetItem(taskSetupEntry)
             importsChild.setData(0, QtCore.Qt.EditRole, 'Imports')
+            importsChild.setTextAlignment(0, QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
 
             for importTemplate in taskHolder.importTemplates():
                 child = QtWidgets.QTreeWidgetItem(importsChild)
