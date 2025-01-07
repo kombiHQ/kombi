@@ -10,13 +10,14 @@ class Config(object):
     """
     __configBaseDirectoryEnv = os.environ.get('KOMBI_CONFIG_DIRECTORY')
 
-    def __init__(self, name):
+    def __init__(self, name, group=''):
         """
         Initializes a configuration name.
         """
         assert isinstance(name, str), 'config name needs to be defined as string'
 
         self.__name = name
+        self.__group = group
         self.__filePath = None
         self.__data = {}
 
@@ -27,6 +28,14 @@ class Config(object):
         Return the config name.
         """
         return self.__name
+
+    def group(self):
+        """
+        Return the group associated with the config.
+
+        This information when defined is used to store the config in a sub-directory (named following the group name).
+        """
+        return self.__group
 
     def setValue(self, key, value, serialize=True):
         """
@@ -77,14 +86,17 @@ class Config(object):
         Return the file path for the config.
         """
         if self.__filePath is None:
-            configBaseDirectory = None
+            configDirectory = None
             if self.__configBaseDirectoryEnv:
-                configBaseDirectory = pathlib.Path(self.__configBaseDirectoryEnv)
+                configDirectory = pathlib.Path(self.__configBaseDirectoryEnv)
             else:
-                configBaseDirectory = self.__defaultKombiConfigBaseDirectory()
+                configDirectory = self.__defaultKombiConfigBaseDirectory()
 
-            os.makedirs(configBaseDirectory, exist_ok=True)
-            self.__filePath = configBaseDirectory / f'{self.name()}.json'
+            if self.group():
+                configDirectory = configDirectory.joinpath(self.group())
+
+            os.makedirs(configDirectory, exist_ok=True)
+            self.__filePath = configDirectory / f'{self.name()}.json'
 
         return self.__filePath
 
