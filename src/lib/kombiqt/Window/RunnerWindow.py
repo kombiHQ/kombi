@@ -1,8 +1,7 @@
 import os
-import json
-import getpass
 import traceback
 import functools
+import hashlib
 import weakref
 from collections import OrderedDict
 from Qt import QtCore, QtGui, QtWidgets
@@ -11,6 +10,7 @@ from kombi.TaskHolder.Dispatcher import Dispatcher
 from kombi.Element import Element, ElementContext
 from kombi.Element.Fs import FsElement
 from kombi.Template import Template
+from kombi.Config import Config
 from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
 from ..Widget.ComboBoxInputDialog import ComboBoxInputDialog
@@ -40,7 +40,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         self.__taskHolders = taskHolders
 
-        self.__configurationDirectory = ""
         self.__uiHintSourceColumns = []
         self.__customHeader = customHeader
         self.__verticalSourceScrollBarLatestPos = 0
@@ -59,8 +58,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__onRefreshSourceDir()
 
         if self.__taskHolders and 'configDirectory' in self.__taskHolders[0].varNames():
-            self.__configurationDirectory = self.__taskHolders[0].var('configDirectory')
-            self.setWindowTitle('Kombi ({0})'.format(self.__configurationDirectory))
+            self.setWindowTitle('Kombi ({0})'.format(self.__taskHolders[0].var('configDirectory')))
 
         self.updateSource(rootElement)
 
@@ -145,7 +143,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         self.__sourceTree.clear()
         self.__sourceFilterMenu.clear()
-        self.__sourceOverrides = {}
+
+        if self.__taskHolders and self.__taskHolders[0].hasVar('configDirectory'):
+            configDirectory = self.__taskHolders[0].var('configDirectory')
+            configSignature = hashlib.md5(configDirectory.encode()).hexdigest()
+            self.__overridesConfig = Config(configSignature, 'taskOverrides')
+            self.__overridesConfig.setValue('configDirectory', configDirectory, serialize=False)
+        else:
+            self.__overridesConfig = None
 
         if rootElement is None:
             return
@@ -221,7 +226,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         # globbing elements
         for taskHolder in filter(lambda x: '__uiHintCheckedByDefault' in x.varNames(), self.__taskHolders):
             self.__checkableState = taskHolder.var('__uiHintCheckedByDefault')
-            self.__sourceOverrides = self.__loadSourceOverrides()
 
         self.__nextButton.setVisible(self.__checkableState is not None)
         self.__selectedDispatcher.setVisible(self.__checkableState is not None)
@@ -260,7 +264,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         # applying overrides
         self.__applySourceOverrides(
-            self.__loadSourceOverrides(),
             checkedElements
         )
 
@@ -753,36 +756,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         return list(map(lambda x: x.clone(), result))
 
-    def __sourceOverridesConfig(self):
-        """
-        Return the full path about the location for the override files.
-        """
-        return os.path.join(
-            self.__configurationDirectory,
-            "overrides",
-            "{}.json".format(
-                getpass.getuser()
-            )
-        )
-
-    def __loadSourceOverrides(self):
-        """
-        Load element overrides in the source tree.
-        """
-        result = {}
-
-        if os.path.exists(self.__sourceOverridesConfig()):
-            with open(self.__sourceOverridesConfig()) as sourceFile:
-                result = json.load(sourceFile)
-                if result and "overrides" in result:
-                    result = result["overrides"]
-
-        return result
-
-    def __applySourceOverrides(self, overrides, elements):
+    def __applySourceOverrides(self, elements):
         """
         Apply overrides overrides on the source tree.
         """
+        overrides = {}
+        if self.__overridesConfig and self.__overridesConfig.hasKey('overrides'):
+            overrides = self.__overridesConfig.value('overrides')
+
         if not overrides:
             return
 
@@ -808,6 +789,10 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Add element information to a column in the source tree.
         """
+        overrides = {}
+        if self.__overridesConfig and self.__overridesConfig.hasKey('overrides'):
+            overrides = self.__overridesConfig.value('overrides')
+
         # adding column information
         for index, column in enumerate(self.__uiHintSourceColumns):
 
@@ -817,8 +802,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
             mixedValues = False
             for elementIndex, checkElement in enumerate(groupedElements if groupedElements else [element]):
                 currentValue = ''
-                if checkElement.var('fullPath') in self.__sourceOverrides and column in self.__sourceOverrides[checkElement.var('fullPath')]:
-                    currentValue = self.__sourceOverrides[checkElement.var('fullPath')][column]
+
+                if checkElement.var('fullPath') in overrides and column in overrides[checkElement.var('fullPath')]:
+                    currentValue = overrides[checkElement.var('fullPath')][column]
                     hasOverride = True
                 if column in checkElement.varNames():
                     if not hasOverride:
@@ -1095,7 +1081,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
         Slot triggered when an override in the source tree is triggered.
         """
         value = None
-        overrides = dict(self.__sourceOverrides)
+        overrides = {}
+        if self.__overridesConfig and self.__overridesConfig.hasKey('overrides'):
+            overrides = dict(self.__overridesConfig.value('overrides'))
 
         for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
             selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
@@ -1197,15 +1185,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
                 overrides[elementFullPath][columnName] = value
 
-        if not os.path.exists(os.path.dirname(self.__sourceOverridesConfig())):
-            os.mkdir(os.path.dirname(self.__sourceOverridesConfig()))
-
-        with open(self.__sourceOverridesConfig(), 'w') as sourceFile:
-            data = {
-                "overrides": overrides
-            }
-
-            json.dump(data, sourceFile, indent=4)
+        if self.__overridesConfig:
+            self.__overridesConfig.setValue('overrides', overrides)
 
         if value is not None:
             self.__onRefreshSourceDir()
@@ -1214,7 +1195,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Slot triggered when an override in the source tree is removed.
         """
-        overrides = dict(self.__sourceOverrides)
+        overrides = {}
+        if self.__overridesConfig and self.__overridesConfig.hasKey('overrides'):
+            overrides = dict(self.__overridesConfig.value('overrides'))
 
         selectedElements = set()
         columnNames = set()
@@ -1244,13 +1227,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 if not len(overrides[fullPath]):
                     del overrides[fullPath]
 
-        if os.path.exists(os.path.dirname(self.__sourceOverridesConfig())):
-            with open(self.__sourceOverridesConfig(), 'w') as sourceFile:
-                data = {
-                    "overrides": overrides
-                }
-                json.dump(data, sourceFile, indent=4)
-
+        if self.__overridesConfig:
+            self.__overridesConfig.setValue('overrides', overrides)
             self.__onRefreshSourceDir()
 
     def __selectedElements(self):
