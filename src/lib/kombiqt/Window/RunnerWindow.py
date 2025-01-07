@@ -1058,20 +1058,25 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 else:
                     taskName += ' ...'
 
-                # building submenus in case the "name" found under the task metadata has '/' into the name...
-                currentLevel = ''
                 currentMenu = menu
-                for level in taskName.split('/')[:-1]:
-                    if not level:
-                        continue
-                    currentLevel += f'/{level}'
-                    if currentLevel not in subMenus:
-                        newLevel = QtWidgets.QMenu(level)
-                        currentMenu.addMenu(newLevel)
-                        subMenus[currentLevel] = newLevel
-                    currentMenu = subMenus[currentLevel]
+                # building submenus in case the "ui.task.menuPath" is defined (levels separated by '/')
+                if taskHolder.task().hasMetadata('ui.task.menuPath'):
+                    currentLevel = ''
+                    for level in taskHolder.task().metadata('ui.task.menuPath').split('/'):
+                        if not level:
+                            continue
+                        currentLevel += f'/{level}'
+                        if currentLevel not in subMenus:
+                            newLevel = QtWidgets.QMenu(level)
+                            currentMenu.addMenu(newLevel)
+                            subMenus[currentLevel] = newLevel
+                        currentMenu = subMenus[currentLevel]
 
-                action = currentMenu.addAction(os.path.basename(taskName) if currentLevel else taskName)
+                # adding a separator when 'ui.task.menuSeparator' is defined
+                if taskHolder.task().hasMetadata('ui.task.menuSeparator') and taskHolder.task().metadata('ui.task.menuSeparator'):
+                    currentMenu.addSeparator()
+
+                action = currentMenu.addAction(taskName)
                 action.triggered.connect(functools.partial(self.__onRunTaskHolder, index, filteredElements))
         elif self.__checkableState is not None:
             action = menu.addAction('Override Value')
