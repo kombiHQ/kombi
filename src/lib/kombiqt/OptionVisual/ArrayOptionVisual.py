@@ -1,5 +1,5 @@
 import functools
-from Qt import QtWidgets
+from Qt import QtWidgets, QtCore
 from .OptionVisual import OptionVisual
 
 
@@ -21,6 +21,7 @@ class ArrayOptionVisual(OptionVisual):
         Implement the widget.
         """
         formLayout = QtWidgets.QFormLayout()
+        formLayout.setLabelAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
         formLayout.setContentsMargins(4, 4, 4, 4)
 
         itemsUiHints = self.uiHints().get('items', {})
