@@ -1076,7 +1076,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 if taskHolder.task().hasMetadata('ui.task.menuSeparator') and taskHolder.task().metadata('ui.task.menuSeparator'):
                     currentMenu.addSeparator()
 
-                action = currentMenu.addAction(taskName)
+                actionArgs = []
+                # in case there is an icon defined by the "ui.task.menuIcon" metadata
+                if taskHolder.task().hasMetadata('ui.task.menuIcon'):
+                    actionArgs.append(Resource.icon(taskHolder.task().metadata('ui.task.menuIcon')))
+                actionArgs.append(taskName)
+                action = currentMenu.addAction(*actionArgs)
                 action.triggered.connect(functools.partial(self.__onRunTaskHolder, index, filteredElements))
         elif self.__checkableState is not None:
             action = menu.addAction('Override Value')
