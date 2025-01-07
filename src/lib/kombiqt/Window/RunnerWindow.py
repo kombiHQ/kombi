@@ -1058,13 +1058,17 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 else:
                     taskName += ' ...'
 
-                currentLevel = ""
+                # building submenus in case the "name" found under the task metadata has '/' into the name...
+                currentLevel = ''
                 currentMenu = menu
                 for level in taskName.split('/')[:-1]:
-                    currentLevel += '/{level}'
-                    if level not in subMenus:
-                        currentMenu = QtWidgets.QMenu(level)
-                        subMenus[currentLevel] = currentMenu
+                    if not level:
+                        continue
+                    currentLevel += f'/{level}'
+                    if currentLevel not in subMenus:
+                        newLevel = QtWidgets.QMenu(level)
+                        currentMenu.addMenu(newLevel)
+                        subMenus[currentLevel] = newLevel
                     currentMenu = subMenus[currentLevel]
 
                 action = currentMenu.addAction(os.path.basename(taskName) if currentLevel else taskName)
