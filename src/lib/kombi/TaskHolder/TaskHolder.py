@@ -134,6 +134,12 @@ class TaskHolder(object):
 
         self.__vars[name] = value
 
+    def hasVar(self, name):
+        """
+        Return a boolean telling if the input element variable is defined.
+        """
+        return name in self.varNames()
+
     def varNames(self):
         """
         Return a list of variable names.
