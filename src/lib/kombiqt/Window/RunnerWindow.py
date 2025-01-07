@@ -3,7 +3,6 @@ import traceback
 import functools
 import hashlib
 import weakref
-from collections import OrderedDict
 from Qt import QtCore, QtGui, QtWidgets
 from kombi.TaskHolder.Loader import Loader
 from kombi.TaskHolder.Dispatcher import Dispatcher
@@ -698,7 +697,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Return a dictionary containing the matched elements grouped.
         """
-        groupedElements = OrderedDict()
+        groupedElements = {}
         groupedElements[None] = []
         for elementList in Element.group(elements):
             for element in elementList:
