@@ -6,6 +6,7 @@ from kombi.Element import Element
 from kombi.Template import Template
 from kombi.Config import Config
 from ..Widget.ComboBoxInputDialog import ComboBoxInputDialog
+from ..Widget.RunTaskHoldersWidget import RunTaskHoldersWidget
 from ..Resource import Resource
 from Qt import QtWidgets, QtGui, QtCore
 
@@ -33,6 +34,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 
         self.itemChanged.connect(self.__onSourceTreeItemCheckedChanged)
+        self.customContextMenuRequested.connect(self.__onSourceTreeContextMenu)
 
         header = QtWidgets.QTreeWidgetItem([])
         self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
@@ -164,6 +166,79 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         #     action.changed.connect(self.__onSourceFiltersChanged)
 
         self.resizeColumnToContents(0)
+
+    def __onSourceTreeContextMenu(self, point=None):
+        """
+        Slot triggered when context menu from source tree is triggered.
+        """
+        self.resizeColumnToContents(0)
+
+        selectedIndexes = self.selectionModel().selectedIndexes()
+        if not selectedIndexes:
+            return
+
+        selectedColumn = selectedIndexes[0].column()
+        menu = QtWidgets.QMenu(self)
+        subMenus = {}
+        if selectedColumn == 0:
+            elements = self.selectedElements()
+            for index, taskHolder in enumerate(self.__taskHolders):
+                filteredElements = []
+                for element in elements:
+                    if not taskHolder.matcher().match(element):
+                        continue
+                    filteredElements.append(element)
+
+                if not filteredElements or taskHolder.task().hasMetadata('ui.task.showInContextMenu') and not taskHolder.task().metadata('ui.task.showInContextMenu'):
+                    continue
+
+                taskName = Template.runProcedure('camelcasetospaced', taskHolder.task().metadata('name'))
+                if taskHolder.task().hasMetadata('ui.task.showExecutionSettings') and not taskHolder.task().metadata('ui.task.showExecutionSettings'):
+                    pass
+                else:
+                    taskName += ' ...'
+
+                currentMenu = menu
+                # building submenus in case the "ui.task.menuPath" is defined (levels separated by '/')
+                if taskHolder.task().hasMetadata('ui.task.menuPath'):
+                    currentLevel = ''
+                    for level in taskHolder.task().metadata('ui.task.menuPath').split('/'):
+                        if not level:
+                            continue
+                        currentLevel += f'/{level}'
+                        if currentLevel not in subMenus:
+                            newLevel = QtWidgets.QMenu(level)
+                            currentMenu.addMenu(newLevel)
+                            subMenus[currentLevel] = newLevel
+                        currentMenu = subMenus[currentLevel]
+
+                # adding a separator when 'ui.task.menuSeparator' is defined
+                if taskHolder.task().hasMetadata('ui.task.menuSeparator') and taskHolder.task().metadata('ui.task.menuSeparator'):
+                    currentMenu.addSeparator()
+
+                actionArgs = []
+                # in case there is an icon defined by the "ui.task.menuIcon" metadata
+                if taskHolder.task().hasMetadata('ui.task.menuIcon'):
+                    actionArgs.append(Resource.icon(taskHolder.task().metadata('ui.task.menuIcon')))
+                actionArgs.append(taskName)
+                action = currentMenu.addAction(*actionArgs)
+                action.triggered.connect(functools.partial(self.__onRunTaskHolder, index, filteredElements))
+        elif self.__checkableState is not None:
+            action = menu.addAction('Override Value')
+            action.triggered.connect(self.__onChangeElementValue)
+
+            action = menu.addAction('Reset Value')
+            action.triggered.connect(self.__onResetElementValue)
+
+        if len(menu.actions()):
+            menu.exec_(self.mapToGlobal(point) if point is not None else QtGui.QCursor.pos())
+
+    def __onRunTaskHolder(self, index, elements):
+        """
+        Slog triggered by the context menu action to run the task holders.
+        """
+        if RunTaskHoldersWidget.run([self.__taskHolders[index]], elements, parent=self):
+            self.__onRefreshSourceDir(force=True)
 
     def __updateSourceColumns(self, taskHolders):
         """
