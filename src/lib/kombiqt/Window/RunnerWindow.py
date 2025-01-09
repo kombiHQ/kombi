@@ -42,19 +42,19 @@ class RunnerWindow(QtWidgets.QMainWindow):
         # vars
         self.__showVarsAction = self.__sourceFilterMenu.addAction('Vars')
         self.__showVarsAction.setCheckable(True)
-        self.__showVarsAction.setChecked(self.__sourceTree.showVars())
+        self.__showVarsAction.setChecked(self.__elementListWidget.showVars())
         self.__showVarsAction.triggered.connect(self.__onFilterShowVars)
 
         # tags
         self.__showTagsAction = self.__sourceFilterMenu.addAction('Tags')
         self.__showTagsAction.setCheckable(True)
-        self.__showTagsAction.setChecked(self.__sourceTree.showTags())
+        self.__showTagsAction.setChecked(self.__elementListWidget.showTags())
         self.__showTagsAction.triggered.connect(self.__onFilterShowTags)
 
         # task holders
         assert isinstance(taskHolders, (list, tuple)), "Invalid task holder list!"
 
-        self.__sourceTree.refresh()
+        self.__elementListWidget.refresh()
 
         if self.__taskHolders and 'configDirectory' in self.__taskHolders[0].varNames():
             self.setWindowTitle('Kombi ({0})'.format(self.__taskHolders[0].var('configDirectory')))
@@ -116,19 +116,19 @@ class RunnerWindow(QtWidgets.QMainWindow):
             self.__elementsLevelNavigationWidget.gotoPath(os.path.dirname(fullPath))
 
             baseName = os.path.basename(fullPath)
-            for index in range(self.__sourceTree.topLevelItemCount()):
-                item = self.__sourceTree.topLevelItem(index)
+            for index in range(self.__elementListWidget.topLevelItemCount()):
+                item = self.__elementListWidget.topLevelItem(index)
                 for element in item.elements:
                     if element.var('name') != baseName:
                         continue
-                    self.__sourceTree.setCurrentItem(item, 0)
+                    self.__elementListWidget.setCurrentItem(item, 0)
                     break
         else:
             self.__elementsLevelNavigationWidget.gotoPath(fullPath)
 
     def updateSource(self, rootElement):
         """
-        Update the source tree.
+        Update the element list.
         """
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
@@ -138,7 +138,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
     def __onUpdateSource(self, rootElement):
         """
-        Update the source tree.
+        Update the element list.
         """
         if rootElement is None:
             return
@@ -163,7 +163,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__splitter.setOrientation(QtCore.Qt.Horizontal)
         self.__executionSettingsEmptyMessageLabel.setText('')
         self.__executionSettingsEmptyMessageLabel.setVisible(False)
-        self.__sourceTree.setup(self.__taskHolders)
+        self.__elementListWidget.setup(self.__taskHolders)
         for taskHolder in self.__taskHolders:
             if '__uiHintCloseAfterExecution' in taskHolder.varNames():
                 self.__closeAfterExecution = taskHolder.var('__uiHintCloseAfterExecution')
@@ -208,8 +208,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if filterTypes:
             filterTypes.extend(filterDefaultTypes)
 
-        self.__nextButton.setVisible(self.__sourceTree.checkableState() is not None)
-        self.__selectedDispatcher.setVisible(self.__sourceTree.checkableState() is not None)
+        self.__nextButton.setVisible(self.__elementListWidget.checkableState() is not None)
+        self.__selectedDispatcher.setVisible(self.__elementListWidget.checkableState() is not None)
 
         with ElementContext():
             elementList = []
@@ -225,7 +225,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
                         elementList.append(elementFound)
 
             self.preRenderElements.emit(elementList)
-            self.__sourceTree.setElementList(elementList)
+            self.__elementListWidget.setElementList(elementList)
 
         # forcing kombi to start at the execution settings (next) interface
         if skipSourceStep:
@@ -235,7 +235,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Update the execution settings.
         """
-        checkedElements = self.__sourceTree.checkedElements() if elements is None else elements
+        checkedElements = self.__elementListWidget.checkedElements() if elements is None else elements
 
         self.__executionSettingsAreaWidget.setVisible(True)
         self.__selectedDispatcher.setVisible(True)
@@ -382,14 +382,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__splitter.addWidget(self.__sourceAreaWidget)
         self.__splitter.addWidget(self.__executionSettingsAreaWidget)
 
-        self.__sourceTree = ElementListWidget()
-        self.__sourceTree.itemSelectionChanged.connect(self.__onSourceTreeSelectionChanged)
-        self.__sourceTree.itemDoubleClicked.connect(self.__onSourceTreeDoubleClick)
-        self.__sourceTree.modifed.connect(self.__onForceRefresh)
+        self.__elementListWidget = ElementListWidget()
+        self.__elementListWidget.itemSelectionChanged.connect(self.__onSourceTreeSelectionChanged)
+        self.__elementListWidget.itemDoubleClicked.connect(self.__onSourceTreeDoubleClick)
+        self.__elementListWidget.modifed.connect(self.__onForceRefresh)
         self.__sourceRefreshButton.clicked.connect(self.__onForceRefresh)
 
         self.__executionSettings = ExecutionSettingsWidget()
-        sourceControlMain.setCentralWidget(self.__sourceTree)
+        sourceControlMain.setCentralWidget(self.__elementListWidget)
 
         sourceLayout.addWidget(sourceControlMain)
         executionSettingsLayout.addWidget(self.__executionSettings)
@@ -435,9 +435,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         # updating view mode
         self.__viewModeActionGroup = QtWidgets.QActionGroup(self)
-        for viewMode in self.__sourceTree.viewModes:
+        for viewMode in self.__elementListWidget.viewModes:
             viewAction = self.__sourceViewModeMenu.addAction(viewMode.capitalize())
-            viewAction.triggered.connect(functools.partial(self.__sourceTree.setViewMode, viewMode))
+            viewAction.triggered.connect(functools.partial(self.__elementListWidget.setViewMode, viewMode))
             self.__viewModeActionGroup.addAction(viewAction)
 
     def __onForceRefresh(self):
@@ -450,7 +450,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if self.__rootElements:
             self.updateSource(self.__rootElements[-1])
 
-        self.__sourceTree.refresh()
+        self.__elementListWidget.refresh()
 
     def __onPerformTasks(self):
         """
@@ -463,9 +463,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
     def __onSourceTreeSelectionChanged(self):
         """
-        Slot called when selection changes on the source tree.
+        Slot called when selection changes on the element list.
         """
-        elements = self.__sourceTree.selectedElements()
+        elements = self.__elementListWidget.selectedElements()
 
         if self.__splitter.orientation() == QtCore.Qt.Vertical:
             self.refreshExecutionSettings(elements)
@@ -509,7 +509,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
     def __onSourceTreeDoubleClick(self, item):
         """
-        Slot triggered when an item is double clicked on the source tree.
+        Slot triggered when an item is double clicked on the element list.
         """
         if not item.elements[0].isLeaf():
             self.__rootElements.append(item.elements[0])
@@ -537,10 +537,10 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Slot triggered when info show vars is triggered.
         """
-        self.__sourceTree.setShowVars(self.__showVarsAction.isChecked())
+        self.__elementListWidget.setShowVars(self.__showVarsAction.isChecked())
 
     def __onFilterShowTags(self, *args):
         """
         Slot triggered when info show tags is triggered.
         """
-        self.__sourceTree.setShowTags(self.__showTagsAction.isChecked())
+        self.__elementListWidget.setShowTags(self.__showTagsAction.isChecked())

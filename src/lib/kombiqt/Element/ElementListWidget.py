@@ -135,7 +135,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
     def refresh(self):
         """
-        Slot triggered when refresh button from source tree is triggered.
+        Refresh the element list.
         """
         self.__verticalSourceScrollBarLatestPos = self.verticalScrollBar().value()
         self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
@@ -164,7 +164,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
     def __applySourceOverrides(self, elements):
         """
-        Apply overrides overrides on the source tree.
+        Apply overrides overrides on the tree.
         """
         overrides = {}
         if self.__overridesConfig and self.__overridesConfig.hasKey('overrides'):
@@ -193,7 +193,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
     def checkedElements(self, applyOverrides=True):
         """
-        Return a list of checked elements in the source tree.
+        Return a list of checked elements in the tree.
         """
         totalRows = self.model().rowCount()
         result = []
@@ -240,7 +240,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
     def setElementList(self, elementList):
         """
-        Update the elements displayed in the source tree.
+        Update the elements displayed in the tree.
         """
         self.clear()
 
@@ -321,7 +321,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
     def __onSourceTreeContextMenu(self, point=None):
         """
-        Slot triggered when context menu from source tree is triggered.
+        Slot triggered when context menu from tree is triggered.
         """
         self.resizeColumnToContents(0)
 
@@ -419,7 +419,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
     def __createSourceTreeChildItem(self, element, parent, elementTypes, elementTags):
         """
-        Create a new child item in the source tree.
+        Create a new child item in the tree.
         """
         child = QtWidgets.QTreeWidgetItem(parent)
         child.elements = [element]
@@ -478,7 +478,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
     def __addSourceTreeColumnData(self, element, treeItem, groupedElements=None):
         """
-        Add element information to a column in the source tree.
+        Add element information to a column in the tree.
         """
         overrides = {}
         if self.__overridesConfig and self.__overridesConfig.hasKey('overrides'):
@@ -601,7 +601,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
     def __onResetElementValue(self):
         """
-        Slot triggered when an override in the source tree is removed.
+        Slot triggered when an override in the tree is removed.
         """
         overrides = {}
         if self.__overridesConfig and self.__overridesConfig.hasKey('overrides'):
@@ -641,7 +641,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
     def __onChangeElementValue(self):
         """
-        Slot triggered when an override in the source tree is triggered.
+        Slot triggered when an override in the tree is triggered.
         """
         value = None
         overrides = {}
@@ -788,7 +788,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
     def __onSourceTreeItemCheckedChanged(self, currentItem):
         """
-        Slot triggered when the check state of an item in the source tree is changed.
+        Slot triggered when the check state of an item in the tree is changed.
         """
         if not self.selectionModel().selectedIndexes() or self.__ignoreCheckedEvents:
             return
