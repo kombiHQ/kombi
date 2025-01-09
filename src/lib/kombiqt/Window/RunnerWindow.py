@@ -1,18 +1,15 @@
 import os
 import traceback
 import functools
-import hashlib
-import weakref
 from Qt import QtCore, QtGui, QtWidgets
 from kombi.TaskHolder.Loader import Loader
 from kombi.TaskHolder.Dispatcher import Dispatcher
-from kombi.Element import Element, ElementContext
+from kombi.Element import ElementContext
 from kombi.Element.Fs import FsElement
 from kombi.Template import Template
-from kombi.Config import Config
+from ..Element import ElementListWidget
 from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
-from ..Widget.ComboBoxInputDialog import ComboBoxInputDialog
 from ..Widget.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
 from ..Widget.RunTaskHoldersWidget import RunTaskHoldersWidget
 from ..Resource import Resource
@@ -27,7 +24,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
     preRenderElements = QtCore.Signal(list)
     __viewModes = ["group", "flat"]
     __pickerLocation = os.environ.get('KOMBI_GUI_PICKER_LOCATION', '')
-    __overridePreviousSelectedLocation = None
 
     def __init__(self, taskHolders, rootElement=None, customHeader='', **kwargs):
         """
@@ -39,21 +35,43 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         self.__taskHolders = taskHolders
 
-        self.__uiHintSourceColumns = []
         self.__customHeader = customHeader
         self.__verticalSourceScrollBarLatestPos = 0
         self.__showVars = False
         self.__showTags = False
         self.__uiHintGlobRecursively = False
-        self.__ignoreCheckedEvents = False
         self.__checkableState = None
         self.__rootElements = []
         self.__buildWidgets()
 
+        # element info
+        self.__elementInfoMenu = self.__sourceFilterMenu.addMenu('Element Info')
+
+        # vars
+        self.__showVarsAction = self.__elementInfoMenu.addAction('Vars')
+        self.__showVarsAction.setCheckable(True)
+        self.__showVarsAction.setChecked(self.__showVars)
+        self.__showVarsAction.triggered.connect(self.__onFilterShowVars)
+
+        # tags
+        self.__showTagsAction = self.__elementInfoMenu.addAction('Tags')
+        self.__showTagsAction.setCheckable(True)
+        self.__showTagsAction.setChecked(self.__showTags)
+        self.__showTagsAction.triggered.connect(self.__onFilterShowTags)
+
+        # element types
+        self.__elementTypesMenu = self.__sourceFilterMenu.addMenu('Element Types')
+
+        allAction = self.__elementTypesMenu.addAction('ALL')
+        allAction.triggered.connect(self.__onFilterSelectAll)
+
+        noneAction = self.__elementTypesMenu.addAction('NONE')
+        noneAction.triggered.connect(self.__onFilterSelectNone)
+        self.__elementTypesMenu.addSeparator()
+
         # task holders
         assert isinstance(taskHolders, (list, tuple)), "Invalid task holder list!"
 
-        self.__updateSourceColumns(self.__taskHolders)
         self.__onRefreshSourceDir()
 
         if self.__taskHolders and 'configDirectory' in self.__taskHolders[0].varNames():
@@ -142,14 +160,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         self.__sourceTree.clear()
         self.__sourceFilterMenu.clear()
-
-        if self.__taskHolders and self.__taskHolders[0].hasVar('configDirectory'):
-            configDirectory = self.__taskHolders[0].var('configDirectory')
-            configSignature = hashlib.md5(configDirectory.encode()).hexdigest()
-            self.__overridesConfig = Config(configSignature, 'taskOverrides')
-            self.__overridesConfig.setValue('configDirectory', configDirectory, serialize=False)
-        else:
-            self.__overridesConfig = None
+        self.__overridesConfig = None
 
         if rootElement is None:
             return
@@ -174,6 +185,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__splitter.setOrientation(QtCore.Qt.Horizontal)
         self.__executionSettingsEmptyMessageLabel.setText('')
         self.__executionSettingsEmptyMessageLabel.setVisible(False)
+        self.__sourceTree.setup(self.__taskHolders)
         for taskHolder in self.__taskHolders:
             if '__uiHintCloseAfterExecution' in taskHolder.varNames():
                 self.__closeAfterExecution = taskHolder.var('__uiHintCloseAfterExecution')
@@ -248,8 +260,10 @@ class RunnerWindow(QtWidgets.QMainWindow):
                         elementList.append(elementFound)
 
             self.preRenderElements.emit(elementList)
-            self.__updateSourceTreeElementList(elementList)
-            self.__onSourceFiltersChanged()
+            self.__sourceTree.updateElementList(elementList)
+
+            # TODO
+            # self.__onSourceFiltersChanged()
 
         # forcing kombi to start at the execution settings (next) interface
         if skipSourceStep:
@@ -443,12 +457,10 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__splitter.addWidget(self.__sourceAreaWidget)
         self.__splitter.addWidget(self.__executionSettingsAreaWidget)
 
-        self.__sourceTree = self.__treeWidget([""])
-        self.__sourceTree.itemChanged.connect(self.__onSourceTreeItemCheckedChanged)
+        self.__sourceTree = ElementListWidget()
         self.__sourceTree.itemSelectionChanged.connect(self.__onSourceTreeSelectionChanged)
         self.__sourceTree.customContextMenuRequested.connect(self.__onSourceTreeContextMenu)
         self.__sourceTree.itemDoubleClicked.connect(self.__onSourceTreeDoubleClick)
-        self.__sourceTree.setIconSize(QtCore.QSize(32, 32))
 
         self.__executionSettings = ExecutionSettingsWidget()
         sourceControlMain.setCentralWidget(self.__sourceTree)
@@ -558,180 +570,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if self.__imageElementViewer.isVisible() or forceVisibility:
             self.__onSourceTreeSelectionChanged()
 
-    def __updateSourceColumns(self, taskHolders):
-        """
-        Update the source columns.
-        """
-        # updating columns
-        columns = []
-        for taskHolder in filter(lambda x: '__uiHintSourceColumns' in x.varNames(), taskHolders):
-            for columnName in filter(lambda x: x not in columns, taskHolder.var('__uiHintSourceColumns')):
-                columns.append(columnName)
-
-        # fix-me: workaround necessary to avoid the bug of not showing
-        # the options properly inside of the execution settings
-        if not len(columns):
-            columns.append(' ')
-
-        if columns != self.__uiHintSourceColumns:
-            self.__uiHintSourceColumns = columns
-            header = QtWidgets.QTreeWidgetItem(
-                [''] + list(map(lambda x: Template.runProcedure('camelcasetospaced', x), self.__uiHintSourceColumns))
-            )
-
-            self.__sourceTree.setHeaderItem(
-                header
-            )
-
-    def __updateSourceTreeElementList(self, elementList):
-        """
-        Update the elements displayed in the source tree.
-        """
-        elementTypes = set()
-        elementTags = {}
-
-        # workaround necessary to improve the rendering speed
-        self.__sourceTree.setVisible(False)
-
-        # group
-        if self.__checkedViewMode == "Group":
-            groupedElements = self.__groupElements(elementList)
-
-            for groupName in groupedElements.keys():
-                if groupName:
-                    parent = QtWidgets.QTreeWidgetItem(self.__sourceTree)
-                    self.__updateIcon(parent, groupedElements[groupName][0])
-                    parent.elements = list(groupedElements[groupName])
-
-                    # visible data
-                    visibleGroupName = groupName + '   '
-                    if visibleGroupName.startswith(os.sep):
-                        visibleGroupName = visibleGroupName[1:]
-
-                    parent.setData(0, QtCore.Qt.EditRole, visibleGroupName)
-
-                    # adding column information
-                    self.__addSourceTreeColumnData(groupedElements[groupName][0], parent, groupedElements[groupName])
-
-                    if self.__checkableState is not None:
-                        parent.setFlags(parent.flags() | QtCore.Qt.ItemIsUserCheckable)
-                        parent.setCheckState(0, QtCore.Qt.Checked if self.__checkableState else QtCore.Qt.Unchecked)
-
-                    for element in groupedElements[groupName]:
-                        self.__createSourceTreeChildItem(
-                            element,
-                            parent,
-                            elementTypes,
-                            elementTags
-                        )
-
-                else:
-                    for element in groupedElements[groupName]:
-                        child = self.__createSourceTreeChildItem(
-                            element,
-                            self.__sourceTree,
-                            elementTypes,
-                            elementTags
-                        )
-
-                        if self.__checkableState is not None:
-                            child.setFlags(child.flags() | QtCore.Qt.ItemIsUserCheckable)
-                            child.setCheckState(0, QtCore.Qt.Checked if self.__checkableState else QtCore.Qt.Unchecked)
-
-                        self.__addSourceTreeColumnData(element, child)
-
-        # flat
-        else:
-            for element in elementList:
-
-                # only testing with the first element when grouped
-                if isinstance(element, list):
-                    element = element[0]
-
-                child = self.__createSourceTreeChildItem(element, self.__sourceTree, elementTypes, elementTags)
-
-                if self.__checkableState is not None:
-                    child.setFlags(child.flags() | QtCore.Qt.ItemIsUserCheckable)
-                    child.setCheckState(0, QtCore.Qt.Checked if self.__checkableState else QtCore.Qt.Unchecked)
-
-                self.__addSourceTreeColumnData(element, child)
-
-        # element info
-        self.__elementInfoMenu = self.__sourceFilterMenu.addMenu('Element Info')
-
-        # vars
-        self.__showVarsAction = self.__elementInfoMenu.addAction('Vars')
-        self.__showVarsAction.setCheckable(True)
-        self.__showVarsAction.setChecked(self.__showVars)
-        self.__showVarsAction.triggered.connect(self.__onFilterShowVars)
-
-        # tags
-        self.__showTagsAction = self.__elementInfoMenu.addAction('Tags')
-        self.__showTagsAction.setCheckable(True)
-        self.__showTagsAction.setChecked(self.__showTags)
-        self.__showTagsAction.triggered.connect(self.__onFilterShowTags)
-
-        # element types
-        self.__elementTypesMenu = self.__sourceFilterMenu.addMenu('Element Types')
-
-        allAction = self.__elementTypesMenu.addAction('ALL')
-        allAction.triggered.connect(self.__onFilterSelectAll)
-
-        noneAction = self.__elementTypesMenu.addAction('NONE')
-        noneAction.triggered.connect(self.__onFilterSelectNone)
-        self.__elementTypesMenu.addSeparator()
-
-        # workaround to improve the performance of the rendering:
-        # restoring the visibility of the widget
-        self.__sourceTree.setVisible(True)
-
-        for elementType in sorted(elementTypes):
-            action = self.__elementTypesMenu.addAction(elementType)
-            action.setCheckable(True)
-            action.setChecked(True)
-            action.changed.connect(self.__onSourceFiltersChanged)
-
-        self.__sourceTree.resizeColumnToContents(0)
-
-    def __groupElements(self, elements):
-        """
-        Return a dictionary containing the matched elements grouped.
-        """
-        groupedElements = {}
-        groupedElements[None] = []
-        for elementList in Element.group(elements):
-            for element in elementList:
-                # group
-                if self.__checkedViewMode == 'Group' and 'group' in element.tagNames():
-                    groupName = element.tag('group')
-                    if groupName not in groupedElements:
-                        groupedElements[groupName] = []
-
-                    groupedElements[groupName].append(element)
-
-                # flat
-                else:
-                    groupedElements[None].append(element)
-
-        return groupedElements
-
-    def __treeWidget(self, columns=[]):
-        """
-        Return a tree widget used by source and execution settings.
-        """
-        sourceTree = QtWidgets.QTreeWidget()
-        sourceTree.setAlternatingRowColors(True)
-
-        sourceTree.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        sourceTree.setSelectionBehavior(QtWidgets.QTreeWidget.SelectItems)
-        sourceTree.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-
-        header = QtWidgets.QTreeWidgetItem(columns)
-        sourceTree.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-        sourceTree.setHeaderItem(header)
-
-        return sourceTree
-
     def __checkedElements(self):
         """
         Return a list of checked elements in the source tree.
@@ -783,175 +621,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
             for element in elements:
                 __allElements(element)
-
-    def __addSourceTreeColumnData(self, element, treeItem, groupedElements=None):
-        """
-        Add element information to a column in the source tree.
-        """
-        overrides = {}
-        if self.__overridesConfig and self.__overridesConfig.hasKey('overrides'):
-            overrides = self.__overridesConfig.value('overrides')
-
-        # adding column information
-        for index, column in enumerate(self.__uiHintSourceColumns):
-
-            hasOverride = False
-            value = ''
-            columnLabel = ''
-            mixedValues = False
-            for elementIndex, checkElement in enumerate(groupedElements if groupedElements else [element]):
-                currentValue = ''
-
-                if checkElement.var('fullPath') in overrides and column in overrides[checkElement.var('fullPath')]:
-                    currentValue = overrides[checkElement.var('fullPath')][column]
-                    hasOverride = True
-                if column in checkElement.varNames():
-                    if not hasOverride:
-                        currentValue = checkElement.var(column)
-
-                if currentValue != value and elementIndex:
-                    mixedValues = True
-                    break
-                value = currentValue
-
-            columnLabel = ('mixed' if mixedValues else str(value)) + '   '
-
-            # creating custom widget to show the presets
-            if '{}.button'.format(column) in element.tagNames() or '{}.icon'.format(column) in element.tagNames():
-                columnButton = QtWidgets.QPushButton(self)
-                if '{}.icon'.format(column) in element.tagNames():
-                    columnButton.setIcon(Resource.icon(element.tag('{}.icon'.format(column))))
-                columnButton.setObjectName('columnButton')
-                columnButton.setText(str(value))
-                columnButton.setFixedSize(columnButton.minimumSizeHint())
-                columnButton.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-                if '{}.button'.format(column) in element.tagNames():
-                    columnButton.clicked.connect(functools.partial(self.__onColumnButton, weakref.ref(treeItem), element.tag('{}.button'.format(column))))
-                self.__sourceTree.setItemWidget(treeItem, index + 1, columnButton)
-
-            # creating custom widget to show the presets
-            elif '{}.presets'.format(column) in element.tagNames() or value is not None and isinstance(value, bool):
-                columnLabel += "          "
-                presetsHolderWidget = QtWidgets.QWidget(self)
-                presetsHolderWidget.setObjectName('presetTreeHolder')
-                presetsArrowIcon = QtWidgets.QPushButton(self)
-                presetsArrowIcon.setObjectName('presetTreeButton')
-                presetsArrowIcon.setFixedWidth(28)
-                presetsArrowIcon.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_TitleBarUnshadeButton))
-                presetsArrowIcon.setFlat(True)
-                presetsArrowIcon.clicked.connect(functools.partial(self.__onSourceTreePresetsClicked, weakref.ref(treeItem), index + 1))
-
-                presetsLayout = QtWidgets.QHBoxLayout(presetsHolderWidget)
-                presetsLayout.setContentsMargins(0, 0, 0, 0)
-                presetsLayout.addStretch()
-                presetsLayout.addWidget(presetsArrowIcon)
-
-                self.__sourceTree.setItemWidget(treeItem, index + 1, presetsHolderWidget)
-
-            treeItem.setData(
-                index + 1,
-                QtCore.Qt.EditRole,
-                columnLabel
-            )
-
-            if mixedValues:
-                treeItem.setForeground(
-                    index + 1,
-                    QtGui.QBrush(QtGui.QColor(100, 100, 100))
-                )
-
-            elif value == '' and column in element.varNames() and \
-                    (not element.tag('{}.allowEmpty'.format(column)) if '{}.allowEmpty'.format(column) in element.tagNames() else True):
-                font = QtGui.QFont()
-                font.setBold(True)
-
-                treeItem.setData(
-                    index + 1,
-                    QtCore.Qt.EditRole,
-                    'empty'
-                )
-
-                treeItem.setFont(
-                    index + 1,
-                    font
-                )
-
-                treeItem.setForeground(
-                    index + 1,
-                    QtGui.QBrush(QtGui.QColor(100, 70, 70))
-                )
-
-            elif hasOverride:
-                font = QtGui.QFont()
-                font.setItalic(True)
-                treeItem.setFont(
-                    index + 1,
-                    font
-                )
-
-                treeItem.setForeground(
-                    index + 1,
-                    QtGui.QBrush(QtGui.QColor(255, 152, 28))
-                )
-
-    def __createSourceTreeChildItem(self, element, parent, elementTypes, elementTags):
-        """
-        Create a new child item in the source tree.
-        """
-        child = QtWidgets.QTreeWidgetItem(parent)
-        child.elements = [element]
-        self.__updateIcon(child, element)
-
-        # visible data
-        child.setData(0, QtCore.Qt.EditRole, element.var('name') + '   ')
-        self.__addSourceTreeColumnData(element, child)
-
-        elementTypes.add(element.var('type'))
-
-        if self.__showVars:
-            variables = QtWidgets.QTreeWidgetItem(child)
-            variables.setData(
-                0,
-                QtCore.Qt.EditRole,
-                'vars'
-            )
-            for varName in sorted(element.varNames()):
-                if varName in ['path']:
-                    continue
-
-                variablesChild = QtWidgets.QTreeWidgetItem(variables)
-                variablesChild.setData(
-                    0,
-                    QtCore.Qt.EditRole,
-                    '{0}={1}'.format(varName, element.var(varName))
-                )
-
-        if self.__showTags:
-            tags = QtWidgets.QTreeWidgetItem(child)
-            tags.setData(
-                0,
-                QtCore.Qt.EditRole,
-                'tags'
-            )
-
-            for tagName in element.tagNames():
-                tagValue = element.tag(tagName)
-                if not isinstance(tagValue, str):
-                    continue
-
-                if tagName not in elementTags:
-                    elementTags[tagName] = set()
-                elementTags[tagName].add(tagValue)
-
-            for tagName in sorted(element.tagNames()):
-                tagChild = QtWidgets.QTreeWidgetItem(tags)
-                tagChild.setData(
-                    0,
-                    QtCore.Qt.EditRole,
-                    '{0}={1}'.format(tagName, element.tag(tagName))
-                )
-
-        return child
 
     def __onBack(self):
         """
@@ -1006,19 +675,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     QtWidgets.QMessageBox.Ok
                 )
 
-    def __onSourceTreePresetsClicked(self, treeItemWeakRef, columnIndex):
-        """
-        Slot triggered when the preset arrow button is clicked.
-        """
-        currentIndex = self.__sourceTree.indexFromItem(treeItemWeakRef(), columnIndex)
-
-        # resetting the selection in case the clicked item is not part of
-        # the selection
-        if currentIndex not in self.__sourceTree.selectionModel().selectedIndexes():
-            self.__sourceTree.selectionModel().select(currentIndex, QtCore.QItemSelectionModel.SelectCurrent)
-
-        self.__onChangeElementValue()
-
     def __onSourceTreeDoubleClick(self, item):
         """
         Slot triggered when an item is double clicked on the source tree.
@@ -1041,7 +697,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         menu = QtWidgets.QMenu(self)
         subMenus = {}
         if selectedColumn == 0:
-            elements = self.__selectedElements()
+            elements = self.__sourceTree.selectedElements()
             for index, taskHolder in enumerate(self.__taskHolders):
                 filteredElements = []
                 for element in elements:
@@ -1099,179 +755,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         if RunTaskHoldersWidget.run([self.__taskHolders[index]], elements, parent=self):
             self.__onRefreshSourceDir(force=True)
-
-    def __onChangeElementValue(self):
-        """
-        Slot triggered when an override in the source tree is triggered.
-        """
-        value = None
-        overrides = {}
-        if self.__overridesConfig and self.__overridesConfig.hasKey('overrides'):
-            overrides = dict(self.__overridesConfig.value('overrides'))
-
-        for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
-            selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
-
-            elements = []
-            if hasattr(selectedItem, 'elements'):
-                elements = selectedItem.elements[:]
-            if not elements:
-                continue
-
-            selectedColumn = selectedIndex.column()
-            columnName = self.__uiHintSourceColumns[selectedColumn - 1]
-
-            hintValue = ""
-            fileChooserName = '{}.fileChooserOnOverride'.format(columnName)
-            showFileChooser = fileChooserName in elements[0].tagNames() and elements[0].tag(fileChooserName)
-            if columnName in elements[0].varNames():
-                hintValue = elements[0].var(columnName)
-
-            if value is None:
-                allPresets = []
-
-                if hintValue is not None and isinstance(hintValue, bool):
-                    allPresets.append('True')
-                    allPresets.append('False')
-                else:
-                    presetsName = '{}.presets'.format(columnName)
-                    for elementItem in elements:
-                        if presetsName not in elementItem.tagNames():
-                            continue
-
-                        for presetValue in elementItem.tag(presetsName):
-                            if presetValue not in allPresets:
-                                allPresets.append(presetValue)
-
-                    if len(elements) > 1:
-                        allPresets.sort(key=lambda x: str(x).lower())
-
-                if allPresets:
-                    promptDialog = ComboBoxInputDialog(
-                        allPresets,
-                        title="Override Value",
-                        helpText="New value for: {}".format(columnName)
-                    )
-                    # cancelled
-                    if not promptDialog.exec_():
-                        return
-                    value = promptDialog.currentText()
-                else:
-                    if showFileChooser:
-                        ext = None
-                        if '{}.fileChooserOnOverrideAllowedExt'.format(columnName) in elements[0].tagNames():
-                            ext = "{ext} (*.{ext})".format(
-                                ext=elements[0].tag('{}.fileChooserOnOverrideAllowedExt'.format(columnName))
-                            )
-
-                        value = QtWidgets.QFileDialog.getOpenFileName(
-                            self,
-                            "Select a file to override: {}".format(
-                                elements[0].var('name')
-                            ),
-                            self.__overridePreviousSelectedLocation,
-                            ext
-                        )
-
-                        if not value:
-                            return
-                        value = value[0]
-
-                        self.__overridePreviousSelectedLocation = os.path.dirname(value)
-                    else:
-                        value = QtWidgets.QInputDialog.getText(
-                            self,
-                            "Override value",
-                            "New value for: {}".format(columnName),
-                            QtWidgets.QLineEdit.Normal,
-                            str(hintValue)
-                        )
-
-                        # cancelled
-                        if not value[1]:
-                            return
-                        value = value[0]
-
-                value = type(hintValue)(value) if type(hintValue) is not bool else value.lower() == 'true'
-
-            for elementItem in elements:
-                elementFullPath = elementItem.var('fullPath')
-
-                # skipping the same value that is currently set in the element
-                if columnName in elementItem.varNames() and value == elementItem.var(columnName):
-                    if elementFullPath in overrides and columnName in overrides[elementFullPath]:
-                        del overrides[elementFullPath][columnName]
-                    continue
-
-                # adding
-                if elementFullPath not in overrides:
-                    overrides[elementFullPath] = {}
-
-                overrides[elementFullPath][columnName] = value
-
-        if self.__overridesConfig:
-            self.__overridesConfig.setValue('overrides', overrides)
-
-        if value is not None:
-            self.__onRefreshSourceDir()
-
-    def __onResetElementValue(self):
-        """
-        Slot triggered when an override in the source tree is removed.
-        """
-        overrides = {}
-        if self.__overridesConfig and self.__overridesConfig.hasKey('overrides'):
-            overrides = dict(self.__overridesConfig.value('overrides'))
-
-        selectedElements = set()
-        columnNames = set()
-        for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
-            selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
-
-            elements = []
-            if hasattr(selectedItem, 'elements'):
-                elements = selectedItem.elements[:]
-            if not elements:
-                continue
-
-            selectedColumn = selectedIndex.column()
-            columnName = self.__uiHintSourceColumns[selectedColumn - 1]
-
-            selectedElements.update(elements)
-            columnNames.add(columnName)
-
-        for fullPath in map(lambda x: x.var('fullPath'), selectedElements):
-            if fullPath not in overrides:
-                continue
-
-            for columnName in columnNames:
-                if columnName in overrides[fullPath]:
-                    del overrides[fullPath][columnName]
-
-                if not len(overrides[fullPath]):
-                    del overrides[fullPath]
-
-        if self.__overridesConfig:
-            self.__overridesConfig.setValue('overrides', overrides)
-            self.__onRefreshSourceDir()
-
-    def __selectedElements(self):
-        """
-        Return a list of selected elements.
-        """
-        selectedElements = set()
-        for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
-            selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
-
-            elements = []
-            if hasattr(selectedItem, 'elements'):
-                elements = selectedItem.elements[:]
-            if not elements:
-                continue
-
-            selectedElements.update(elements)
-
-        return list(selectedElements)
 
     def __onSelectSourceDir(self):
         """
@@ -1411,30 +894,3 @@ class RunnerWindow(QtWidgets.QMainWindow):
                     if not parentItem:
                         break
                     parentItem.setHidden(False)
-
-    def __updateIcon(self, item, element, columnIndex=0):
-        """
-        Set the icon based on the element for the tree item.
-        """
-        iconPath = element.tag('icon') if 'icon' in element.tagNames() else None
-        if not iconPath:
-            return
-
-        item.setIcon(columnIndex, Resource.icon(iconPath))
-
-    def __onSourceTreeItemCheckedChanged(self, currentItem):
-        """
-        Slot triggered when the check state of an item in the source tree is changed.
-        """
-        if not self.__sourceTree.selectionModel().selectedIndexes() or self.__ignoreCheckedEvents:
-            return
-
-        self.__ignoreCheckedEvents = True
-
-        for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
-            selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
-
-            if hasattr(selectedItem, 'elements'):
-                selectedItem.setCheckState(0, currentItem.checkState(0))
-
-        self.__ignoreCheckedEvents = False
