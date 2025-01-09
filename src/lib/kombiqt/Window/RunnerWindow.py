@@ -33,7 +33,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__taskHolders = taskHolders
 
         self.__customHeader = customHeader
-        self.__verticalSourceScrollBarLatestPos = 0
         self.__showVars = False
         self.__showTags = False
         self.__uiHintGlobRecursively = False

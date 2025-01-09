@@ -26,6 +26,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         self.__checkableState = None
         self.__ignoreCheckedEvents = False
         self.__overridePreviousSelectedLocation = None
+        self.__verticalSourceScrollBarLatestPos = 0
 
         self.setAlternatingRowColors(True)
 
