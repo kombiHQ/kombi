@@ -317,13 +317,6 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         # restoring the visibility of the widget
         self.setVisible(True)
 
-        # TODO:
-        # for elementType in sorted(elementTypes):
-        #     action = self.__elementTypesMenu.addAction(elementType)
-        #     action.setCheckable(True)
-        #     action.setChecked(True)
-        #     action.changed.connect(self.__onSourceFiltersChanged)
-
         self.resizeColumnToContents(0)
 
     def __onSourceTreeContextMenu(self, point=None):
