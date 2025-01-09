@@ -1,15 +1,16 @@
 import os
+import functools
 import traceback
 from Qt import QtCore, QtWidgets
 from kombi.TaskHolder.Loader import Loader
 from kombi.TaskHolder.Dispatcher import Dispatcher
 from kombi.Element import ElementContext
 from kombi.Element.Fs import FsElement
+from ..Resource import Resource
 from ..Element import ElementListWidget
 from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
 from ..Widget.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
-from ..Resource import Resource
 from ..Widget.ImageElementViewer import ImageElementViewer
 from ..Widget.ScriptEditorWidget import ScriptEditorWidget
 
@@ -19,7 +20,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
     """
 
     preRenderElements = QtCore.Signal(list)
-    __viewModes = ["group", "flat"]
     __pickerLocation = os.environ.get('KOMBI_GUI_PICKER_LOCATION', '')
 
     def __init__(self, taskHolders, rootElement=None, customHeader='', **kwargs):
@@ -31,39 +31,25 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.setStyleSheet(Resource.stylesheet())
 
         self.__taskHolders = taskHolders
-
         self.__customHeader = customHeader
-        self.__showVars = False
-        self.__showTags = False
         self.__uiHintGlobRecursively = False
-        self.__checkableState = None
         self.__rootElements = []
         self.__buildWidgets()
 
-        # element info
-        self.__elementInfoMenu = self.__sourceFilterMenu.addMenu('Element Info')
+        self.__sourceFilterMenu = QtWidgets.QMenu(self.__sourceFilterButton)
+        self.__sourceFilterButton.setMenu(self.__sourceFilterMenu)
 
         # vars
-        self.__showVarsAction = self.__elementInfoMenu.addAction('Vars')
+        self.__showVarsAction = self.__sourceFilterMenu.addAction('Vars')
         self.__showVarsAction.setCheckable(True)
-        self.__showVarsAction.setChecked(self.__showVars)
+        self.__showVarsAction.setChecked(self.__sourceTree.showVars())
         self.__showVarsAction.triggered.connect(self.__onFilterShowVars)
 
         # tags
-        self.__showTagsAction = self.__elementInfoMenu.addAction('Tags')
+        self.__showTagsAction = self.__sourceFilterMenu.addAction('Tags')
         self.__showTagsAction.setCheckable(True)
-        self.__showTagsAction.setChecked(self.__showTags)
+        self.__showTagsAction.setChecked(self.__sourceTree.showTags())
         self.__showTagsAction.triggered.connect(self.__onFilterShowTags)
-
-        # element types
-        self.__elementTypesMenu = self.__sourceFilterMenu.addMenu('Element Types')
-
-        allAction = self.__elementTypesMenu.addAction('ALL')
-        allAction.triggered.connect(self.__onFilterSelectAll)
-
-        noneAction = self.__elementTypesMenu.addAction('NONE')
-        noneAction.triggered.connect(self.__onFilterSelectNone)
-        self.__elementTypesMenu.addSeparator()
 
         # task holders
         assert isinstance(taskHolders, (list, tuple)), "Invalid task holder list!"
@@ -154,10 +140,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Update the source tree.
         """
-        self.__sourceTree.clear()
-        self.__sourceFilterMenu.clear()
-        self.__overridesConfig = None
-
         if rootElement is None:
             return
 
@@ -193,10 +175,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
                 self.__logo.setTextFormat(QtCore.Qt.RichText)
                 self.__logo.setText("<b><big><big> {}".format(taskHolder.var('__uiHintTitle')))
 
-            if '__uiHintIconSize' in taskHolder.varNames():
-                iconSize = taskHolder.var('__uiHintIconSize')
-                self.__sourceTree.setIconSize(QtCore.QSize(iconSize, iconSize))
-
             if '__uiHintDispatcher' in taskHolder.varNames():
                 self.__selectedDispatcher.selectDispatcher(taskHolder.var('__uiHintDispatcher'))
 
@@ -230,17 +208,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if filterTypes:
             filterTypes.extend(filterDefaultTypes)
 
-        # globbing elements
-        for taskHolder in filter(lambda x: '__uiHintCheckedByDefault' in x.varNames(), self.__taskHolders):
-            self.__checkableState = taskHolder.var('__uiHintCheckedByDefault')
-
-        self.__nextButton.setVisible(self.__checkableState is not None)
-        self.__selectedDispatcher.setVisible(self.__checkableState is not None)
-
-        if self.__checkableState is not None:
-            self.__sourceTree.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        else:
-            self.__sourceTree.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.__nextButton.setVisible(self.__sourceTree.checkableState() is not None)
+        self.__selectedDispatcher.setVisible(self.__sourceTree.checkableState() is not None)
 
         with ElementContext():
             elementList = []
@@ -256,10 +225,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
                         elementList.append(elementFound)
 
             self.preRenderElements.emit(elementList)
-            self.__sourceTree.updateElementList(elementList)
-
-            # TODO
-            # self.__onSourceFiltersChanged()
+            self.__sourceTree.setElementList(elementList)
 
         # forcing kombi to start at the execution settings (next) interface
         if skipSourceStep:
@@ -269,12 +235,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Update the execution settings.
         """
-        checkedElements = self.__checkedElements() if elements is None else elements
-
-        # applying overrides
-        self.__applySourceOverrides(
-            checkedElements
-        )
+        checkedElements = self.__sourceTree.checkedElements() if elements is None else elements
 
         self.__executionSettingsAreaWidget.setVisible(True)
         self.__selectedDispatcher.setVisible(True)
@@ -303,24 +264,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         Return the dispatcher widget.
         """
         return self.__selectedDispatcher
-
-    def setViewMode(self, viewMode):
-        """
-        Change the view mode.
-        """
-        assert viewMode in self.__viewModes, "Invalid view mode"
-
-        for action in self.__viewModeActionGroup.actions():
-            if action.text().lower() == viewMode.lower():
-                action.setChecked(True)
-
-    def viewMode(self):
-        """
-        Return the current view mode.
-        """
-        for action in self.__viewModeActionGroup.actions():
-            if action.isChecked():
-                return action.text().lower()
 
     def __buildWidgets(self):
         """
@@ -373,20 +316,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__sourceFilterMenu = QtWidgets.QMenu(self.__sourceFilterButton)
         self.__sourceFilterButton.setMenu(self.__sourceFilterMenu)
 
-        # filter search
-        self.__sourceFilterSearch = QtWidgets.QLineEdit("")
-        self.__sourceFilterSearch.setPlaceholderText("Filter...")
-        self.__sourceFilterSearch.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.__sourceFilterSearch.setClearButtonEnabled(True)
-        self.__sourceFilterSearch.setFixedWidth(150)
-
         self.__sourceDirButton.clicked.connect(self.__onSelectSourceDir)
         self.__elementsLevelNavigationWidget.levelClicked.connect(self.updateSource)
-        self.__sourceFilterSearchTimer = QtCore.QTimer()
-        self.__sourceFilterSearchTimer.setSingleShot(True)
-        self.__sourceFilterSearchTimer.timeout.connect(self.__onSourceFiltersChanged)
-        self.__sourceFilterSearch.textChanged.connect(self.__onSourceFilterSearch)
-
         sourceBarLayout.addWidget(self.__sourceDirButton)
         sourceBarLayout.addWidget(self.__elementsLevelNavigationWidget)
         sourceBarLayout.addWidget(self.__sourceRefreshButton)
@@ -419,7 +350,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         sourceBarLayout.addWidget(self.__sourceFilterButton)
         sourceBarLayout.addWidget(self.__sourceViewModeButton)
-        sourceBarLayout.addWidget(self.__sourceFilterSearch)
         sourceBarLayout.addWidget(scriptEditorButton)
 
         sourceLayout.addLayout(sourceBarLayout)
@@ -455,6 +385,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__sourceTree = ElementListWidget()
         self.__sourceTree.itemSelectionChanged.connect(self.__onSourceTreeSelectionChanged)
         self.__sourceTree.itemDoubleClicked.connect(self.__onSourceTreeDoubleClick)
+        self.__sourceTree.modifed.connect(self.__onForceRefresh)
         self.__sourceRefreshButton.clicked.connect(self.__onForceRefresh)
 
         self.__executionSettings = ExecutionSettingsWidget()
@@ -504,15 +435,10 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         # updating view mode
         self.__viewModeActionGroup = QtWidgets.QActionGroup(self)
-        self.__checkedViewMode = None
-        for viewMode in self.__viewModes:
+        for viewMode in self.__sourceTree.viewModes:
             viewAction = self.__sourceViewModeMenu.addAction(viewMode.capitalize())
-            viewAction.setActionGroup(self.__viewModeActionGroup)
-            viewAction.setCheckable(True)
-            viewAction.changed.connect(self.__onChangeView)
-
-            if (viewMode == self.__viewModes[0]):
-                viewAction.setChecked(True)
+            viewAction.triggered.connect(functools.partial(self.__sourceTree.setViewMode, viewMode))
+            self.__viewModeActionGroup.addAction(viewAction)
 
     def __onForceRefresh(self):
         """
@@ -539,14 +465,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Slot called when selection changes on the source tree.
         """
-        elements = []
-        for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
-            selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
-
-            if not hasattr(selectedItem, 'elements'):
-                continue
-            for element in selectedItem.elements:
-                elements.append(element)
+        elements = self.__sourceTree.selectedElements()
 
         if self.__splitter.orientation() == QtCore.Qt.Vertical:
             self.refreshExecutionSettings(elements)
@@ -577,58 +496,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if self.__imageElementViewer.isVisible() or forceVisibility:
             self.__onSourceTreeSelectionChanged()
 
-    def __checkedElements(self):
-        """
-        Return a list of checked elements in the source tree.
-        """
-        totalRows = self.__sourceTree.model().rowCount()
-        result = []
-        for i in range(totalRows):
-            self.__sourceTree.model().index(i, 0)
-            item = self.__sourceTree.topLevelItem(i)
-
-            # collections
-            if not hasattr(item, 'elements'):
-                for childIndex in range(item.childCount()):
-                    childItem = item.child(childIndex)
-                    if childItem.checkState(0) and hasattr(childItem, 'elements'):
-                        result.extend(childItem.elements)
-
-            # root items
-            elif item.checkState(0) and hasattr(item, 'elements'):
-                result.extend(item.elements)
-
-        return list(map(lambda x: x.clone(), result))
-
-    def __applySourceOverrides(self, elements):
-        """
-        Apply overrides overrides on the source tree.
-        """
-        overrides = {}
-        if self.__overridesConfig and self.__overridesConfig.hasKey('overrides'):
-            overrides = self.__overridesConfig.value('overrides')
-
-        if not overrides:
-            return
-
-        with ElementContext():
-            def __allElements(childElement):
-                fullPath = childElement.var('fullPath')
-                if fullPath in overrides:
-                    for varName, varValue in overrides[fullPath].items():
-                        childElement.setVar(
-                            varName,
-                            varValue,
-                            varName in childElement.contextVarNames()
-                        )
-
-                if not childElement.isLeaf():
-                    for element in childElement.children():
-                        __allElements(element)
-
-            for element in elements:
-                __allElements(element)
-
     def __onBack(self):
         """
         Slot triggered when back button is triggered.
@@ -639,48 +506,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__executeButton.setVisible(False)
         self.__sourceAreaWidget.setVisible(True)
         self.__executionSettingsAreaWidget.setVisible(False)
-
-    def __onChangeView(self):
-        """
-        Slot triggered when change view mode is triggered.
-        """
-        checkedAction = self.__viewModeActionGroup.checkedAction()
-        if checkedAction and checkedAction.text() != self.__checkedViewMode:
-            self.__checkedViewMode = self.__viewModeActionGroup.checkedAction().text()
-            self.__sourceTree.refresh()
-
-    def __onColumnButton(self, treeItemWeakRef, callableName):
-        """
-        Slot triggered when the column button is clicked.
-        """
-        elements = treeItemWeakRef().elements
-
-        # executing callable
-        for index, element in enumerate(elements):
-            if hasattr(element, callableName):
-                try:
-                    getattr(elements[0], callableName)(index, len(elements))
-                except Exception as err:
-                    traceback.print_exc()
-
-                    QtWidgets.QMessageBox.critical(
-                        None,
-                        "Kombi",
-                        "Error during the execution {}:\n\n{}".format(str(element), str(err)),
-                        QtWidgets.QMessageBox.Ok
-                    )
-
-                    raise err
-            else:
-                QtWidgets.QMessageBox.critical(
-                    None,
-                    "Kombi",
-                    'Could not find callable "{0}" in element "{1}"'.format(
-                        callableName,
-                        str(elements[0].var('type'))
-                    ),
-                    QtWidgets.QMessageBox.Ok
-                )
 
     def __onSourceTreeDoubleClick(self, item):
         """
@@ -694,7 +519,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Slot triggered when select source button is triggered.
         """
-        self.__verticalSourceScrollBarLatestPos = 0
         currentDir = self.__pickerLocation
         if self.__rootElements and isinstance(self.__rootElements[0], FsElement):
             currentDir = self.__rootElements[0].var('fullPath')
@@ -713,75 +537,10 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Slot triggered when info show vars is triggered.
         """
-        self.__showVars = self.__showVarsAction.isChecked()
-
-        self.__sourceTree.refresh()
+        self.__sourceTree.setShowVars(self.__showVarsAction.isChecked())
 
     def __onFilterShowTags(self, *args):
         """
         Slot triggered when info show tags is triggered.
         """
-        self.__showTags = self.__showTagsAction.isChecked()
-
-        self.__sourceTree.refresh()
-
-    def __onFilterSelectNone(self):
-        """
-        Slot triggered when select none filter is triggered.
-        """
-        for action in self.__elementTypesMenu.actions():
-            action.setChecked(False)
-
-    def __onFilterSelectAll(self):
-        """
-        Slot triggered when select all filter is triggered.
-        """
-        for action in self.__elementTypesMenu.actions():
-            action.setChecked(True)
-
-    def __onSourceFilterSearch(self, *args, **kwargs):
-        """
-        Slot triggered every time the filter search field is changed.
-        """
-        self.__sourceFilterSearchTimer.start(500)
-
-    def __onSourceFiltersChanged(self, *args, **kwargs):
-        """
-        Slot triggered a filter is changed in the source tree.
-        """
-        visibleTypes = []
-        for action in self.__elementTypesMenu.actions():
-            if action.isChecked():
-                visibleTypes.append(action.text())
-
-        allTreeItems = self.__sourceTree.findItems("*", QtCore.Qt.MatchWildcard | QtCore.Qt.MatchWrap | QtCore.Qt.MatchRecursive, 1)
-        filterSearch = list(self.__sourceFilterSearch.text().lower().strip().split(' '))
-        elementItems = []
-        for treeItem in allTreeItems:
-            # in case of collections we always want to hide the root item
-            if not treeItem.parent():
-                treeItem.setHidden(True)
-
-            if not hasattr(treeItem, 'elements'):
-                continue
-
-            treeItem.setHidden(True)
-            elementItems.append(treeItem)
-
-            if treeItem.elements[0].var('type') not in visibleTypes:
-                continue
-
-            for filterWord in filterSearch:
-                if filterWord in str(treeItem.data(0, QtCore.Qt.EditRole)).lower():
-                    treeItem.setHidden(False)
-                    break
-
-        for elementItem in elementItems:
-            if not elementItem.isHidden():
-                parentItem = elementItem
-                while parentItem:
-                    parentItem = parentItem.parent()
-
-                    if not parentItem:
-                        break
-                    parentItem.setHidden(False)
+        self.__sourceTree.setShowTags(self.__showTagsAction.isChecked())

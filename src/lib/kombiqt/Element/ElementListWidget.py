@@ -1,10 +1,12 @@
 import os
 import hashlib
 import functools
+import traceback
 import weakref
 from kombi.Element import Element
 from kombi.Template import Template
 from kombi.Config import Config
+from kombi.Element import ElementContext
 from ..Widget.ComboBoxInputDialog import ComboBoxInputDialog
 from ..Widget.RunTaskHoldersWidget import RunTaskHoldersWidget
 from ..Resource import Resource
@@ -14,6 +16,8 @@ class ElementListWidget(QtWidgets.QTreeWidget):
     """
     Widget used to list elements.
     """
+    viewModes = ('group', 'flat')
+    modifed = QtCore.Signal()
 
     def __init__(self):
         """
@@ -25,6 +29,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         self.__showTags = False
         self.__checkableState = None
         self.__ignoreCheckedEvents = False
+        self.__overridesConfig = None
         self.__overridePreviousSelectedLocation = None
         self.__verticalSourceScrollBarLatestPos = 0
 
@@ -45,26 +50,174 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         self.__taskHolders = []
         self.__uiHintSourceColumns = []
 
-        # TODO
-        self.__checkedViewMode = "Group"
+        self.__viewMode = 'group'
+
+    def setShowVars(self, display):
+        """
+        Set the display of the variables.
+        """
+        self.__showVars = display
+        self.modifed.emit()
+
+    def showVars(self):
+        """
+        Return the display of the variables.
+        """
+        return self.__showVars
+
+    def setShowTags(self, display):
+        """
+        Set the display of the tags.
+        """
+        self.__showTags = display
+        self.modifed.emit()
+
+    def showTags(self):
+        """
+        Return the display of the tags.
+        """
+        return self.__showTags
+
+    def setViewMode(self, viewMode):
+        """
+        Change the view mode.
+        """
+        assert viewMode in self.viewModes, "Invalid view mode"
+        self.__viewMode = viewMode
+        self.modifed.emit()
+
+    def viewMode(self):
+        """
+        Return the current view mode.
+        """
+        return self.__viewMode
+
+    def setCheckableState(self, state):
+        """
+        Define the checkable state for the widget (Boolean for the default state and None for no state)..
+        """
+        self.__checkableState = state
+
+        if state is not None:
+            self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        else:
+            self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+
+    def checkableState(self):
+        """
+        Return the checkable state.
+        """
+        return self.__checkableState
 
     def setup(self, taskHolders):
         """
         Define the task holders used to filter the elements.
         """
         self.__taskHolders = taskHolders[:]
+        self.__overridesConfig = None
 
-        if self.__taskHolders and self.__taskHolders[0].hasVar('configDirectory'):
-            configDirectory = self.__taskHolders[0].var('configDirectory')
-            configSignature = hashlib.md5(configDirectory.encode()).hexdigest()
-            self.__overridesConfig = Config(configSignature, 'taskOverrides')
-            self.__overridesConfig.setValue('configDirectory', configDirectory, serialize=False)
-        else:
-            self.__overridesConfig = None
+        if taskHolders:
+            for taskHolder in self.__taskHolders:
+                if '__uiHintIconSize' in taskHolder.varNames():
+                    iconSize = taskHolder.var('__uiHintIconSize')
+                    self.setIconSize(QtCore.QSize(iconSize, iconSize))
+
+                if '__uiHintCheckedByDefault' in taskHolder.varNames():
+                    self.setCheckableState(taskHolder.var('__uiHintCheckedByDefault'))
+
+                if 'configDirectory' in taskHolder.varNames():
+                    configDirectory = taskHolder.var('configDirectory')
+                    configSignature = hashlib.md5(configDirectory.encode()).hexdigest()
+                    self.__overridesConfig = Config(configSignature, 'taskOverrides')
+                    self.__overridesConfig.setValue('configDirectory', configDirectory, serialize=False)
 
         self.__updateSourceColumns(self.__taskHolders)
 
-    def selectedElements(self):
+    def refresh(self):
+        """
+        Slot triggered when refresh button from source tree is triggered.
+        """
+        self.__verticalSourceScrollBarLatestPos = self.verticalScrollBar().value()
+        self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+
+        # collecting the current state of the tree
+        treeData = {}
+        for index in range(self.topLevelItemCount()):
+            item = self.topLevelItem(index)
+            treeData[(index, item.text(0))] = {
+                "checked": item.checkState(0),
+                "expanded": item.isExpanded()
+            }
+
+        # reapplying the state
+        for index in range(self.topLevelItemCount()):
+            item = self.topLevelItem(index)
+            key = (index, item.text(0))
+
+            if key in treeData:
+                if self.__checkableState is not None and bool(item.flags() & QtCore.Qt.ItemIsUserCheckable):
+                    item.setCheckState(0, treeData[key]["checked"])
+                item.setExpanded(treeData[key]["expanded"])
+
+        # workaround necessary to restore the position of the scrollbar
+        QtCore.QTimer.singleShot(0, self.__onRestoreVerticalScrollBar)
+
+    def __applySourceOverrides(self, elements):
+        """
+        Apply overrides overrides on the source tree.
+        """
+        overrides = {}
+        if self.__overridesConfig and self.__overridesConfig.hasKey('overrides'):
+            overrides = self.__overridesConfig.value('overrides')
+
+        if not overrides:
+            return
+
+        with ElementContext():
+            def __allElements(childElement):
+                fullPath = childElement.var('fullPath')
+                if fullPath in overrides:
+                    for varName, varValue in overrides[fullPath].items():
+                        childElement.setVar(
+                            varName,
+                            varValue,
+                            varName in childElement.contextVarNames()
+                        )
+
+                if not childElement.isLeaf():
+                    for element in childElement.children():
+                        __allElements(element)
+
+            for element in elements:
+                __allElements(element)
+
+    def checkedElements(self, applyOverrides=True):
+        """
+        Return a list of checked elements in the source tree.
+        """
+        totalRows = self.model().rowCount()
+        result = []
+        for i in range(totalRows):
+            self.model().index(i, 0)
+            item = self.topLevelItem(i)
+
+            # collections
+            if not hasattr(item, 'elements'):
+                for childIndex in range(item.childCount()):
+                    childItem = item.child(childIndex)
+                    if childItem.checkState(0) and hasattr(childItem, 'elements'):
+                        result.extend(childItem.elements)
+
+            # root items
+            elif item.checkState(0) and hasattr(item, 'elements'):
+                result.extend(item.elements)
+
+        result = list(map(lambda x: x.clone(), result))
+        if applyOverrides:
+            self.__applySourceOverrides(result)
+        return result
+
+    def selectedElements(self, applyOverrides=True):
         """
         Return a list of selected elements.
         """
@@ -80,12 +233,17 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
             selectedElements.update(elements)
 
-        return list(selectedElements)
+        result = list(selectedElements)
+        if applyOverrides:
+            self.__applySourceOverrides(result)
+        return result
 
-    def updateElementList(self, elementList):
+    def setElementList(self, elementList):
         """
         Update the elements displayed in the source tree.
         """
+        self.clear()
+
         elementTypes = set()
         elementTags = {}
 
@@ -93,7 +251,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         self.setVisible(False)
 
         # group
-        if self.__checkedViewMode == "Group":
+        if self.__viewMode == "group":
             groupedElements = self.__groupElements(elementList)
 
             for groupName in groupedElements.keys():
@@ -486,7 +644,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
         if self.__overridesConfig:
             self.__overridesConfig.setValue('overrides', overrides)
-            self.refresh()
+            self.modifed.emit()
 
     def __onChangeElementValue(self):
         """
@@ -601,7 +759,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
             self.__overridesConfig.setValue('overrides', overrides)
 
         if value is not None:
-            self.refresh()
+            self.modifed.emit()
 
     def __groupElements(self, elements):
         """
@@ -612,7 +770,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         for elementList in Element.group(elements):
             for element in elementList:
                 # group
-                if self.__checkedViewMode == 'Group' and 'group' in element.tagNames():
+                if self.__viewMode == 'group' and 'group' in element.tagNames():
                     groupName = element.tag('group')
                     if groupName not in groupedElements:
                         groupedElements[groupName] = []
@@ -652,34 +810,38 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
         self.__ignoreCheckedEvents = False
 
-    def refresh(self):
+    def __onColumnButton(self, treeItemWeakRef, callableName):
         """
-        Slot triggered when refresh button from source tree is triggered.
+        Slot triggered when the column button is clicked.
         """
-        self.__verticalSourceScrollBarLatestPos = self.verticalScrollBar().value()
-        self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        elements = treeItemWeakRef().elements
 
-        # collecting the current state of the tree
-        treeData = {}
-        for index in range(self.topLevelItemCount()):
-            item = self.topLevelItem(index)
-            treeData[(index, item.text(0))] = {
-                "checked": item.checkState(0),
-                "expanded": item.isExpanded()
-            }
+        # executing callable
+        for index, element in enumerate(elements):
+            if hasattr(element, callableName):
+                try:
+                    getattr(elements[0], callableName)(index, len(elements))
+                except Exception as err:
+                    traceback.print_exc()
 
-        # reapplying the state
-        for index in range(self.topLevelItemCount()):
-            item = self.topLevelItem(index)
-            key = (index, item.text(0))
+                    QtWidgets.QMessageBox.critical(
+                        None,
+                        "Kombi",
+                        "Error during the execution {}:\n\n{}".format(str(element), str(err)),
+                        QtWidgets.QMessageBox.Ok
+                    )
 
-            if key in treeData:
-                if self.__checkableState is not None and bool(item.flags() & QtCore.Qt.ItemIsUserCheckable):
-                    item.setCheckState(0, treeData[key]["checked"])
-                item.setExpanded(treeData[key]["expanded"])
-
-        # workaround necessary to restore the position of the scrollbar
-        QtCore.QTimer.singleShot(0, self.__onRestoreVerticalScrollBar)
+                    raise err
+            else:
+                QtWidgets.QMessageBox.critical(
+                    None,
+                    "Kombi",
+                    'Could not find callable "{0}" in element "{1}"'.format(
+                        callableName,
+                        str(elements[0].var('type'))
+                    ),
+                    QtWidgets.QMessageBox.Ok
+                )
 
     def __onRestoreVerticalScrollBar(self):
         """
