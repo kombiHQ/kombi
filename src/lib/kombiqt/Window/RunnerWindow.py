@@ -1,6 +1,5 @@
 import os
 import traceback
-import functools
 from Qt import QtCore, QtWidgets
 from kombi.TaskHolder.Loader import Loader
 from kombi.TaskHolder.Dispatcher import Dispatcher
@@ -70,7 +69,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         # task holders
         assert isinstance(taskHolders, (list, tuple)), "Invalid task holder list!"
 
-        self.__onRefreshSourceDir()
+        self.__sourceTree.refresh()
 
         if self.__taskHolders and 'configDirectory' in self.__taskHolders[0].varNames():
             self.setWindowTitle('Kombi ({0})'.format(self.__taskHolders[0].var('configDirectory')))
@@ -383,7 +382,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__sourceFilterSearch.setFixedWidth(150)
 
         self.__sourceDirButton.clicked.connect(self.__onSelectSourceDir)
-        self.__sourceRefreshButton.clicked.connect(functools.partial(self.__onRefreshSourceDir, True))
         self.__elementsLevelNavigationWidget.levelClicked.connect(self.updateSource)
         self.__sourceFilterSearchTimer = QtCore.QTimer()
         self.__sourceFilterSearchTimer.setSingleShot(True)
@@ -458,6 +456,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__sourceTree = ElementListWidget()
         self.__sourceTree.itemSelectionChanged.connect(self.__onSourceTreeSelectionChanged)
         self.__sourceTree.itemDoubleClicked.connect(self.__onSourceTreeDoubleClick)
+        self.__sourceRefreshButton.clicked.connect(self.__onForceRefresh)
 
         self.__executionSettings = ExecutionSettingsWidget()
         sourceControlMain.setCentralWidget(self.__sourceTree)
@@ -515,6 +514,18 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
             if (viewMode == self.__viewModes[0]):
                 viewAction.setChecked(True)
+
+    def __onForceRefresh(self):
+        """
+        Refresh the running window.
+        """
+        for rootElement in self.__rootElements:
+            rootElement.flushChildrenCache()
+
+        if self.__rootElements:
+            self.updateSource(self.__rootElements[-1])
+
+        self.__sourceTree.refresh()
 
     def __onPerformTasks(self):
         """
@@ -637,7 +648,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         checkedAction = self.__viewModeActionGroup.checkedAction()
         if checkedAction and checkedAction.text() != self.__checkedViewMode:
             self.__checkedViewMode = self.__viewModeActionGroup.checkedAction().text()
-            self.__onRefreshSourceDir()
+            self.__sourceTree.refresh()
 
     def __onColumnButton(self, treeItemWeakRef, callableName):
         """
@@ -699,56 +710,13 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if selectedDirectory:
             self.updateSource(FsElement.createFromPath(selectedDirectory))
 
-    def __onRefreshSourceDir(self, force=False):
-        """
-        Slot triggered when refresh button from source tree is triggered.
-        """
-        self.__verticalSourceScrollBarLatestPos = self.__sourceTree.verticalScrollBar().value()
-        self.__sourceTree.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-
-        # collecting the current state of the tree
-        treeData = {}
-        for index in range(self.__sourceTree.topLevelItemCount()):
-            item = self.__sourceTree.topLevelItem(index)
-            treeData[(index, item.text(0))] = {
-                "checked": item.checkState(0),
-                "expanded": item.isExpanded()
-            }
-
-        # refreshing tree
-        if force:
-            for rootElement in self.__rootElements:
-                rootElement.flushChildrenCache()
-
-        if self.__rootElements:
-            self.updateSource(self.__rootElements[-1])
-
-        # reapplying the state
-        for index in range(self.__sourceTree.topLevelItemCount()):
-            item = self.__sourceTree.topLevelItem(index)
-            key = (index, item.text(0))
-
-            if key in treeData:
-                if self.__checkableState is not None and bool(item.flags() & QtCore.Qt.ItemIsUserCheckable):
-                    item.setCheckState(0, treeData[key]["checked"])
-                item.setExpanded(treeData[key]["expanded"])
-
-        # workaround necessary to restore the position of the scrollbar
-        QtCore.QTimer.singleShot(0, self.__onRestoreVerticalScrollBar)
-
-    def __onRestoreVerticalScrollBar(self):
-        """
-        Slot triggered to restore the vertical scrollbar position.
-        """
-        self.__sourceTree.verticalScrollBar().setSliderPosition(self.__verticalSourceScrollBarLatestPos)
-
     def __onFilterShowVars(self, *args):
         """
         Slot triggered when info show vars is triggered.
         """
         self.__showVars = self.__showVarsAction.isChecked()
 
-        self.__onRefreshSourceDir()
+        self.__sourceTree.refresh()
 
     def __onFilterShowTags(self, *args):
         """
@@ -756,7 +724,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         self.__showTags = self.__showTagsAction.isChecked()
 
-        self.__onRefreshSourceDir()
+        self.__sourceTree.refresh()
 
     def __onFilterSelectNone(self):
         """

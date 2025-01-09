@@ -238,7 +238,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         Slog triggered by the context menu action to run the task holders.
         """
         if RunTaskHoldersWidget.run([self.__taskHolders[index]], elements, parent=self):
-            self.__onRefreshSourceDir(force=True)
+            self.refresh(force=True)
 
     def __updateSourceColumns(self, taskHolders):
         """
@@ -367,7 +367,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
                 columnButton.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
                 if '{}.button'.format(column) in element.tagNames():
                     columnButton.clicked.connect(functools.partial(self.__onColumnButton, weakref.ref(treeItem), element.tag('{}.button'.format(column))))
-                self.__sourceTree.setItemWidget(treeItem, index + 1, columnButton)
+                self.setItemWidget(treeItem, index + 1, columnButton)
 
             # creating custom widget to show the presets
             elif '{}.presets'.format(column) in element.tagNames() or value is not None and isinstance(value, bool):
@@ -386,7 +386,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
                 presetsLayout.addStretch()
                 presetsLayout.addWidget(presetsArrowIcon)
 
-                self.__sourceTree.setItemWidget(treeItem, index + 1, presetsHolderWidget)
+                self.setItemWidget(treeItem, index + 1, presetsHolderWidget)
 
             treeItem.setData(
                 index + 1,
@@ -457,8 +457,8 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
         selectedElements = set()
         columnNames = set()
-        for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
-            selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
+        for selectedIndex in self.selectionModel().selectedIndexes():
+            selectedItem = self.itemFromIndex(selectedIndex)
 
             elements = []
             if hasattr(selectedItem, 'elements'):
@@ -485,7 +485,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
         if self.__overridesConfig:
             self.__overridesConfig.setValue('overrides', overrides)
-            self.__onRefreshSourceDir()
+            self.refresh()
 
     def __onChangeElementValue(self):
         """
@@ -496,8 +496,8 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         if self.__overridesConfig and self.__overridesConfig.hasKey('overrides'):
             overrides = dict(self.__overridesConfig.value('overrides'))
 
-        for selectedIndex in self.__sourceTree.selectionModel().selectedIndexes():
-            selectedItem = self.__sourceTree.itemFromIndex(selectedIndex)
+        for selectedIndex in self.selectionModel().selectedIndexes():
+            selectedItem = self.itemFromIndex(selectedIndex)
 
             elements = []
             if hasattr(selectedItem, 'elements'):
@@ -600,7 +600,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
             self.__overridesConfig.setValue('overrides', overrides)
 
         if value is not None:
-            self.__onRefreshSourceDir()
+            self.refresh()
 
     def __groupElements(self, elements):
         """
@@ -650,3 +650,38 @@ class ElementListWidget(QtWidgets.QTreeWidget):
                 selectedItem.setCheckState(0, currentItem.checkState(0))
 
         self.__ignoreCheckedEvents = False
+
+    def refresh(self):
+        """
+        Slot triggered when refresh button from source tree is triggered.
+        """
+        self.__verticalSourceScrollBarLatestPos = self.verticalScrollBar().value()
+        self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+
+        # collecting the current state of the tree
+        treeData = {}
+        for index in range(self.topLevelItemCount()):
+            item = self.topLevelItem(index)
+            treeData[(index, item.text(0))] = {
+                "checked": item.checkState(0),
+                "expanded": item.isExpanded()
+            }
+
+        # reapplying the state
+        for index in range(self.topLevelItemCount()):
+            item = self.topLevelItem(index)
+            key = (index, item.text(0))
+
+            if key in treeData:
+                if self.__checkableState is not None and bool(item.flags() & QtCore.Qt.ItemIsUserCheckable):
+                    item.setCheckState(0, treeData[key]["checked"])
+                item.setExpanded(treeData[key]["expanded"])
+
+        # workaround necessary to restore the position of the scrollbar
+        QtCore.QTimer.singleShot(0, self.__onRestoreVerticalScrollBar)
+
+    def __onRestoreVerticalScrollBar(self):
+        """
+        Slot triggered to restore the vertical scrollbar position.
+        """
+        self.verticalScrollBar().setSliderPosition(self.__verticalSourceScrollBarLatestPos)
