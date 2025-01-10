@@ -1,3 +1,4 @@
+from ...Task import Task
 from ..External.GafferTask import GafferTask
 from ...Element import Element
 
@@ -75,7 +76,7 @@ class GafferSceneTask(GafferTask):
 
 
 # registering task
-GafferTask.register(
+Task.register(
     'gafferScene',
     GafferSceneTask
 )
