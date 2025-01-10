@@ -162,35 +162,6 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         # workaround necessary to restore the position of the scrollbar
         QtCore.QTimer.singleShot(0, self.__onRestoreVerticalScrollBar)
 
-    def __applySourceOverrides(self, elements):
-        """
-        Apply overrides overrides on the tree.
-        """
-        overrides = {}
-        if self.__overridesConfig and self.__overridesConfig.hasKey('overrides'):
-            overrides = self.__overridesConfig.value('overrides')
-
-        if not overrides:
-            return
-
-        with ElementContext():
-            def __allElements(childElement):
-                fullPath = childElement.var('fullPath')
-                if fullPath in overrides:
-                    for varName, varValue in overrides[fullPath].items():
-                        childElement.setVar(
-                            varName,
-                            varValue,
-                            varName in childElement.contextVarNames()
-                        )
-
-                if not childElement.isLeaf():
-                    for element in childElement.children():
-                        __allElements(element)
-
-            for element in elements:
-                __allElements(element)
-
     def checkedElements(self, applyOverrides=True):
         """
         Return a list of checked elements in the tree.
@@ -318,6 +289,36 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         self.setVisible(True)
 
         self.resizeColumnToContents(0)
+
+    def __applySourceOverrides(self, elements):
+        """
+        Apply overrides overrides on the tree.
+        """
+        overrides = {}
+        if self.__overridesConfig and self.__overridesConfig.hasKey('overrides'):
+            overrides = self.__overridesConfig.value('overrides')
+
+        if not overrides:
+            return
+
+        with ElementContext():
+            def __allElements(childElement):
+                fullPath = childElement.var('fullPath')
+                if fullPath in overrides:
+                    for varName, varValue in overrides[fullPath].items():
+                        childElement.setVar(
+                            varName,
+                            varValue,
+                            varName in childElement.contextVarNames()
+                        )
+
+                if not childElement.isLeaf():
+                    for element in childElement.children():
+                        __allElements(element)
+
+            for element in elements:
+                __allElements(element)
+
 
     def __onSourceTreeContextMenu(self, point=None):
         """

@@ -8,10 +8,10 @@ from kombi.Element import ElementContext
 from kombi.Element.Fs import FsElement
 from ..Resource import Resource
 from ..Element import ElementListWidget
+from ..Element.ImageElementViewer import ImageElementViewer
+from ..Element.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
 from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
-from ..Widget.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
-from ..Widget.ImageElementViewer import ImageElementViewer
 from ..Widget.ScriptEditorWidget import ScriptEditorWidget
 
 class RunnerWindow(QtWidgets.QMainWindow):
@@ -137,6 +137,40 @@ class RunnerWindow(QtWidgets.QMainWindow):
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
 
+    def refreshExecutionSettings(self, elements=None):
+        """
+        Update the execution settings.
+        """
+        checkedElements = self.__elementListWidget.checkedElements() if elements is None else elements
+
+        self.__executionSettingsAreaWidget.setVisible(True)
+        self.__selectedDispatcher.setVisible(True)
+        self.__sourceAreaWidget.setVisible(self.__splitter.orientation() == QtCore.Qt.Vertical)
+        self.__executeButton.setEnabled(True)
+
+        self.__nextButton.setVisible(False)
+        self.__backButton.setVisible(self.__splitter.orientation() == QtCore.Qt.Horizontal)
+        self.__executeButton.setVisible(True)
+
+        if self.__taskHolders and '__uiHintBottomExecutionSettings' in self.__taskHolders[0].varNames() and self.__taskHolders[0].var('__uiHintBottomExecutionSettings'):
+            if not checkedElements and self.__rootElements:
+                checkedElements = [self.__rootElements[-1]]
+            self.__executionSettings.refresh(checkedElements, [self.__taskHolders[0]])
+        else:
+            self.__executionSettings.refresh(checkedElements, self.__taskHolders)
+
+        if self.__executionSettings.topLevelItemCount() == 0:
+            self.__executionSettingsEmptyMessageLabel.setVisible(True)
+            self.__executionSettingsEmptyMessageLabel.setFixedSize(self.__executionSettingsEmptyMessageLabel.minimumSizeHint())
+        else:
+            self.__executionSettingsEmptyMessageLabel.setFixedSize(0, 0)
+
+    def dispatcherWidget(self):
+        """
+        Return the dispatcher widget.
+        """
+        return self.__selectedDispatcher
+
     def __onUpdateSource(self, rootElement):
         """
         Update the element list.
@@ -231,40 +265,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         # forcing kombi to start at the execution settings (next) interface
         if skipSourceStep:
             self.refreshExecutionSettings()
-
-    def refreshExecutionSettings(self, elements=None):
-        """
-        Update the execution settings.
-        """
-        checkedElements = self.__elementListWidget.checkedElements() if elements is None else elements
-
-        self.__executionSettingsAreaWidget.setVisible(True)
-        self.__selectedDispatcher.setVisible(True)
-        self.__sourceAreaWidget.setVisible(self.__splitter.orientation() == QtCore.Qt.Vertical)
-        self.__executeButton.setEnabled(True)
-
-        self.__nextButton.setVisible(False)
-        self.__backButton.setVisible(self.__splitter.orientation() == QtCore.Qt.Horizontal)
-        self.__executeButton.setVisible(True)
-
-        if self.__taskHolders and '__uiHintBottomExecutionSettings' in self.__taskHolders[0].varNames() and self.__taskHolders[0].var('__uiHintBottomExecutionSettings'):
-            if not checkedElements and self.__rootElements:
-                checkedElements = [self.__rootElements[-1]]
-            self.__executionSettings.refresh(checkedElements, [self.__taskHolders[0]])
-        else:
-            self.__executionSettings.refresh(checkedElements, self.__taskHolders)
-
-        if self.__executionSettings.topLevelItemCount() == 0:
-            self.__executionSettingsEmptyMessageLabel.setVisible(True)
-            self.__executionSettingsEmptyMessageLabel.setFixedSize(self.__executionSettingsEmptyMessageLabel.minimumSizeHint())
-        else:
-            self.__executionSettingsEmptyMessageLabel.setFixedSize(0, 0)
-
-    def dispatcherWidget(self):
-        """
-        Return the dispatcher widget.
-        """
-        return self.__selectedDispatcher
 
     def __buildWidgets(self):
         """
