@@ -165,7 +165,7 @@ gafferSceneTargetTemplate = Template("{prefix}/gafferBlurImageSequence/(newver <
 # creating the task holder object
 taskHolder = TaskHolder(gafferSceneTask, gafferSceneTargetTemplate)
 
-# the prefix variable is not defined by the elements. Therefore, we are injecting the value for that
+# the prefix variable is not defined by the elements. Therefore, we are injecting the value for that (feel free to replace /tmp for another path...)
 taskHolder.addVar('prefix', "/tmp")
 
 # now creating the sub task holder that will be called when the parent task holder is done
