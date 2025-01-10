@@ -166,7 +166,7 @@ gafferSceneTargetTemplate = Template("{prefix}/gafferBlurImageSequence/(newver <
 taskHolder = TaskHolder(gafferSceneTask, gafferSceneTargetTemplate)
 
 # the prefix variable is not defined by the elements. Therefore, we are injecting the value for that
-taskHolder.addVar('prefix', str(gafferBlurImageSequenceExampleDirectory))
+taskHolder.addVar('prefix', "/tmp")
 
 # now creating the sub task holder that will be called when the parent task holder is done
 ffmpegTargetTemplate = Template("(dirname {filePath})/{name}.mov")
