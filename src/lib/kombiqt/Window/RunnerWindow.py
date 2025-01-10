@@ -22,7 +22,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
     preRenderElements = QtCore.Signal(list)
     __pickerLocation = os.environ.get('KOMBI_GUI_PICKER_LOCATION', '')
 
-    def __init__(self, taskHolders, rootElement=None, customHeader='', viewMode='flat', **kwargs):
+    def __init__(self, taskHolders, rootElement=None, customHeader='', viewMode='group', **kwargs):
         """
         Create a Kombi app.
         """
