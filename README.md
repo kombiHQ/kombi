@@ -243,7 +243,7 @@ Kombi command-line:
 kombi --help
 ```
 
-Kombi file picker tool (requires PySide2):
+Kombi file picker tool:
 ```bash
 kombi-gui
 ```
