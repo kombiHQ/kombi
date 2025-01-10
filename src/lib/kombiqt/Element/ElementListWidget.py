@@ -390,7 +390,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         Slog triggered by the context menu action to run the task holders.
         """
         if RunTaskHoldersWidget.run([self.__taskHolders[index]], elements, parent=self):
-            self.refresh(force=True)
+            self.changed.emit()
 
     def __updateSourceColumns(self, taskHolders):
         """
