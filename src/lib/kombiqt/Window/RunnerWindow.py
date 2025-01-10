@@ -348,8 +348,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
         )
         scriptEditorButton.clicked.connect(self.__onToggleScriptEditor)
 
-        sourceBarLayout.addWidget(self.__sourceViewModeButton)
         sourceBarLayout.addWidget(scriptEditorButton)
+        sourceBarLayout.addWidget(self.__sourceViewModeButton)
 
         sourceLayout.addLayout(sourceBarLayout)
 
