@@ -133,8 +133,9 @@ from kombi.TaskHolder import TaskHolder
 from kombi.TaskHolder.Dispatcher import Dispatcher
 
 # ensure the Gaffer executable is set correctly
-# replace <GAFFER_LOCATION> with the path where Gaffer is installed (also, make sure ffmpeg is provided on your PATH)
-if 'KOMBI_GAFFER_EXECUTABLE' in os.environ:
+# replace <GAFFER_LOCATION> with the path where Gaffer (gafferhq.org) is installed (also, make sure ffmpeg is provided on your PATH. 
+# Otherwise, you can use the environment KOMBI_FFMPEG_EXECUTABLE to define the location of the ffmpeg binary)
+if 'KOMBI_GAFFER_EXECUTABLE' not in os.environ:
     os.environ['KOMBI_GAFFER_EXECUTABLE'] = '<GAFFER_LOCATION>/bin/gaffer'
 
 # define the directory containing the example data for the Gaffer blur image sequence
