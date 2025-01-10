@@ -179,7 +179,7 @@ dispatcher.dispatch(taskHolder, imageSequenceElements)
 </details>
 
 ### Supported platforms
-- Linux
+- Linux :heart:
 - Mac OS
 - windows
 
