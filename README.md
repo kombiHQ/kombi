@@ -142,7 +142,7 @@ coming soon
 - windows
 
 ### Requirement
-Python 3.5+/2.7+ 
+Python 3.5+
 
 ### Optional Dependencies
 Name | Version
