@@ -22,7 +22,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
     preRenderElements = QtCore.Signal(list)
     __pickerLocation = os.environ.get('KOMBI_GUI_PICKER_LOCATION', '')
 
-    def __init__(self, taskHolders, rootElement=None, customHeader='', viewMode='group', **kwargs):
+    def __init__(self, taskHolders, rootElement=None, customHeader='', viewMode='flat', **kwargs):
         """
         Create a Kombi app.
         """
@@ -37,17 +37,26 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__buildWidgets()
 
         self.__elementListWidget.setViewMode(viewMode)
-        self.__sourceFilterMenu = QtWidgets.QMenu(self.__sourceFilterButton)
-        self.__sourceFilterButton.setMenu(self.__sourceFilterMenu)
+
+        # updating view mode
+        listingModeMenu = self.__sourceViewModeMenu.addMenu('Listing Mode')
+        self.__viewModeActionGroup = QtWidgets.QActionGroup(self)
+        for viewMode in self.__elementListWidget.viewModes:
+            viewAction = listingModeMenu.addAction(viewMode.capitalize())
+            viewAction.setCheckable(True)
+            if viewMode == self.__elementListWidget.viewMode():
+                viewAction.setChecked(True)
+            viewAction.triggered.connect(functools.partial(self.__elementListWidget.setViewMode, viewMode))
+            self.__viewModeActionGroup.addAction(viewAction)
 
         # vars
-        self.__showVarsAction = self.__sourceFilterMenu.addAction('Vars')
+        self.__showVarsAction = self.__sourceViewModeMenu.addAction('Display Vars')
         self.__showVarsAction.setCheckable(True)
         self.__showVarsAction.setChecked(self.__elementListWidget.showVars())
         self.__showVarsAction.triggered.connect(self.__onFilterShowVars)
 
         # tags
-        self.__showTagsAction = self.__sourceFilterMenu.addAction('Tags')
+        self.__showTagsAction = self.__sourceViewModeMenu.addAction('Display Tags')
         self.__showTagsAction.setCheckable(True)
         self.__showTagsAction.setChecked(self.__elementListWidget.showTags())
         self.__showTagsAction.triggered.connect(self.__onFilterShowTags)
@@ -307,16 +316,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         )
         self.__sourceViewModeMenu = QtWidgets.QMenu(self.__sourceViewModeButton)
         self.__sourceViewModeButton.setMenu(self.__sourceViewModeMenu)
-
-        # filter
-        self.__sourceFilterButton = QtWidgets.QPushButton()
-        self.__sourceFilterButton.setToolTip('Filters out specific element types')
-        self.__sourceFilterButton.setIcon(
-            Resource.icon("icons/filterView.png")
-        )
-        self.__sourceFilterMenu = QtWidgets.QMenu(self.__sourceFilterButton)
-        self.__sourceFilterButton.setMenu(self.__sourceFilterMenu)
-
         self.__sourceDirButton.clicked.connect(self.__onSelectSourceDir)
         self.__elementsLevelNavigationWidget.levelClicked.connect(self.updateSource)
         sourceBarLayout.addWidget(self.__sourceDirButton)
@@ -349,7 +348,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         )
         scriptEditorButton.clicked.connect(self.__onToggleScriptEditor)
 
-        sourceBarLayout.addWidget(self.__sourceFilterButton)
         sourceBarLayout.addWidget(self.__sourceViewModeButton)
         sourceBarLayout.addWidget(scriptEditorButton)
 
@@ -433,13 +431,6 @@ class RunnerWindow(QtWidgets.QMainWindow):
         buttonLayout.addWidget(self.__backButton)
         buttonLayout.addWidget(self.__nextButton)
         buttonLayout.addWidget(self.__executeButton)
-
-        # updating view mode
-        self.__viewModeActionGroup = QtWidgets.QActionGroup(self)
-        for viewMode in self.__elementListWidget.viewModes:
-            viewAction = self.__sourceViewModeMenu.addAction(viewMode.capitalize())
-            viewAction.triggered.connect(functools.partial(self.__elementListWidget.setViewMode, viewMode))
-            self.__viewModeActionGroup.addAction(viewAction)
 
     def __onForceRefresh(self):
         """
