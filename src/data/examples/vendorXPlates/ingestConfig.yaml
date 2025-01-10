@@ -4,6 +4,7 @@ scripts:
 vars:
   __uiHintBottomExecutionSettings: false
   __uiHintSourceColumns:
+  - frame
   - type
   - job
   - seq
