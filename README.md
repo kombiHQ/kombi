@@ -289,7 +289,7 @@ Kombi file picker tool:
 ```bash
 kombi-gui
 ```
-<img src="data/doc/kombi-gui-screenshot.png?v=3"/>
+<img src="data/doc/kombi-gui-screenshot.gif?v=4"/>
 
 ## Licensing
 Kombi is free software; you can redistribute it and/or modify it under the terms of the MIT License
