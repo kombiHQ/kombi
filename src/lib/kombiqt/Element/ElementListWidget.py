@@ -319,7 +319,6 @@ class ElementListWidget(QtWidgets.QTreeWidget):
             for element in elements:
                 __allElements(element)
 
-
     def __onSourceTreeContextMenu(self, point=None):
         """
         Slot triggered when context menu from tree is triggered.
