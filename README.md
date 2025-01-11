@@ -287,6 +287,17 @@ copy output (execution 0 seconds):
 done
 ```
 
+### Scrpit editor
+Kombi comes with a built-in script editor, which is particularly helpful in applications that either lack an integrated script-editor or have a very limited one.
+
+Use `<ctrl>` + `<enter>` to run the code. In case there is a selection in place only the selected code will be performed.
+
+Click the Python button to open the script editor.
+<img src="data/doc/kombi-script-editor-button.png?v=1"/>
+
+You can adjust the panel size as needed. Script editor screenshot:
+<img src="data/doc/kombi-script-editor.png?v=2"/>
+
 </details>
 
 ### Supported platforms
