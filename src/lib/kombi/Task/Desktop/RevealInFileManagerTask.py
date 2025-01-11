@@ -22,6 +22,7 @@ class RevealInFileManagerTask(Task):
         )
 
         self.setMetadata('ui.task.showExecutionSettings', False)
+        self.setMetadata('ui.task.menuIcon', 'icons/folder.png')
 
     def _perform(self):
         """
@@ -31,7 +32,7 @@ class RevealInFileManagerTask(Task):
         filePaths.extend(map(lambda x: x.var('filePath'), self.elements()))
 
         # linux <3
-        args = None
+        args = []
         if platform.system() == 'Linux':
             args.append('nautilus')
             args += filePaths
