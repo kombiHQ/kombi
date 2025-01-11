@@ -387,19 +387,5 @@ make all install
 
 </details>
 
-## Running 
-The launchers are provided inside of the "bin" directory found inside of the installation.
-
-Kombi command-line:
-```bash
-kombi --help
-```
-
-Kombi file picker tool:
-```bash
-kombi-gui
-```
-<img src="data/doc/kombi-gui-screenshot.gif?v=4"/>
-
 ## Licensing
 Kombi is free software; you can redistribute it and/or modify it under the terms of the MIT License
