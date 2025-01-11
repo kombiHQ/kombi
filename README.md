@@ -261,7 +261,7 @@ Note: right-click on the image sequence to list the available tasks
 ```bash
 <KOMBI>/bin/kombi-gui <KOMBI>/data/examples/gafferBlurImageSequence <KOMBI>/data/examples/gafferBlurImageSequence/imageSequence
 ```
-<img src="data/doc/kombi-gui-running-task.png?v=1"/>
+<img src="data/doc/kombi-gui-screenshot.gif?v=1"/>
 
 The stdout output (task reporter) when running from the UI is designed to be more user-friendly:
 ```
