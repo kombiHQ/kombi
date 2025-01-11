@@ -1,3 +1,5 @@
+import sys
+import os
 from Qt import QtCore, QtGui, QtWidgets
 from .Resource import Resource
 
@@ -5,6 +7,8 @@ class Style(object):
     """
     Kombi style.
     """
+    __defaultFontName = os.environ.get('KOMBI_UI_DEFAULT_FONT_NAME', 'Ubuntu')
+    __defaultFontSize = os.environ.get('KOMBI_UI_DEFAULT_FONT_SIZE', '12')
 
     @classmethod
     def apply(cls, widget, style=True, font=True, palette=True, styleSheet=True):
@@ -32,7 +36,22 @@ class Style(object):
         """
         Resource.loadFonts()
 
-        defaultFont = QtWidgets.QApplication.font()
+        fontFound = False
+        database = QtGui.QFontDatabase()
+        for family in database.families():
+            if cls.__defaultFontName == family:
+                fontFound = True
+                break
+
+        if not fontFound:
+            sys.stderr.write(f'Could not load kombi default font: {cls.__defaultFontName}\n')
+            sys.stderr.flush()
+            return
+
+        defaultFont = QtGui.QFont(cls.__defaultFontName)
+        if cls.__defaultFontSize.isdigit():
+            defaultFont.setPointSize(int(cls.__defaultFontSize))
+
         widget.setFont(defaultFont)
 
     @classmethod
@@ -70,17 +89,17 @@ class Style(object):
 
         darkPalette.setColor(
             QtGui.QPalette.ToolTipBase,
-            QtCore.Qt.white
+            QtGui.QColor(230, 230, 230)
         )
 
         darkPalette.setColor(
             QtGui.QPalette.ToolTipText,
-            QtCore.Qt.white
+            QtGui.QColor(230, 230, 230)
         )
 
         darkPalette.setColor(
             QtGui.QPalette.Text,
-            QtCore.Qt.white
+            QtGui.QColor(230, 230, 230)
         )
 
         darkPalette.setColor(
@@ -106,7 +125,7 @@ class Style(object):
 
         darkPalette.setColor(
             QtGui.QPalette.ButtonText,
-            QtCore.Qt.white
+            QtGui.QColor(230, 230, 230)
         )
 
         darkPalette.setColor(
