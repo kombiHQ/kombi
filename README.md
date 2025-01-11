@@ -206,7 +206,7 @@ imageSequenceElements = map(Element.create, imageSequencePaths)
 
 # loading tasks defined based on a config
 taskHolderLoader = Loader()
-taskHolderLoader.loadFromFile(str(gafferBlurImageSequenceExampleDirectory.joinpath('config.json')))
+taskHolderLoader.loadFromFile(gafferBlurImageSequenceExampleDirectory.joinpath('config.json'))
 
 # executing task holder through a dispatcher (kombi provides many ways to execute it)
 dispatcher = Dispatcher.create('local')
