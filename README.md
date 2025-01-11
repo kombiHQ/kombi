@@ -305,7 +305,7 @@ You can adjust the panel size as needed. The color scheme is inspired by [VIM pr
 </details>
 
 ### Supported platforms
-- Linux :heart:
+- Linux
 - Mac OS
 - windows
 
