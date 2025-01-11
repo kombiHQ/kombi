@@ -132,9 +132,9 @@ from kombi.Template import Template
 from kombi.TaskHolder import TaskHolder
 from kombi.TaskHolder.Dispatcher import Dispatcher
 
-# ensure the Gaffer executable is set correctly
-# replace <GAFFER_LOCATION> with the path where Gaffer (gafferhq.org) is installed (also, make sure ffmpeg is provided on your PATH. 
-# Otherwise, you can use the environment KOMBI_FFMPEG_EXECUTABLE to define the location of the ffmpeg binary)
+# ensure the Gaffer executable is set correctly by replacing <GAFFER_LOCATION> with the path where
+# Gaffer (gafferhq.org) is installed. Also, make sure ffmpeg is provided on your PATH. 
+# Otherwise, use the environment KOMBI_FFMPEG_EXECUTABLE to define the location of the ffmpeg executable.
 if 'KOMBI_GAFFER_EXECUTABLE' not in os.environ:
     os.environ['KOMBI_GAFFER_EXECUTABLE'] = '<GAFFER_LOCATION>/bin/gaffer'
 
