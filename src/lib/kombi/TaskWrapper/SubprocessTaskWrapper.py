@@ -330,7 +330,7 @@ class SubprocessTaskWrapper(TaskWrapper):
         return envModifier
 
 
-# adding a hook to terminate all subprocess is running when the
+# adding a hook to terminate all subprocess that are running when the
 # current python process is terminated
 atexit.register(SubprocessTaskWrapper.killAllSubProcesses)
 
