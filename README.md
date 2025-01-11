@@ -298,7 +298,7 @@ Click the Python button to open the script editor:
 <img src="data/doc/kombi-script-editor-button.png?v=1"/>
 
 
-You can adjust the panel size as needed. The color scheme is inspired by [VIM preferences](https://github.com/paulondc/prefs/blob/master/vimNotes.md)):
+You can adjust the panel size as needed. The color scheme is inspired by [VIM preferences](https://github.com/paulondc/prefs/blob/master/vimNotes.md):
 
 <img src="data/doc/kombi-script-editor.png?v=2"/>
 
