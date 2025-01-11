@@ -12,12 +12,6 @@ class GafferTaskWrapper(DCCTaskWrapper):
         'gaffer'
     )
 
-    def __init__(self, *args, **kwargs):
-        super(GafferTaskWrapper, self).__init__(*args, **kwargs)
-
-        # if 'GAFFER_PYTHONHOME' in self.option('env'):
-        #     self.option('env')['PYTHONHOME'] = self.option('env')['GAFFER_PYTHONHOME']
-
     def _command(self):
         """
         For re-implementation: should return a string which is executed as subprocess.
