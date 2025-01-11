@@ -215,6 +215,67 @@ dispatcher.dispatch(taskHolder, imageSequenceElements)
 ```
 </details>
 
+<details><summary>Running configuration through kombi apps</summary>
+<p>
+
+Note: replace `<KOMBI>` for the path where kombi is provided
+
+### Running configuration through the command-line (headless):
+```bash
+<KOMBI>/bin/kombi <KOMBI>/data/examples/gafferBlurImageSequence <KOMBI>/data/examples/gafferBlurImageSequence/imageSequence
+```
+
+The stdout output (task reporter) when running in headless mode is structured to facilitate easy parsing with command-line tools:
+```
+gafferScene		exr		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.000001.exr
+gafferScene		exr		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.000002.exr
+gafferScene		exr		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.000003.exr
+gafferScene		exr		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.000004.exr
+gafferScene		exr		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.000005.exr
+gafferScene		exr		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.000006.exr
+gafferScene		exr		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.000007.exr
+gafferScene		exr		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.000008.exr
+gafferScene		exr		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.000009.exr
+gafferScene		exr		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.000010.exr
+gafferScene		exr		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.000011.exr
+gafferScene		exr		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.000012.exr
+ffmpeg			mov		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.mov
+copy			mov		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.mov_copy.mov
+```
+
+### Running configuration through the UI (kombiqt) shipped with kombi (right click on the image sequence to list the available tasks):
+
+```bash
+<KOMBI>/bin/kombi-gui <KOMBI>/data/examples/gafferBlurImageSequence <KOMBI>/data/examples/gafferBlurImageSequence/imageSequence
+```
+<img src="data/doc/kombi-gui-running-task.png?v=1"/>
+
+The stdout output (task reporter) when running from the UI is designed to be much more verbose, providing detailed information:
+```
+gafferScene output (execution 4 seconds):
+  - exr(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.000001.exr)
+  - exr(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.000002.exr)
+  - exr(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.000003.exr)
+  - exr(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.000004.exr)
+  - exr(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.000005.exr)
+  - exr(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.000006.exr)
+  - exr(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.000007.exr)
+  - exr(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.000008.exr)
+  - exr(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.000009.exr)
+  - exr(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.000010.exr)
+  - exr(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.000011.exr)
+  - exr(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.000012.exr)
+done
+ffmpeg output (execution 0 seconds):
+  - mov(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.mov)
+done
+copy output (execution 0 seconds):
+  - mov(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.mov_copy.mov)
+done
+```
+
+</details>
+
 ### Supported platforms
 - Linux :heart:
 - Mac OS
