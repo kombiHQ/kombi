@@ -1,4 +1,5 @@
 import os
+import pathlib
 import multiprocessing
 
 from ..Task import Task, TaskError
@@ -30,6 +31,34 @@ class ConvertImageTask(Task):
         self.setOption('targetColorspace', '')
         self.setOption('colorConfig', '')
 
+        self.setMetadata(
+            "ui.options", {
+                "testElement1": {
+                    "main": True
+                },
+                "testElement2": {
+                    "main": True
+                },
+                "testElement3": {
+                    "main": True
+                }
+            }
+        )
+
+        self.setOption('testElement1', Element.Element.create(pathlib.Path("/tmp")))
+        self.setOption('testElement2',
+            [
+                {'test': [Element.Element.create({})]},
+                Element.Element.create({}),
+            ]
+        )
+
+        self.setOption('testElement3',
+            { "bla":
+                {'test': [Element.Element.create({})]},
+               "bla2": Element.Element.create({}),
+            }
+        )
         # option used to convert the output to specific channels aka: ('R', 'G', 'B')
         self.setOption('convertToChannels', tuple())
 
@@ -47,6 +76,10 @@ class ConvertImageTask(Task):
         Perform the task.
         """
         import OpenImageIO as oiio
+
+        print('testElement1', self.option('testElement1'))
+        print('testElement2', self.option('testElement2'))
+        print('testElement3', self.option('testElement3'))
 
         for element in self.elements():
             targetFilePath = Element.Fs.Image.OiioElement.supportedString(
