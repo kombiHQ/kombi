@@ -180,6 +180,41 @@ dispatcher.dispatch(taskHolder, imageSequenceElements)
 ```
 </details>
 
+<details open="false"><summary>Python + Config</summary>
+<p>
+
+```python
+import os
+import pathlib
+from kombi.Element import Element
+from kombi.TaskHolder.Loader import Loader
+from kombi.TaskHolder.Dispatcher import Dispatcher
+
+# ensure the Gaffer executable is set correctly
+# replace <GAFFER_LOCATION> with the path where Gaffer is installed (also, make sure ffmpeg is provided on your PATH)
+if 'KOMBI_GAFFER_EXECUTABLE' not in os.environ:
+    os.environ['KOMBI_GAFFER_EXECUTABLE'] = '<GAFFER_LOCATION>/bin/gaffer'
+
+# this data data is shipped with kombi under <kombi/data/examples/gafferBlurImageSequence>
+gafferBlurImageSequenceExampleDirectory = pathlib.Path("<KOMBI>/data/examples/gafferBlurImageSequence")
+
+# looking for all image sequences Path objects that we are interested as input
+imageSequencePaths = gafferBlurImageSequenceExampleDirectory.joinpath("imageSequence").glob("*.png")
+
+# creating elements based on the Path objects which will be used as input for the tasks.
+imageSequenceElements = map(Element.create, imageSequencePaths)
+
+# loading tasks defined based on a config
+taskHolderLoader = Loader()
+taskHolderLoader.loadFromFile(str(gafferBlurImageSequenceExampleDirectory.joinpath('config.json')))
+
+# executing task holder through a dispatcher (kombi provides many ways to execute it)
+dispatcher = Dispatcher.create('local')
+for taskHolder in taskHolderLoader.taskHolders():
+    dispatcher.dispatch(taskHolder, imageSequenceElements)
+```
+</details>
+
 ### Supported platforms
 - Linux :heart:
 - Mac OS
