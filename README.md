@@ -263,7 +263,7 @@ Note: right-click on the image sequence to list the available tasks
 ```
 <img src="data/doc/kombi-gui-running-task.png?v=1"/>
 
-The stdout output (task reporter) when running from the UI is designed to be much more verbose, providing detailed information:
+The stdout output (task reporter) when running from the UI is designed to be more user-friendly:
 ```
 gafferScene output (execution 4 seconds):
   - exr(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.000001.exr)
