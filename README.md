@@ -296,7 +296,7 @@ Use `<ctrl>` + `<enter>` to run the code. In case there is a selection in place 
 Click the Python button to open the script editor:
 
 <img src="data/doc/kombi-script-editor-button.png?v=1"/>
-
+<br/><br/>
 
 You can adjust the panel size as needed. The color scheme is inspired by [VIM preferences](https://github.com/paulondc/prefs/blob/master/vimNotes.md):
 
