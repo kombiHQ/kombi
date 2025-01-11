@@ -155,7 +155,7 @@ for taskHolder in taskHolderLoader.taskHolders():
 ```
 </details>
 
-<details><summary>Example above using only python</summary>
+<details><summary>Implementation of the example above using only python</summary>
 <p>
 
 ```python
