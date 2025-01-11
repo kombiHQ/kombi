@@ -186,7 +186,7 @@ imageSequenceElements = map(Element.create, imageSequencePaths)
 gafferSceneTask = Task.create('gafferScene')
 gafferSceneTask.setOption('scene', str(gafferBlurImageSequenceExampleDirectory.joinpath('scene.gfr')))
 
-# setting metadata (used to filter the compatible elements, usefull when running it from UI)
+# setting metadata (it can be used to filter the compatible elements)
 gafferSceneTask.setMetadata(
     "match.types",
     ["png"]
