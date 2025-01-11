@@ -180,7 +180,7 @@ dispatcher.dispatch(taskHolder, imageSequenceElements)
 ```
 </details>
 
-<details><summary>Python + Config</summary>
+<details><summary>Loading and execution configs via the API</summary>
 <p>
 
 ```python
