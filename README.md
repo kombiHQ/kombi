@@ -120,7 +120,7 @@ target = "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ve
 
 Running kombi:
 
-<details open="true"><summary>Loading and execution declarative configs via the API (recommended)</summary>
+<details open="true"><summary>Loading and running configs via the API (recommended)</summary>
 <p>
 
 ```python
@@ -292,10 +292,12 @@ Kombi comes with a built-in script editor, which is particularly helpful in appl
 
 Use `<ctrl>` + `<enter>` to run the code. In case there is a selection in place only the selected code will be performed.
 
-Click the Python button to open the script editor.
+Click the Python button to open the script editor:
+
 <img src="data/doc/kombi-script-editor-button.png?v=1"/>
 
 You can adjust the panel size as needed. Script editor screenshot:
+
 <img src="data/doc/kombi-script-editor.png?v=2"/>
 
 </details>
