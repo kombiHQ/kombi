@@ -1,4 +1,5 @@
 import json
+import copy
 from collections import OrderedDict
 from ..Resource import Resource
 from ..Element.Fs import FsElement
@@ -298,8 +299,31 @@ class Task(object):
 
         # current options
         options = {}
+        elementOptions = {}
         for optionName in self.optionNames():
-            options[optionName] = self.option(optionName)
+            optionValue = self.option(optionName)
+
+            # handling when elements are used as option value
+            if optionValue is not None and isinstance(optionValue, Element):
+                optionValue = optionValue.toJson()
+                elementOptions[optionName] = None
+
+            # complex deep structures
+            elif optionValue is not None and isinstance(optionValue, (tuple, list, dict)):
+                currentPath = []
+                optionElements = self.__optionElementLevels(optionValue, currentPath)
+                if optionElements:
+                    elementOptions[optionName] = optionElements
+                    optionValue = copy.deepcopy(optionValue)
+                    for optionElementLevels in optionElements:
+                        currentLevel = optionValue
+                        for optionElementLevel in optionElementLevels:
+                            if isinstance(currentLevel[optionElementLevel], Element):
+                                currentLevel[optionElementLevel] = currentLevel[optionElementLevel].toJson()
+                            else:
+                                currentLevel = currentLevel[optionElementLevel]
+
+            options[optionName] = optionValue
 
         # element data
         elementData = []
@@ -318,6 +342,7 @@ class Task(object):
 
         if len(options):
             contents['options'] = options
+            contents['elementOptions'] = elementOptions
 
         if len(elementData):
             contents['elementData'] = elementData
@@ -373,6 +398,7 @@ class Task(object):
         contents = json.loads(jsonContents)
         taskType = contents["type"]
         taskOptions = contents.get("options", {})
+        elementOptions = contents.get("elementOptions", {})
         taskMetadata = contents.get("metadata", {})
         elementData = contents.get("elementData", [])
         loadResources = contents.get("resources", [])
@@ -388,6 +414,21 @@ class Task(object):
 
         # setting task options
         for optionName, optionValue in taskOptions.items():
+            # restoring elements
+            if optionName in elementOptions:
+                if elementOptions[optionName] is None:
+                    optionValue = Element.createFromJson(optionValue)
+                else:
+                    optionValue = copy.deepcopy(optionValue)
+                    optionElements = elementOptions[optionName]
+                    for optionElementLevels in optionElements:
+                        currentLevel = optionValue
+                        for index, optionElementLevel in enumerate(optionElementLevels):
+                            if index == len(optionElementLevels) - 1:
+                                currentLevel[optionElementLevel] = Element.createFromJson(currentLevel[optionElementLevel])
+                            else:
+                                currentLevel = currentLevel[optionElementLevel]
+
             task.setOption(optionName, optionValue)
 
         # setting task metadata
@@ -429,6 +470,25 @@ class Task(object):
         In order to report a validation failure make sure to raise the exception TaskValidationError
         with the message about the failure. Otherwise, in case of no failure then no result is needed.
         """
+
+    def __optionElementLevels(self, data, currentPath):
+        """
+        Utility method recursively traverses through all levels of nested structures to find elements.
+        """
+        result = []
+        if data is None:
+            return result
+
+        if isinstance(data, (list, tuple)):
+            for index, item in enumerate(data):
+                result += self.__optionElementLevels(item, currentPath + [index])
+        elif isinstance(data, dict):
+            for key, value in data.items():
+                result += self.__optionElementLevels(value, currentPath + [key])
+        elif isinstance(data, Element):
+            result.append(currentPath)
+
+        return result
 
     def __resolveTemplateValue(self, value, element, extraVars):
         """
