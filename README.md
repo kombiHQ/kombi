@@ -222,7 +222,6 @@ Note: replace `<KOMBI>` for the path where kombi is provided
 
 ### Running configuration through the command-line (headless):
 ```bash
-<KOMBI>/bin/kombi --help
 <KOMBI>/bin/kombi <KOMBI>/data/examples/gafferBlurImageSequence <KOMBI>/data/examples/gafferBlurImageSequence/imageSequence
 ```
 
@@ -244,8 +243,9 @@ ffmpeg			mov		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.mov
 copy			mov		/tmp/gafferBlurImageSequence/v0004/foo_def_abc_bla_001_v0004.mov_copy.mov
 ```
 
-### Running configuration through the UI (kombiqt) shipped with kombi (right click on the image sequence to list the available tasks):
+### Running configuration through the UI (kombiqt) shipped with kombi:
 
+Note: right-click on the image sequence to list the available tasks
 ```bash
 <KOMBI>/bin/kombi-gui <KOMBI>/data/examples/gafferBlurImageSequence <KOMBI>/data/examples/gafferBlurImageSequence/imageSequence
 ```
