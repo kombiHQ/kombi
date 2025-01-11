@@ -215,13 +215,14 @@ dispatcher.dispatch(taskHolder, imageSequenceElements)
 ```
 </details>
 
-<details><summary>Running configuration through kombi apps</summary>
+<details open="true"><summary>Running configuration through kombi apps</summary>
 <p>
 
 Note: replace `<KOMBI>` for the path where kombi is provided
 
 ### Running configuration through the command-line (headless):
 ```bash
+<KOMBI>/bin/kombi --help
 <KOMBI>/bin/kombi <KOMBI>/data/examples/gafferBlurImageSequence <KOMBI>/data/examples/gafferBlurImageSequence/imageSequence
 ```
 
