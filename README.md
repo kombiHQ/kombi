@@ -286,8 +286,9 @@ copy output (execution 0 seconds):
   - mov(/tmp/gafferBlurImageSequence/v0003/foo_def_abc_bla_001_v0003.mov_copy.mov)
 done
 ```
+</details>
 
-### Scrpit editor
+<details open="true"><summary>Scrpit editor</summary>
 Kombi comes with a built-in script editor, which is particularly helpful in applications that either lack an integrated script-editor or have a very limited one.
 
 Use `<ctrl>` + `<enter>` to run the code. In case there is a selection in place only the selected code will be performed.
@@ -296,7 +297,8 @@ Click the Python button to open the script editor:
 
 <img src="data/doc/kombi-script-editor-button.png?v=1"/>
 
-You can adjust the panel size as needed. Script editor screenshot:
+
+You can adjust the panel size as needed. The color scheme is inspired by my [VIM preferences](https://github.com/paulondc/prefs/blob/master/vimNotes.md)):
 
 <img src="data/doc/kombi-script-editor.png?v=2"/>
 
