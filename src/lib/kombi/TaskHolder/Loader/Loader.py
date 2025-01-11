@@ -71,7 +71,7 @@ class Loader(object):
                     fileTaskHolder.parse(f.read()),
                     {
                         'configDirectory': os.path.dirname(filePath),
-                        'contextConfig': filePath,
+                        'contextConfig': str(filePath),
                         'sessionId': str(uuid.uuid4())
                     }
                 )
