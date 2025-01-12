@@ -289,7 +289,7 @@ done
 </details>
 
 <details><summary>Scripting inside kombi</summary>
-Kombi comes with a built-in script editor, which is particularly helpful in applications that either lack an integrated script-editor or have a very limited one.
+Kombi comes with a built-in script editor, which can be particularly helpful in applications that either lack an integrated script editor or have a very limited one.
 
 Use `<ctrl>` + `<enter>` to run the code. In case there is a selection in place only the selected code will be performed.
 
