@@ -130,7 +130,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            self.__onUpdateSource(rootElement)
+            self.__updateElementList(rootElement)
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
 
@@ -194,7 +194,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         return taskHolderLoader.taskHolders()
 
-    def __onUpdateSource(self, rootElement):
+    def __updateElementList(self, rootElement):
         """
         Update the element list.
         """
