@@ -116,9 +116,17 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         failed = False
         self.__outputWidget.append(code)
 
+        codeExecutionLocals = {}
+        mainWindow = self
+        while mainWindow.parent():
+            mainWindow = mainWindow.parent()
+
+        if mainWindow:
+            codeExecutionLocals['mainWindow'] = mainWindow
+
         with redirect_stdout(f):
             try:
-                exec(code, codeExecutionGlobals)
+                exec(code, codeExecutionGlobals, codeExecutionLocals)
             except Exception:
                 failed = True
                 errorLines = traceback.format_exc().splitlines()
