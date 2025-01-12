@@ -110,7 +110,7 @@ class RunTaskHoldersWidget(QtWidgets.QWidget):
         if '__uiHintExecuteButtonLabel' in taskHolder.varNames():
             runButton.setText(taskHolder.var('__uiHintExecuteButtonLabel'))
 
-        runButton.setFocusPolicy(QtCore.Qt.ClickFocus)
+        runButton.setFocusPolicy(QtCore.Qt.NoFocus)
         runButton.setToolTip('Performs the task')
 
         runLayout = QtWidgets.QHBoxLayout()
