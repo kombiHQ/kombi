@@ -92,31 +92,11 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         return configurationDirectory
 
-    @classmethod
-    def loadConfigurationTaskHolders(cls, configurationDirectory):
+    def elementListWidget(self):
         """
-        Display a picker dialog to select a directory containing a kombi configuration.
+        Return the element list widget.
         """
-        # collecting task holders from the directory
-        taskHolderLoader = Loader()
-        try:
-            taskHolderLoader.loadFromDirectory(configurationDirectory)
-        except Exception as err:
-            traceback.print_exc()
-
-            QtWidgets.QMessageBox.critical(
-                None,
-                "Kombi",
-                "Failed to load the configuration ({0}):\n{1}".format(
-                    configurationDirectory,
-                    str(err)
-                ),
-                QtWidgets.QMessageBox.Ok
-            )
-
-            raise err
-
-        return taskHolderLoader.taskHolders()
+        return self.__elementListWidget
 
     def gotoPath(self, fullPath, selectLeaf=True):
         """
@@ -179,6 +159,32 @@ class RunnerWindow(QtWidgets.QMainWindow):
         Return the dispatcher widget.
         """
         return self.__selectedDispatcher
+
+    @classmethod
+    def loadConfigurationTaskHolders(cls, configurationDirectory):
+        """
+        Display a picker dialog to select a directory containing a kombi configuration.
+        """
+        # collecting task holders from the directory
+        taskHolderLoader = Loader()
+        try:
+            taskHolderLoader.loadFromDirectory(configurationDirectory)
+        except Exception as err:
+            traceback.print_exc()
+
+            QtWidgets.QMessageBox.critical(
+                None,
+                "Kombi",
+                "Failed to load the configuration ({0}):\n{1}".format(
+                    configurationDirectory,
+                    str(err)
+                ),
+                QtWidgets.QMessageBox.Ok
+            )
+
+            raise err
+
+        return taskHolderLoader.taskHolders()
 
     def __onUpdateSource(self, rootElement):
         """
@@ -269,7 +275,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
                         elementList.append(elementFound)
 
             self.preRenderElements.emit(elementList)
-            self.__elementListWidget.setElementList(elementList)
+            self.__elementListWidget.setElements(elementList)
 
         # forcing kombi to start at the execution settings (next) interface
         if skipSourceStep:

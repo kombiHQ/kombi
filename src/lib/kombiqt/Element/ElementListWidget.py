@@ -209,7 +209,33 @@ class ElementListWidget(QtWidgets.QTreeWidget):
             self.__applySourceOverrides(result)
         return result
 
-    def setElementList(self, elementList):
+    def elements(self, applyOverrides=True):
+        """
+        Return the elements displayed in the tree.
+        """
+        totalRows = self.model().rowCount()
+        result = []
+        for i in range(totalRows):
+            self.model().index(i, 0)
+            item = self.topLevelItem(i)
+
+            # collections
+            if not hasattr(item, 'elements'):
+                for childIndex in range(item.childCount()):
+                    childItem = item.child(childIndex)
+                    if hasattr(childItem, 'elements'):
+                        result.extend(childItem.elements)
+
+            # root items
+            elif hasattr(item, 'elements'):
+                result.extend(item.elements)
+
+        result = list(map(lambda x: x.clone(), result))
+        if applyOverrides:
+            self.__applySourceOverrides(result)
+        return result
+
+    def setElements(self, elementList):
         """
         Update the elements displayed in the tree.
         """
