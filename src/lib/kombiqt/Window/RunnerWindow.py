@@ -98,6 +98,12 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         return self.__elementListWidget
 
+    def elementsLevelNavigationWidget(self):
+        """
+        Return the elements level navigation widget.
+        """
+        return self.__elementsLevelNavigationWidget
+
     def gotoPath(self, fullPath, selectLeaf=True):
         """
         Change the navigation to the input path.
