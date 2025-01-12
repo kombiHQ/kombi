@@ -131,7 +131,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
                     self.__overridesConfig = Config(configSignature, 'taskOverrides')
                     self.__overridesConfig.setValue('configDirectory', configDirectory, serialize=False)
 
-        self.__updateSourceColumns(self.__taskHolders)
+        self.__updateColumns(self.__taskHolders)
 
     def refresh(self):
         """
@@ -418,9 +418,9 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         if RunTaskHoldersWidget.run([self.__taskHolders[index]], elements, parent=self):
             self.modifed.emit()
 
-    def __updateSourceColumns(self, taskHolders):
+    def __updateColumns(self, taskHolders):
         """
-        Update the source columns.
+        Update the widget columns.
         """
         # updating columns
         columns = []
