@@ -10,3 +10,4 @@ from .DirectoryPathOptionVisual import DirectoryPathOptionVisual
 from .ArrayOptionVisual import ArrayOptionVisual
 from .HashmapOptionVisual import HashmapOptionVisual
 from .ElementOptionVisual import ElementOptionVisual
+from .HexColorOptionVisual import HexColorOptionVisual

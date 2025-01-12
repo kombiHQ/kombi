@@ -14,6 +14,7 @@ vars:
 tasks:
 - run: convertImage
   options:
+    hexcolor: "#049f73"
     filePath: ""
     filePath2: ""
     bool: True
@@ -49,6 +50,9 @@ tasks:
   metadata:
     ui:
       options:
+        hexcolor:
+          main: True
+          visual: "hexcolor"
         bool:
           main: True
         float:
