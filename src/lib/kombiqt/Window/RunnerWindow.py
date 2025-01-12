@@ -69,7 +69,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if self.__taskHolders and 'configDirectory' in self.__taskHolders[0].varNames():
             self.setWindowTitle('Kombi ({0})'.format(self.__taskHolders[0].var('configDirectory')))
 
-        self.updateSource(rootElement)
+        self.setRootElement(rootElement)
 
     @classmethod
     def pickConfigurationDirectory(cls, configurationDirectory='', startLocation=""):
@@ -116,9 +116,17 @@ class RunnerWindow(QtWidgets.QMainWindow):
         else:
             self.__elementsLevelNavigationWidget.gotoPath(fullPath)
 
-    def updateSource(self, rootElement):
+    def rootElement(self):
         """
-        Update the element list.
+        Return the root element used to list the elements (None in case the root element has not been defined).
+        """
+        if self.__rootElements:
+            return self.__rootElements[-1]
+        return None
+
+    def setRootElement(self, rootElement):
+        """
+        Set the root element, updating elements.
         """
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
@@ -323,7 +331,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__sourceViewModeMenu = QtWidgets.QMenu(self.__sourceViewModeButton)
         self.__sourceViewModeButton.setMenu(self.__sourceViewModeMenu)
         self.__sourceDirButton.clicked.connect(self.__onSelectSourceDir)
-        self.__elementsLevelNavigationWidget.levelClicked.connect(self.updateSource)
+        self.__elementsLevelNavigationWidget.levelClicked.connect(self.setRootElement)
         sourceBarLayout.addWidget(self.__sourceDirButton)
         sourceBarLayout.addWidget(self.__elementsLevelNavigationWidget)
         sourceBarLayout.addWidget(self.__sourceRefreshButton)
@@ -446,7 +454,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
             rootElement.flushChildrenCache()
 
         if self.__rootElements:
-            self.updateSource(self.__rootElements[-1])
+            self.setRootElement(self.__rootElements[-1])
 
         self.__elementListWidget.refresh()
 
@@ -511,7 +519,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         if not item.elements[0].isLeaf():
             self.__rootElements.append(item.elements[0])
-            self.updateSource(item.elements[0])
+            self.setRootElement(item.elements[0])
 
     def __onSelectSourceDir(self):
         """
@@ -529,7 +537,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         )
 
         if selectedDirectory:
-            self.updateSource(FsElement.createFromPath(selectedDirectory))
+            self.setRootElement(FsElement.createFromPath(selectedDirectory))
 
     def __onFilterShowVars(self, *args):
         """
