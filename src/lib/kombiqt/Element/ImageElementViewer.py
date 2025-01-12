@@ -3,18 +3,30 @@ from kombi.Element.Fs.Image.OiioElement import OiioElement
 from Qt import QtCore, QtGui, QtWidgets
 
 class LoadImageThread(QtCore.QThread):
+    """
+    Thread to load the image in background.
+    """
     loadedSignal = QtCore.Signal(str, QtGui.QImage, object)
 
     def __init__(self, loadImage=""):
+        """
+        Create a LoadImageThread object.
+        """
         super(LoadImageThread, self).__init__()
         self.setImageFullPath(loadImage)
 
     def setImageFullPath(self, image, width=None, height=None):
+        """
+        Set the image full path that should be loaded by the thread.
+        """
         self.__loadImageFilePath = image
         self.__width = width
         self.__height = height
 
     def run(self):
+        """
+        Implement the thread execution.
+        """
         resultImage = QtGui.QImage()
         spec = None
 
@@ -116,30 +128,46 @@ class ImageElementViewer(QtWidgets.QLabel):
         self.__reset()
 
     def mouseMoveEvent(self, ev):
-        """ Jump to pointer position while moving """
+        """
+        Adjust the image sequence based on the mouse position.
+        """
         self.__slider.setValue(QtWidgets.QStyle.sliderValueFromPosition(self.__slider.minimum(), self.__slider.maximum(), ev.x(), self.__slider.width()))
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, _):
+        """
+        Reset the current display.
+        """
         self.__reset()
         self.__onSliderChange(self.__slider.value())
 
     def setElements(self, imageElements):
+        """
+        Set the elements that should be loaded.
+        """
         self.__imageElements = imageElements
         self.__update()
 
     def __update(self):
+        """
+        Update the slider information.
+        """
         if self.__imageElements:
             self.__slider.setMaximum(len(self.__imageElements) - 1)
             self.__slider.setValue(0)
             self.__onSliderChange(0)
 
     def __reset(self):
+        """
+        Invalid the current display.
+        """
         self.setPixmap(QtGui.QPixmap())
-
         self.__currentFileLabel.setVisible(False)
         self.__slider.setVisible(False)
 
     def __finishedLoad(self, fullPath, qimage, spec):
+        """
+        Slot called when the thread finishes loading the image.
+        """
         pixmap = QtGui.QPixmap.fromImage(qimage)
         self.setPixmap(pixmap)
 
@@ -175,6 +203,9 @@ class ImageElementViewer(QtWidgets.QLabel):
         self.__currentFileLabel.setVisible(len(self.__imageElements))
 
     def __onSliderChange(self, value):
+        """
+        Slot called when the slider is changed.
+        """
         if not self.__imageElements:
             self.__reset()
             return
