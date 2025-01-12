@@ -303,9 +303,10 @@ You can adjust the panel size as needed. The color scheme is inspired by [VIM pr
 <img src="data/doc/kombi-script-editor.png?v=2"/>
 
 
-The script editor can interact with the main window through the mainWindow variable, which is automatically defined for the script editor session for convenience. For instance:
+The script editor can interact with the main window through the `mainWindow()`, which is automatically defined for the script editor session for convenience. For instance:
 ```python
-print(mainWindow.elementListWidget().elements())
+print(mainWindow().elementListWidget().elements())
+print(mainWindow().elementListWidget().selectedElements())
 ```
 </details>
 
