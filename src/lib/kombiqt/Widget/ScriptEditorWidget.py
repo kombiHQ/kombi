@@ -1,4 +1,5 @@
 import re
+import weakref
 from io import StringIO
 from contextlib import redirect_stdout
 import traceback
@@ -116,17 +117,16 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         failed = False
         self.__outputWidget.append(code)
 
-        codeExecutionLocals = {}
         mainWindow = self
         while mainWindow.parent():
             mainWindow = mainWindow.parent()
 
         if mainWindow:
-            codeExecutionLocals['mainWindow'] = mainWindow
+            codeExecutionGlobals['mainWindow'] = weakref.ref(mainWindow)
 
         with redirect_stdout(f):
             try:
-                exec(code, codeExecutionGlobals, codeExecutionLocals)
+                exec(code, codeExecutionGlobals)
             except Exception:
                 failed = True
                 errorLines = traceback.format_exc().splitlines()
