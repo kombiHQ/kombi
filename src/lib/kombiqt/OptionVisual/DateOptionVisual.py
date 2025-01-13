@@ -1,0 +1,62 @@
+from Qt import QtWidgets, QtCore
+from .OptionVisual import OptionVisual
+
+
+class DateOptionVisual(OptionVisual):
+    """
+    Implement the widget for a date option.
+    """
+
+    def __init__(self, optionName, optionValue, uiHints=None):
+        """
+        Create DateOptionVisual object.
+        """
+        super().__init__(optionName, optionValue, uiHints)
+
+        self.__buildWidget()
+
+    def __buildWidget(self):
+        """
+        Implement the widget.
+        """
+        mainLayout = QtWidgets.QVBoxLayout()
+        mainLayout.setContentsMargins(2, 2, 2, 2)
+        self.setLayout(mainLayout)
+
+        self.__mainWidget = QtWidgets.QLineEdit(str(self.optionValue()))
+        self.__mainWidget.textEdited.connect(self.__onValueChanged)
+        self.__mainWidget.setMaximumWidth(self.uiHints().get('width', 100))
+        self.__calendarWidget = QtWidgets.QCalendarWidget()
+        self.__calendarWidget.setGridVisible(True)
+        self.__calendarWidget.clicked.connect(self.__onCalendarChanged)
+
+        mainLayout.addWidget(self.__calendarWidget)
+        mainLayout.addWidget(self.__mainWidget)
+
+        self.__updateCalendar()
+
+    def __onCalendarChanged(self, date):
+        """
+        Triggered when the calendar is clicked.
+        """
+        self.__mainWidget.setText(date.toString("yyyy-MM-dd"))
+        self.__onValueChanged()
+
+    def __updateCalendar(self):
+        """
+        Update the calendar wiget information.
+        """
+        currentDate = QtCore.QDate.fromString(self.__mainWidget.text(), "yyyy-M-d")
+        if currentDate.isValid():
+            self.__calendarWidget.setSelectedDate(currentDate)
+
+    def __onValueChanged(self):
+        """
+        Triggered when the text field is changed.
+        """
+        value = self.__mainWidget.text()
+        self.__updateCalendar()
+        self.valueChanged.emit(value)
+
+
+OptionVisual.register('date', DateOptionVisual)
