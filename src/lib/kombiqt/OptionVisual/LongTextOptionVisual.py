@@ -24,8 +24,8 @@ class LongTextOptionVisual(OptionVisual):
         self.setLayout(mainLayout)
 
         self.__mainWidget = QtWidgets.QTextEdit(self)
-        self.__mainWidget.setMinimumHeight(100)
-        self.__mainWidget.setMaximumHeight(100)
+        self.__mainWidget.setMinimumHeight(self.uiHints().get('height', 100))
+        self.__mainWidget.setMaximumHeight(self.uiHints().get('height', 100))
         self.__mainWidget.setPlainText(str(self.optionValue()))
         self.__mainWidget.textChanged.connect(self.__onValueChanged)
 
