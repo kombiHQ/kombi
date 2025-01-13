@@ -25,7 +25,7 @@ class FloatOptionVisual(OptionVisual):
 
         self.__mainWidget = QtWidgets.QDoubleSpinBox()
         self.__mainWidget.setRange(-sys.float_info.max, sys.float_info.max)
-        self.__mainWidget.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+        self.__mainWidget.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
         self.__mainWidget.setMaximumWidth(self.uiHints().get('width', 100))
         mainLayout.addWidget(self.__mainWidget)
 

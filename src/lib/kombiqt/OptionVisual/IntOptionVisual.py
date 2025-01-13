@@ -24,7 +24,7 @@ class IntOptionVisual(OptionVisual):
 
         self.__mainWidget = QtWidgets.QSpinBox()
         self.__mainWidget.setRange(-2147483647, 2147483647)
-        self.__mainWidget.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+        self.__mainWidget.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
         self.__mainWidget.setMaximumWidth(self.uiHints().get('width', 100))
         mainLayout.addWidget(self.__mainWidget)
 
