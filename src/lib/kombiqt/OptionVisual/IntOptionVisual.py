@@ -1,7 +1,6 @@
 from Qt import QtWidgets, QtCore
 from .OptionVisual import OptionVisual
 
-
 class IntOptionVisual(OptionVisual):
     """
     Implement the widget for a float option.
@@ -24,8 +23,9 @@ class IntOptionVisual(OptionVisual):
         self.setLayout(mainLayout)
 
         self.__mainWidget = QtWidgets.QSpinBox()
+        self.__mainWidget.setRange(-2147483647, 2147483647)
         self.__mainWidget.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
-        self.__mainWidget.setMinimumWidth(150)
+        self.__mainWidget.setMaximumWidth(self.uiHints().get('width', 100))
         mainLayout.addWidget(self.__mainWidget)
 
         self.__mainWidget.setValue(int(self.optionValue()))
