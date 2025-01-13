@@ -144,7 +144,7 @@ class ImageElementViewer(QtWidgets.QLabel):
         """
         Set the elements that should be loaded.
         """
-        self.__imageElements = imageElements
+        self.__imageElements = list(sorted(imageElements, key=lambda x: x.var('fullPath')))
         self.__update()
 
     def __update(self):
