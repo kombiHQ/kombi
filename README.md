@@ -234,7 +234,7 @@ dispatcher.dispatch(taskHolder, imageSequenceElements)
 ```
 </details>
 
-<details open="true"><summary>Running configuration through kombi apps</summary>
+<details><summary>Running configuration through kombi apps</summary>
 <p>
 
 Note: replace `<KOMBI>` for the path where kombi is provided
