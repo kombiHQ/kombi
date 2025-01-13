@@ -23,7 +23,7 @@ class FloatOptionVisual(OptionVisual):
         mainLayout.setContentsMargins(2, 2, 2, 2)
         self.setLayout(mainLayout)
 
-        self.__mainWidget = QtWidgets.QDoubleSpinBox()
+        self.__mainWidget = _DoubleSpinBox()
         self.__mainWidget.setRange(-sys.float_info.max, sys.float_info.max)
         self.__mainWidget.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
         self.__mainWidget.setMaximumWidth(self.uiHints().get('width', 100))
@@ -61,6 +61,18 @@ class FloatOptionVisual(OptionVisual):
         if self.__sliderWidget:
             self.__sliderWidget.setValue(value * 1000)
         self.valueChanged.emit(value)
+
+
+class _DoubleSpinBox(QtWidgets.QDoubleSpinBox):
+    """
+    Internal double spin box implementation necessary to disable the scrolling wheel.
+    """
+
+    def wheelEvent(self, event):
+        """
+        This is necessary to avoid the value being accidentally changed by scrolling the UI.
+        """
+        event.ignore()
 
 
 OptionVisual.register('float', FloatOptionVisual)

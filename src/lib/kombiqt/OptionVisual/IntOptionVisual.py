@@ -22,7 +22,7 @@ class IntOptionVisual(OptionVisual):
         mainLayout.setContentsMargins(2, 2, 2, 2)
         self.setLayout(mainLayout)
 
-        self.__mainWidget = QtWidgets.QSpinBox()
+        self.__mainWidget = _SpinBox()
         self.__mainWidget.setRange(-2147483647, 2147483647)
         self.__mainWidget.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
         self.__mainWidget.setMaximumWidth(self.uiHints().get('width', 100))
@@ -60,6 +60,18 @@ class IntOptionVisual(OptionVisual):
         if self.__sliderWidget:
             self.__sliderWidget.setValue(value)
         self.valueChanged.emit(value)
+
+
+class _SpinBox(QtWidgets.QSpinBox):
+    """
+    Internal spin box implementation necessary to disable the scrolling wheel.
+    """
+
+    def wheelEvent(self, event):
+        """
+        This is necessary to avoid the value being accidentally changed by scrolling the UI.
+        """
+        event.ignore()
 
 
 OptionVisual.register('int', IntOptionVisual)
