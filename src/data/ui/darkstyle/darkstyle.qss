@@ -395,3 +395,12 @@ QFrame#optionVisualContainer{
     background-color: #353535;
     border-radius:4px;
 }
+
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {
+    image:url(darkstyle/icon_plus.png);
+}
+
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
+    image:url(darkstyle/icon_minus.png);
+}
+
