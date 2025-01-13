@@ -26,7 +26,7 @@ class DateOptionVisual(OptionVisual):
         self.__mainWidget = QtWidgets.QLineEdit(str(self.optionValue()))
         self.__mainWidget.textEdited.connect(self.__onValueChanged)
         self.__mainWidget.setMaximumWidth(self.uiHints().get('width', 100))
-        self.__calendarWidget = QtWidgets.QCalendarWidget()
+        self.__calendarWidget = _CalendarWidget()
         self.__calendarWidget.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.__calendarWidget.resize(self.__calendarWidget.minimumSizeHint())
 
@@ -60,6 +60,31 @@ class DateOptionVisual(OptionVisual):
         value = self.__mainWidget.text()
         self.__updateCalendar()
         self.valueChanged.emit(value)
+
+
+class _CalendarWidget(QtWidgets.QCalendarWidget):
+    """
+    Internal calendar implementation necessary to disable the scrolling wheel.
+    """
+
+    def __init__(self) -> None:
+        """
+        Create a CalendarWidget object.
+        """
+        super().__init__()
+
+        # disabling scrolling wheel for all calendar children...
+        for view in self.findChildren(QtWidgets.QWidget):
+            view.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        """
+        Allow all events except from scrolling wheel.
+        """
+        if event.type() == QtCore.QEvent.Wheel:
+            event.ignore()
+            return True
+        return False
 
 
 OptionVisual.register('date', DateOptionVisual)
