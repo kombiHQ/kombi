@@ -45,6 +45,11 @@ tasks:
       bla2: 2
       testing3BlaBlaLongName: "long name"
       testing2: False
+    arrayTest:
+      bla: 1
+      bla2: 2
+      testing3BlaBlaLongName: "long name"
+      testing2: False
     abc:
       - "Testing"
       - "Testing2"
@@ -58,6 +63,9 @@ tasks:
         hexcolor:
           main: True
           visual: "hexcolor"
+        arrayTest:
+          main: True
+          orientation: 'horizontal'
         bool:
           main: True
         float:
@@ -87,7 +95,7 @@ tasks:
         arraySideBySide:
           main: True
           'label': 'Frame Range'
-          direction: 'horizontal'
+          orientation: 'horizontal'
           items:
             '0':
               label: "Start Frame"

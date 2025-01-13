@@ -20,9 +20,13 @@ class ArrayOptionVisual(OptionVisual):
         """
         Implement the widget.
         """
-        formLayout = QtWidgets.QFormLayout()
-        formLayout.setLabelAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
-        formLayout.setContentsMargins(4, 4, 4, 4)
+        if self.uiHints().get('orientation') == 'horizontal':
+            contentLayout = QtWidgets.QHBoxLayout()
+            contentLayout.setContentsMargins(4, 4, 4, 4)
+        else:
+            contentLayout = QtWidgets.QFormLayout()
+            contentLayout.setLabelAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
+            contentLayout.setContentsMargins(4, 4, 4, 4)
 
         itemsUiHints = self.uiHints().get('items', {})
         for i, optionValue in enumerate(self.optionValue()):
@@ -30,11 +34,22 @@ class ArrayOptionVisual(OptionVisual):
             uiHints = itemsUiHints.get(optionName, {})
             itemWidget = OptionVisual.create(optionName, optionValue, uiHints)
             itemWidget.valueChanged.connect(functools.partial(self.__onItemValueChanged, i))
-            formLayout.addRow(uiHints.get('label', optionName), itemWidget)
+
+            label = uiHints.get('label', optionName)
+            if isinstance(contentLayout, QtWidgets.QFormLayout):
+                contentLayout.addRow(label, itemWidget)
+            else:
+                if i > 0:
+                    contentLayout.addSpacing(20)
+                contentLayout.addWidget(QtWidgets.QLabel(label))
+                contentLayout.addWidget(itemWidget)
+
+        if isinstance(contentLayout, QtWidgets.QHBoxLayout):
+            contentLayout.addStretch(100)
 
         frameWidget = QtWidgets.QFrame()
         frameWidget.setObjectName('optionVisualContainer')
-        frameWidget.setLayout(formLayout)
+        frameWidget.setLayout(contentLayout)
 
         mainLayout = QtWidgets.QHBoxLayout()
         mainLayout.setContentsMargins(2, 2, 2, 2)
