@@ -27,6 +27,9 @@ class DateOptionVisual(OptionVisual):
         self.__mainWidget.textEdited.connect(self.__onValueChanged)
         self.__mainWidget.setMaximumWidth(self.uiHints().get('width', 100))
         self.__calendarWidget = QtWidgets.QCalendarWidget()
+        self.__calendarWidget.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        self.__calendarWidget.resize(self.__calendarWidget.minimumSizeHint())
+
         self.__calendarWidget.setGridVisible(True)
         self.__calendarWidget.clicked.connect(self.__onCalendarChanged)
 
