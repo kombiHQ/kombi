@@ -19,7 +19,9 @@ tasks:
     filePath2: ""
     bool: True
     float: 0.1
+    floatNoRange: 999999999999999999999.0
     int: 1
+    intNoRange: 1
     hidden: "not visible"
     separator: "separate me"
     array:
@@ -29,6 +31,9 @@ tasks:
       - True
       - False
       - null
+    arraySideBySide:
+      - 1001
+      - 1200
     longText: ""
     text: ""
     preset: ""
@@ -59,10 +64,15 @@ tasks:
           main: True
           min: 0.0
           max: 1.0
+        floatNoRange:
+          main: True
+          width: 300
         int:
           main: True
           min: -10
           max: 10
+        intNoRange:
+          main: True
         hidden:
           main: True
           hidden: True
@@ -74,6 +84,15 @@ tasks:
           items:
             '1':
               label: "Custom Label"
+        arraySideBySide:
+          main: True
+          'label': 'Frame Range'
+          direction: 'horizontal'
+          items:
+            '0':
+              label: "Start Frame"
+            '1':
+              label: "End Frame"
         longText:
           main: True
           visual: "longText"
