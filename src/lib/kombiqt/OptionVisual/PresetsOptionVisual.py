@@ -23,7 +23,7 @@ class PresetsOptionVisual(OptionVisual):
         mainLayout.setContentsMargins(2, 2, 2, 2)
         self.setLayout(mainLayout)
 
-        self.__mainWidget = QtWidgets.QComboBox(self)
+        self.__mainWidget = _ComboBox(self)
         self.__mainWidget.setFocusPolicy(QtCore.Qt.ClickFocus)
 
         presets = [
@@ -51,6 +51,18 @@ class PresetsOptionVisual(OptionVisual):
         """
         value = self.__mainWidget.currentText()
         self.valueChanged.emit(value)
+
+
+class _ComboBox(QtWidgets.QComboBox):
+    """
+    Internal combo box implementation necessary to disable the scrolling wheel.
+    """
+
+    def wheelEvent(self, event):
+        """
+        This is necessary to avoid the value being accidentally changed by scrolling the UI.
+        """
+        event.ignore()
 
 
 OptionVisual.register('presets', PresetsOptionVisual)

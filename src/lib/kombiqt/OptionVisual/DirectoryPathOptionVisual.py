@@ -34,7 +34,7 @@ class DirectoryPathOptionVisual(OptionVisual):
                     continue
                 presets.append(preset)
 
-        self.__editableWidget = QtWidgets.QComboBox(self) if len(presets) > 1 else QtWidgets.QLineEdit(str(self.optionValue()))
+        self.__editableWidget = _ComboBox(self) if len(presets) > 1 else QtWidgets.QLineEdit(str(self.optionValue()))
         self.__editableWidget.setFocusPolicy(QtCore.Qt.ClickFocus)
         if len(presets) > 1:
             self.__editableWidget.addItems(presets)
@@ -79,6 +79,18 @@ class DirectoryPathOptionVisual(OptionVisual):
             self.__editableWidget.setText(selectedFolder)
         else:
             self.__editableWidget.setCurrentText(selectedFolder)
+
+
+class _ComboBox(QtWidgets.QComboBox):
+    """
+    Internal combo box implementation necessary to disable the scrolling wheel.
+    """
+
+    def wheelEvent(self, event):
+        """
+        This is necessary to avoid the value being accidentally changed by scrolling the UI.
+        """
+        event.ignore()
 
 
 OptionVisual.register('directoryPath', DirectoryPathOptionVisual)
