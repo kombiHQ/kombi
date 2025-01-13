@@ -1,10 +1,10 @@
-from Qt import QtWidgets
+from Qt import QtWidgets, QtCore
 from .OptionVisual import OptionVisual
 
 
 class IntOptionVisual(OptionVisual):
     """
-    Implement the widget for an integer option.
+    Implement the widget for a float option.
     """
 
     def __init__(self, optionName, optionValue, uiHints=None):
@@ -19,24 +19,46 @@ class IntOptionVisual(OptionVisual):
         """
         Implement the widget.
         """
-        mainLayout = QtWidgets.QVBoxLayout()
+        mainLayout = QtWidgets.QHBoxLayout()
         mainLayout.setContentsMargins(2, 2, 2, 2)
         self.setLayout(mainLayout)
 
         self.__mainWidget = QtWidgets.QSpinBox()
         self.__mainWidget.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
-        self.__mainWidget.setMaximumWidth(150)
-        self.__mainWidget.setRange(-99999999, 99999999)
+        self.__mainWidget.setMinimumWidth(150)
+        mainLayout.addWidget(self.__mainWidget)
+
         self.__mainWidget.setValue(int(self.optionValue()))
         self.__mainWidget.editingFinished.connect(self.__onValueChanged)
 
-        mainLayout.addWidget(self.__mainWidget)
+        self.__sliderWidget = None
+        if 'min' in self.uiHints() and 'max' in self.uiHints():
+            self.__mainWidget.setRange(self.uiHints()['min'], self.uiHints()['max'])
+            self.__sliderWidget = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+            self.__sliderWidget.setTickPosition(QtWidgets.QSlider.TicksBothSides)
+            self.__sliderWidget.setMinimum(self.uiHints()['min'])
+            self.__sliderWidget.setMaximum(self.uiHints()['max'])
+            self.__sliderWidget.setValue(self.optionValue())
+            self.__sliderWidget.valueChanged.connect(self.__onSliderChanged)
+
+            mainLayout.addWidget(self.__sliderWidget)
+        else:
+            mainLayout.addStretch(100)
+
+    def __onSliderChanged(self, newValue):
+        """
+        Triggered when the slider is changed.
+        """
+        self.__mainWidget.setValue(newValue)
+        self.__onValueChanged()
 
     def __onValueChanged(self):
         """
         Triggered when the spin box is changed.
         """
         value = self.__mainWidget.value()
+        if self.__sliderWidget:
+            self.__sliderWidget.setValue(value)
         self.valueChanged.emit(value)
 
 

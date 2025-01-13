@@ -57,8 +57,12 @@ tasks:
           main: True
         float:
           main: True
+          min: 0.0
+          max: 1.0
         int:
           main: True
+          min: -10
+          max: 10
         hidden:
           main: True
           hidden: True

@@ -319,32 +319,8 @@ QScrollBar::sub-line:horizontal{
   subcontrol-origin:margin;
 }
 
-QSlider::handle:horizontal{
-  border-radius:0px;
-  border:1px solid rgba(25,25,25,255);
-  background-color:rgb(66, 66, 66);
-  min-height:20px;
-  margin:0 -4px;
-}
-
-QSlider::handle:horizontal:hover{
-  background:rgb(42, 130, 218);
-}
-QSlider::add-page:horizontal{
-  background:rgb(42, 42, 42);
-}
 QSlider::sub-page:horizontal{
   background:rgb(42, 130, 218);
-}
-QSlider::sub-page:horizontal:disabled{
-  background:rgb(80,80,80);
-}
-QSlider::sub-page:qlineargradient {
-  background: rgb(42, 42, 42);
-  border-top-right-radius: 0px;
-  border-bottom-right-radius: 0px;
-  border-top-left-radius: 0px;
-  border-bottom-left-radius: 0px;
 }
 
 QTextEdit, QLineEdit, QSpinBox, QDoubleSpinBox{
