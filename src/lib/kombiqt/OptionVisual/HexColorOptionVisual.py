@@ -25,7 +25,7 @@ class HexColorOptionVisual(OptionVisual):
 
         self.__mainWidget = QtWidgets.QLineEdit(str(self.optionValue()))
         self.__mainWidget.textEdited.connect(self.__onValueChanged)
-        self.__mainWidget.setFixedWidth(100)
+        self.__mainWidget.setMaximumWidth(self.uiHints().get('width', 100))
 
         self.__currentColorFrame = QtWidgets.QWidget()
         self.__currentColorFrame.setFixedWidth(30)
