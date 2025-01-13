@@ -1,6 +1,7 @@
 import os
 from Qt import QtWidgets, QtCore
 from .OptionVisual import OptionVisual
+from .PresetsOptionVisual import _ComboBox
 from ..Resource import Resource
 
 
@@ -79,18 +80,6 @@ class DirectoryPathOptionVisual(OptionVisual):
             self.__editableWidget.setText(selectedFolder)
         else:
             self.__editableWidget.setCurrentText(selectedFolder)
-
-
-class _ComboBox(QtWidgets.QComboBox):
-    """
-    Internal combo box implementation necessary to disable the scrolling wheel.
-    """
-
-    def wheelEvent(self, event):
-        """
-        This is necessary to avoid the value being accidentally changed by scrolling the UI.
-        """
-        event.ignore()
 
 
 OptionVisual.register('directoryPath', DirectoryPathOptionVisual)
