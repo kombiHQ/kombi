@@ -11,3 +11,4 @@ from .ArrayOptionVisual import ArrayOptionVisual
 from .HashmapOptionVisual import HashmapOptionVisual
 from .ElementOptionVisual import ElementOptionVisual
 from .HexColorOptionVisual import HexColorOptionVisual
+from .DateOptionVisual import DateOptionVisual
