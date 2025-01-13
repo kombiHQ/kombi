@@ -5,11 +5,18 @@
     <img src="data/ui/icons/kombi.png?v=2" with="512" height="512"/>
 </p>
 
-Kombi is focused in describing and performing tasks. These tasks can be used to wrap from executables to arbitrary python implementations. It works by providing an API that simplifies the process of describing nested tasks, passing data across tasks, handling settings for the tasks, dealing with common file system/path operations, splitting the processing and, providing interoperability across different applications bundled with python.
+Kombi is a library designed to simplify the process of describing and executing tasks. It enables you to wrap from executables to custom Python implementations, providing an API that facilitates:
 
-You may find this project useful in situations you need to combine serveral different executables/API's. For instance, during image/video processing, ingestion of files, creating/versioning data (etc).
+- Describing complex, nested tasks
+- Passing data seamlessly between tasks
+- Managing task settings
+- Handling common file system and path operations
+- Distributing processing workloads
+- Enabling interoperability across various python-based applications
 
-Kombi can be used through declarative definitions to speed-up prototyping and simplify the maintainability, by reducing the need for writing boilerplate code:
+Kombi is especially useful for automating and integrating various executables or APIs, optimizing workflows in tasks like image and video processing, file ingestion, data creation and versioning, and more.
+
+By leveraging declarative definitions, Kombi accelerates prototyping and simplifies maintenance by reducing the need for boilerplate code:
 
 <details open="true"><summary>YAML</summary>
 <p>
