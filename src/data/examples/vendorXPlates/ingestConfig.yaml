@@ -108,6 +108,7 @@ tasks:
         longText:
           main: True
           visual: "longText"
+          height: 400
         text:
           main: True
         filePath:
