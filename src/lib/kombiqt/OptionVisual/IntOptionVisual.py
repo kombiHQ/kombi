@@ -32,9 +32,9 @@ class IntOptionVisual(OptionVisual):
         self.__mainWidget.editingFinished.connect(self.__onValueChanged)
 
         self.__sliderWidget = None
-        if 'min' in self.uiHints() and 'max' in self.uiHints():
+        if 'min' in self.uiHints() and 'max' in self.uiHints() and self.uiHints().get('slider', True):
             self.__mainWidget.setRange(self.uiHints()['min'], self.uiHints()['max'])
-            self.__sliderWidget = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+            self.__sliderWidget = _Slider(QtCore.Qt.Horizontal)
             self.__sliderWidget.setTickPosition(QtWidgets.QSlider.TicksBothSides)
             self.__sliderWidget.setMinimum(self.uiHints()['min'])
             self.__sliderWidget.setMaximum(self.uiHints()['max'])
@@ -65,6 +65,18 @@ class IntOptionVisual(OptionVisual):
 class _SpinBox(QtWidgets.QSpinBox):
     """
     Internal spin box implementation necessary to disable the scrolling wheel.
+    """
+
+    def wheelEvent(self, event):
+        """
+        This is necessary to avoid the value being accidentally changed by scrolling the UI.
+        """
+        event.ignore()
+
+
+class _Slider(QtWidgets.QSlider):
+    """
+    Internal slider implementation necessary to disable the scrolling wheel.
     """
 
     def wheelEvent(self, event):

@@ -1,6 +1,7 @@
 import sys
 from Qt import QtWidgets, QtCore
 from .OptionVisual import OptionVisual
+from .IntOptionVisual import _Slider
 
 class FloatOptionVisual(OptionVisual):
     """
@@ -33,9 +34,9 @@ class FloatOptionVisual(OptionVisual):
         self.__mainWidget.editingFinished.connect(self.__onValueChanged)
 
         self.__sliderWidget = None
-        if 'min' in self.uiHints() and 'max' in self.uiHints():
+        if 'min' in self.uiHints() and 'max' in self.uiHints() and self.uiHints().get('slider', True):
             self.__mainWidget.setRange(self.uiHints()['min'], self.uiHints()['max'])
-            self.__sliderWidget = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+            self.__sliderWidget = _Slider(QtCore.Qt.Horizontal)
             self.__sliderWidget.setTickPosition(QtWidgets.QSlider.TicksBothSides)
             self.__sliderWidget.setMinimum(self.uiHints()['min'])
             self.__sliderWidget.setMaximum(self.uiHints()['max'] * 1000)
