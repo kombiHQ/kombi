@@ -45,7 +45,7 @@ tasks:
       bla2: 2
       testing3BlaBlaLongName: "long name"
       testing2: False
-    arrayTest:
+    dictOrientationTest:
       bla: 1
       bla2: 2
       testing3BlaBlaLongName: "long name"
@@ -63,7 +63,7 @@ tasks:
         hexcolor:
           main: True
           visual: "hexcolor"
-        arrayTest:
+        dictOrientationTest:
           main: True
           orientation: 'horizontal'
         bool:
