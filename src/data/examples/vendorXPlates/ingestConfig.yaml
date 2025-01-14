@@ -16,6 +16,7 @@ tasks:
   options:
     date: "1950-01-22"
     hexcolor: "#049f73"
+    filePathPicker: ""
     filePath: ""
     filePath2: ""
     bool: True
@@ -61,6 +62,13 @@ tasks:
   metadata:
     ui:
       options:
+        filePathPicker:
+          main: True
+          visual: "filePath"
+          title: "Title for the picker"
+          allowedExtensions: [
+            "json"
+          ]
         date:
           main: True
           visual: "date"
