@@ -50,16 +50,16 @@ class RunnerWindow(QtWidgets.QMainWindow):
             self.__viewModeActionGroup.addAction(viewAction)
 
         # vars
-        self.__showVarsAction = self.__sourceViewModeMenu.addAction('Display Vars')
-        self.__showVarsAction.setCheckable(True)
-        self.__showVarsAction.setChecked(self.__elementListWidget.showVars())
-        self.__showVarsAction.triggered.connect(self.__onFilterShowVars)
+        showVarsAction = self.__sourceViewModeMenu.addAction('Display Vars')
+        showVarsAction.setCheckable(True)
+        showVarsAction.setChecked(self.__elementListWidget.showVars())
+        showVarsAction.triggered.connect(self.__onFilterShowVars)
 
         # tags
-        self.__showTagsAction = self.__sourceViewModeMenu.addAction('Display Tags')
-        self.__showTagsAction.setCheckable(True)
-        self.__showTagsAction.setChecked(self.__elementListWidget.showTags())
-        self.__showTagsAction.triggered.connect(self.__onFilterShowTags)
+        showTagsAction = self.__sourceViewModeMenu.addAction('Display Tags')
+        showTagsAction.setCheckable(True)
+        showTagsAction.setChecked(self.__elementListWidget.showTags())
+        showTagsAction.triggered.connect(self.__onFilterShowTags)
 
         # task holders
         assert isinstance(taskHolders, (list, tuple)), "Invalid task holder list!"
@@ -545,14 +545,14 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if selectedDirectory:
             self.setRootElement(FsElement.createFromPath(selectedDirectory))
 
-    def __onFilterShowVars(self, *args):
+    def __onFilterShowVars(self, checked):
         """
         Slot triggered when info show vars is triggered.
         """
-        self.__elementListWidget.setShowVars(self.__showVarsAction.isChecked())
+        self.__elementListWidget.setShowVars(checked)
 
-    def __onFilterShowTags(self, *args):
+    def __onFilterShowTags(self, checked):
         """
         Slot triggered when info show tags is triggered.
         """
-        self.__elementListWidget.setShowTags(self.__showTagsAction.isChecked())
+        self.__elementListWidget.setShowTags(checked)
