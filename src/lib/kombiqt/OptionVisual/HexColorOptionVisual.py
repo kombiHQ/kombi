@@ -76,4 +76,8 @@ class HexColorOptionVisual(OptionVisual):
         self.valueChanged.emit(value)
 
 
+# registering option visual
 OptionVisual.register('hexcolor', HexColorOptionVisual)
+
+# registering examples
+OptionVisual.registerExample('hexcolor', 'default', '#0000FF')
