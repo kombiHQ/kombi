@@ -39,4 +39,9 @@ class LongTextOptionVisual(OptionVisual):
         self.valueChanged.emit(value)
 
 
+# registering option visual
 OptionVisual.register('longText', LongTextOptionVisual)
+
+# registering examples
+OptionVisual.registerExample('longText', 'default', 'Multi line\nText')
+OptionVisual.registerExample('longText', 'customHeight', 'Multi line\nText', {'height': 400})
