@@ -37,5 +37,9 @@ class BoolOptionVisual(OptionVisual):
         self.valueChanged.emit(value)
 
 
+# registering option visual
 OptionVisual.register('bool', BoolOptionVisual)
 OptionVisual.registerFallbackDefaultVisual('bool', bool)
+
+# registering examples
+OptionVisual.registerExample('bool', 'default', True)
