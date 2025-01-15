@@ -86,5 +86,11 @@ class _Slider(QtWidgets.QSlider):
         event.ignore()
 
 
+# registering option visual
 OptionVisual.register('int', IntOptionVisual)
 OptionVisual.registerFallbackDefaultVisual('int', int)
+
+# registering examples
+OptionVisual.registerExample('int', 'default', 2)
+OptionVisual.registerExample('int', 'minMaxRange', 5, {'min': 3, 'max': 6})
+OptionVisual.registerExample('int', 'minMaxRangeNoSlider', 5, {'min': 3, 'max': 6, 'slider': False})
