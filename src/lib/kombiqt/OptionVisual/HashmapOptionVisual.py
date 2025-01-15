@@ -67,5 +67,25 @@ class HashmapOptionVisual(OptionVisual):
         self.valueChanged.emit(updatedValue)
 
 
+# registering option visual
 OptionVisual.register('hashmap', HashmapOptionVisual)
 OptionVisual.registerFallbackDefaultVisual('hashmap', dict)
+
+# registering examples
+OptionVisual.registerExample('hashmap', 'default', {'a': 'a', 'b': 1, 'c': True, 'd': 'd'})
+OptionVisual.registerExample('hashmap', 'horizontal', {'a': 'a', 'b': 1, 'c': True, 'd': 'd'}, {'orientation': 'horizontal'})
+OptionVisual.registerExample(
+    'hashmap',
+    'customItemLabel',
+    {'a': 'a', 'b': 1, 'c': True, 'd': 'd'},
+    {
+        'items': {
+            'b':  {
+                'label': 'Custom Label for b'
+            },
+            'd': {
+                'label': 'Custom Label for d'
+            }
+        }
+    }
+)
