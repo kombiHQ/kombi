@@ -76,5 +76,11 @@ class _DoubleSpinBox(QtWidgets.QDoubleSpinBox):
         event.ignore()
 
 
+# registering option visual
 OptionVisual.register('float', FloatOptionVisual)
 OptionVisual.registerFallbackDefaultVisual('float', float)
+
+# registering examples
+OptionVisual.registerExample('float', 'default', 0.1)
+OptionVisual.registerExample('float', 'minMaxRange', 5.0, {'min': 3.0, 'max': 6.0})
+OptionVisual.registerExample('float', 'minMaxRangeNoSlider', 5.0, {'min': 3.0, 'max': 6.0, 'slider': False})

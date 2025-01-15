@@ -66,6 +66,26 @@ class ArrayOptionVisual(OptionVisual):
         self.valueChanged.emit(updatedValue)
 
 
+# registering option visual
 OptionVisual.register('array', ArrayOptionVisual)
 OptionVisual.registerFallbackDefaultVisual('array', list)
 OptionVisual.registerFallbackDefaultVisual('array', tuple)
+
+# registering examples
+OptionVisual.registerExample('array', 'default', ['a', 1, True, 'd'])
+OptionVisual.registerExample('array', 'horizontal', ['a', 1, True, 'd'], {'orientation': 'horizontal'})
+OptionVisual.registerExample(
+    'array',
+    'customItemLabel',
+    ['a', 1, True, 'd'],
+    {
+        'items': {
+            '1':  {
+                'label': 'Custom Label for 1'
+            },
+            '3': {
+                'label': 'Custom Label for 3'
+            }
+        }
+    }
+)

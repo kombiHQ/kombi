@@ -8,6 +8,7 @@ class OptionVisual(QtWidgets.QWidget):
     valueChanged = QtCore.Signal(object)
     __registeredOptionVisuals = {}
     __registeredFallbackDefaultVisuals = {}
+    __registeredOptionVisualExamples = {}
 
     def __init__(self, optionName, optionValue, uiHints=None):
         """
@@ -91,6 +92,19 @@ class OptionVisual(QtWidgets.QWidget):
         )
 
     @classmethod
+    def createExample(cls, registeredOptionVisualName, registeredExampleName):
+        """
+        Factory an option visual widget example.
+        """
+        assert registeredOptionVisualName in cls.__registeredOptionVisualExamples, \
+            'No examples are registered for: {}'.format(registeredOptionVisualName)
+        assert registeredExampleName in cls.__registeredOptionVisualExamples[registeredOptionVisualName], \
+            'Invalid registered example name: {}'.format(registeredExampleName)
+
+        exampleData = cls.__registeredOptionVisualExamples[registeredOptionVisualName][registeredExampleName]
+        return cls.create('example', exampleData['value'], exampleData['uiHints'])
+
+    @classmethod
     def registeredNames(cls):
         """
         Return all registered names.
@@ -105,6 +119,34 @@ class OptionVisual(QtWidgets.QWidget):
         assert isinstance(registeredName, str), 'Invalid registeredName str type'
         assert registeredName in cls.__registeredOptionVisuals, 'Invalid Option Visual (not registered): {}'.format(registeredName)
         cls.__registeredFallbackDefaultVisuals[valueType] = registeredName
+
+    @classmethod
+    def registeredExampleNames(cls, registeredOptionVisualName):
+        """
+        Return a list of example names registered for the input option visual class.
+        """
+        assert registeredOptionVisualName in cls.__registeredOptionVisuals, \
+            'Invalid registered name: {}'.format(registeredOptionVisualName)
+        if registeredOptionVisualName not in cls.__registeredOptionVisualExamples:
+            return []
+        return cls.__registeredOptionVisualExamples[registeredOptionVisualName].keys()
+
+    @classmethod
+    def registerExample(cls, registeredOptionVisualName, exampleName, value, uiHints=None):
+        """
+        Register an example based on the input exampleName for the option visual.
+        """
+        assert isinstance(exampleName, str), 'Invalid example name str type'
+        assert registeredOptionVisualName in cls.__registeredOptionVisuals, \
+            'Invalid registered name: {}'.format(registeredOptionVisualName)
+
+        if registeredOptionVisualName not in cls.__registeredOptionVisualExamples:
+            cls.__registeredOptionVisualExamples[registeredOptionVisualName] = {}
+
+        cls.__registeredOptionVisualExamples[registeredOptionVisualName][exampleName] = {
+            'value': value,
+            'uiHints': uiHints
+        }
 
     @classmethod
     def register(cls, name, optionVisualClass):

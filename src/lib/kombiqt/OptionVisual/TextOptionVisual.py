@@ -49,5 +49,12 @@ class TextOptionVisual(OptionVisual):
         self.valueChanged.emit(value)
 
 
+# registering option visual
 OptionVisual.register('text', TextOptionVisual)
 OptionVisual.registerFallbackDefaultVisual('text', str)
+
+# registering examples
+OptionVisual.registerExample('text', 'default', 'Text')
+OptionVisual.registerExample('text', 'regex', 'NoSpecialCharactersAreAllowed', {'regex': '^[A-Za-z0-9]*'})
+OptionVisual.registerExample('text', 'caseStyleUppercase', 'FORCE UPPER CASE', {'caseStyle': 'uppercase'})
+OptionVisual.registerExample('text', 'caseStyleLowercase', 'force lower case', {'caseStyle': 'lowercase'})

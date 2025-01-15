@@ -87,4 +87,8 @@ class _CalendarWidget(QtWidgets.QCalendarWidget):
         return False
 
 
+# registering option visual
 OptionVisual.register('date', DateOptionVisual)
+
+# registering examples
+OptionVisual.registerExample('date', 'default', '1950-01-22')

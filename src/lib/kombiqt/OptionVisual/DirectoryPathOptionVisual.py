@@ -82,4 +82,9 @@ class DirectoryPathOptionVisual(OptionVisual):
             self.__editableWidget.setCurrentText(selectedFolder)
 
 
+# registering option visual
 OptionVisual.register('directoryPath', DirectoryPathOptionVisual)
+
+# registering examples
+OptionVisual.registerExample('directoryPath', 'default', '/file/path')
+OptionVisual.registerExample('directoryPath', 'presets', '', {'presets': ['/filePathA', '/filePathB']})

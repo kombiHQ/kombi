@@ -84,4 +84,9 @@ class FilePathOptionVisual(OptionVisual):
             self.__editableWidget.setCurrentText(selectedFile)
 
 
+# registering option visual
 OptionVisual.register('filePath', FilePathOptionVisual)
+
+# registering examples
+OptionVisual.registerExample('filePath', 'default', '/file/path')
+OptionVisual.registerExample('filePath', 'presets', '', {'presets': ['/filePathA/file.ext', '/filePathB/file2.ext']})
