@@ -65,4 +65,9 @@ class _ComboBox(QtWidgets.QComboBox):
         event.ignore()
 
 
+# registering option visual
 OptionVisual.register('presets', PresetsOptionVisual)
+
+# registering examples
+OptionVisual.registerExample('presets', 'default', '', {'visual': 'presets', 'presets': ['A', 'B', 'C']})
+OptionVisual.registerExample('presets', 'editable', '', {'visual': 'presets', 'presets': ['A', 'B', 'C'], 'editable': True})
