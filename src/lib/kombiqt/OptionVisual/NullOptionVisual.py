@@ -27,4 +27,5 @@ class NullOptionVisual(OptionVisual):
         mainLayout.addWidget(self.__mainWidget)
 
 
+# registering option visual
 OptionVisual.register('null', NullOptionVisual)
