@@ -102,7 +102,13 @@ class OptionVisual(QtWidgets.QWidget):
             'Invalid registered example name: {}'.format(registeredExampleName)
 
         exampleData = cls.__registeredOptionVisualExamples[registeredOptionVisualName][registeredExampleName]
-        return cls.create('example', exampleData['value'], exampleData['uiHints'])
+
+        uiHints = {}
+        if exampleData['uiHints'] is not None:
+            uiHints = dict(exampleData['uiHints'])
+        uiHints['visual'] = registeredOptionVisualName
+
+        return cls.create('example', exampleData['value'], uiHints)
 
     @classmethod
     def registeredNames(cls):
