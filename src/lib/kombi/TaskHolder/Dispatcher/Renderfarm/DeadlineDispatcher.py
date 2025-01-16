@@ -58,6 +58,9 @@ class DeadlineDispatcher(RenderfarmDispatcher):
         # priority that has been set/overridden in the parent jobs
         self.setOption('priorityInherintance', True)
 
+        # tells if the job should run with the environment used during dispatching (env option)
+        self.setOption('includeEnvironment', True)
+
     def option(self, name, *args, **kwargs):
         """
         Return a value from an option.
@@ -284,7 +287,7 @@ class DeadlineDispatcher(RenderfarmDispatcher):
             "-prop",
             "FailureDetectionJobErrors={}".format(self.option('jobFailRetryAttempts', task) + 1),
             "-prop",
-            "IncludeEnvironment=true",
+            "IncludeEnvironment={}".format(str(self.option('includeEnvironment')).lower()),
             "-prop",
             "BatchName={}".format(self.option('label')),
             "-prop",
