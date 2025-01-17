@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 import threading
 from ..Dispatcher import Dispatcher, DispatcherError
-from ....ProcessExecution import ProcessExecution
+from ...ProcessExecution import ProcessExecution
 
 class LocalDispatcherExecutionError(DispatcherError):
     """Local Execution Error."""

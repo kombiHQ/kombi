@@ -8,6 +8,7 @@ from . import Task
 from . import TaskReporter
 from . import TaskWrapper
 from . import TaskHolder
+from . import Dispatcher
 from .Cli import Cli, CliError
 
 # The Resource class needs to be imported as the last one, since it's going to

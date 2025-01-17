@@ -6,7 +6,7 @@ from glob import glob
 from collections import OrderedDict
 from kombi.Element import Element
 from kombi.TaskHolder import TaskHolder
-from kombi.TaskHolder.Dispatcher import Dispatcher
+from kombi.Dispatcher import Dispatcher
 
 def __runCollapsed(data, taskHolder, dataJsonFile):
     """
