@@ -9,7 +9,7 @@ from kombi.TaskHolder.Loader import JsonLoader
 from kombi.TaskWrapper import TaskWrapper
 from kombi.Task import Task
 from kombi.Element.Fs.Image import JpgElement, ExrElement
-from kombi.TaskHolder.Dispatcher import Dispatcher
+from kombi.Dispatcher import Dispatcher
 
 class LocalDispatcherTest(BaseTestCase):
     """Test for the local dispatcher."""
