@@ -3,7 +3,7 @@ import functools
 import traceback
 from Qt import QtCore, QtWidgets
 from kombi.TaskHolder.Loader import Loader
-from kombi.TaskHolder.Dispatcher import Dispatcher
+from kombi.Dispatcher import Dispatcher
 from kombi.Element import ElementContext
 from kombi.Element.Fs import FsElement
 from ..Resource import Resource

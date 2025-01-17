@@ -1,7 +1,7 @@
 from .ExecutionSettingsWidget import ExecutionSettingsWidget
 from kombi.TaskHolder import TaskHolder
 from kombi.Template import Template
-from kombi.TaskHolder.Dispatcher import Dispatcher
+from kombi.Dispatcher import Dispatcher
 from Qt import QtCore, QtWidgets
 from ..Resource import Resource
 from ..Widget.DispatcherListWidget import DispatcherListWidget
