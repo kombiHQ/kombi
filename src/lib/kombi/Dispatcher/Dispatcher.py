@@ -2,7 +2,7 @@ import os
 import json
 import getpass
 from ..TaskHolder import TaskHolder
-from ...Task import Task
+from ..Task import Task
 
 class DispatcherError(Exception):
     """Dispatcher Error."""
@@ -120,16 +120,16 @@ class Dispatcher(object):
         """
         return list(self.__options.keys())
 
-    def dispatch(self, taskHolderOrTask, elements=[]):
+    def dispatch(self, taskOrtaskHolder, elements=[]):
         """
         Run the dispatcher.
 
         Return a list of ids created by the dispatcher that can be used to track
-        the dispatched task holder.
+        the dispatched task or task holder.
         """
-        taskHolder = taskHolderOrTask
-        if isinstance(taskHolderOrTask, Task):
-            taskHolder = TaskHolder(taskHolderOrTask)
+        taskHolder = taskOrtaskHolder
+        if isinstance(taskOrtaskHolder, Task):
+            taskHolder = TaskHolder(taskOrtaskHolder)
 
         assert isinstance(taskHolder, TaskHolder), "Invalid task holder type!"
 

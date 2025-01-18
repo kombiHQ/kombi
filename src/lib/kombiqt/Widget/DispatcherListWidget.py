@@ -1,5 +1,5 @@
 import os
-from kombi.TaskHolder.Dispatcher import Dispatcher
+from kombi.Dispatcher import Dispatcher
 from Qt import QtWidgets
 
 

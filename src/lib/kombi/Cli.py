@@ -7,7 +7,7 @@ from .Element.Fs.FsElement import FsElement
 from .Element.Fs.DirectoryElement import DirectoryElement
 from .Element import Element
 from .TaskHolder.Loader import Loader
-from .TaskHolder.Dispatcher import Dispatcher
+from .Dispatcher import Dispatcher
 
 class CliError(Exception):
     """Cli Error."""
