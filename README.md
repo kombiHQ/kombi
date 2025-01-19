@@ -352,7 +352,7 @@ In case you are building the dependencies manually skip the step below:
 ```bash
 pip install PySide6
 pip install PyYAML
-pip install QtPy
+pip install Qt.Py
 apt-get install make cmake
 apt-get install python3-openimageio openimageio-tools
 apt-get install ffmpeg
