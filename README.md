@@ -353,8 +353,8 @@ In case you are building the dependencies manually skip the step below:
 pip install PySide6
 pip install PyYAML
 pip install Qt.Py
+pip install oiio-static-python
 apt-get install make cmake
-apt-get install python3-openimageio openimageio-tools
 apt-get install ffmpeg
 ```
 </details>
@@ -368,7 +368,7 @@ apt-get install ffmpeg
 - [Qt.Py](https://pypi.org/project/QtPy)
 - [PyYAML](https://pypi.org/project/PyYAML)
 - [PySide2](https://pypi.org/project/PySide2)
-- [Open Image IO](https://www.lfd.uci.edu/~gohlke/pythonlibs/#openimageio) (Unofficial)
+- [Open Image IO](https://pypi.org/project/oiio-static-python/) (Unofficial)
 
 </details>
 
