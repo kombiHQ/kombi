@@ -37,7 +37,7 @@ class MayaTaskWrapper(DCCTaskWrapper):
             'dummy.ma'
         )
 
-        return '{} -file "{}"{} -command "python(\\"import kombi; kombi.TaskWrapper.MayaTaskWrapper.runSerializedTask({})\\")"'.format(
+        return '{} -file "{}"{} -command "python(\\"import kombi; kombi.TaskWrapper.TaskWrapper.create(\'maya\').runSerializedTask({})\\")"'.format(
             self.__mayaBatchExecutable,
             dummyMayaFilePath,
             ' -batch' if self.option('batch') else ' -nosplash',
