@@ -19,6 +19,19 @@ class DeadlineDispatcher(RenderfarmDispatcher):
         environment variable: KOMBI_PYTHON_EXECUTABLE (when not defined it defaults
         to python), you may need to provide the full qualified location for the python executable
         on windows (for instance: KOMBI_PYTHON_EXECUTABLE=X:/apps/python37/python.exe).
+        - When includeEnvironment is set to False, use the option "additionalProps" to specify
+        custom environment variables, for instance:
+        
+        ```python
+        # example for constructor of custom re-implementation that overrides the "renderFarm" dispatcher
+        self.setOption("includeEnvironment", False)
+        self.setOption(
+            "additionalProps",
+            {
+                "EnvironmentKeyValue0": "KOMBI_USER={}".format(self.option("env").get("KOMBI_USER", ""))
+            }
+        )
+        ```
 
     Optional options: pool, secondaryPool, group and jobFailRetryAttempts
     """
