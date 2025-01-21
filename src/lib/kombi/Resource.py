@@ -116,6 +116,12 @@ class Resource(object):
         raiseOnResourceFail = os.environ.get(self.__resourceRaiseOnFailEnvName, '').lower() in ['1', 'true']
         for resourcePath in filter(os.path.exists, resourcePaths):
             for pythonFile in glob(os.path.join(resourcePath, '*.py')):
+
+                # skipping init files, as they likely contain relative imports,
+                # which are not supported
+                if os.path.basename(pythonFile).lower() == '__init__.py':
+                    continue
+
                 try:
                     self.__loadToRuntime(pythonFile, 'environment')
                 except Exception as err:
