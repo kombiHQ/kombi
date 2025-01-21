@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import traceback
 from .TaskWrapper import TaskWrapper
 from .DCCTaskWrapper import DCCTaskWrapper
@@ -23,6 +24,14 @@ class MayaTaskWrapper(DCCTaskWrapper):
         self.setOption(
             'batch',
             True
+        )
+
+        # This option waits a few seconds for Maya to initialize all plugins and resources.
+        # This issue has been observed when running Maya with UI support, 
+        # where it may require around 10 seconds to fully initialize.
+        self.setOption(
+            'waitSeconds',
+            0
         )
 
     def _command(self):
@@ -56,6 +65,9 @@ class MayaTaskWrapper(DCCTaskWrapper):
             return
 
         def __executeWhenIsIdle():
+            if self.option("waitSeconds") != 0:
+                time.sleep(self.option("waitSeconds"))
+
             # we want to redirect all prints to the stdout (otherwise
             # they will go to the script editor only)
             sys.stdout = sys.__stdout__
