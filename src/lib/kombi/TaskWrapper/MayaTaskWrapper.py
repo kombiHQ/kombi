@@ -1,6 +1,6 @@
 import os
 import sys
-import time
+import functools
 import traceback
 from .TaskWrapper import TaskWrapper
 from .DCCTaskWrapper import DCCTaskWrapper
@@ -66,9 +66,6 @@ class MayaTaskWrapper(DCCTaskWrapper):
             return
 
         def __executeWhenIsIdle():
-            if waitSeconds != 0:
-                time.sleep(waitSeconds)
-
             # we want to redirect all prints to the stdout (otherwise
             # they will go to the script editor only)
             sys.stdout = sys.__stdout__
@@ -88,7 +85,13 @@ class MayaTaskWrapper(DCCTaskWrapper):
                 # quitting maya
                 cmds.quit(f=True, exitCode=exitCode)
 
-        utils.executeDeferred(__executeWhenIsIdle)
+        # when waitSeconds is non-zero, schedule __executeWhenIsIdle to run after the specified delay
+        # (in seconds) using QTimer.singleShot, deferring execution until the app is idle
+        if waitSeconds != 0:
+            from Qt import QtCore
+            QtCore.QTimer.singleShot(waitSeconds * 1000, functools.partial(utils.executeDeferred, __executeWhenIsIdle))
+        else:
+            utils.executeDeferred(__executeWhenIsIdle)
 
     @classmethod
     def _hookName(cls):
