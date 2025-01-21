@@ -46,15 +46,16 @@ class MayaTaskWrapper(DCCTaskWrapper):
             'dummy.ma'
         )
 
-        return '{} -file "{}"{} -command "python(\\"import kombi; kombi.TaskWrapper.TaskWrapper.create(\'maya\').runSerializedTask({})\\")"'.format(
+        return '{} -file "{}"{} -command "python(\\"import kombi; kombi.TaskWrapper.TaskWrapper.create(\'maya\').runSerializedTask({}, {})\\")"'.format(
             self.__mayaBatchExecutable,
             dummyMayaFilePath,
             ' -batch' if self.option('batch') else ' -nosplash',
-            int(self.option('batch'))
+            int(self.option('batch')),
+            int(self.option('waitSeconds'))
         )
 
     @staticmethod
-    def runSerializedTask(isBatch=True):
+    def runSerializedTask(isBatch=True, waitSeconds=0):
         """
         Run a serialized task defined in the environment during SubprocessTaskWrapper._perform.
         """
@@ -65,8 +66,8 @@ class MayaTaskWrapper(DCCTaskWrapper):
             return
 
         def __executeWhenIsIdle():
-            if self.option("waitSeconds") != 0:
-                time.sleep(self.option("waitSeconds"))
+            if waitSeconds != 0:
+                time.sleep(waitSeconds)
 
             # we want to redirect all prints to the stdout (otherwise
             # they will go to the script editor only)
