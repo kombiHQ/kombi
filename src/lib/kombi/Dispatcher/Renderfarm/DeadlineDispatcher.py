@@ -21,7 +21,7 @@ class DeadlineDispatcher(RenderfarmDispatcher):
         on windows (for instance: KOMBI_PYTHON_EXECUTABLE=X:/apps/python37/python.exe).
         - When includeEnvironment is set to False, use the option "additionalProps" to specify
         custom environment variables, for instance:
-        
+
         ```python
         # example for constructor of custom re-implementation that overrides the "renderFarm" dispatcher
         self.setOption("includeEnvironment", False)
