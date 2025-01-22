@@ -27,7 +27,7 @@ class MayaTaskWrapper(DCCTaskWrapper):
         )
 
         # This option waits a few seconds for Maya to initialize all plugins and resources.
-        # This issue has been observed when running Maya with UI support, 
+        # This issue has been observed when running Maya with UI support,
         # where it may require around 10 seconds to fully initialize.
         self.setOption(
             'waitSeconds',
