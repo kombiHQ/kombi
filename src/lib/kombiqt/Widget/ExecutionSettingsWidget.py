@@ -172,6 +172,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             )
             return False
 
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         output = ''
         dispatchedMessage = ''
         try:
@@ -203,6 +204,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         except Exception as err:
             traceback.print_exc()
 
+            QtWidgets.QApplication.restoreOverrideCursor()
             self.__messageBox = QtWidgets.QMessageBox(
                 self,
                 "Execution",
@@ -229,6 +231,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             raise err
 
         else:
+            QtWidgets.QApplication.restoreOverrideCursor()
             if showDispatchedMessage:
                 QtWidgets.QMessageBox.information(
                     self,
