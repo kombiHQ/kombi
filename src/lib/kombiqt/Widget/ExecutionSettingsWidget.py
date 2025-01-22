@@ -248,6 +248,17 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         return True
 
+    def keyPressEvent(self, event):
+        """
+        Override keyPressEvent to prevent Ctrl+C/Ctrl+V interception by host apps (e.g., Maya).
+        """
+        # allow Ctrl+C/Ctrl+V to be handled by the focused widget
+        if event.modifiers() == QtCore.Qt.ControlModifier and event.key() in (QtCore.Qt.Key_V, QtCore.Qt.Key_C):
+            pass
+        # otherwise, pass the other key events to the default handler
+        else:
+            super().keyPressEvent(event)
+
     def __refreshWidgets(self):
         """
         Refresh all tasks/options widgets.
