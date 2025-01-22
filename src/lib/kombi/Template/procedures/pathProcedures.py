@@ -134,6 +134,11 @@ Template.registerProcedure(
 )
 
 Template.registerProcedure(
+    'noext',
+    basenamewithoutext
+)
+
+Template.registerProcedure(
     'rfindpath',
     rfindpath
 )
