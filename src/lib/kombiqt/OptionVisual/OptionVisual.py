@@ -24,6 +24,14 @@ class OptionVisual(QtWidgets.QWidget):
         if 'styleSheet' in self.uiHints():
             self.setStyleSheet(self.uiHints()['styleSheet'])
 
+    def reset(self):
+        """
+        For re-implementation: This method is invoked after the valueChanged signal has been connected.
+
+        At this point, it is safe to emit the valueChanged signal. This is useful when you need to
+        change the value during the initialization of the option visual.
+        """
+
     def uiHints(self):
         """
         Return a dict containing all the UI hints associated with the visual.
@@ -85,11 +93,15 @@ class OptionVisual(QtWidgets.QWidget):
                     break
         assert registeredName, f"Value '{optionValue}' for option '{optionName}' is not supported!"
 
-        return cls.__registeredOptionVisuals[registeredName](
+        optionVisual = cls.__registeredOptionVisuals[registeredName](
             optionName,
             optionValue,
             uiHints
         )
+
+        optionVisual.reset()
+
+        return optionVisual
 
     @classmethod
     def createExample(cls, registeredOptionVisualName, registeredExampleName):
