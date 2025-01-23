@@ -19,7 +19,7 @@ class PresetsOptionVisual(OptionVisual):
         """
         Implement the widget.
         """
-        mainLayout = QtWidgets.QVBoxLayout()
+        mainLayout = QtWidgets.QHBoxLayout()
         mainLayout.setContentsMargins(2, 2, 2, 2)
         self.setLayout(mainLayout)
 
@@ -36,14 +36,18 @@ class PresetsOptionVisual(OptionVisual):
                 continue
             presets.append(preset)
 
-        # editable presets
-        if self.uiHints().get('editable'):
-            self.__mainWidget.setEditable(True)
-
         self.__mainWidget.addItems(presets)
         self.__mainWidget.currentTextChanged.connect(self.__onValueChanged)
 
         mainLayout.addWidget(self.__mainWidget)
+
+        # editable presets
+        if self.uiHints().get('editable'):
+            self.__mainWidget.setEditable(True)
+        # otherwise, making sure it does not expand to use the whole width
+        else:
+            self.__mainWidget.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
+            mainLayout.addStretch()
 
     def __onValueChanged(self):
         """

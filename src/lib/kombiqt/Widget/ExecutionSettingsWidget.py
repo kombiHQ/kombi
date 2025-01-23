@@ -485,6 +485,18 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         statusEntry.setData(0, QtCore.Qt.EditRole, customLabel)
         statusEntry.setTextAlignment(0, QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
         statusWidget = QtWidgets.QComboBox()
+        statusWidget.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
+
+        # we need to create a container for the combobox so it does not expand
+        # to use the whole width
+        statusContainerLayout = QtWidgets.QHBoxLayout()
+        statusContainerLayout.setContentsMargins(0, 0, 0, 0)
+        statusContainerLayout.addWidget(statusWidget)
+        statusContainerLayout.addStretch()
+        statusContainer = QtWidgets.QWidget()
+        statusContainer.setLayout(statusContainerLayout)
+
+        statusWidget.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         statusList = [
             taskHolder.status()
         ]
@@ -502,7 +514,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         self.setItemWidget(
             statusEntry,
             1,
-            statusWidget
+            statusContainer
         )
         statusWidget.currentTextChanged.connect(functools.partial(self.__editStatus, statusWidget, taskHolder))
 
