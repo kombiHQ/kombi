@@ -93,15 +93,11 @@ class OptionVisual(QtWidgets.QWidget):
                     break
         assert registeredName, f"Value '{optionValue}' for option '{optionName}' is not supported!"
 
-        optionVisual = cls.__registeredOptionVisuals[registeredName](
+        return cls.__registeredOptionVisuals[registeredName](
             optionName,
             optionValue,
             uiHints
         )
-
-        optionVisual.reset()
-
-        return optionVisual
 
     @classmethod
     def createExample(cls, registeredOptionVisualName, registeredExampleName):

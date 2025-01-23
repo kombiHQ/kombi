@@ -43,6 +43,7 @@ class ArrayOptionVisual(OptionVisual):
                     contentLayout.addSpacing(20)
                 contentLayout.addWidget(QtWidgets.QLabel(label))
                 contentLayout.addWidget(itemWidget)
+            itemWidget.reset()
 
         if isinstance(contentLayout, QtWidgets.QHBoxLayout):
             contentLayout.addStretch(100)

@@ -452,6 +452,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             optionValue = taskHolder.task().option(optionName)
             optionVisualWidget = self.__buildOptionWidget(taskHolder, optionName, optionValue)
             self.setItemWidget(optionEntry, 1, optionVisualWidget)
+            optionVisualWidget.reset()
 
         # advanced
         taskSetupEntry = QtWidgets.QTreeWidgetItem(advancedEntry)

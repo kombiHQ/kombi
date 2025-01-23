@@ -44,6 +44,7 @@ class HashmapOptionVisual(OptionVisual):
                 contentLayout.addWidget(QtWidgets.QLabel(label))
                 contentLayout.addWidget(itemWidget)
             i += 1
+            itemWidget.reset()
 
         if isinstance(contentLayout, QtWidgets.QHBoxLayout):
             contentLayout.addStretch(100)
