@@ -62,6 +62,8 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         self.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.setUniformRowHeights(False)
+        self.__ignoreRebuild = False
+        self.__scheduleTaskHolderOptionsChanged = False
         self.__elements = []
         self.__clonedTaskHolders = []
 
@@ -74,6 +76,10 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         self.__clonedTaskHolders = list(map(lambda x: x.clone(), taskHolders))
         self.__elements = list(elements)
         self.__refreshWidgets()
+
+        if self.__scheduleTaskHolderOptionsChanged:
+            self.__scheduleTaskHolderOptionsChanged = False
+            self.__refreshWidgets()
 
     def executionTaskHolders(self):
         """
@@ -376,6 +382,9 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         optionVisualWidget = OptionVisual.create(optionName, optionValue, uiHints)
         optionVisualWidget.valueChanged.connect(functools.partial(self.__onEditOption, taskHolder, optionName))
+        self.__ignoreRebuild = True
+        optionVisualWidget.reset()
+        self.__ignoreRebuild = True
 
         return optionVisualWidget
 
@@ -452,7 +461,6 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             optionValue = taskHolder.task().option(optionName)
             optionVisualWidget = self.__buildOptionWidget(taskHolder, optionName, optionValue)
             self.setItemWidget(optionEntry, 1, optionVisualWidget)
-            optionVisualWidget.reset()
 
         # advanced
         taskSetupEntry = QtWidgets.QTreeWidgetItem(advancedEntry)
@@ -576,13 +584,18 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         """
         Edit a task holder option.
         """
+        # same value no need to update
+        if taskHolder.task().option(optionName) == optionValue:
+            return
+
         taskHolder.task().setOption(optionName, optionValue)
 
+        if self.__ignoreRebuild:
+            self.__scheduleTaskHolderOptionsChanged = True
+            return
+
         # emitting task holder option changed signal
-        try:
-            self.taskHolderOptionChangedSignal.emit(taskHolder, optionName)
-        except Exception:
-            traceback.print_exc()
+        self.taskHolderOptionChangedSignal.emit(taskHolder, optionName)
 
     def __onTaskHolderOptionChanged(self, taskHolder, optionName):
         """
@@ -594,7 +607,10 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         uiHintResetOnChange = 'ui.options.{}.rebuildOnChange'.format(optionName)
         if taskHolder.task().hasMetadata(uiHintResetOnChange) and taskHolder.task().metadata(uiHintResetOnChange):
-            self.__refreshWidgets()
+            try:
+                self.__refreshWidgets()
+            except Exception:
+                traceback.print_exc()
 
     def __editStatus(self, widget, taskHolder, value=None):
         """
