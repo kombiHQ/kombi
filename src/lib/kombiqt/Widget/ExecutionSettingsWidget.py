@@ -384,7 +384,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         optionVisualWidget.valueChanged.connect(functools.partial(self.__onEditOption, taskHolder, optionName))
         self.__ignoreRebuild = True
         optionVisualWidget.reset()
-        self.__ignoreRebuild = True
+        self.__ignoreRebuild = False
 
         return optionVisualWidget
 
