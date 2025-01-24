@@ -39,7 +39,9 @@ class TextOptionVisual(OptionVisual):
         Triggered when the text is changed to apply the case style.
         """
         case = self.uiHints().get('caseStyle')
+        currentPosition = self.__mainWidget.cursorPosition()
         self.__mainWidget.setText(text.upper() if case == 'uppercase' else text.lower())
+        self.__mainWidget.setCursorPosition(currentPosition)
 
     def __onValueChanged(self):
         """
