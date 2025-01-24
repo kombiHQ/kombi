@@ -62,8 +62,6 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         self.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.setUniformRowHeights(False)
-        self.__ignoreRebuild = False
-        self.__scheduleTaskHolderOptionsChanged = False
         self.__elements = []
         self.__clonedTaskHolders = []
 
@@ -76,10 +74,6 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         self.__clonedTaskHolders = list(map(lambda x: x.clone(), taskHolders))
         self.__elements = list(elements)
         self.__refreshWidgets()
-
-        if self.__scheduleTaskHolderOptionsChanged:
-            self.__scheduleTaskHolderOptionsChanged = False
-            self.__refreshWidgets()
 
     def executionTaskHolders(self):
         """
@@ -377,8 +371,6 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         optionVisualWidget = OptionVisual.create(optionName, optionValue, uiHints)
         optionVisualWidget.valueChanged.connect(functools.partial(self.__onEditOption, taskHolder, optionName))
-        self.__ignoreRebuild = True
-        optionVisualWidget.reset()
         self.__ignoreRebuild = False
 
         return optionVisualWidget
@@ -584,10 +576,6 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             return
 
         taskHolder.task().setOption(optionName, optionValue)
-
-        if self.__ignoreRebuild:
-            self.__scheduleTaskHolderOptionsChanged = True
-            return
 
         # emitting task holder option changed signal
         self.taskHolderOptionChangedSignal.emit(taskHolder, optionName)
