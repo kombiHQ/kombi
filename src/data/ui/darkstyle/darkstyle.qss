@@ -398,9 +398,13 @@ QFrame#optionVisualContainer{
 
 QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {
     image:url(darkstyle/icon_plus.png);
+    padding: 0;
+    margin: 0;
 }
 
 QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
     image:url(darkstyle/icon_minus.png);
+    padding: 0;
+    margin: 0;
 }
 
