@@ -487,39 +487,12 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         statusEntry.setData(0, QtCore.Qt.EditRole, customLabel)
         statusEntry.setTextAlignment(0, QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
-        statusWidget = QtWidgets.QComboBox()
-        statusWidget.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
 
-        # we need to create a container for the combobox so it does not expand
-        # to use the whole width
-        statusContainerLayout = QtWidgets.QHBoxLayout()
-        statusContainerLayout.setContentsMargins(0, 0, 0, 0)
-        statusContainerLayout.addWidget(statusWidget)
-        statusContainerLayout.addStretch()
-        statusContainer = QtWidgets.QWidget()
-        statusContainer.setLayout(statusContainerLayout)
-
-        statusWidget.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
-        statusList = [
-            taskHolder.status()
-        ]
-        for statusName in taskHolder.statusTypes:
-            if statusName in statusList:
-                continue
-
-            uiStatusHideName = '{}.{}.hide'.format(uiStatusMetadataName, statusName)
-            if taskHolder.task().hasMetadata(uiStatusHideName) and taskHolder.task().metadata(uiStatusHideName):
-                continue
-
-            statusList.append(statusName)
-
-        statusWidget.addItems(statusList)
         self.setItemWidget(
             statusEntry,
             1,
-            statusContainer
+            self.__statusWidget(taskHolder)
         )
-        statusWidget.currentTextChanged.connect(functools.partial(self.__editStatus, statusWidget, taskHolder))
 
         # target template
         templateEntry = QtWidgets.QTreeWidgetItem(taskSetupEntry)
@@ -574,6 +547,45 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             mainOptions.setHidden(False)
 
         return taskChild
+    
+    def __statusWidget(self, taskHolder):
+        """
+        Build the status widget.
+        """
+        uiMainStatus = 'ui.status.main'
+        # when the status is promoted as main, lets render it as checked box to keep it simple for the user
+        if taskHolder.task().hasMetadata(uiMainStatus) and taskHolder.task().metadata(uiMainStatus):
+            statusWidget = QtWidgets.QCheckBox()
+            statusWidget.setChecked(taskHolder.status() == 'execute')
+            statusWidget.stateChanged.connect(functools.partial(self.__editStatus, statusWidget, taskHolder))
+        # otherwise, render all status inside of a dropdown
+        else:
+            statusWidget = QtWidgets.QComboBox()
+            statusWidget.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
+
+            statusWidget.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+            statusList = [
+                taskHolder.status()
+            ]
+            for statusName in taskHolder.statusTypes:
+                if statusName in statusList:
+                    continue
+
+                statusList.append(statusName)
+
+            statusWidget.addItems(statusList)
+            statusWidget.currentTextChanged.connect(functools.partial(self.__editStatus, statusWidget, taskHolder))
+
+        # we need to create a container for the combobox so it does not expand
+        # to use the whole width
+        statusContainerLayout = QtWidgets.QHBoxLayout()
+        statusContainerLayout.setContentsMargins(0, 0, 0, 0)
+        statusContainerLayout.addWidget(statusWidget)
+        statusContainerLayout.addStretch()
+        statusContainer = QtWidgets.QWidget()
+        statusContainer.setLayout(statusContainerLayout)
+
+        return statusContainer
 
     def __onEditOption(self, taskHolder, optionName, optionValue):
         """
@@ -609,11 +621,15 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         return True
 
-    def __editStatus(self, widget, taskHolder, value=None):
+    def __editStatus(self, widget, taskHolder, *_args):
         """
         Edit a status.
         """
-        taskHolder.setStatus(widget.currentText())
+        if isinstance(widget, QtWidgets.QCheckBox):
+            status = "execute" if widget.isChecked() else "ignore"
+            taskHolder.setStatus(status)
+        else:
+            taskHolder.setStatus(widget.currentText())
 
     def __editTemplate(self, widget, template, taskHolder, value=None):
         """
