@@ -339,11 +339,11 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 # option to enable the task holder
                 matchedChild.setCheckState(0, QtCore.Qt.Checked)
 
-                # emitting task holder option changed signal
-                try:
-                    self.taskHolderOptionChangedSignal.emit(taskHolder, '')
-                except Exception:
-                    traceback.print_exc()
+            # emitting task holder option changed signal
+            try:
+                self.taskHolderOptionChangedSignal.emit(taskHolder, '')
+            except Exception:
+                traceback.print_exc()
 
         self.resizeColumnToContents(0)
         QtWidgets.QApplication.restoreOverrideCursor()
@@ -370,6 +370,10 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             uiHints = taskHolder.task().metadata(uiOptionMetadataName)
 
         optionVisualWidget = OptionVisual.create(optionName, optionValue, uiHints)
+        # in case the value has changed during the construction lets update it directly to the task
+        if optionVisualWidget.optionValue() != optionValue:
+            taskHolder.task().setOption(optionName, optionVisualWidget.optionValue())
+
         optionVisualWidget.valueChanged.connect(functools.partial(self.__onEditOption, taskHolder, optionName))
 
         return optionVisualWidget
