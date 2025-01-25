@@ -371,7 +371,6 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         optionVisualWidget = OptionVisual.create(optionName, optionValue, uiHints)
         optionVisualWidget.valueChanged.connect(functools.partial(self.__onEditOption, taskHolder, optionName))
-        self.__ignoreRebuild = False
 
         return optionVisualWidget
 
