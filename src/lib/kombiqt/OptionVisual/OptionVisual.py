@@ -20,6 +20,12 @@ class OptionVisual(QtWidgets.QWidget):
         self.__setOptionValue(optionValue)
         self.__setUIHint(uiHints or {})
 
+        # during construction, the valueChanged signal might be emitted, but without 
+        # a connection, the value would be lost. By making the connection in the 
+        # base class, we ensure the optionValue getter stays updated and can track 
+        # any changes made during initialization
+        self.valueChanged.connect(self.__setOptionValue)
+
         # in case a custom style sheet has been defined for the option
         if 'styleSheet' in self.uiHints():
             self.setStyleSheet(self.uiHints()['styleSheet'])
