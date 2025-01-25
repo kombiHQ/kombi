@@ -45,7 +45,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
     This widget is used to list the tasks options.
     """
 
-    taskHolderOptionChangedSignal = QtCore.Signal(object, str)
+    taskHolderOptionChangedSignal = QtCore.Signal(object, list)
 
     def __init__(self, *args, **kwargs):
         """
@@ -64,6 +64,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         self.setUniformRowHeights(False)
         self.__elements = []
         self.__clonedTaskHolders = []
+        self.__changedOptions = {}
 
         self.taskHolderOptionChangedSignal.connect(self.__onTaskHolderOptionChanged)
 
@@ -263,6 +264,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         """
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         self.clear()
+        self.__changedOptions = {}
 
         self.setHeaderItem(
             QtWidgets.QTreeWidgetItem(
@@ -339,11 +341,11 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 # option to enable the task holder
                 matchedChild.setCheckState(0, QtCore.Qt.Checked)
 
-            # emitting task holder option changed signal
-            try:
-                self.taskHolderOptionChangedSignal.emit(taskHolder, '')
-            except Exception:
-                traceback.print_exc()
+        for taskHolder, optionNames in self.__changedOptions.items():
+            if self.__onTaskHolderOptionChanged(taskHolder, optionNames):
+                break
+
+        self.__changedOptions = {}
 
         self.resizeColumnToContents(0)
         QtWidgets.QApplication.restoreOverrideCursor()
@@ -372,6 +374,9 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         optionVisualWidget = OptionVisual.create(optionName, optionValue, uiHints)
         # in case the value has changed during the construction lets update it directly to the task
         if optionVisualWidget.optionValue() != optionValue:
+            if taskHolder not in self.__changedOptions:
+                self.__changedOptions[taskHolder] = set()
+            self.__changedOptions[taskHolder].add(optionName)
             taskHolder.task().setOption(optionName, optionVisualWidget.optionValue())
 
         optionVisualWidget.valueChanged.connect(functools.partial(self.__onEditOption, taskHolder, optionName))
@@ -581,22 +586,28 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         taskHolder.task().setOption(optionName, optionValue)
 
         # emitting task holder option changed signal
-        self.taskHolderOptionChangedSignal.emit(taskHolder, optionName)
+        self.taskHolderOptionChangedSignal.emit(taskHolder, [optionName])
 
-    def __onTaskHolderOptionChanged(self, taskHolder, optionName):
+    def __onTaskHolderOptionChanged(self, taskHolder, optionNames):
         """
         Callback called when an option changes the task holder.
         """
-        # in case the option has the rebuild on change ui hint the whole UI will be redraw.
-        if not optionName:
-            return
+        refreshWidgets = False
+        for optionName in optionNames:
+            uiHintResetOnChange = 'ui.options.{}.rebuildOnChange'.format(optionName)
+            if taskHolder.task().hasMetadata(uiHintResetOnChange) and taskHolder.task().metadata(uiHintResetOnChange):
+                refreshWidgets = True
+                break
+        
+        if not refreshWidgets:
+            return False
 
-        uiHintResetOnChange = 'ui.options.{}.rebuildOnChange'.format(optionName)
-        if taskHolder.task().hasMetadata(uiHintResetOnChange) and taskHolder.task().metadata(uiHintResetOnChange):
-            try:
-                self.__refreshWidgets()
-            except Exception:
-                traceback.print_exc()
+        try:
+            self.__refreshWidgets()
+        except Exception:
+            traceback.print_exc()
+
+        return True
 
     def __editStatus(self, widget, taskHolder, value=None):
         """
