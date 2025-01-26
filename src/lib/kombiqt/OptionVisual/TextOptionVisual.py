@@ -39,6 +39,11 @@ class TextOptionVisual(OptionVisual):
             self.__mainWidget.setValidator(QtGui.QRegExpValidator(self.uiHints()['regex']))
 
         self.__mainWidget.textEdited.connect(self.__onToCase)
+
+        # this signal is unreliable, emitted only when the widget loses focus or the 
+        # enter key is pressed. Therefore, we combine it with a QEvent.Type.Leave to
+        # ensure reliable propagation.
+        self.__mainWidget.editingFinished.connect(self.__onValueChanged)
         mainLayout.addWidget(self.__mainWidget)
 
     def __onToCase(self, text):
