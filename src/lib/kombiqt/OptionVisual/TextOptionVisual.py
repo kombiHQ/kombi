@@ -19,7 +19,7 @@ class TextOptionVisual(OptionVisual):
         """
         Necessary to handle edited text only when the user leaves the widget to avoid unnecessary processing.
         """
-        if self.__pendingTextEdited and event.type() == QtCore.QEvent.Type.Leave:
+        if event.type() == QtCore.QEvent.Type.Leave and self.__pendingTextEdited:
             self.__pendingTextEdited = False
             self.__onValueChanged()
 
