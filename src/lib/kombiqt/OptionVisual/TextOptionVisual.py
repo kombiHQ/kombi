@@ -1,4 +1,4 @@
-from Qt import QtWidgets, QtGui
+from Qt import QtWidgets, QtGui,  QtCore
 from .OptionVisual import OptionVisual
 
 
@@ -12,8 +12,18 @@ class TextOptionVisual(OptionVisual):
         Create TextOptionVisual object.
         """
         super().__init__(optionName, optionValue, uiHints)
-
+        self.__pendingTextEdited = False
         self.__buildWidget()
+
+    def event(self, event):
+        """
+        Necessary to handle edited text only when the user leaves the widget to avoid unnecessary processing.
+        """
+        if self.__pendingTextEdited and event.type() == QtCore.QEvent.Type.Leave:
+            self.__pendingTextEdited = False
+            self.__onValueChanged()
+
+        return super().event(event)
 
     def __buildWidget(self):
         """
@@ -28,20 +38,19 @@ class TextOptionVisual(OptionVisual):
         if 'regex' in self.uiHints():
             self.__mainWidget.setValidator(QtGui.QRegExpValidator(self.uiHints()['regex']))
 
-        if 'caseStyle' in self.uiHints():
-            self.__mainWidget.textEdited.connect(self.__onToCase)
-
-        self.__mainWidget.textEdited.connect(self.__onValueChanged)
+        self.__mainWidget.textEdited.connect(self.__onToCase)
         mainLayout.addWidget(self.__mainWidget)
 
     def __onToCase(self, text):
         """
         Triggered when the text is changed to apply the case style.
         """
-        case = self.uiHints().get('caseStyle')
-        currentPosition = self.__mainWidget.cursorPosition()
-        self.__mainWidget.setText(text.upper() if case == 'uppercase' else text.lower())
-        self.__mainWidget.setCursorPosition(currentPosition)
+        case = self.uiHints().get('caseStyle', None)
+        if case is not None:
+            currentPosition = self.__mainWidget.cursorPosition()
+            self.__mainWidget.setText(text.upper() if case == 'uppercase' else text.lower())
+            self.__mainWidget.setCursorPosition(currentPosition)
+        self.__pendingTextEdited = True
 
     def __onValueChanged(self):
         """
