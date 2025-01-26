@@ -63,6 +63,10 @@ class TextOptionVisual(OptionVisual):
         Triggered when the text field is changed.
         """
         value = self.__mainWidget.text()
+
+        if self.optionValue() == value:
+            return
+
         self.valueChanged.emit(value)
 
 
