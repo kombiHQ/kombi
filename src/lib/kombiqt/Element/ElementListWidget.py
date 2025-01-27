@@ -810,7 +810,17 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         if not iconPath:
             return
 
-        item.setIcon(columnIndex, Resource.icon(iconPath))
+        iconOverlayPath = element.tag('iconOverlay') if 'iconOverlay' in element.tagNames() else None
+        if iconOverlayPath:
+            icon = Resource.mergePixmap(
+                Resource.pixmap(iconPath, self.iconSize().width(), self.iconSize().height()),
+                Resource.pixmap(iconOverlayPath, self.iconSize().width(), self.iconSize().height()),
+                resultAsIcon=True
+            )
+        else:
+            icon = Resource.icon(iconPath)
+
+        item.setIcon(columnIndex, icon)
 
     def __onSourceTreeItemCheckedChanged(self, currentItem):
         """
