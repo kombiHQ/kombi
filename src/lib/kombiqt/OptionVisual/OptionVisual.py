@@ -20,9 +20,9 @@ class OptionVisual(QtWidgets.QWidget):
         self.__setOptionValue(optionValue)
         self.__setUIHint(uiHints or {})
 
-        # during construction, the valueChanged signal might be emitted, but without 
-        # a connection, the value would be lost. By making the connection in the 
-        # base class, we ensure the optionValue getter stays updated and can track 
+        # during construction, the valueChanged signal might be emitted, but without
+        # a connection, the value would be lost. By making the connection in the
+        # base class, we ensure the optionValue getter stays updated and can track
         # any changes made during initialization
         self.valueChanged.connect(self.__setOptionValue)
 
@@ -82,7 +82,7 @@ class OptionVisual(QtWidgets.QWidget):
             registeredName = uiHints['visual']
 
         if not registeredName and optionValue is None:
-            registeredName = 'null'
+            registeredName = 'view'
 
         if registeredName is None:
             for valueType, fallbackRegisteredName in reversed(list(cls.__registeredFallbackDefaultVisuals.items())):
