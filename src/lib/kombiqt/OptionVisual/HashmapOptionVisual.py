@@ -32,6 +32,11 @@ class HashmapOptionVisual(OptionVisual):
         i = 0
         for optionName, optionValue in self.optionValue().items():
             uiHints = itemsUiHints.get(optionName, {})
+
+            # in case the hidden metadata is defined we don't render it
+            if uiHints.get('hidden', False):
+                continue
+
             itemWidget = OptionVisual.create(optionName, optionValue, uiHints)
             itemWidget.valueChanged.connect(functools.partial(self.__onItemValueChanged, optionName))
 
