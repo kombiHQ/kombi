@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import getpass
 from ..TaskHolder import TaskHolder
 from ..Task import Task
@@ -37,6 +38,9 @@ class Dispatcher(object):
         env = dict(os.environ)
         if 'KOMBI_USER' not in env:
             env['KOMBI_USER'] = getpass.getuser()
+
+        if 'KOMBI_DISPATCH_TIME' not in env:
+            env['KOMBI_DISPATCH_TIME'] = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
 
         # this variable may get defined automatically
         # when launching an application bundled with python
