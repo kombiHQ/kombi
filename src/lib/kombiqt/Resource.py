@@ -55,6 +55,28 @@ class Resource(object):
         return cls.__cache["pixmap"][key]
 
     @classmethod
+    def mergePixmap(cls, pixmapA, pixmapB, resultAsIcon=False):
+        """
+        Merge two pixmaps.
+        """
+        if "mergedPixmap" not in cls.__cache:
+            cls.__cache["mergedPixmap"] = {}
+
+        key = (pixmapA.cacheKey(), pixmapB.cacheKey(), resultAsIcon)
+        if key not in cls.__cache["mergedPixmap"]:
+            mergedPixmap = QtGui.QPixmap(pixmapA.size())
+            mergedPixmap.fill(QtCore.Qt.transparent)
+
+            painter = QtGui.QPainter(mergedPixmap)
+            painter.drawPixmap(0, 0, pixmapA)
+            painter.drawPixmap(0, 0, pixmapB)
+            painter.end()
+
+            cls.__cache["mergedPixmap"][key] = QtGui.QIcon(mergedPixmap) if resultAsIcon else mergedPixmap
+
+        return cls.__cache["mergedPixmap"][key]
+
+    @classmethod
     def loadFonts(cls):
         """
         Load the custom fonts to the runtime.
