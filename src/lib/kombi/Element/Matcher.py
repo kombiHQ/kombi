@@ -47,8 +47,7 @@ class Matcher(object):
 
         for varName in self.matchVarNames():
 
-            # when variable is belongs to exclusively to
-            # a specific type
+            # when var exclusively belongs to a specific type
             varNameParts = varName.split('=')
             if len(varNameParts) > 1 and element.var('type') not in Element.registeredSubTypes(varNameParts[0]):
                 continue
