@@ -2,6 +2,7 @@
 scripts:
 - "*/*.py"
 vars:
+  __uiHintShowDispatchedMessage: false
   __uiHintBottomExecutionSettings: false
   __uiHintSourceColumns:
   - frame
