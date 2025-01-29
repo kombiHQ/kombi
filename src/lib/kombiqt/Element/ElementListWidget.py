@@ -846,10 +846,12 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         elements = treeItemWeakRef().elements
 
         # executing callable
+        refresh = False
         for index, element in enumerate(elements):
             if hasattr(element, callableName):
                 try:
-                    getattr(elements[0], callableName)(index, len(elements))
+                    if getattr(elements[0], callableName)(index, len(elements)):
+                        refresh = True
                 except Exception as err:
                     traceback.print_exc()
 
@@ -871,6 +873,9 @@ class ElementListWidget(QtWidgets.QTreeWidget):
                     ),
                     QtWidgets.QMessageBox.Ok
                 )
+
+        if refresh:
+            self.modifed.emit()
 
     def __onRestoreVerticalScrollBar(self):
         """
