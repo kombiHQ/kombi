@@ -315,6 +315,14 @@ class Element(object):
             self.var('fullPath')
         )
 
+    def _computeChildren(self):
+        """
+        Returns a list of child elements.
+
+        For re-implementation: The function should return a list containing the child elements.
+        """
+        raise NotImplementedError
+
     @classmethod
     def test(cls, data, parentElement=None):
         """
