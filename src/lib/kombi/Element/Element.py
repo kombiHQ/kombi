@@ -81,14 +81,10 @@ class Element(object):
         self.__contextVarNames = set()
         self.__childrenCache = None
 
-        # passing variables
+        # setting the full path
         if parentElement:
             assert isinstance(parentElement, Element), \
                 "Invalid element type!"
-
-            for varName in parentElement.varNames():
-                isContextVar = (varName in parentElement.contextVarNames())
-                self.setVar(varName, parentElement.var(varName), isContextVar)
 
             self.setVar(
                 'fullPath',
