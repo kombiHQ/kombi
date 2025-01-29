@@ -158,10 +158,17 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         return result
 
-    def execute(self, dispatcher, showOutput=True, showDispatchedMessage=True):
+    def execute(self, dispatcher, showOutput=True, showDispatchedMessage=None):
         """
         Execute the task holders.
         """
+        # by default the dispatched message is not displayed only for the runtime dispatcher. This
+        # behavior can be toggled on or off using a UI hint
+        if showDispatchedMessage is None:
+            showDispatchedMessage = dispatcher.type() != 'runtime'
+            if self.__clonedTaskHolders and '__uiHintShowDispatchedMessage' in self.__clonedTaskHolders[0].varNames():
+                showDispatchedMessage = self.__clonedTaskHolders[0].var('__uiHintShowDispatchedMessage')
+
         if self.__messageBox:
             self.__messageBox.reject()
         if not self.model().rowCount():
@@ -547,7 +554,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             mainOptions.setHidden(False)
 
         return taskChild
-    
+
     def __statusWidget(self, taskHolder):
         """
         Build the status widget.
@@ -610,7 +617,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             if taskHolder.task().hasMetadata(uiHintResetOnChange) and taskHolder.task().metadata(uiHintResetOnChange):
                 refreshWidgets = True
                 break
-        
+
         if not refreshWidgets:
             return False
 

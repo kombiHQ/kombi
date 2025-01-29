@@ -126,11 +126,7 @@ class RunTaskHoldersWidget(QtWidgets.QWidget):
         Run the task holders.
         """
         dispatcher = Dispatcher.create(self.__selectedDispatcher.selectedDispatcher())
-        success = self.__executionSettingsWidget.execute(
-            dispatcher,
-            showOutput=False,
-            showDispatchedMessage=False
-        )
+        success = self.__executionSettingsWidget.execute(dispatcher, showOutput=False)
 
         self.executionSuccess.emit(success)
 

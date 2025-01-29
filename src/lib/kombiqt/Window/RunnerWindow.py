@@ -470,7 +470,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         selectedDispatcher = self.__selectedDispatcher.selectedDispatcher()
         dispatcher = Dispatcher.create(selectedDispatcher)
-        if self.__executionSettings.execute(dispatcher, showOutput=False, showDispatchedMessage=selectedDispatcher != 'runtime') and self.__closeAfterExecution:
+
+        if self.__executionSettings.execute(dispatcher, showOutput=False) and self.__closeAfterExecution:
             self.close()
 
     def __onSourceTreeSelectionChanged(self):
