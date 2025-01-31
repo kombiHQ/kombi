@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 from .. import Element
 
@@ -6,6 +7,7 @@ class FsElement(Element):
     """
     Abstracted file system Path.
     """
+    __invalidPath = None
 
     def __init__(self, pathStrOrPath, parentElement=None):
         """
@@ -48,7 +50,17 @@ class FsElement(Element):
         """
         Tests if the data is a Path from pathlib.
         """
-        return isinstance(data, Path)
+        if isinstance(data, Path):
+            if data.exists():
+                FsElement.__invalidPath = None
+                return True
+            # since this input will be tested against all derived classes, 
+            # we will print the message only once per input.
+            elif FsElement.__invalidPath != data:
+                FsElement.__invalidPath = data
+                sys.stderr.write(f'FsElement does not exist (invalid path): {data}\n')
+                sys.stderr.flush()
+        return False
 
     @staticmethod
     def createFromPath(fullPath, elementType=None, parentElement=None):
