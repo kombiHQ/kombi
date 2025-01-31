@@ -88,7 +88,11 @@ class MayaTaskWrapper(DCCTaskWrapper):
         # when waitSeconds is non-zero, schedule __executeWhenIsIdle to run after the specified delay
         # (in seconds) using QTimer.singleShot, deferring execution until the app is idle
         if waitSeconds != 0:
-            from Qt import QtCore
+            try:
+                from Qt import QtCore
+            # for systems where Qt is not available, we fall back to PySide2. 
+            except ImportError:
+                from PySide2 import QtCore
             QtCore.QTimer.singleShot(waitSeconds * 1000, functools.partial(utils.executeDeferred, __executeWhenIsIdle))
         else:
             utils.executeDeferred(__executeWhenIsIdle)
