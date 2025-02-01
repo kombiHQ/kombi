@@ -9,6 +9,7 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
     Display the elements as individual buttons side by side.
     """
     levelClicked = QtCore.Signal(object)
+    levelContextMenu = QtCore.Signal(object)
 
     def __init__(self, showBookmarks=True) -> None:
         """
@@ -45,9 +46,10 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
         navigationLayout.setSpacing(2)
 
         for element in self.__elements:
-            elementNavigationButton = QtWidgets.QPushButton(element.var('name'))
+            elementNavigationButton = _LevelPushButton(element.var('name'))
             elementNavigationButton.setFlat(True)
             elementNavigationButton.clicked.connect(functools.partial(self.__onNavigationClicked, element))
+            elementNavigationButton.contextMenu.connect(functools.partial(self.__onNavigationContextMenu, element))
 
             iconPath = element.tag('icon') if 'icon' in element.tagNames() else None
             if iconPath:
@@ -196,6 +198,12 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
         """
         self.levelClicked.emit(element)
 
+    def __onNavigationContextMenu(self, element):
+        """
+        Emit the level context menu signal.
+        """
+        self.levelContextMenu.emit(element)
+
     def __deleteItemsOfLayout(self, layout):
         """
         Utility method to remove all widgets in the layout.
@@ -210,3 +218,19 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
                 widget.setParent(None)
             else:
                 self.__deleteItemsOfLayout(item.layout())
+
+
+class _LevelPushButton(QtWidgets.QPushButton):
+    """
+    Internal QPushButton re-implementation to provide a signal for the context menu (right click).
+    """
+    contextMenu = QtCore.Signal()
+
+    def mouseReleaseEvent(self, event):
+        """
+        In case the right button is pressed we emit the context menu signal.
+        """
+        if event.button() == QtCore.Qt.RightButton:
+            self.contextMenu.emit()
+        else:
+            super().mouseReleaseEvent(event)

@@ -1,12 +1,13 @@
 import os
 import functools
 import traceback
-from Qt import QtCore, QtWidgets
+from Qt import QtCore, QtWidgets, QtGui
 from kombi.TaskHolder.Loader import Loader
 from kombi.Dispatcher import Dispatcher
 from kombi.Element import ElementContext
 from kombi.Element.Fs import FsElement
 from ..Resource import Resource
+from ..Menu.TasksMenu import TasksMenu
 from ..Element import ElementListWidget
 from ..Element.ImageElementViewer import ImageElementViewer
 from ..Element.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
@@ -338,6 +339,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__sourceViewModeButton.setMenu(self.__sourceViewModeMenu)
         self.__sourceDirButton.clicked.connect(self.__onSelectSourceDir)
         self.__elementsLevelNavigationWidget.levelClicked.connect(self.setRootElement)
+        self.__elementsLevelNavigationWidget.levelContextMenu.connect(self.__onContextMenu)
         sourceBarLayout.addWidget(self.__sourceDirButton)
         sourceBarLayout.addWidget(self.__elementsLevelNavigationWidget)
         sourceBarLayout.addWidget(self.__sourceRefreshButton)
@@ -402,6 +404,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__splitter.addWidget(self.__executionSettingsAreaWidget)
 
         self.__elementListWidget = ElementListWidget()
+        self.__elementListWidget.parentContextMenu.connect(self.__onContextMenu)
         self.__elementListWidget.itemSelectionChanged.connect(self.__onSourceTreeSelectionChanged)
         self.__elementListWidget.itemDoubleClicked.connect(self.__onSourceTreeDoubleClick)
         self.__elementListWidget.modifed.connect(self.__onForceRefresh)
@@ -473,6 +476,19 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
         if self.__executionSettings.execute(dispatcher, showOutput=False) and self.__closeAfterExecution:
             self.close()
+
+    def __onContextMenu(self, element=None):
+        """
+        Slot triggered when there is a request for the context menu.
+
+        In case the element is not specified we use the root current location.
+        """
+        menu = TasksMenu(self.__taskHolders, parent=self)
+        menu.executed.connect(self.__onForceRefresh)
+        menu.addElements([self.__rootElements[-1] if element is None else element])
+
+        if len(menu.actions()):
+            menu.exec_(QtGui.QCursor.pos())
 
     def __onSourceTreeSelectionChanged(self):
         """
