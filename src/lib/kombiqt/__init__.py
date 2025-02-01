@@ -3,6 +3,7 @@ from . import OptionVisual
 from . import Element
 from . import Widget
 from . import Window
+from . import Menu
 from .App import App
 
 def init():
