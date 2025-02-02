@@ -60,7 +60,7 @@ class TasksMenu(QtWidgets.QMenu):
                     currentMenu = subMenus[currentLevel]
 
             # adding a separator when 'ui.task.menuSeparator' is defined
-            if taskHolder.task().hasMetadata('ui.task.menuSeparator'):
+            if taskHolder.task().metadata('ui.task.menuSeparator', None):
                 currentMenu.addSeparator()
 
             actionArgs = []
