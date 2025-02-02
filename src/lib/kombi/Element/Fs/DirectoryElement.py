@@ -65,7 +65,7 @@ class DirectoryElement(FsElement):
         """
         if not super(DirectoryElement, cls).test(path, parentElement):
             return False
-        return path.is_dir()
+        return cls.cachedPathQuery(path, 'is_dir')
 
     def _computeChildren(self):
         """

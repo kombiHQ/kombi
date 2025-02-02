@@ -13,7 +13,7 @@ class FileElement(FsElement):
         """
         if not super(FileElement, cls).test(path, parentElement):
             return False
-        return path.is_file()
+        return cls.cachedPathQuery(path, 'is_file')
 
 
 Element.register(
