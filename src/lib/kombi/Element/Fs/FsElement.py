@@ -8,6 +8,12 @@ class FsElement(Element):
     Abstracted file system Path.
     """
     __invalidPath = None
+    __pathCache = {}
+
+    # use the environment variable KOMBI_FSELEMENT_CACHE_SIZE to control
+    # the number of path elements cached for faster file system queries over
+    # the network. To disable caching, set KOMBI_FSELEMENT_CACHE_SIZE to 0.
+    __pathCacheSize = int(os.environ.get('KOMBI_FSELEMENT_CACHE_SIZE', '50'))
 
     def __init__(self, pathStrOrPath, parentElement=None):
         """
@@ -51,10 +57,10 @@ class FsElement(Element):
         Tests if the data is a Path from pathlib.
         """
         if isinstance(data, Path):
-            if data.exists():
+            if cls.cachedPathQuery(data, 'exists'):
                 FsElement.__invalidPath = None
                 return True
-            # since this input will be tested against all derived classes, 
+            # since this input will be tested against all derived classes,
             # we will print the message only once per input.
             elif FsElement.__invalidPath != data:
                 FsElement.__invalidPath = data
@@ -77,6 +83,39 @@ class FsElement(Element):
             return result
         else:
             return FsElement.create(Path(fullPath), parentElement)
+
+    @staticmethod
+    def cachedPathQuery(path, attr, *args, **kwargs):
+        """
+        Retrieve or compute and cache the value of an attribute for the given path.
+
+        The path query results are cached to improve performance, as the same path
+        might be queried multiple times by different element types calling the
+        superclass, which can be expensive over the network. If the cache exceeds
+        the maximum size, the oldest cached entry is removed.
+        """
+        pathId = id(path)
+        if pathId not in FsElement.__pathCache:
+            FsElement.__pathCache[pathId] = {}
+
+            # remove the oldest item when the cache exceeds the maximum size
+            if len(FsElement.__pathCache) > FsElement.__pathCacheSize:
+                FsElement.__pathCache.pop(next(iter(FsElement.__pathCache)))
+
+        if attr not in FsElement.__pathCache[pathId]:
+            value = getattr(path, attr)
+            if callable(value):
+                value = value(*args, **kwargs)
+            FsElement.__pathCache[pathId][attr] = value
+
+        return FsElement.__pathCache[pathId][attr]
+
+    @staticmethod
+    def clearCache():
+        """
+        Clear the cached path query.
+        """
+        FsElement.__pathCache = {}
 
     def __setPath(self, path):
         """
