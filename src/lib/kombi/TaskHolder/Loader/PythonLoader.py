@@ -1,7 +1,6 @@
 import os
 import glob
 from ...Task import Task
-from ...Element import Element, VarExtractor
 from ...Template import Template
 from ...TaskHolder import TaskHolder
 from ...Resource import Resource
@@ -117,9 +116,6 @@ class PythonLoader(Loader):
             return
 
         contextVars = dict(list(contextVars.items()) + list(self.__parseVars(contents).items()))
-
-        # parsing inline elements
-        self.__parseInlineElements(contents)
 
         # task holders checking
         if not isinstance(contents['tasks'], list):
@@ -332,56 +328,6 @@ class PythonLoader(Loader):
             result = dict(contents['vars'])
 
         return result
-
-    @classmethod
-    def __parseInlineElements(cls, contents):
-        """
-        Parse the custom inline elements defined in the contents.
-        """
-        if 'elements' in contents:
-            # vars checking
-            if not isinstance(contents['elements'], dict):
-                raise PythonLoaderContentError('Expecting a list of vars!')
-
-            for elementKey, varExtractorExpression in contents['elements'].items():
-                parts = elementKey.split('<')
-                BaseElement = Element
-                if len(parts) > 1:
-                    BaseElement = Element.registeredType(parts[1].strip())
-
-                Element.register(
-                    parts[0].strip(),
-                    cls.__customInlineElement(varExtractorExpression, BaseElement)
-                )
-
-    @classmethod
-    def __customInlineElement(cls, varExtractionExpression, BaseElement):
-        """
-        Return a custom element class.
-        """
-        class _CustomElement(BaseElement):
-            namePattern = varExtractionExpression
-
-            def __init__(self, *args, **kwargs):
-                super(_CustomElement, self).__init__(*args, **kwargs)
-
-                # assigning variables
-                self.assignVars(
-                    VarExtractor(
-                        self.var('baseName'),
-                        self.namePattern
-                    )
-                )
-
-            @classmethod
-            def test(cls, data, parentElement=None):
-                # perform the tests for the base classes
-                if super(_CustomElement, cls).test(data, parentElement):
-                    return VarExtractor(data.baseName(), cls.namePattern).match()
-
-                return False
-
-        return _CustomElement
 
     @classmethod
     def __dictDeepMerge(cls, dict1, dict2):
