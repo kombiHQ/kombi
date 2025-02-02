@@ -36,11 +36,11 @@ class TasksMenu(QtWidgets.QMenu):
                     continue
                 filteredElements.append(element)
 
-            if not filteredElements or taskHolder.task().hasMetadata('ui.task.showInContextMenu') and not taskHolder.task().metadata('ui.task.showInContextMenu'):
+            if not filteredElements or taskHolder.task().metadata('ui.task.showInContextMenu', None):
                 continue
 
             taskName = Template.runProcedure('camelcasetospaced', taskHolder.task().metadata('name'))
-            if taskHolder.task().hasMetadata('ui.task.showExecutionSettings') and not taskHolder.task().metadata('ui.task.showExecutionSettings'):
+            if taskHolder.task().metadata('ui.task.showExecutionSettings', None):
                 pass
             else:
                 taskName += ' ...'
@@ -60,7 +60,7 @@ class TasksMenu(QtWidgets.QMenu):
                     currentMenu = subMenus[currentLevel]
 
             # adding a separator when 'ui.task.menuSeparator' is defined
-            if taskHolder.task().hasMetadata('ui.task.menuSeparator') and taskHolder.task().metadata('ui.task.menuSeparator'):
+            if taskHolder.task().hasMetadata('ui.task.menuSeparator'):
                 currentMenu.addSeparator()
 
             actionArgs = []
