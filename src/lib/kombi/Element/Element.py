@@ -65,12 +65,16 @@ class ElementContext(object):
         """
         return ElementContext.totalActiveScopes > 0
 
+class _ElementSentinelValue:
+    """Element sentinel value."""
+
 class Element(object):
     """
     Abstracted Element.
     """
 
     __registeredTypes = OrderedDict()
+    __sentinelValue = _ElementSentinelValue()
 
     def __init__(self, name, parentElement=None):
         """
@@ -194,14 +198,20 @@ class Element(object):
 
         self.__vars[name] = value
 
-    def var(self, name):
+    def var(self, name, defaultValue=__sentinelValue):
         """
         Return the value for a variable.
+
+        In case a defaultValue is not specified this method will raise the
+        exception ElementInvalidVarError when the var does not exist.
         """
         if name not in self.__vars:
-            raise ElementInvalidVarError(
-                'Variable not found "{0}"'.format(name)
-            )
+            if defaultValue is self.__sentinelValue:
+                raise ElementInvalidVarError(
+                    'Variable not found "{0}"'.format(name)
+                )
+            else:
+                return defaultValue
 
         return self.__vars[name]
 
@@ -217,14 +227,20 @@ class Element(object):
         """
         self.__tags[name] = value
 
-    def tag(self, name):
+    def tag(self, name, defaultValue=__sentinelValue):
         """
         Return the value for a tag.
+
+        In case a defaultValue is not specified this method will raise the
+        exception ElementInvalidTagError when the var does not exist.
         """
         if name not in self.__tags:
-            raise ElementInvalidTagError(
-                'Tag not found "{0}"'.format(name)
-            )
+            if defaultValue is self.__sentinelValue:
+                raise ElementInvalidTagError(
+                    'Tag not found "{0}"'.format(name)
+                )
+            else:
+                return defaultValue
 
         return self.__tags[name]
 
