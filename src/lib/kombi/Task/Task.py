@@ -25,6 +25,9 @@ class TaskInvalidOptionError(TaskError):
 class TaskInvalidMetadataError(TaskError):
     """Task invalid metadata error."""
 
+class _TaskSentinelValue:
+    """Task sentinel value."""
+
 class Task(object):
     """
     Abstract Task.
@@ -36,6 +39,7 @@ class Task(object):
     """
 
     __registered = {}
+    __sentinelValue = _TaskSentinelValue()
 
     def __init__(self, taskType):
         """
@@ -52,7 +56,7 @@ class Task(object):
         """
         return self.__taskType
 
-    def metadata(self, scope=''):
+    def metadata(self, scope='', defaultValue=__sentinelValue):
         """
         Return the metadata.
 
@@ -60,6 +64,9 @@ class Task(object):
         metadata by passing an empty string as scope (default). Otherwise,
         you can pass a scope string separating each level by '.' (for instance:
         first.second.third).
+
+        In case a defaultValue is not specified this method will raise the
+        exception TaskInvalidMetadataError when the metadata does not exist.
         """
         if not scope:
             return self.__metadata
@@ -67,9 +74,13 @@ class Task(object):
         currentLevel = self.__metadata
         for level in scope.split('.'):
             if level not in currentLevel:
-                raise TaskInvalidMetadataError(
-                    'Invalid metadata "{}"'.format(scope)
-                )
+
+                if defaultValue is self.__sentinelValue:
+                    raise TaskInvalidMetadataError(
+                        'Invalid metadata "{}"'.format(scope)
+                    )
+                else:
+                    return defaultValue
 
             currentLevel = currentLevel[level]
 
