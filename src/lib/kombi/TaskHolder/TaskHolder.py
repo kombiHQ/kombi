@@ -13,6 +13,9 @@ class TaskHolderError(Exception):
 class TaskHolderInvalidVarNameError(TaskHolderError):
     """Task holder invalid var name error."""
 
+class _TaskHolderSentinelValue:
+    """Task holder sentinel value."""
+
 class TaskHolder(object):
     """
     Holds task and sub task holders associated with a target template and element matcher.
@@ -29,6 +32,7 @@ class TaskHolder(object):
         'bypass',
         'ignore'
     )
+    __sentinelValue = _TaskHolderSentinelValue()
 
     def __init__(self, task, targetTemplate=None, filterTemplate=None, exportTemplate=None):
         """
@@ -146,16 +150,19 @@ class TaskHolder(object):
         """
         return self.__vars.keys()
 
-    def var(self, name):
+    def var(self, name, defaultValue=__sentinelValue):
         """
         Return the value for the variable.
         """
         if name not in self.__vars:
-            raise TaskHolderInvalidVarNameError(
-                'Invalid variable name "{0}'.format(
-                    name
+            if defaultValue is self.__sentinelValue:
+                raise TaskHolderInvalidVarNameError(
+                    'Invalid variable name "{0}'.format(
+                        name
+                    )
                 )
-            )
+            else:
+                return defaultValue
 
         return self.__vars[name]
 
