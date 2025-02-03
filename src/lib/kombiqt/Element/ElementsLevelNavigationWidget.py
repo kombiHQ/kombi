@@ -215,7 +215,7 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
             item = layout.takeAt(0)
             widget = item.widget()
             if widget is not None:
-                widget.setParent(None)
+                widget.deleteLater()
             else:
                 self.__deleteItemsOfLayout(item.layout())
 
