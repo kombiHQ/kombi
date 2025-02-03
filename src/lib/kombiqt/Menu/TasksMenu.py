@@ -85,5 +85,10 @@ class TasksMenu(QtWidgets.QMenu):
         """
         Slog triggered by the context menu action to run the task holders.
         """
+        # we want to centralize the task holders widget based on the parent widget,
+        # if available, rather than the menu itself. This ensures the window is
+        # positioned relative to the parent rather than the menu when a parent 
+        # widget exists
+        parent = self.parent() if self.parent() else self
         if RunTaskHoldersWidget.run([self.__taskHolders[index]], elements, parent=self):
             self.executed.emit()
