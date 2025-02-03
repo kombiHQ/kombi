@@ -90,5 +90,5 @@ class TasksMenu(QtWidgets.QMenu):
         # positioned relative to the parent rather than the menu when a parent 
         # widget exists
         parent = self.parent() if self.parent() else self
-        if RunTaskHoldersWidget.run([self.__taskHolders[index]], elements, parent=self):
+        if RunTaskHoldersWidget.run([self.__taskHolders[index]], elements, parent=parent):
             self.executed.emit()
