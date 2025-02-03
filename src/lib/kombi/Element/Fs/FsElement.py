@@ -94,13 +94,18 @@ class FsElement(Element):
         superclass, which can be expensive over the network. If the cache exceeds
         the maximum size, the oldest cached entry is removed.
         """
-        pathId = id(path)
+        # Using a combination of id(path) and hash(path) to ensure a unique identifier. 
+        # The object ID (from id()) can be repurposed by the garbage collector if the object is collected,
+        # so combining it with hash(path) provides a more reliable way to uniquely identify the object
+        # throughout its lifetime.
+        pathId = (id(path), hash(path))
+
+        # remove the oldest item when the cache exceeds the maximum size
+        if len(FsElement.__pathCache) > FsElement.__pathCacheSize:
+            FsElement.__pathCache.pop(next(iter(FsElement.__pathCache)))
+
         if pathId not in FsElement.__pathCache:
             FsElement.__pathCache[pathId] = {}
-
-            # remove the oldest item when the cache exceeds the maximum size
-            if len(FsElement.__pathCache) > FsElement.__pathCacheSize:
-                FsElement.__pathCache.pop(next(iter(FsElement.__pathCache)))
 
         if attr not in FsElement.__pathCache[pathId]:
             value = getattr(path, attr)
