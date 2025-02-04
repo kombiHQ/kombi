@@ -4,7 +4,7 @@
 
 QLabel, QTreeView, QMenu, QLinedEdit, QPushButton, QDockWidget, QTextEdit, QCheckBox, QHeaderView, QGroupBox, QComboBox, QStatusBar {
     font-family: "<fontName>";
-    font-size: <fontSize>pt;
+    font-size: <fontSize>px;
 }
 
 QToolTip{
