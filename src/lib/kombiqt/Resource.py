@@ -1,6 +1,7 @@
 import os
+import sys
 from glob import glob
-from Qt import QtCore, QtGui
+from Qt import QtCore, QtGui, QtWidgets
 
 class Resource(object):
     """
@@ -9,6 +10,64 @@ class Resource(object):
 
     __cache = {}
     __resourcesLocation = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "ui")
+    __defaultFontName = os.environ.get('KOMBI_UI_DEFAULT_FONT_NAME', 'Ubuntu')  
+    __defaultMonospaceFontName = os.environ.get('KOMBI_UI_DEFAULT_MONOSPACE_FONT_NAME', 'JetBrains Mono')
+    __defaultFontSize = os.environ.get('KOMBI_UI_DEFAULT_FONT_SIZE', '10')
+    __loadedFont = False
+    __loadedMonospaceFont = False
+
+    @classmethod
+    def fontName(cls):
+        """
+        Return the default font name.
+        """
+        if not cls.__loadedFont:
+            cls.loadFonts()
+            cls.__loadedFont = True
+
+            fontFound = False
+            database = QtGui.QFontDatabase()
+            for family in database.families():
+                if cls.__defaultFontName == family:
+                    fontFound = True
+                    break
+
+            if not fontFound:
+                sys.stderr.write(f'Could not load kombi default font: {cls.__defaultFontName}\n')
+                sys.stderr.flush()
+
+        return cls.__defaultFontName
+    
+    @classmethod
+    def monospaceFontName(cls):
+        """
+        Return the default monospace font name.
+        """
+        if not cls.__loadedMonospaceFont:
+            cls.loadFonts()
+            cls.__loadedMonospaceFont = True
+
+            fontFound = False
+            database = QtGui.QFontDatabase()
+            for family in database.families():
+                if cls.__defaultMonospaceFontName == family:
+                    fontFound = True
+                    break
+
+            if not fontFound:
+                sys.stderr.write(f'Could not load kombi default monospace font: {cls.__defaultMonospaceFontName}\n')
+                sys.stderr.flush()
+
+        return cls.__defaultMonospaceFontName
+
+    @classmethod
+    def fontSize(cls):
+        """
+        Return the default font size based on the current dpi.
+        """
+        if cls.__defaultFontSize.isdigit():
+            dpi = QtWidgets.QApplication.primaryScreen().logicalDotsPerInch()
+            return int(cls.__defaultFontSize) * dpi / 96
 
     @classmethod
     def icon(cls, name):
@@ -100,6 +159,15 @@ class Resource(object):
                         os.path.dirname(styleSheetFile).replace('\\', '/')
                     )
                 )
-            cls.__cache['stylesheet'] = styleSheetContents
+            cls.__cache['stylesheet'] = styleSheetContents.replace(
+                '<fontSize>',
+                str(cls.fontSize())
+            ).replace(
+                '<fontName>',
+                cls.fontName()
+            ).replace(
+                '<monospaceFontName>',
+                cls.monospaceFontName()
+            )
 
         return cls.__cache['stylesheet']
