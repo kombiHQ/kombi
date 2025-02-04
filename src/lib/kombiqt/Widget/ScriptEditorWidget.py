@@ -9,12 +9,13 @@ import traceback
 codeExecutionGlobals = dict(globals())  # noqa: E402
 
 from Qt import QtCore, QtGui, QtWidgets
-from ..Resource import Resource
 from kombi.Config import Config
 
 
 class ScriptEditorWidget(QtWidgets.QWidget):
-    __fontName = 'JetBrains Mono'
+    """
+    Python script editor widget.
+    """
 
     def __init__(self, parent=None) -> None:
         """
@@ -77,30 +78,16 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         Build the base widgets.
         """
-        fontFound = False
-        database = QtGui.QFontDatabase()
-        for family in database.families():
-            if family == self.__fontName:
-                fontFound = True
-
-        if not fontFound:
-            Resource.loadFonts()
-        font = QtGui.QFont(self.__fontName)
-        font.setFixedPitch(True)
-        font.setStyleHint(QtGui.QFont.TypeWriter)
-
         self.__splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
         self.__mainLayout = QtWidgets.QVBoxLayout()
         self.__mainLayout.setContentsMargins(0, 0, 0, 0)
         self.__codeEditor = _CodeEditorWidget()
         self.__codeEditor.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.__codeEditor.setFocusPolicy(QtCore.Qt.StrongFocus)
-        self.__codeEditor.setFont(font)
         self.__codeEditor.textChanged.connect(self.__onCodeEditorChanged)
         self.__outputWidget = QtWidgets.QTextEdit()
         self.__outputWidget.setObjectName('codeEditor')
         self.__outputWidget.setAcceptRichText(False)
-        self.__outputWidget.setFont(font)
         self.__outputWidget.setReadOnly(True)
         self.__outputWidget.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.__mainLayout.addWidget(self.__splitter)
