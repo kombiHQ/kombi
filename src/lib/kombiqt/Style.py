@@ -50,7 +50,8 @@ class Style(object):
 
         defaultFont = QtGui.QFont(cls.__defaultFontName)
         if cls.__defaultFontSize.isdigit():
-            defaultFont.setPointSize(int(cls.__defaultFontSize))
+            dpi = QtWidgets.QApplication.primaryScreen().logicalDotsPerInch()
+            defaultFont.setPointSize(int(cls.__defaultFontSize) * dpi / 96)
 
         widget.setFont(defaultFont)
 
