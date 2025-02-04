@@ -1,5 +1,3 @@
-import sys
-import os
 from Qt import QtCore, QtGui, QtWidgets
 from .Resource import Resource
 
@@ -7,8 +5,6 @@ class Style(object):
     """
     Kombi style.
     """
-    __defaultFontName = os.environ.get('KOMBI_UI_DEFAULT_FONT_NAME', 'Ubuntu')
-    __defaultFontSize = os.environ.get('KOMBI_UI_DEFAULT_FONT_SIZE', '12')
 
     @classmethod
     def apply(cls, widget, style=True, font=True, palette=True, styleSheet=True):
@@ -34,25 +30,8 @@ class Style(object):
         """
         Apply the default font.
         """
-        Resource.loadFonts()
-
-        fontFound = False
-        database = QtGui.QFontDatabase()
-        for family in database.families():
-            if cls.__defaultFontName == family:
-                fontFound = True
-                break
-
-        if not fontFound:
-            sys.stderr.write(f'Could not load kombi default font: {cls.__defaultFontName}\n')
-            sys.stderr.flush()
-            return
-
-        defaultFont = QtGui.QFont(cls.__defaultFontName)
-        if cls.__defaultFontSize.isdigit():
-            dpi = QtWidgets.QApplication.primaryScreen().logicalDotsPerInch()
-            defaultFont.setPointSize(int(cls.__defaultFontSize) * dpi / 96)
-
+        defaultFont = QtGui.QFont(Resource.fontName())
+        defaultFont.setPointSize(Resource.fontSize())
         widget.setFont(defaultFont)
 
     @classmethod
