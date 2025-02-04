@@ -12,7 +12,7 @@ class Resource(object):
     __resourcesLocation = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "ui")
     __defaultFontName = os.environ.get('KOMBI_UI_DEFAULT_FONT_NAME', 'Ubuntu')  
     __defaultMonospaceFontName = os.environ.get('KOMBI_UI_DEFAULT_MONOSPACE_FONT_NAME', 'JetBrains Mono')
-    __defaultFontSize = os.environ.get('KOMBI_UI_DEFAULT_FONT_SIZE', '14')
+    __defaultFontSize = os.environ.get('KOMBI_UI_DEFAULT_FONT_SIZE', '12')
     __loadedFont = False
     __loadedMonospaceFont = False
 
