@@ -2,7 +2,7 @@
     outline: none;
 }
 
-QLabel, QTreeView, QMenu, QLinedEdit, QPushButton, QDockWidget, QTextEdit, QCheckBox, QHeaderView, QGroupBox, QComboBox, QStatusBar {
+QLabel, QTreeView, QTableView, QMenu, QLinedEdit, QPushButton, QDockWidget, QTextEdit, QCheckBox, QHeaderView, QGroupBox, QComboBox, QStatusBar {
     font-family: "<fontName>";
     font-size: <fontSize>px;
 }
