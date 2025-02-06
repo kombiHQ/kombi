@@ -29,7 +29,7 @@ class DeadlineDispatcher(RenderfarmDispatcher):
             "additionalProps",
             {
                 "EnvironmentKeyValue0": "KOMBI_USER={}".format(self.option("env").get("KOMBI_USER", "")),
-                "EnvironmentKeyValue1": "KOMBI_DISPATCH_TIME={}".format(self.option("env").get("KOMBI_DISPATCH_TIME", ""))   
+                "EnvironmentKeyValue1": "KOMBI_DISPATCH_TIME={}".format(self.option("env").get("KOMBI_DISPATCH_TIME", ""))
             }
         )
         ```

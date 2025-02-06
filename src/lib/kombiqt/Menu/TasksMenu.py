@@ -87,7 +87,7 @@ class TasksMenu(QtWidgets.QMenu):
         """
         # we want to centralize the task holders widget based on the parent widget,
         # if available, rather than the menu itself. This ensures the window is
-        # positioned relative to the parent rather than the menu when a parent 
+        # positioned relative to the parent rather than the menu when a parent
         # widget exists
         parent = self.parent() if self.parent() else self
         if RunTaskHoldersWidget.run([self.__taskHolders[index]], elements, parent=parent):

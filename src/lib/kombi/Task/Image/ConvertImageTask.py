@@ -45,20 +45,28 @@ class ConvertImageTask(Task):
             }
         )
 
-        self.setOption('testElement1', Element.Element.create(pathlib.Path("/tmp")))
-        self.setOption('testElement2',
+        self.setOption(
+            'testElement1',
+            Element.Element.create(pathlib.Path("/tmp"))
+        )
+
+        self.setOption(
+            'testElement2',
             [
                 {'test': [Element.Element.create({})]},
-                Element.Element.create({}),
+                Element.Element.create({})
             ]
         )
 
-        self.setOption('testElement3',
-            { "bla":
+        self.setOption(
+            'testElement3',
+            {
+                "bla":
                 {'test': [Element.Element.create({})]},
-               "bla2": Element.Element.create({}),
+                "bla2": Element.Element.create({})
             }
         )
+
         # option used to convert the output to specific channels aka: ('R', 'G', 'B')
         self.setOption('convertToChannels', tuple())
 

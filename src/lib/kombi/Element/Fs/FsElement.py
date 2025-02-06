@@ -94,7 +94,7 @@ class FsElement(Element):
         superclass, which can be expensive over the network. If the cache exceeds
         the maximum size, the oldest cached entry is removed.
         """
-        # Using a combination of id(path) and hash(path) to ensure a unique identifier. 
+        # Using a combination of id(path) and hash(path) to ensure a unique identifier.
         # The object ID (from id()) can be repurposed by the garbage collector if the object is collected,
         # so combining it with hash(path) provides a more reliable way to uniquely identify the object
         # throughout its lifetime.
