@@ -36,7 +36,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         if event.modifiers() == QtCore.Qt.ControlModifier and event.key() in (QtCore.Qt.Key_Equal, QtCore.Qt.Key_Minus):
             currentFont = self.__outputWidget.font()
-            size = currentFont.pointSize()
+            size = currentFont.pixelSize()
 
             if event.key() == QtCore.Qt.Key_Equal:
                 size += 1
@@ -46,9 +46,9 @@ class ScriptEditorWidget(QtWidgets.QWidget):
             if size < 1:
                 size = 1
 
-            currentFont.setPointSize(size)
-            self.__outputWidget.setFont(currentFont)
-            self.__codeEditor.setFont(currentFont)
+            currentFont.setPixelSize(size)
+            self.__outputWidget.setStyleSheet(f"font-size: {size}px")
+            self.__codeEditor.setStyleSheet(f"font-size: {size}px")
 
         super().keyPressEvent(event)
 
@@ -58,7 +58,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         if event.modifiers() == QtCore.Qt.ControlModifier:
             currentFont = self.__outputWidget.font()
-            currentSize = currentFont.pointSize()
+            currentSize = currentFont.pixelSize()
 
             # zoom in or out depending on the direction of the scroll wheel
             newSize = None
@@ -68,9 +68,9 @@ class ScriptEditorWidget(QtWidgets.QWidget):
                 newSize = currentSize - 1
 
             if newSize is not None:
-                currentFont.setPointSize(newSize)
-                self.__outputWidget.setFont(currentFont)
-                self.__codeEditor.setFont(currentFont)
+                currentFont.setPixelSize(newSize)
+                self.__outputWidget.setStyleSheet(f"font-size: {newSize}px")
+                self.__codeEditor.setStyleSheet(f"font-size: {newSize}px")
 
         super().wheelEvent(event)
 
