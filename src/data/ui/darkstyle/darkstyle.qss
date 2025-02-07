@@ -1,8 +1,5 @@
 *{
     outline: none;
-}
-
-QLabel, QTreeView, QTableView, QMenu, QLinedEdit, QPushButton, QDockWidget, QTextEdit, QCheckBox, QHeaderView, QGroupBox, QComboBox, QStatusBar {
     font-family: "<fontName>";
     font-size: <fontSize>px;
 }
