@@ -401,6 +401,17 @@ class Task(object):
             task.setMetadata('name', taskType)
         return task
 
+    def validate(self, elements=None):
+        """
+        For re-implementation: should implement a check for the task.
+
+        This method is called right before performing the task. Also, it can be called by
+        user interfaces for validating user input (options).
+
+        In order to report a validation failure make sure to raise the exception TaskValidationError
+        with the message about the failure. Otherwise, in case of no failure then no result is needed.
+        """
+
     @staticmethod
     def createFromJson(jsonContents):
         """
@@ -490,17 +501,6 @@ class Task(object):
         if targetPath:
             return FsElement.createFromPath(targetPath)
         return None
-
-    def validate(self, elements=None):
-        """
-        For re-implementation: should implement a check for the task.
-
-        This method is called right before performing the task. Also, it can be called by
-        user interfaces for validating user input (options).
-
-        In order to report a validation failure make sure to raise the exception TaskValidationError
-        with the message about the failure. Otherwise, in case of no failure then no result is needed.
-        """
 
     def __optionElementLevels(self, data, currentPath):
         """
