@@ -1,4 +1,3 @@
 from .ElementListWidget import ElementListWidget
 from .ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
-from .FilterElementVarWidget import FilterElementVarWidget
 from .ImageElementViewer import ImageElementViewer
