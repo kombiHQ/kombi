@@ -102,7 +102,7 @@ class ImageElementViewer(QtWidgets.QLabel):
     Basic image element widget.
     """
 
-    def __init__(self, imageElements):
+    def __init__(self, imageElements, showInfo=True, backgroundColor='#000000'):
         """
         Create an image element widget.
         """
@@ -114,6 +114,7 @@ class ImageElementViewer(QtWidgets.QLabel):
 
         self.__loadImageThread = LoadImageThread()
         self.__loadImageThread.loadedSignal.connect(self.__finishedLoad)
+        self.__setShowInfo(showInfo)
 
         self.__slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
         self.__slider.setParent(self)
@@ -122,7 +123,7 @@ class ImageElementViewer(QtWidgets.QLabel):
         self.__currentFileLabel.setParent(self)
 
         self.__slider.valueChanged.connect(self.__onSliderChange)
-        self.setStyleSheet("background-color: #000")
+        self.setStyleSheet("background-color: {}".format(backgroundColor))
 
         self.setElements(imageElements)
         self.__reset()
@@ -131,7 +132,14 @@ class ImageElementViewer(QtWidgets.QLabel):
         """
         Adjust the image sequence based on the mouse position.
         """
-        self.__slider.setValue(QtWidgets.QStyle.sliderValueFromPosition(self.__slider.minimum(), self.__slider.maximum(), ev.x(), self.__slider.width()))
+        self.__slider.setValue(
+            QtWidgets.QStyle.sliderValueFromPosition(
+                self.__slider.minimum(),
+                self.__slider.maximum(),
+                ev.x(),
+                self.__slider.width()
+            )
+        )
 
     def resizeEvent(self, _):
         """
@@ -146,6 +154,12 @@ class ImageElementViewer(QtWidgets.QLabel):
         """
         self.__imageElements = list(sorted(imageElements, key=lambda x: x.var('fullPath')))
         self.__update()
+
+    def showInfo(self):
+        """
+        Return if the image information widget is visible.
+        """
+        return self.__showInfo
 
     def __update(self):
         """
@@ -200,7 +214,7 @@ class ImageElementViewer(QtWidgets.QLabel):
             self.__currentFileLabel.setFixedHeight(currentFileHeight)
 
         self.__slider.setVisible(len(self.__imageElements) > 1)
-        self.__currentFileLabel.setVisible(len(self.__imageElements))
+        self.__currentFileLabel.setVisible(self.showInfo() and len(self.__imageElements))
 
     def __onSliderChange(self, value):
         """
@@ -213,3 +227,9 @@ class ImageElementViewer(QtWidgets.QLabel):
         element = self.__imageElements[value]
         self.__loadImageThread.setImageFullPath(element.var('fullPath'), self.width(), self.height())
         self.__loadImageThread.start()
+
+    def __setShowInfo(self, visible):
+        """
+        Specify whether the text field displaying the image information should be visible
+        """
+        self.__showInfo = visible
