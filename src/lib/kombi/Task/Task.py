@@ -458,18 +458,38 @@ class Task(object):
 
     def _perform(self):
         """
-        For re-implementation: should implement the computation of the task and return a list of elements as output.
+        To be overridden: This method should implement the task computation and return a list of processed elements.
 
-        The default implementation return a list of elements based on the target filePath (The filePath is provided by
-        by the template). In case none file path has not been specified then returns an empty list of elements.
+        The default implementation iterates over a list of elements, processing each element using the _processElement method.
+        By default, _processElement checks if the element has an associated target file path (provided by the template) and 
+        returns the corresponding file system element if available.
+
+        Derived classes should override _processElement to provide specific processing logic tailored to their needs.
         """
-        filePaths = []
+        result = []
         for element in self.elements():
-            filePath = self.target(element)
-            if filePath and filePath not in filePaths:
-                filePaths.append(filePath)
+            resultElement = self._processElement(element)
+            if resultElement:
+                result.append(resultElement)
 
-        return list(map(FsElement.createFromPath, filePaths))
+        return result
+
+    def _processElement(self, element):
+        """
+        Process an individual element.
+
+        This method is a placeholder and should be re-implemented by derived classes to define how each
+        element is processed.
+        By default, it checks if the element has a valid target file path and creates a corresponding 
+        file system element. If the file path is not defined, it returns None instead.
+
+        Derived classes can override this method to implement custom processing logic, such as modifying
+        the element, applying specific transformations, or handling different element types.
+        """
+        targetPath = self.target(element)
+        if targetPath:
+            return FsElement.createFromPath(targetPath)
+        return None
 
     def validate(self, elements=None):
         """
