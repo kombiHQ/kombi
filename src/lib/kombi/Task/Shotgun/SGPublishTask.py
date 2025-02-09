@@ -43,6 +43,10 @@ class SGPublishTask(ExternalTask):
         self.setMetadata('wrapper.name', 'python')
         self.setMetadata('wrapper.options', {})
 
+        # template options
+        for optionName in self.optionNames():
+            self.setMetadata(f'task.options.{optionName}.template', True)
+
     def _perform(self):
         """
         Perform the task.
@@ -50,9 +54,9 @@ class SGPublishTask(ExternalTask):
         import shotgun_api3
 
         element = self.elements()[0]
-        userName = self.templateOption('user', element)
-        outputType = self.templateOption('outputType', element)
-        comment = self.templateOption('comment', element)
+        userName = self.option('user', element)
+        outputType = self.option('outputType', element)
+        comment = self.option('comment', element)
 
         sg = shotgun_api3.Shotgun(
             self.__shotgunUrl,
@@ -60,7 +64,7 @@ class SGPublishTask(ExternalTask):
             api_key=self.__shotgunToken
         )
 
-        taskValue = self.templateOption('shotgunTask', element)
+        taskValue = self.option('shotgunTask', element)
         filters = []
         if taskValue:
             if taskValue.isdigit():
@@ -84,7 +88,7 @@ class SGPublishTask(ExternalTask):
             episode = element.var('episode') if 'episode' in element.varNames() and element.var('episode') else None
             seq = element.var('seq')
             shot = element.var('shot')
-            department = self.templateOption('department', element)
+            department = self.option('department', element)
 
             filters = [
                 ['project.Project.name', 'is', job],
@@ -135,8 +139,8 @@ class SGPublishTask(ExternalTask):
         data = {
             'project': task['project'],
             'code': '{} {}'.format(
-                self.templateOption('versionType', element).capitalize(),
-                self.templateOption('displayPath', element)
+                self.option('versionType', element).capitalize(),
+                self.option('displayPath', element)
             ).strip(),
             'description': comment,
             'entity': shotOrAsset,
@@ -153,7 +157,7 @@ class SGPublishTask(ExternalTask):
 
         versionType = ''
         if self.option('versionType'):
-            versionType = self.templateOption(
+            versionType = self.option(
                 'versionType',
                 element
             )
@@ -161,7 +165,7 @@ class SGPublishTask(ExternalTask):
 
         pathToFrames = None
         if self.option('pathToFrames'):
-            pathToFrames = self.templateOption(
+            pathToFrames = self.option(
                 'pathToFrames',
                 element
             )
@@ -209,7 +213,7 @@ class SGPublishTask(ExternalTask):
             sg.upload_thumbnail(
                 'Version',
                 result['id'],
-                self.templateOption('thumbnail', element)
+                self.option('thumbnail', element)
             )
 
         # uploading quicktime

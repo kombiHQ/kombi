@@ -12,8 +12,9 @@ class LockTask(Task):
         Create a touch with info object.
         """
         super(LockTask, self).__init__(*args, **kwargs)
-        self.setOption("assignLockToContextVar", 'lock')
+        self.setOption('assignLockToContextVar', 'lock')
 
+        self.setMetadata('task.options.assignLockToContextVar.template', True)
         self.setMetadata('dispatch.split', False)
         self.setMetadata('dispatch.splitSize', 1)
 
@@ -44,7 +45,7 @@ class LockTask(Task):
 
             newElement = element.clone()
             newElement.setVar(
-                self.templateOption('assignLockToContextVar', element),
+                self.option('assignLockToContextVar', element),
                 targetFilePath,
                 True
             )

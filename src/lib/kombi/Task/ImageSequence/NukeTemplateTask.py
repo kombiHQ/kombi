@@ -91,6 +91,10 @@ class NukeTemplateTask(NukeTask):
         self.setOption("renderOffsetFrames", "0")
         self.setOption("group", True)
 
+        # template options
+        for optionName in ('beginExtraFrames', 'endExtraFrames', 'renderOffsetFrames', 'exportNukeScript'):
+            self.setMetadata(f'task.options.{optionName}.template', True)
+
     def _beforeRender(self):
         """
         For re-implementation: Use this method to perform extra functions before render.
@@ -105,15 +109,15 @@ class NukeTemplateTask(NukeTask):
         elements = self.elements()
 
         # loading nuke script
-        nuke.scriptOpen(self.templateOption('script', elements[0]))
+        nuke.scriptOpen(self.option('script'))
 
         result = []
         for elementGroup in Element.group(elements) if self.option('group') else [self.elements()]:
             sourceElement = elementGroup[0]
             targetElement = FsElement.createFromPath(self.target(sourceElement))
-            startFrame = elementGroup[0].var('frame') - int(self.templateOption('beginExtraFrames', elementGroup[0]))
-            endFrame = elementGroup[-1].var('frame') + int(self.templateOption('endExtraFrames', elementGroup[0]))
-            renderOffsetFrames = int(self.templateOption('renderOffsetFrames', elementGroup[0]))
+            startFrame = elementGroup[0].var('frame') - int(self.option('beginExtraFrames', elementGroup[0]))
+            endFrame = elementGroup[-1].var('frame') + int(self.option('endExtraFrames', elementGroup[0]))
+            renderOffsetFrames = int(self.option('renderOffsetFrames', elementGroup[0]))
 
             # setting up nuke
             nuke.root()['first_frame'].setValue(startFrame)
@@ -124,7 +128,7 @@ class NukeTemplateTask(NukeTask):
             self._beforeRender()
 
             # exporting nuke script before the execution
-            exportNukeScript = self.templateOption('exportNukeScript', elementGroup[0])
+            exportNukeScript = self.option('exportNukeScript', elementGroup[0])
             if exportNukeScript and not os.path.exists(exportNukeScript):
                 # creating directories if necessary
                 try:
@@ -217,7 +221,7 @@ class NukeTemplateTask(NukeTask):
             optionValue = self.option(optionName)
             # resolving template if necessary
             if isinstance(optionValue, str) and optionName != '_slateDescription':
-                optionValue = self.templateOption(
+                optionValue = self.option(
                     optionName,
                     sourceElement
                 )

@@ -3,6 +3,7 @@ import shutil
 import tempfile
 import subprocess
 from ..Task import Task
+from ...Element.Fs import FsElement
 
 class AddAudioTrackTask(Task):
     """
@@ -25,75 +26,78 @@ class AddAudioTrackTask(Task):
         self.setOption('audioCodec', 'aac')
         self.setOption('audioBitrate', '192k')
 
-    def _perform(self):
+        # template options
+        for optionName in self.optionNames():
+            self.setMetadata(f'task.options.{optionName}.template', True)
+
+    def _processElement(self, element):
         """
-        Perform the task.
+        Process an individual element.
         """
-        for element in self.elements():
-            targetFilePath = os.path.normpath(self.target(element))
-            sourceFilePath = os.path.normpath(element.var('fullPath'))
-            sourceCopyFilePath = None
-            audioFilePath = self.templateOption('audioFilePath', element)
+        targetFilePath = os.path.normpath(self.target(element))
+        sourceFilePath = os.path.normpath(element.var('fullPath'))
+        sourceCopyFilePath = None
+        audioFilePath = self.option('audioFilePath')
 
-            # in case the source is the same as the target, making a copy of the source so
-            # we can modify it
-            if targetFilePath == sourceFilePath:
-                newTempFile = tempfile.NamedTemporaryFile(suffix=os.path.basename(sourceFilePath))
-                sourceCopyFilePath = newTempFile.name
-                newTempFile.close()
-                shutil.copy2(sourceFilePath, sourceCopyFilePath)
-                sourceFilePath = sourceCopyFilePath
+        # in case the source is the same as the target, making a copy of the source so
+        # we can modify it
+        if targetFilePath == sourceFilePath:
+            newTempFile = tempfile.NamedTemporaryFile(suffix=os.path.basename(sourceFilePath))
+            sourceCopyFilePath = newTempFile.name
+            newTempFile.close()
+            shutil.copy2(sourceFilePath, sourceCopyFilePath)
+            sourceFilePath = sourceCopyFilePath
 
-            # making sure the file exists
-            assert os.path.exists(audioFilePath), "Invalid audio file path: {}".format(audioFilePath)
+        # making sure the file exists
+        assert os.path.exists(audioFilePath), "Invalid audio file path: {}".format(audioFilePath)
 
-            # creating any necessary directories
-            parentDirectory = os.path.dirname(targetFilePath)
-            if not os.path.exists(parentDirectory):
-                try:
-                    os.makedirs(parentDirectory)
-                except (IOError, OSError):
-                    pass
+        # creating any necessary directories
+        parentDirectory = os.path.dirname(targetFilePath)
+        if not os.path.exists(parentDirectory):
+            try:
+                os.makedirs(parentDirectory)
+            except (IOError, OSError):
+                pass
 
-            audioOffsetArgs = ""
-            audioOffset = float(self.templateOption('offset', element))
-            if audioOffset:
-                audioOffsetArgs = '-af "adelay={offset}|{offset}"'.format(offset=int(audioOffset * 1000.0))
+        audioOffsetArgs = ""
+        audioOffset = float(self.option('offset'))
+        if audioOffset:
+            audioOffsetArgs = '-af "adelay={offset}|{offset}"'.format(offset=int(audioOffset * 1000.0))
 
-            # ffmpeg command
-            ffmpegCommand = '{ffmpeg} -loglevel error -i "{videoInput}" -ss {audioStartAt} -i "{audioInput}" {audioOffset} -c:v copy -c:a {audioCodec} -b:a {audioBitrate} -t {duration} -y -strict -2 "{output}"'.format(
-                ffmpeg=self.__ffmpegExecutable,
-                videoInput=sourceFilePath,
-                audioStartAt=self.templateOption('audioStartAt', element),
-                audioOffset=audioOffsetArgs,
-                audioInput=audioFilePath,
-                audioCodec=self.templateOption('audioCodec', element),
-                audioBitrate=self.templateOption('audioBitrate', element),
-                duration=element.var('duration'),
-                output=targetFilePath
-            )
+        # ffmpeg command
+        ffmpegCommand = '{ffmpeg} -loglevel error -i "{videoInput}" -ss {audioStartAt} -i "{audioInput}" {audioOffset} -c:v copy -c:a {audioCodec} -b:a {audioBitrate} -t {duration} -y -strict -2 "{output}"'.format(
+            ffmpeg=self.__ffmpegExecutable,
+            videoInput=sourceFilePath,
+            audioStartAt=self.option('audioStartAt'),
+            audioOffset=audioOffsetArgs,
+            audioInput=audioFilePath,
+            audioCodec=self.option('audioCodec'),
+            audioBitrate=self.option('audioBitrate'),
+            duration=element.var('duration'),
+            output=targetFilePath
+        )
 
-            # calling ffmpeg
-            process = subprocess.Popen(
-                ffmpegCommand,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                env=os.environ,
-                shell=True
-            )
+        # calling ffmpeg
+        process = subprocess.Popen(
+            ffmpegCommand,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=os.environ,
+            shell=True
+        )
 
-            # capturing the output
-            output, errors = process.communicate()
+        # capturing the output
+        output, errors = process.communicate()
 
-            # removing any temporary file
-            if sourceCopyFilePath:
-                os.remove(sourceCopyFilePath)
+        # removing any temporary file
+        if sourceCopyFilePath:
+            os.remove(sourceCopyFilePath)
 
-            # in case of any errors
-            if errors:
-                raise Exception(errors)
+        # in case of any errors
+        if errors:
+            raise Exception(errors)
 
-        return super(AddAudioTrackTask, self)._perform()
+        return FsElement.createFromPath(targetFilePath)
 
 
 # registering task

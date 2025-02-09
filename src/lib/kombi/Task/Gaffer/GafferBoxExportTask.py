@@ -64,6 +64,10 @@ class GafferBoxExportTask(GafferTask):
             }
         )
 
+        # template options
+        for optionName in ('outputRegexValidation', 'outputRegexValidationFailMessage', 'scene', 'info'):
+            self.setMetadata(f'task.options.{optionName}.template', True)
+
     def setup(self, elements):
         """
         Setting the initial value for output dir.
@@ -133,9 +137,9 @@ class GafferBoxExportTask(GafferTask):
                 raise TaskValidationError(
                     'Output location does not exist: {}'.format(element.var('outputDir'))
                 )
-            elif self.option('outputRegexValidation') and not re.match(self.templateOption('outputRegexValidation', element), element.var('outputDir')):
+            elif self.option('outputRegexValidation') and not re.match(self.option('outputRegexValidation', element), element.var('outputDir')):
                 raise TaskValidationError(
-                    self.templateOption('outputRegexValidationFailMessage', element)
+                    self.option('outputRegexValidationFailMessage', element)
                 )
 
     def _perform(self):
@@ -145,14 +149,14 @@ class GafferBoxExportTask(GafferTask):
         import Gaffer
 
         elements = self.elements()
-        sceneFullPath = self.templateOption('scene', elements[0])
+        sceneFullPath = self.option('scene', elements[0])
 
         if not os.path.exists(sceneFullPath):
             raise GafferBoxExportTaskError('Invalid Scene: {}'.format(sceneFullPath))
 
         # loading gaffer scene
         script = Gaffer.ScriptNode()
-        script['fileName'].setValue(self.templateOption('scene', elements[0]))
+        script['fileName'].setValue(self.option('scene', elements[0]))
         script.load()
 
         result = []
@@ -170,7 +174,7 @@ class GafferBoxExportTask(GafferTask):
                 infoData['gafferVersion'] = os.environ.get('BVER_GAFFER_VERSION')
                 infoData['arnoldVersion'] = os.environ.get('BVER_GAFFER_ARNOLD_VERSION')
 
-                with open(self.templateOption('info', FsElement.createFromPath(targetPath)), 'w') as f:
+                with open(self.option('info', FsElement.createFromPath(targetPath)), 'w') as f:
                     json.dump(
                         infoData,
                         f,

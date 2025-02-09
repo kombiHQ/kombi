@@ -25,58 +25,58 @@ class CopyTask(Task):
         self.setOption('copyContextVar', {})
         self.setOption('copyTag', {})
 
-    def _perform(self):
+        # template options
+        for optionName in ('copyVar', 'copyContextVar', 'copyTag'):
+            self.setMetadata(f'task.options.{optionName}.template', True)
+
+    def _processElement(self, element):
         """
-        Perform the task.
+        Process an individual element.
         """
-        result = []
-        for element in self.elements():
-            filePath = self.target(element)
+        filePath = self.target(element)
 
-            # trying to create the directory automatically in case it does not exist
-            try:
-                os.makedirs(os.path.dirname(filePath))
-            except OSError:
-                pass
+        # trying to create the directory automatically in case it does not exist
+        try:
+            os.makedirs(os.path.dirname(filePath))
+        except OSError:
+            pass
 
-            # copying the file to the new target
-            sourceFilePath = element.var('filePath')
-            targetFilePath = filePath
-            if os.path.normpath(sourceFilePath) == os.path.normpath(targetFilePath):
-                continue
+        # copying the file to the new target
+        sourceFilePath = element.var('filePath')
+        targetFilePath = filePath
+        if os.path.normpath(sourceFilePath) == os.path.normpath(targetFilePath):
+            return
 
-            # Check if the target path already exists, if it is file remove it else raise an exception
-            if os.path.isfile(targetFilePath):
-                os.remove(targetFilePath)
-            elif os.path.isdir(targetFilePath):
-                raise CopyTaskTargetDirectoryError(
-                    'Target directory already exists {}'.format(targetFilePath)
-                )
+        # Check if the target path already exists, if it is file remove it else raise an exception
+        if os.path.isfile(targetFilePath):
+            os.remove(targetFilePath)
+        elif os.path.isdir(targetFilePath):
+            raise CopyTaskTargetDirectoryError(
+                'Target directory already exists {}'.format(targetFilePath)
+            )
 
-            # doing the copy
-            if os.path.isdir(sourceFilePath):
-                shutil.copytree(sourceFilePath, targetFilePath)
-            else:
-                shutil.copy2(sourceFilePath, targetFilePath)
+        # doing the copy
+        if os.path.isdir(sourceFilePath):
+            shutil.copytree(sourceFilePath, targetFilePath)
+        else:
+            shutil.copy2(sourceFilePath, targetFilePath)
 
-            # creating result element
-            newElement = FsElement.createFromPath(targetFilePath)
+        # creating result element
+        newElement = FsElement.createFromPath(targetFilePath)
 
-            # copying vars
-            for sourceVarName, targetVarName in self.templateOption('copyVar', element).items():
-                newElement.setVar(targetVarName, element.var(sourceVarName))
+        # copying vars
+        for sourceVarName, targetVarName in self.option('copyVar').items():
+            newElement.setVar(targetVarName, element.var(sourceVarName))
 
-            # copying context vars
-            for sourceVarName, targetVarName in self.templateOption('copyContextVar', element).items():
-                newElement.setVar(targetVarName, element.var(sourceVarName), True)
+        # copying context vars
+        for sourceVarName, targetVarName in self.option('copyContextVar').items():
+            newElement.setVar(targetVarName, element.var(sourceVarName), True)
 
-            # copying tags
-            for sourceTagName, targetTagName in self.templateOption('copyTag', element).items():
-                newElement.setTag(targetTagName, element.tag(sourceTagName))
+        # copying tags
+        for sourceTagName, targetTagName in self.option('copyTag').items():
+            newElement.setTag(targetTagName, element.tag(sourceTagName))
 
-            result.append(newElement)
-
-        return result
+        return newElement
 
 
 # registering task

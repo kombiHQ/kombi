@@ -15,6 +15,10 @@ class SliceSequenceTask(Task):
         self.setOption('sliceTotalAtBegin', 0)
         self.setOption('sliceTotalAtEnd', 0)
 
+        # template options
+        for optionName in self.optionNames():
+            self.setMetadata(f'task.options.{optionName}.template', True)
+
     def _perform(self):
         """
         Implement the execution of the task.
@@ -22,8 +26,8 @@ class SliceSequenceTask(Task):
         result = []
 
         for elementGroup in Element.group(self.elements()):
-            sliceBegin = int(self.templateOption('sliceTotalAtBegin', elementGroup[0]))
-            sliceEnd = int(self.templateOption('sliceTotalAtEnd', elementGroup[-1]))
+            sliceBegin = int(self.option('sliceTotalAtBegin', elementGroup[0]))
+            sliceEnd = int(self.option('sliceTotalAtEnd', elementGroup[-1]))
 
             slicedElements = elementGroup[sliceBegin:]
             if sliceEnd:

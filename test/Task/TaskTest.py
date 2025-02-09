@@ -169,9 +169,9 @@ class TaskTest(BaseTestCase):
         copyTask = taskHolders[0].task()
         self.assertEqual(copyTask.type(), 'copy')
 
-        self.assertEqual(copyTask.templateOption('testOption', element=dummyElement), 'testValue')
-        self.assertEqual(copyTask.templateOption('testOption', extraVars=extraVars), 'randomValue')
-        self.assertEqual(copyTask.templateOption('testExpr'), '2')
+        self.assertEqual(copyTask.option('testOption', element=dummyElement), 'testValue')
+        self.assertEqual(copyTask.option('testOption', extraVars=extraVars), 'randomValue')
+        self.assertEqual(copyTask.option('testExpr'), '2')
 
         # sequence thumbnail task holder
         self.assertEqual(len(taskHolders[0].subTaskHolders()), 1)
@@ -180,7 +180,7 @@ class TaskTest(BaseTestCase):
         dummyElement.setVar('height', 2000)
         self.assertEqual(sequenceThumbnailTask.type(), 'sequenceThumbnail')
         self.assertEqual(sequenceThumbnailTask.option('width'), 640)
-        self.assertEqual(sequenceThumbnailTask.templateOption('height', element=dummyElement), '2000')
+        self.assertEqual(sequenceThumbnailTask.option('height', element=dummyElement), '2000')
 
     def testTaskOutput(self):
         """

@@ -16,6 +16,10 @@ class SequenceInfoTask(Task):
         self.setOption('lastName', 'last')
         self.setOption('totalName', 'total')
 
+        # template options
+        for optionName in self.optionNames():
+            self.setMetadata(f'task.options.{optionName}.template', True)
+
     def _perform(self):
         """
         Implement the execution of the task.
@@ -29,15 +33,15 @@ class SequenceInfoTask(Task):
             for element in elementGroup:
                 newElement = element.clone()
                 newElement.setVar(
-                    self.templateOption('firstName', element),
+                    self.option('firstName', element),
                     firstElement.var('frame')
                 )
                 newElement.setVar(
-                    self.templateOption('lastName', element),
+                    self.option('lastName', element),
                     lastElement.var('frame')
                 )
                 newElement.setVar(
-                    self.templateOption('totalName', element),
+                    self.option('totalName', element),
                     len(elementGroup)
                 )
                 result.append(newElement)

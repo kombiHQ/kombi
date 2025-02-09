@@ -25,6 +25,7 @@ class NukeRenderTask(NukeTask):
         )
         self.setMetadata("dispatch.split", True)
         self.setOption("script", "")
+        self.setMetadata("task.options.script.template", True)
 
     @classmethod
     def toRenderElements(cls, writeNode, startFrame=None, endFrame=None):
@@ -74,7 +75,7 @@ class NukeRenderTask(NukeTask):
         nuke.addAfterFrameRender(self.__onAfterFrameRender)
 
         # loading nuke script
-        script = self.templateOption('script', elements[0])
+        script = self.option('script')
         if os.path.exists(script):
             nuke.scriptOpen(script)
 

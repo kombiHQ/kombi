@@ -4,6 +4,7 @@ import multiprocessing
 
 from ..Task import Task, TaskError
 from ... import Element
+from ...Element.Fs import FsElement
 
 class ConvertImageTaskError(TaskError):
     """Convert image task error."""
@@ -31,42 +32,6 @@ class ConvertImageTask(Task):
         self.setOption('targetColorspace', '')
         self.setOption('colorConfig', '')
 
-        self.setMetadata(
-            "ui.options", {
-                "testElement1": {
-                    "main": True
-                },
-                "testElement2": {
-                    "main": True
-                },
-                "testElement3": {
-                    "main": True
-                }
-            }
-        )
-
-        self.setOption(
-            'testElement1',
-            Element.Element.create(pathlib.Path("/tmp"))
-        )
-
-        self.setOption(
-            'testElement2',
-            [
-                {'test': [Element.Element.create({})]},
-                Element.Element.create({})
-            ]
-        )
-
-        self.setOption(
-            'testElement3',
-            {
-                "bla":
-                {'test': [Element.Element.create({})]},
-                "bla2": Element.Element.create({})
-            }
-        )
-
         # option used to convert the output to specific channels aka: ('R', 'G', 'B')
         self.setOption('convertToChannels', tuple())
 
@@ -79,107 +44,105 @@ class ConvertImageTask(Task):
 
         self.setMetadata('dispatch.split', True)
 
-    def _perform(self):
+        # template options
+        for optionName in ('width', 'height', 'targetColorspace', 'sourceColorspace', 'colorConfig'):
+            self.setMetadata(f'task.options.{optionName}.template', True)
+
+    def _processElement(self, element):
         """
-        Perform the task.
+        Process an individual element.
         """
         import OpenImageIO as oiio
 
-        print('testElement1', self.option('testElement1'))
-        print('testElement2', self.option('testElement2'))
-        print('testElement3', self.option('testElement3'))
+        targetFilePath = Element.Fs.Image.OiioElement.supportedString(
+            self.target(element)
+        )
 
-        for element in self.elements():
-            targetFilePath = Element.Fs.Image.OiioElement.supportedString(
-                self.target(element)
+        # opening the source image
+        inputImageBuf = oiio.ImageBuf(
+            Element.Fs.Image.OiioElement.supportedString(
+                element.var('filePath')
+            )
+        )
+
+        # output image buf
+        outImageBuf = inputImageBuf
+
+        # resizing image
+        width = int(self.option('width'))
+        height = int(self.option('height'))
+
+        if width != element.var('width') or height != element.var('height'):
+            # figuring out aspect ratio used for the resizing
+            ratio = None
+            if int(self.option('keepAspectRatio')):
+                ratio = self.__aspectRatio(
+                    element.var('width'),
+                    element.var('height'),
+                    width,
+                    height
+                )
+
+            outImageBuf = oiio.ImageBuf(
+                oiio.ImageSpec(
+                    int(element.var('width') * ratio) if ratio is not None else width,
+                    int(element.var('height') * ratio) if ratio is not None else height,
+                    inputImageBuf.spec().nchannels,
+                    inputImageBuf.spec().format
+                )
             )
 
-            # opening the source image
-            inputImageBuf = oiio.ImageBuf(
-                Element.Fs.Image.OiioElement.supportedString(
-                    element.var('filePath')
-                )
+            oiio.ImageBufAlgo.resize(
+                outImageBuf,
+                inputImageBuf,
+                roi=outImageBuf.roi,
+                nthreads=multiprocessing.cpu_count()
             )
 
-            # output image buf
-            outImageBuf = inputImageBuf
+        # in case the convert to RGBA is enabled
+        if self.option('convertToRGBA') or self.option('convertToChannels'):
+            useChannels = []
+            requestedChannels = list(map(lambda x: str(x).upper(), ("R", "G", "B", "A") if self.option('convertToRGBA') else tuple(self.option('convertToChannels'))))
+            for channelname in inputImageBuf.spec().channelnames:
+                if channelname.upper() in requestedChannels:
+                    useChannels.append(channelname)
 
-            # resizing image
-            width = int(self.templateOption('width', element))
-            height = int(self.templateOption('height', element))
+            if not useChannels and self.option('convertToChannelsFallbackToFirstChannel'):
+                useChannels.append(inputImageBuf.spec().channelnames[0])
 
-            if width != element.var('width') or height != element.var('height'):
-                # figuring out aspect ratio used for the resizing
-                ratio = None
-                if int(self.templateOption('keepAspectRatio', element)):
-                    ratio = self.__aspectRatio(
-                        element.var('width'),
-                        element.var('height'),
-                        width,
-                        height
-                    )
+            temporaryBuffer = oiio.ImageBuf()
+            oiio.ImageBufAlgo.channels(
+                temporaryBuffer,
+                outImageBuf,
+                tuple(useChannels)
+            )
+            outImageBuf = temporaryBuffer
 
-                outImageBuf = oiio.ImageBuf(
-                    oiio.ImageSpec(
-                        int(element.var('width') * ratio) if ratio is not None else width,
-                        int(element.var('height') * ratio) if ratio is not None else height,
-                        inputImageBuf.spec().nchannels,
-                        inputImageBuf.spec().format
-                    )
-                )
+        # changing colorspace
+        targetColorspace = self.option('targetColorspace')
+        if targetColorspace:
+            oiio.ImageBufAlgo.colorconvert(
+                outImageBuf,
+                outImageBuf,
+                self.option('sourceColorspace'),
+                targetColorspace,
+                colorconfig=self.option('colorConfig')
+            )
 
-                oiio.ImageBufAlgo.resize(
-                    outImageBuf,
-                    inputImageBuf,
-                    roi=outImageBuf.roi,
-                    nthreads=multiprocessing.cpu_count()
-                )
+        # trying to create the directory automatically in case
+        # it does not exist
+        try:
+            os.makedirs(os.path.dirname(targetFilePath))
+        except (IOError, OSError):
+            pass
 
-            # in case the convert to RGBA is enabled
-            if self.option('convertToRGBA') or self.option('convertToChannels'):
-                useChannels = []
-                requestedChannels = list(map(lambda x: str(x).upper(), ("R", "G", "B", "A") if self.option('convertToRGBA') else tuple(self.option('convertToChannels'))))
-                for channelname in inputImageBuf.spec().channelnames:
-                    if channelname.upper() in requestedChannels:
-                        useChannels.append(channelname)
+        # saving target output image
+        if not outImageBuf.write(targetFilePath):
+            raise ConvertImageTaskError(
+                outImageBuf.geterror()
+            )
 
-                if not useChannels and self.option('convertToChannelsFallbackToFirstChannel'):
-                    useChannels.append(inputImageBuf.spec().channelnames[0])
-
-                temporaryBuffer = oiio.ImageBuf()
-                oiio.ImageBufAlgo.channels(
-                    temporaryBuffer,
-                    outImageBuf,
-                    tuple(useChannels)
-                )
-                outImageBuf = temporaryBuffer
-
-            # changing colorspace
-            targetColorspace = self.templateOption('targetColorspace', element)
-            if targetColorspace:
-                oiio.ImageBufAlgo.colorconvert(
-                    outImageBuf,
-                    outImageBuf,
-                    self.templateOption('sourceColorspace', element),
-                    targetColorspace,
-                    colorconfig=self.templateOption('colorConfig', element)
-                )
-
-            # trying to create the directory automatically in case
-            # it does not exist
-            try:
-                os.makedirs(os.path.dirname(targetFilePath))
-            except (IOError, OSError):
-                pass
-
-            # saving target output image
-            if not outImageBuf.write(targetFilePath):
-                raise ConvertImageTaskError(
-                    outImageBuf.geterror()
-                )
-
-        # default result based on the target file path
-        return super(ConvertImageTask, self)._perform()
+        return FsElement.createFromPath(targetFilePath)
 
     def __aspectRatio(self, currentWidth, currentHeigth, newWidth, newHeight):
         """

@@ -16,6 +16,8 @@ class ChownTask(Task):
         self.setMetadata('dispatch.split', True)
         self.setOption('user', '')
         self.setOption('group', '')
+        self.setMetadata(f'task.options.user.template', True)
+        self.setMetadata(f'task.options.group.template', True)
 
     def _perform(self):
         """
@@ -27,8 +29,8 @@ class ChownTask(Task):
         alreadyDone = set()
         elements = self.elements()
 
-        user = self.templateOption('user', elements)
-        group = self.templateOption('group', elements)
+        user = self.option('user')
+        group = self.option('group')
         user = pwd.getpwnam(user).pw_uid
         group = grp.getgrnam(group).gr_gid
 
