@@ -49,6 +49,7 @@ class Task(object):
         self.__metadata = {}
         self.__taskType = taskType
         self.__options = OrderedDict()
+        self.__currentElement = None
 
     def type(self):
         """
@@ -142,7 +143,7 @@ class Task(object):
 
         return False
 
-    def option(self, name):
+    def option(self, name, element=None, extraVars={}):
         """
         Return a value for an option.
         """
@@ -153,29 +154,19 @@ class Task(object):
                 )
             )
 
+        # check if a template is defined for the given option (metadata lookup)
+        if self.metadata(f'task.options.{name}.template', False):
+            # when element is not provided, determine the default element
+            if element is None:
+                if self.__currentElement:
+                    element = self.__currentElement
+                elif self.elements():
+                    element = self.elements()[0]
+
+            if element:
+                return self.__templateOption(name, element, extraVars)
+
         return self.__options[name]
-
-    def templateOption(self, name, element=None, extraVars={}):
-        """
-        Return the resolved value of an option.
-        """
-        optionValue = self.option(name)
-
-        # 2d hashmap
-        if isinstance(optionValue, dict):
-            result = {}
-            for key, value in optionValue.items():
-                result[key] = self.__resolveTemplateValue(value, element, extraVars)
-            return result
-
-        # 2d array
-        elif isinstance(optionValue, (list, tuple)):
-            result = []
-            for value in optionValue:
-                result.append(self.__resolveTemplateValue(value, element, extraVars))
-            return result
-
-        return self.__resolveTemplateValue(optionValue, element, extraVars)
 
     def setOption(self, name, value):
         """
@@ -297,6 +288,17 @@ class Task(object):
 
         return clone
 
+    def validate(self, elements=None):
+        """
+        For re-implementation: should implement a check for the task.
+
+        This method is called right before performing the task. Also, it can be called by
+        user interfaces for validating user input (options).
+
+        In order to report a validation failure make sure to raise the exception TaskValidationError
+        with the message about the failure. Otherwise, in case of no failure then no result is needed.
+        """
+
     def toJson(self):
         """
         Serialize a task to json (it can be loaded later through createFromJson).
@@ -401,17 +403,6 @@ class Task(object):
             task.setMetadata('name', taskType)
         return task
 
-    def validate(self, elements=None):
-        """
-        For re-implementation: should implement a check for the task.
-
-        This method is called right before performing the task. Also, it can be called by
-        user interfaces for validating user input (options).
-
-        In order to report a validation failure make sure to raise the exception TaskValidationError
-        with the message about the failure. Otherwise, in case of no failure then no result is needed.
-        """
-
     @staticmethod
     def createFromJson(jsonContents):
         """
@@ -467,40 +458,40 @@ class Task(object):
 
         return task
 
-    def _perform(self):
-        """
-        To be overridden: This method should implement the task computation and return a list of processed elements.
-
-        The default implementation iterates over a list of elements, processing each element using the _processElement method.
-        By default, _processElement checks if the element has an associated target file path (provided by the template) and 
-        returns the corresponding file system element if available.
-
-        Derived classes should override _processElement to provide specific processing logic tailored to their needs.
-        """
-        result = []
-        for element in self.elements():
-            resultElement = self._processElement(element)
-            if resultElement:
-                result.append(resultElement)
-
-        return result
-
     def _processElement(self, element):
         """
         Process an individual element.
 
         This method is a placeholder and should be re-implemented by derived classes to define how each
         element is processed.
-        By default, it checks if the element has a valid target file path and creates a corresponding 
+        By default, it checks if the element has a valid target file path and creates a corresponding
         file system element. If the file path is not defined, it returns None instead.
 
-        Derived classes can override this method to implement custom processing logic, such as modifying
-        the element, applying specific transformations, or handling different element types.
+        Derived classes can override this method to implement custom processing logic.
         """
         targetPath = self.target(element)
         if targetPath:
             return FsElement.createFromPath(targetPath)
         return None
+
+    def _perform(self):
+        """
+        To be overridden: This method should implement the task computation and return a list of processed elements.
+
+        The default implementation iterates over a list of elements, processing each element using the _processElement method.
+        By default, _processElement checks if the element has an associated target file path (provided by the template) and
+        returns the corresponding file system element if available.
+
+        Derived classes should override _processElement to provide specific processing logic tailored to their needs.
+        """
+        result = []
+        for element in self.elements():
+            self.__currentElement = element
+            resultElement = self._processElement(element)
+            if resultElement:
+                result.append(resultElement)
+
+        return result
 
     def __optionElementLevels(self, data, currentPath):
         """
@@ -520,6 +511,28 @@ class Task(object):
             result.append(currentPath)
 
         return result
+
+    def __templateOption(self, name, element=None, extraVars={}):
+        """
+        Return the resolved value of an option.
+        """
+        optionValue = self.__options[name]
+
+        # 2d hashmap
+        if isinstance(optionValue, dict):
+            result = {}
+            for key, value in optionValue.items():
+                result[key] = self.__resolveTemplateValue(value, element, extraVars)
+            return result
+
+        # 2d array
+        elif isinstance(optionValue, (list, tuple)):
+            result = []
+            for value in optionValue:
+                result.append(self.__resolveTemplateValue(value, element, extraVars))
+            return result
+
+        return self.__resolveTemplateValue(optionValue, element, extraVars)
 
     def __resolveTemplateValue(self, value, element, extraVars):
         """
