@@ -83,6 +83,7 @@ class GafferLoadTask(Task):
         )
 
         self.setOption('version', allVersions[0] if allVersions else '')
+        self.setMetadata('task.options.version.template', True)
 
     def validate(self, elements=None):
         """
@@ -114,7 +115,7 @@ class GafferLoadTask(Task):
         scriptNode = GafferLoadTask.currentScriptNode()
         result = []
         for element in self.elements():
-            dataDirectory = os.path.join(element.var('outputDir'), element.var('outputType'), element.var('outputName'), self.templateOption('version', element), 'd')
+            dataDirectory = os.path.join(element.var('outputDir'), element.var('outputType'), element.var('outputName'), self.option('version', element), 'd')
             outputType = element.var('outputType')
 
             if outputType.endswith('box'):

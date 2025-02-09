@@ -75,6 +75,10 @@ class SlackOutputTask(ExternalTask):
             }
         )
 
+        # template options
+        for optionName in ('messageHeader', 'messageElements', 'addExtraLineAtTheEnd', 'slackToken', 'channel', 'users'):
+            self.setMetadata(f'task.options.{optionName}.template', True)
+
     def _perform(self):
         """
         Perform the task.
@@ -83,20 +87,20 @@ class SlackOutputTask(ExternalTask):
 
         content = []
         element = self.elements()[0]
-        header = self.templateOption('messageHeader', element)
+        header = self.option('messageHeader', element)
         if header:
             content.append(header)
 
-        if self.templateOption('messageElements', element):
+        if self.option('messageElements', element):
             content += list(map(lambda x: os.path.normpath(x.var('fullPath')).replace("\\", "/"), self.elements()))
 
-        if self.templateOption('addExtraLineAtTheEnd', element):
+        if self.option('addExtraLineAtTheEnd', element):
             content.append('')
 
-        client = slack.WebClient(token=self.templateOption('slackToken', element))
+        client = slack.WebClient(token=self.option('slackToken', element))
 
         # sending message to the channel
-        channel = self.templateOption('channel', element)
+        channel = self.option('channel', element)
         if channel:
             try:
                 client.chat_postMessage(
@@ -112,7 +116,7 @@ class SlackOutputTask(ExternalTask):
                 sys.stdout.flush()
 
         # sending slack messages
-        for user in self.templateOption('users', element):
+        for user in self.option('users', element):
             try:
                 client.chat_postMessage(
                     channel="@{}".format(user),

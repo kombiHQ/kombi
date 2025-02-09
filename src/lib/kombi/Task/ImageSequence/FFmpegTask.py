@@ -29,6 +29,10 @@ class FFmpegTask(Task):
         self.setOption('targetColorSpace', "bt709")
         self.setOption('frameRate', 23.976)
 
+        # template options
+        for optionName in ('width', 'height'):
+            self.setMetadata(f'task.options.{optionName}.template', True)
+
     def _perform(self):
         """
         Perform the task.
@@ -127,8 +131,8 @@ class FFmpegTask(Task):
             ),
             # resolution
             '-vf scale={0}:{1}'.format(
-                self.templateOption('width', element),
-                self.templateOption('height', element)
+                self.option('width', element),
+                self.option('height', element)
             ),
             # target mov file
             '-y "{0}"'.format(

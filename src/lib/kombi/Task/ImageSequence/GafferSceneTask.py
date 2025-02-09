@@ -38,7 +38,7 @@ class GafferSceneTask(GafferTask):
 
         # loading gaffer scene
         script = Gaffer.ScriptNode()
-        script['fileName'].setValue(self.templateOption('scene', elements[0]))
+        script['fileName'].setValue(self.option('scene', elements[0]))
         script.load()
 
         nodes = script.children(GafferDispatch.TaskNode)
@@ -62,7 +62,7 @@ class GafferSceneTask(GafferTask):
 
                         # resolving template if necessary
                         if isinstance(optionValue, str):
-                            optionValue = self.templateOption(optionName, element)
+                            optionValue = self.option(optionName, element)
 
                         # adding option to the context
                         context.set(optionName, optionValue)

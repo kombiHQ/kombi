@@ -191,14 +191,14 @@ class MayaRenderTask(MayaTask):
         for elementGroup in Element.group(self.elements()):
             startFrame = elementGroup[0]['settings']['s']
             endFrame = elementGroup[-1]['settings']['e']
-            sceneFilePath = self.templateOption("scene", elementGroup[0])
+            sceneFilePath = self.option("scene", elementGroup[0])
 
             # making sure the scene is defined
             assert len(sceneFilePath), "scene option cannot be empty!"
 
             # building final render settings
             finalRenderSettings = dict(elementGroup[0]['settings'])
-            for renderSettingName, renderSettingValue in self.templateOption('settings', elementGroup[0]).items():
+            for renderSettingName, renderSettingValue in self.option('settings', elementGroup[0]).items():
                 finalRenderSettings[renderSettingName] = renderSettingValue
 
             # registering callbacks

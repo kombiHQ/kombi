@@ -41,6 +41,10 @@ class FtrackPublishAssetVersionTask(ExternalTask):
             ]
         )
 
+        # template options
+        for optionName in ('user', 'department', 'outputType', 'comment'):
+            self.setMetadata(f'task.options.{optionName}.template', True)
+
     def _perform(self):
         """
         Perform the task.
@@ -48,10 +52,10 @@ class FtrackPublishAssetVersionTask(ExternalTask):
         import ftrack_api
 
         element = self.elements()[0]
-        user = self.templateOption('user', element)
-        department = self.templateOption('department', element).lower()
-        outputType = self.templateOption('outputType', element)
-        comment = self.templateOption('comment', element)
+        user = self.option('user')
+        department = self.option('department').lower()
+        outputType = self.option('outputType')
+        comment = self.option('comment')
 
         session = ftrack_api.Session(
             self.__ftrackUrl,

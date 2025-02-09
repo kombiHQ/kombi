@@ -1,6 +1,7 @@
 import os
 from ..Task import Task
 from ...Element.Fs.Image.OiioElement import OiioElement
+from ...Element.Fs import FsElement
 
 class UpdateImageMetadataTask(Task):
     """
@@ -21,80 +22,59 @@ class UpdateImageMetadataTask(Task):
 
         # option used to specify the metadata that should be added to the image.
         self.setOption('data', {})
+        self.setMetadata('task.options.data.template', True)
 
-    def _perform(self):
+    def _processElement(self, element):
         """
-        Perform the task.
+        Process an individual element.
         """
         import OpenImageIO as oiio
 
-        for element in self.elements():
-            targetFilePath = OiioElement.supportedString(
-                self.target(element)
-            )
+        targetFilePath = OiioElement.supportedString(
+            self.target(element)
+        )
 
-            # converting image using open image io
-            inputImageFilePath = OiioElement.supportedString(
-                element.var('filePath')
-            )
+        # converting image using open image io
+        inputImageFilePath = OiioElement.supportedString(
+            element.var('filePath')
+        )
 
-            # trying to create the directory automatically in case it does not exist
-            try:
-                os.makedirs(os.path.dirname(targetFilePath))
-            except OSError:
-                pass
+        # trying to create the directory automatically in case it does not exist
+        try:
+            os.makedirs(os.path.dirname(targetFilePath))
+        except OSError:
+            pass
 
-            # metadata
-            metadata = self.templateOption('data', element)
+        # metadata
+        metadata = self.option('data')
 
-            """
-            args = ''
-            for key, value in metadata.items():
-                args += ' --attrib "{}" "{}"'.format(
-                    str(key).replace('"', '\\"'),
-                    str(value).replace('"', '\\"')
-                )
+        imageInput = oiio.ImageInput.open(inputImageFilePath)
+        inputSpec = imageInput.spec()
 
-            # computing a mipmap version for the texture
-            subprocess.call(
-                '{} "{}" {} -o "{}"'.format(
-                    self.__maketxExecutable,
-                    inputImageFilePath,
-                    args,
-                    targetFilePath
-                ),
-                shell=True
-            )
-            """
+        self.updateMetadata(inputSpec, element, metadata)
 
-            imageInput = oiio.ImageInput.open(inputImageFilePath)
-            inputSpec = imageInput.spec()
+        # writing image with updated metadata
+        outImage = oiio.ImageOutput.create(targetFilePath)
 
-            self.updateMetadata(inputSpec, element, metadata)
+        # in case we are using an older version of oiio we need to
+        # provide an additional argument to the open
+        outImageOpenArgs = [
+            targetFilePath,
+            inputSpec
+        ]
+        if hasattr(oiio, 'ImageOutputOpenMode'):
+            outImageOpenArgs.append(oiio.ImageOutputOpenMode.Create)
 
-            # writing image with updated metadata
-            outImage = oiio.ImageOutput.create(targetFilePath)
+        outImage.open(
+            *outImageOpenArgs
+        )
 
-            # in case we are using an older version of oiio we need to
-            # provide an additional argument to the open
-            outImageOpenArgs = [
-                targetFilePath,
-                inputSpec
-            ]
-            if hasattr(oiio, 'ImageOutputOpenMode'):
-                outImageOpenArgs.append(oiio.ImageOutputOpenMode.Create)
+        if not outImage.copy_image(imageInput):
+            raise Exception(outImage.geterror())
 
-            outImage.open(
-                *outImageOpenArgs
-            )
+        outImage.close()
 
-            if not outImage.copy_image(imageInput):
-                raise Exception(outImage.geterror())
-
-            outImage.close()
-
-        # default result based on the target filePath
-        return super(UpdateImageMetadataTask, self)._perform()
+        return FsElement.createFromPath(targetFilePath)
 
     @classmethod
     def updateMetadata(cls, spec, element, metadata):

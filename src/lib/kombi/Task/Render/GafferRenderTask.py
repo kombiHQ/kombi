@@ -26,6 +26,10 @@ class GafferRenderTask(GafferTask):
         # the value used to switch to
         self.setOption('switchBeforeRender', {})
 
+        # template options
+        for optionName in ('scene', 'switchBeforeRender'):
+            self.setMetadata(f'task.options.{optionName}.template', True)
+
     @classmethod
     def toRenderElements(cls, gafferTask, script, startFrame=None, endFrame=None):
         """
@@ -79,11 +83,11 @@ class GafferRenderTask(GafferTask):
 
         # loading gaffer scene
         script = Gaffer.ScriptNode()
-        script['fileName'].setValue(self.templateOption('scene', elements[0]))
+        script['fileName'].setValue(self.option('scene'))
         script.load()
 
         # switching
-        for switchName, switchValue in self.templateOption('switchBeforeRender', elements[0]).items():
+        for switchName, switchValue in self.option('switchBeforeRender').items():
             sys.stdout.write('Switching {} to {}\n'.format(switchName, switchValue))
             sys.stdout.flush()
             script.getChild(str(switchName))['index'].setValue(int(switchValue))

@@ -1,6 +1,7 @@
 import os
 from ..Task import Task
 from ... import Element
+from ...Element.Fs import FsElement
 
 class FrameImageTask(Task):
     """
@@ -46,116 +47,119 @@ class FrameImageTask(Task):
         # aligned to the center.
         self.setOption('diagonalLayout', True)
 
+        # adding template support for all options
+        for optionName in self.optionNames():
+            self.setMetadata(f'task.options.{optionName}.template', True)
+
         self.setMetadata('dispatch.split', True)
 
-    def _perform(self):
+    def _processElement(self, element):
         """
-        Perform the task.
+        Process an individual element.
         """
         import OpenImageIO as oiio
 
-        for element in self.elements():
-            targetFilePath = self.target(element)
+        targetFilePath = self.target(element)
 
-            # opening source image
-            inputImageBuf = self.__toImageBuf(element.var('filePath'))
-            width = inputImageBuf.spec().width
+        # opening source image
+        inputImageBuf = self.__toImageBuf(element.var('filePath'))
+        width = inputImageBuf.spec().width
 
-            headerImageBuf = self.templateOption('headerFilePath', element) if int(self.templateOption('enableHeader', element)) else None
-            headerHeight = 0
-            if headerImageBuf:
-                headerImageBuf = self.__toImageBuf(headerImageBuf)
-                headerHeight = headerImageBuf.spec().height
-                width = max(width, headerImageBuf.spec().width)
+        headerImageBuf = self.option('headerFilePath') if int(self.option('enableHeader')) else None
+        headerHeight = 0
+        if headerImageBuf:
+            headerImageBuf = self.__toImageBuf(headerImageBuf)
+            headerHeight = headerImageBuf.spec().height
+            width = max(width, headerImageBuf.spec().width)
 
-            footerHeight = 0
-            footerImageBuf = self.templateOption('footerFilePath', element) if int(self.templateOption('enableFooter', element)) else None
-            if footerImageBuf:
-                footerImageBuf = self.__toImageBuf(footerImageBuf)
-                footerHeight = footerImageBuf.spec().height
-                width = max(width, footerImageBuf.spec().width)
+        footerHeight = 0
+        footerImageBuf = self.option('footerFilePath') if int(self.option('enableFooter')) else None
+        if footerImageBuf:
+            footerImageBuf = self.__toImageBuf(footerImageBuf)
+            footerHeight = footerImageBuf.spec().height
+            width = max(width, footerImageBuf.spec().width)
 
-            # output spec
-            outputSpec = oiio.ImageSpec(
-                width,
-                inputImageBuf.spec().height + headerHeight + footerHeight,
-                inputImageBuf.spec().nchannels,
-                inputImageBuf.spec().format
-            )
+        # output spec
+        outputSpec = oiio.ImageSpec(
+            width,
+            inputImageBuf.spec().height + headerHeight + footerHeight,
+            inputImageBuf.spec().nchannels,
+            inputImageBuf.spec().format
+        )
 
-            # output image buf
-            outputImageBuf = oiio.ImageBuf(
-                outputSpec
-            )
+        # output image buf
+        outputImageBuf = oiio.ImageBuf(
+            outputSpec
+        )
 
-            # background color
-            bgColor = self.__fromHexColor(self.templateOption('bgColor', element))
+        # background color
+        bgColor = self.__fromHexColor(self.option('bgColor'))
 
-            # filling background color
-            oiio.ImageBufAlgo.fill(outputImageBuf, bgColor)
+        # filling background color
+        oiio.ImageBufAlgo.fill(outputImageBuf, bgColor)
 
-            # header
-            if headerImageBuf:
-                oiio.ImageBufAlgo.paste(
-                    outputImageBuf,
-                    0 if int(self.templateOption('diagonalLayout', element)) else int((width - headerImageBuf.spec().width) / 2),
-                    0,
-                    0,
-                    0,
-                    headerImageBuf
-                )
-
-            # watermark
-            watermarkImage = self.templateOption('watermarkFilePath', element) if int(self.templateOption('enableWatermark', element)) else None
-            if watermarkImage:
-                inputImageBuf = self.__watermark(inputImageBuf, self.__toImageBuf(watermarkImage))
-
-            # content
+        # header
+        if headerImageBuf:
             oiio.ImageBufAlgo.paste(
                 outputImageBuf,
-                int((width - inputImageBuf.spec().width) / 2),
-                headerHeight,
+                0 if int(self.option('diagonalLayout')) else int((width - headerImageBuf.spec().width) / 2),
                 0,
                 0,
-                inputImageBuf
+                0,
+                headerImageBuf
             )
 
-            # footer
-            if footerImageBuf:
-                oiio.ImageBufAlgo.paste(
-                    outputImageBuf,
-                    width - footerImageBuf.spec().width if int(self.templateOption('diagonalLayout', element)) else int((width - footerImageBuf.spec().width) / 2),
-                    headerHeight + inputImageBuf.spec().height,
-                    0,
-                    0,
-                    footerImageBuf
-                )
+        # watermark
+        watermarkImage = self.option('watermarkFilePath') if int(self.option('enableWatermark')) else None
+        if watermarkImage:
+            inputImageBuf = self.__watermark(inputImageBuf, self.__toImageBuf(watermarkImage))
 
-            # burn-in text
-            burnin = self.templateOption('burnin', element)
-            if int(self.templateOption('enableBurnin', element)) and burnin['text']:
-                oiio.ImageBufAlgo.render_text(
-                    outputImageBuf,
-                    int(burnin['x']),
-                    int(burnin['y']),
-                    Element.Fs.Image.OiioElement.supportedString(burnin['text']),
-                    int(burnin['size']),
-                    Element.Fs.Image.OiioElement.supportedString(burnin['font']),
-                    self.__fromHexColor(burnin['color'])
-                )
+        # content
+        oiio.ImageBufAlgo.paste(
+            outputImageBuf,
+            int((width - inputImageBuf.spec().width) / 2),
+            headerHeight,
+            0,
+            0,
+            inputImageBuf
+        )
 
-            # making parent directories if necessary
-            try:
-                os.makedirs(os.path.dirname(targetFilePath))
-            except (IOError, OSError):
-                pass
-
-            # writing file
-            outputImageBuf.write(
-                targetFilePath
+        # footer
+        if footerImageBuf:
+            oiio.ImageBufAlgo.paste(
+                outputImageBuf,
+                width - footerImageBuf.spec().width if int(self.option('diagonalLayout')) else int((width - footerImageBuf.spec().width) / 2),
+                headerHeight + inputImageBuf.spec().height,
+                0,
+                0,
+                footerImageBuf
             )
 
-        return super(FrameImageTask, self)._perform()
+        # burn-in text
+        burnin = self.option('burnin')
+        if int(self.option('enableBurnin')) and burnin['text']:
+            oiio.ImageBufAlgo.render_text(
+                outputImageBuf,
+                int(burnin['x']),
+                int(burnin['y']),
+                Element.Fs.Image.OiioElement.supportedString(burnin['text']),
+                int(burnin['size']),
+                Element.Fs.Image.OiioElement.supportedString(burnin['font']),
+                self.__fromHexColor(burnin['color'])
+            )
+
+        # making parent directories if necessary
+        try:
+            os.makedirs(os.path.dirname(targetFilePath))
+        except (IOError, OSError):
+            pass
+
+        # writing file
+        outputImageBuf.write(
+            targetFilePath
+        )
+
+        return FsElement.createFromPath(targetFilePath)
 
     @classmethod
     def __watermark(cls, targetImageBuf, watermarkImageBuf):

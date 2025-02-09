@@ -31,7 +31,7 @@ class FileColorTransformationTask(OcioTask):
 
         for element in self.elements():
             # resolving the lut path
-            lut = self.templateOption('lut', element=element)
+            lut = self.option('lut', element=element)
 
             # adding color space transform
             groupTransform = ocio.GroupTransform()
