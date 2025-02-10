@@ -42,6 +42,7 @@ class DirectoryPathOptionVisual(OptionVisual):
             self.__editableWidget.setEditable(True)
 
         folderPicker = QtWidgets.QPushButton('Select Directory')
+        folderPicker.setFocusPolicy(QtCore.Qt.NoFocus)
         folderPicker.clicked.connect(self.__onPickerSelectDir)
         folderPicker.setIcon(Resource.icon('icons/folder.png'))
 

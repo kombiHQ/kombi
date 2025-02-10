@@ -1,4 +1,4 @@
-from Qt import QtWidgets, QtGui
+from Qt import QtWidgets, QtGui, QtCore
 from .OptionVisual import OptionVisual
 
 
@@ -31,6 +31,7 @@ class HexColorOptionVisual(OptionVisual):
         self.__currentColorFrame.setFixedWidth(30)
 
         changeColorButton = QtWidgets.QPushButton("Pick Color")
+        changeColorButton.setFocusPolicy(QtCore.Qt.NoFocus)
         changeColorButton.clicked.connect(self.__onOpenChangeColor)
 
         mainLayout.addWidget(self.__mainWidget)

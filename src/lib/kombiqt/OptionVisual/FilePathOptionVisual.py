@@ -42,6 +42,7 @@ class FilePathOptionVisual(OptionVisual):
             self.__editableWidget.setEditable(True)
 
         filePicker = QtWidgets.QPushButton('Select File')
+        filePicker.setFocusPolicy(QtCore.Qt.NoFocus)
         filePicker.clicked.connect(self.__onPickerSelectFile)
         filePicker.setIcon(Resource.icon('icons/elements/base.png'))
 
