@@ -1,5 +1,4 @@
 import os
-import pathlib
 import multiprocessing
 
 from ..Task import Task, TaskError
