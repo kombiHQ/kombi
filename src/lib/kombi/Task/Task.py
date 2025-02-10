@@ -230,6 +230,16 @@ class Task(object):
         """
         self.__elements.clear()
 
+    def setup(self, elements):
+        """
+        Prepares the task before it is presented in the UI.
+
+        This method is called by the UI prior to presenting the task. The provided
+        'elements' are the ones used to execute the task. It can be utilized to
+        initialize metadata, set default values, or configure options specific to
+        the task.
+        """
+
     def output(self, taskReporter=None):
         """
         Perform and result a list of elements created by task.

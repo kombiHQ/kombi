@@ -310,29 +310,25 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                         len(elementList)
                     )
 
-                # checking if task has the setup method
-                if hasattr(taskHolder.task(), 'setup') and \
-                        hasattr(taskHolder.task().setup, '__call__'):
+                try:
+                    taskHolder.task().setup(elementList)
+                except Exception as err:
+                    traceback.print_exc()
 
-                    try:
-                        taskHolder.task().setup(elementList)
-                    except Exception as err:
-                        traceback.print_exc()
-
-                        if not alreadyFailed:
-                            alreadyFailed = True
-                            self.__messageBox = QtWidgets.QMessageBox(
-                                self,
-                                "Task '{}' setup error".format(
-                                    taskHolder.task().type()
-                                ),
-                                QtWidgets.QMessageBox.Ok
-                            )
-                            self.__messageBox.setWindowModality(QtCore.Qt.NonModal)
-                            self.__messageBox.setIcon(QtWidgets.QMessageBox.Critical)
-                            self.__messageBox.setText(str(err))
-                            self.__messageBox.setDetailedText(str(err))
-                            self.__messageBox.show()
+                    if not alreadyFailed:
+                        alreadyFailed = True
+                        self.__messageBox = QtWidgets.QMessageBox(
+                            self,
+                            "Task '{}' setup error".format(
+                                taskHolder.task().type()
+                            ),
+                            QtWidgets.QMessageBox.Ok
+                        )
+                        self.__messageBox.setWindowModality(QtCore.Qt.NonModal)
+                        self.__messageBox.setIcon(QtWidgets.QMessageBox.Critical)
+                        self.__messageBox.setText(str(err))
+                        self.__messageBox.setDetailedText(str(err))
+                        self.__messageBox.show()
 
                 matchedChild = self.__createTask(
                     self,
