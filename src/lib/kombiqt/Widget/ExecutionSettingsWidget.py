@@ -8,9 +8,10 @@ from kombi.Element import Element
 from kombi.Task import Task, TaskValidationError
 from kombi.Template import Template
 from kombi.ProcessExecution import ProcessExecution
+from kombi.KombiError import KombiError
 from Qt import QtCore, QtWidgets
 
-class ExecutionSettingsWidgetError(Exception):
+class ExecutionSettingsWidgetError(KombiError):
     """
     Base exception for execution settings widget error.
     """

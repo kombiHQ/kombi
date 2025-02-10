@@ -1,7 +1,8 @@
 import os
 from collections import OrderedDict
+from .KombiError import KombiError
 
-class EnvModifierError(Exception):
+class EnvModifierError(KombiError):
     """Env modifier error."""
 
 class EnvModifierInvalidVarError(EnvModifierError):

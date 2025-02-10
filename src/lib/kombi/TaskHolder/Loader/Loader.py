@@ -2,8 +2,9 @@ import os
 import uuid
 import traceback
 from ..TaskHolder import TaskHolder
+from ...KombiError import KombiError
 
-class LoaderError(Exception):
+class LoaderError(KombiError):
     """Task Holder Loader Error."""
 
 class LoaderNotRegisteredError(LoaderError):

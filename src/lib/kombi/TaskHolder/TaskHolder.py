@@ -6,8 +6,9 @@ from ..Task import Task
 from ..TaskWrapper import TaskWrapper
 from ..Template import Template
 from ..Element import Element, Matcher
+from ..KombiError import KombiError
 
-class TaskHolderError(Exception):
+class TaskHolderError(KombiError):
     """Task holder error."""
 
 class TaskHolderInvalidVarNameError(TaskHolderError):

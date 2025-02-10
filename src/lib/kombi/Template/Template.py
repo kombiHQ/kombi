@@ -2,8 +2,9 @@ import re
 import os
 import uuid
 from ..Element import ElementInvalidVarError
+from ..KombiError import KombiError
 
-class TemplateError(Exception):
+class TemplateError(KombiError):
     """Template error."""
 
 class TemplateVarNotFoundError(TemplateError):

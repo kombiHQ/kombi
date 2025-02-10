@@ -8,8 +8,9 @@ from .Element.Fs.DirectoryElement import DirectoryElement
 from .Element import Element
 from .TaskHolder.Loader import Loader
 from .Dispatcher import Dispatcher
+from .KombiError import KombiError
 
-class CliError(Exception):
+class CliError(KombiError):
     """Cli Error."""
 
 class Cli(object):

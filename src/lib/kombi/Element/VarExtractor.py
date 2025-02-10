@@ -1,6 +1,7 @@
 from collections import OrderedDict
+from ..KombiError import KombiError
 
-class VarExtractorError(Exception):
+class VarExtractorError(KombiError):
     """
     Var Extractor Error.
     """

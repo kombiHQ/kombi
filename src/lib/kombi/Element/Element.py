@@ -3,8 +3,9 @@ import json
 import traceback
 from collections import OrderedDict
 from .VarExtractor import VarExtractor
+from ..KombiError import KombiError
 
-class ElementError(Exception):
+class ElementError(KombiError):
     """Element Error."""
 
 class ElementInvalidVarError(ElementError):
