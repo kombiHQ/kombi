@@ -101,7 +101,13 @@ class Element(object):
             self.setVar('fullPath', '/')
 
         self.setVar('name', name)
-        self.setTag('icon', 'icons/elements/base.png')
+
+        # setting icon
+        if self.isLeaf():
+            self.setTag('icon', 'icons/elements/base.png')
+        else:
+            self.setTag('icon', 'icons/elements/children.png')
+
         self.__globCache = {}
 
     def isLeaf(self):

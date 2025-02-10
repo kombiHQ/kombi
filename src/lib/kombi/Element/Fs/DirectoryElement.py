@@ -21,9 +21,6 @@ class DirectoryElement(FsElement):
         """
         super(DirectoryElement, self).__init__(*args, **kwargs)
 
-        # setting icon
-        self.setTag('icon', 'icons/elements/children.png')
-
         # in case the directory has a name "<width>x<height>" lets extract
         # this information and assign that to variables
         if re.match(self.__resolutionRegex, self.var('name')):
