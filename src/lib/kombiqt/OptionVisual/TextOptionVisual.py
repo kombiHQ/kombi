@@ -34,6 +34,7 @@ class TextOptionVisual(OptionVisual):
         self.setLayout(mainLayout)
 
         self.__mainWidget = QtWidgets.QLineEdit(str(self.optionValue()))
+        self.__mainWidget.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.__mainWidget.setReadOnly(self.uiHints().get('readOnly', False))
 
         if 'regex' in self.uiHints():

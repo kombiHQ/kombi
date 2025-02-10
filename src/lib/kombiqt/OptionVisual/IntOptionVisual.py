@@ -29,6 +29,7 @@ class IntOptionVisual(OptionVisual):
         mainLayout.addWidget(self.__mainWidget)
 
         self.__mainWidget.setValue(int(self.optionValue()))
+        self.__mainWidget.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.__mainWidget.editingFinished.connect(self.__onValueChanged)
 
         self.__sliderWidget = None
