@@ -4,8 +4,9 @@ import getpass
 from datetime import datetime
 from ..TaskHolder import TaskHolder
 from ..Task import Task
+from ..KombiError import KombiError
 
-class DispatcherError(Exception):
+class DispatcherError(KombiError):
     """Dispatcher Error."""
 
 class DispatcherInvalidOptionError(DispatcherError):

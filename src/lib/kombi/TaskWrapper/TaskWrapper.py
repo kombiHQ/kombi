@@ -1,6 +1,7 @@
 from ..Task import Task
+from ..KombiError import KombiError
 
-class TaskWrapperError(Exception):
+class TaskWrapperError(KombiError):
     """Task wrapper error."""
 
 class TaskWrapperTypeNotFoundError(TaskWrapperError):

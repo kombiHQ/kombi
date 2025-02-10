@@ -2,6 +2,7 @@ import sys
 from .ProcessExecution import ProcessExecution
 from .EnvModifier import EnvModifier, EnvModifierError, EnvModifierInvalidVarError, EnvModifierInvalidVarValueError
 from .Config import Config
+from .KombiError import KombiError
 from . import Element
 from . import Template
 from . import Task

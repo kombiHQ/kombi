@@ -3,8 +3,9 @@ import sys
 import traceback
 from glob import glob
 from collections import OrderedDict
+from .KombiError import KombiError
 
-class ResourceError(Exception):
+class ResourceError(KombiError):
     """Resource error."""
 
 class ResourceInvalidError(ResourceError):

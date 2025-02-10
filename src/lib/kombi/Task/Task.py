@@ -6,8 +6,9 @@ from ..Element.Fs import FsElement
 from ..Element import Element
 from ..Template import Template
 from ..TaskReporter import TaskReporter
+from ..KombiError import KombiError
 
-class TaskError(Exception):
+class TaskError(KombiError):
     """Task error."""
 
 class TaskTypeNotFoundError(TaskError):
