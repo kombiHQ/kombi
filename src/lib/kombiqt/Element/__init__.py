@@ -1,3 +1,3 @@
 from .ElementListWidget import ElementListWidget
 from .ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
-from .ImageElementViewer import ImageElementViewer
+from .ElementViewer import ElementViewer

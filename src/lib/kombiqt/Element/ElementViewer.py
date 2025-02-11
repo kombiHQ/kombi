@@ -97,7 +97,7 @@ class LoadImageThread(QtCore.QThread):
 
         self.loadedSignal.emit(self.__loadImageFilePath, resultImage, spec)
 
-class ImageElementViewer(QtWidgets.QLabel):
+class ElementViewer(QtWidgets.QLabel):
     """
     Basic image element widget.
     """
@@ -106,7 +106,7 @@ class ImageElementViewer(QtWidgets.QLabel):
         """
         Create an image element widget.
         """
-        super(ImageElementViewer, self).__init__()
+        super(ElementViewer, self).__init__()
         self.setMouseTracking(True)
 
         self.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
