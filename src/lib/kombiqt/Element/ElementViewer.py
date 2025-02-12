@@ -4,6 +4,7 @@ import subprocess
 from kombi.Element.Fs.Image.OiioElement import OiioElement
 from kombi.Element.Fs.Image import ImageElement
 from kombi.Element.Fs.Video import VideoElement
+from ..Resource import Resource
 from Qt import QtCore, QtGui, QtWidgets
 
 class LoadMediaThread(QtCore.QThread):
@@ -11,6 +12,7 @@ class LoadMediaThread(QtCore.QThread):
     Thread to load the file in background.
     """
     loadedSignal = QtCore.Signal(object, QtGui.QImage)
+    __elementCache = {}
     __ffmpegExecutable = os.environ.get('KOMBI_FFMPEG_EXECUTABLE', 'ffmpeg')
 
     def __init__(self, element=None):
@@ -33,16 +35,16 @@ class LoadMediaThread(QtCore.QThread):
         Implement the thread execution.
         """
         resultImage = QtGui.QImage()
+        if self.__element in self.__elementCache:
+            resultImage = self.__elementCache[self.__element]
+        else:
+            if isinstance(self.__element, ImageElement):
+                resultImage = self.__loadImage()
+            elif isinstance(self.__element, VideoElement):
+                resultImage = self.__loadMovie()
+            self.__elementCache[self.__element] = resultImage
 
-        if isinstance(self.__element, ImageElement):
-            resultImage = self.__loadImage()
-        elif isinstance(self.__element, VideoElement):
-            resultImage = self.__loadMovie()
-
-        if resultImage.isNull():
-            return
-
-        if self.__width is not None and self.__height is not None:
+        if not resultImage.isNull() and self.__width is not None and self.__height is not None:
             resultImage = resultImage.scaled(
                 self.__width,
                 self.__height,
@@ -147,6 +149,7 @@ class ElementViewer(QtWidgets.QLabel):
     """
     Basic element viewer widget.
     """
+    __loadingSize = 80
 
     def __init__(self, elements, showInfo=True, backgroundColor='#000000'):
         """
@@ -160,6 +163,14 @@ class ElementViewer(QtWidgets.QLabel):
 
         self.__loadMediaThread = LoadMediaThread()
         self.__loadMediaThread.loadedSignal.connect(self.__finishedLoad)
+        self.__loadingMovie = Resource.qmovie("icons/loading.gif")
+        loadingSize = QtCore.QSize(self.__loadingSize, self.__loadingSize)
+        self.__loadingMovie.setScaledSize(loadingSize)
+        self.__loadingIndicator = QtWidgets.QLabel()
+        self.__loadingIndicator.setMovie(self.__loadingMovie)
+        self.__loadingIndicator.resize(loadingSize)
+        self.__loadingIndicator.setVisible(False)
+
         self.__setShowInfo(showInfo)
 
         self.__slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
@@ -167,12 +178,12 @@ class ElementViewer(QtWidgets.QLabel):
         self.__slider.setTickInterval(1)
         self.__currentFileLabel = QtWidgets.QLabel()
         self.__currentFileLabel.setParent(self)
+        self.__loadingIndicator.setParent(self)
 
         self.__slider.valueChanged.connect(self.__onSliderChange)
         self.setStyleSheet('background-color: {}'.format(backgroundColor))
 
         self.setElements(elements)
-        self.__reset()
 
     def mouseMoveEvent(self, ev):
         """
@@ -198,6 +209,7 @@ class ElementViewer(QtWidgets.QLabel):
         """
         Set the elements that should be loaded.
         """
+        self.__reset()
         self.__elements = list(sorted(elements, key=lambda x: x.var('fullPath')))
         self.__update()
 
@@ -222,13 +234,22 @@ class ElementViewer(QtWidgets.QLabel):
         """
         self.setPixmap(QtGui.QPixmap())
         self.__currentFileLabel.setVisible(False)
+        self.__loadingIndicator.setVisible(False)
+        self.__loadingMovie.stop()
         self.__slider.setVisible(False)
 
     def __finishedLoad(self, element, qimage):
         """
         Slot called when the thread finishes loading the image.
         """
-        pixmap = QtGui.QPixmap.fromImage(qimage)
+        self.__loadingIndicator.setVisible(False)
+        self.__loadingMovie.stop()
+
+        if not qimage.isNull():
+            pixmap = QtGui.QPixmap.fromImage(qimage)
+        else:
+            pixmap = Resource.pixmap("icons/noPreviewAvailable.png")
+
         self.setPixmap(pixmap)
 
         self.__slider.setFixedWidth(self.pixmap().width())
@@ -251,6 +272,10 @@ class ElementViewer(QtWidgets.QLabel):
 
         element = self.__elements[value]
         self.__loadMediaThread.setElement(element, self.width(), self.height())
+        self.__loadingIndicator.setVisible(True)
+        self.__loadingIndicator.move((self.width() - self.__loadingSize) / 2, (self.height() - self.__loadingSize) / 2)
+
+        self.__loadingMovie.start()
         self.__loadMediaThread.start()
 
     def __setShowInfo(self, visible):
