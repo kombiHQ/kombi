@@ -1,4 +1,5 @@
 import os
+import platform
 import subprocess
 from kombi.Element.Fs.Image.OiioElement import OiioElement
 from kombi.Element.Fs.Image import ImageElement
@@ -60,10 +61,8 @@ class LoadMediaThread(QtCore.QThread):
             "quiet",
             "-i",
             self.__element.var('filePath'),
-            "-vf",
-            "select='eq(n,0)'",
-            "-vsync",
-            "vfr",
+            "-vframes",
+            "1",
             "-f",
             "image2pipe",
             "-vcodec",
@@ -71,7 +70,11 @@ class LoadMediaThread(QtCore.QThread):
             "-"
         ]
 
-        process = subprocess.Popen(ffmpegCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        extraArgs = {}
+        if platform.system().lower() == 'windows':
+            extraArgs['creationflags'] = subprocess.CREATE_NO_WINDOW
+
+        process = subprocess.Popen(ffmpegCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **extraArgs)
         stdout, _ = process.communicate()
 
         if process.returncode == 0:
