@@ -68,6 +68,23 @@ class Resource(object):
         if cls.__defaultFontSize.isdigit():
             dpi = QtWidgets.QApplication.primaryScreen().logicalDotsPerInch()
             return int(cls.__defaultFontSize) * dpi / 96
+        
+    @classmethod
+    def qmovie(cls, name):
+        """
+        Load and return a qmovie (animated gif) based on the input name.
+        """
+        if "qmovie" not in cls.__cache:
+            cls.__cache["qmovie"] = {}
+
+        if name not in cls.__cache["qmovie"]:
+            resourceLocation = os.path.join(cls.__resourcesLocation, name)
+            if not os.path.exists(resourceLocation):
+                resourceLocation = name
+
+            cls.__cache["qmovie"][name] = QtGui.QMovie(resourceLocation)
+
+        return cls.__cache["qmovie"][name]
 
     @classmethod
     def icon(cls, name):
