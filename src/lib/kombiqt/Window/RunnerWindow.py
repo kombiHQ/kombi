@@ -9,7 +9,7 @@ from kombi.Element.Fs import FsElement
 from ..Resource import Resource
 from ..Menu.TasksMenu import TasksMenu
 from ..Element import ElementListWidget
-from ..Element.ImageElementViewer import ImageElementViewer
+from ..Element.ElementViewer import ElementViewer
 from ..Element.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
 from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
@@ -344,13 +344,13 @@ class RunnerWindow(QtWidgets.QMainWindow):
         sourceBarLayout.addWidget(self.__elementsLevelNavigationWidget)
         sourceBarLayout.addWidget(self.__sourceRefreshButton)
 
-        # image viewer
-        self.__imageElementViewer = QtWidgets.QDockWidget("Preview")
-        self.__imageElementViewer.setMinimumWidth(300)
-        self.__imageElementViewer.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
+        # element viewer
+        self.__elementViewer = QtWidgets.QDockWidget("Viewer")
+        self.__elementViewer.setMinimumWidth(300)
+        self.__elementViewer.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
 
-        self.__imageElementViewer.setWidget(ImageElementViewer([]))
-        self.__imageElementViewer.setVisible(False)
+        self.__elementViewer.setWidget(ElementViewer([]))
+        self.__elementViewer.setVisible(False)
 
         imageViewerButton = QtWidgets.QPushButton()
         imageViewerButton.setToolTip('Toggles the display of the preview panel')
@@ -358,7 +358,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
             Resource.icon("icons/imageViewer.png")
         )
 
-        sourceControlMain.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.__imageElementViewer)
+        sourceControlMain.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.__elementViewer)
         sourceBarLayout.addWidget(imageViewerButton)
 
         imageViewerButton.clicked.connect(self.__onToggleImageViewer)
@@ -499,10 +499,10 @@ class RunnerWindow(QtWidgets.QMainWindow):
         if self.__splitter.orientation() == QtCore.Qt.Vertical:
             self.refreshExecutionSettings(elements)
 
-        if not (self.__imageElementViewer and self.__imageElementViewer.isVisible()):
+        if not (self.__elementViewer and self.__elementViewer.isVisible()):
             return
 
-        self.__imageElementViewer.widget().setElements(elements)
+        self.__elementViewer.widget().setElements(elements)
 
     def __onToggleScriptEditor(self):
         """
@@ -520,9 +520,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Slot triggered when the image preview button is pressed.
         """
-        self.__imageElementViewer.setVisible(not self.__imageElementViewer.isVisible() or forceVisibility)
+        self.__elementViewer.setVisible(not self.__elementViewer.isVisible() or forceVisibility)
 
-        if self.__imageElementViewer.isVisible() or forceVisibility:
+        if self.__elementViewer.isVisible() or forceVisibility:
             self.__onSourceTreeSelectionChanged()
 
     def __onBack(self):

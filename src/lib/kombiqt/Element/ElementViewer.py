@@ -1,25 +1,29 @@
 import os
+import subprocess
 from kombi.Element.Fs.Image.OiioElement import OiioElement
+from kombi.Element.Fs.Image import ImageElement
+from kombi.Element.Fs.Video import VideoElement
 from Qt import QtCore, QtGui, QtWidgets
 
-class LoadImageThread(QtCore.QThread):
+class LoadMediaThread(QtCore.QThread):
     """
-    Thread to load the image in background.
+    Thread to load the file in background.
     """
-    loadedSignal = QtCore.Signal(str, QtGui.QImage, object)
+    loadedSignal = QtCore.Signal(object, QtGui.QImage)
+    __ffmpegExecutable = os.environ.get('KOMBI_FFMPEG_EXECUTABLE', 'ffmpeg')
 
-    def __init__(self, loadImage=""):
+    def __init__(self, element=None):
         """
-        Create a LoadImageThread object.
+        Create a LoadMediaThread object.
         """
-        super(LoadImageThread, self).__init__()
-        self.setImageFullPath(loadImage)
+        super(LoadMediaThread, self).__init__()
+        self.setElement(element)
 
-    def setImageFullPath(self, image, width=None, height=None):
+    def setElement(self, element, width=None, height=None):
         """
-        Set the image full path that should be loaded by the thread.
+        Set the full path that should be loaded by the thread.
         """
-        self.__loadImageFilePath = image
+        self.__element = element
         self.__width = width
         self.__height = height
 
@@ -28,22 +32,72 @@ class LoadImageThread(QtCore.QThread):
         Implement the thread execution.
         """
         resultImage = QtGui.QImage()
-        spec = None
 
+        if isinstance(self.__element, ImageElement):
+            resultImage = self.__loadImage()
+        elif isinstance(self.__element, VideoElement):
+            resultImage = self.__loadMovie()
+
+        if resultImage.isNull():
+            return
+
+        if self.__width is not None and self.__height is not None:
+            resultImage = resultImage.scaled(
+                self.__width,
+                self.__height,
+                QtCore.Qt.KeepAspectRatio
+            )
+
+        self.loadedSignal.emit(self.__element, resultImage)
+
+    def __loadMovie(self):
+        """
+        Load a frame from the video.
+        """
+        ffmpegCommand = [
+            "ffmpeg",
+            "-v",
+            "quiet",
+            "-i",
+            self.__element.var('filePath'),
+            "-vf",
+            "select='eq(n,0)'",
+            "-vsync",
+            "vfr",
+            "-f",
+            "image2pipe",
+            "-vcodec",
+            "png",
+            "-"
+        ]
+
+        process = subprocess.Popen(ffmpegCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, _ = process.communicate()
+
+        if process.returncode == 0:
+            return QtGui.QImage.fromData(QtCore.QByteArray(stdout))
+
+        return QtGui.QImage()
+
+    def __loadImage(self):
+        """
+        Load an image.
+        """
+        resultImage = QtGui.QImage()
         try:
             import OpenImageIO as oiio
         except ImportError:
-            resultImage = QtGui.QImage(self.__loadImageFilePath)
+            resultImage = QtGui.QImage(self.__element.var('filePath'))
         else:
             # opening the source image to generate a resized image
             inputImageBuf = oiio.ImageBuf(
                 OiioElement.supportedString(
-                    self.__loadImageFilePath
+                    self.__element.var('filePath')
                 )
             )
 
             if not inputImageBuf or inputImageBuf.spec().width == 0:
-                self.loadedSignal.emit(self.__loadImageFilePath, resultImage, inputImageBuf.spec())
+                self.loadedSignal.emit(self.__element, resultImage, inputImageBuf.spec())
                 return
 
             inputSpec = inputImageBuf.spec()
@@ -73,7 +127,7 @@ class LoadImageThread(QtCore.QThread):
             )
             resizedImageBuf = temporaryBuffer
 
-            if os.path.splitext(self.__loadImageFilePath)[-1].lower() in (".exr", ".dpx"):
+            if self.__element.var('ext').lower() in ("exr", "dpx"):
                 oiio.ImageBufAlgo.colorconvert(resizedImageBuf, resizedImageBuf, "Linear", "sRGB")
 
             pixelData = resizedImageBuf.get_pixels(oiio.UINT8)
@@ -83,54 +137,43 @@ class LoadImageThread(QtCore.QThread):
                 inputSpec.height,
                 QtGui.QImage.Format_RGB888 if len(useRGB) else QtGui.QImage.Format_Grayscale8
             )
-            spec = inputImageBuf.spec()
 
-        if resultImage.isNull():
-            return
+        return resultImage
 
-        if self.__width is not None and self.__height is not None:
-            resultImage = resultImage.scaled(
-                self.__width,
-                self.__height,
-                QtCore.Qt.KeepAspectRatio
-            )
-
-        self.loadedSignal.emit(self.__loadImageFilePath, resultImage, spec)
-
-class ImageElementViewer(QtWidgets.QLabel):
+class ElementViewer(QtWidgets.QLabel):
     """
-    Basic image element widget.
+    Basic element viewer widget.
     """
 
-    def __init__(self, imageElements, showInfo=True, backgroundColor='#000000'):
+    def __init__(self, elements, showInfo=True, backgroundColor='#000000'):
         """
-        Create an image element widget.
+        Create an ElementViewer object.
         """
-        super(ImageElementViewer, self).__init__()
+        super(ElementViewer, self).__init__()
         self.setMouseTracking(True)
 
         self.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
         self.setAlignment(QtCore.Qt.AlignHCenter)
 
-        self.__loadImageThread = LoadImageThread()
-        self.__loadImageThread.loadedSignal.connect(self.__finishedLoad)
+        self.__loadMediaThread = LoadMediaThread()
+        self.__loadMediaThread.loadedSignal.connect(self.__finishedLoad)
         self.__setShowInfo(showInfo)
 
         self.__slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
         self.__slider.setParent(self)
         self.__slider.setTickInterval(1)
-        self.__currentFileLabel = QtWidgets.QPlainTextEdit()
+        self.__currentFileLabel = QtWidgets.QLabel()
         self.__currentFileLabel.setParent(self)
 
         self.__slider.valueChanged.connect(self.__onSliderChange)
-        self.setStyleSheet("background-color: {}".format(backgroundColor))
+        self.setStyleSheet('background-color: {}'.format(backgroundColor))
 
-        self.setElements(imageElements)
+        self.setElements(elements)
         self.__reset()
 
     def mouseMoveEvent(self, ev):
         """
-        Adjust the image sequence based on the mouse position.
+        Adjust the element sequence based on the mouse position.
         """
         self.__slider.setValue(
             QtWidgets.QStyle.sliderValueFromPosition(
@@ -148,16 +191,16 @@ class ImageElementViewer(QtWidgets.QLabel):
         self.__reset()
         self.__onSliderChange(self.__slider.value())
 
-    def setElements(self, imageElements):
+    def setElements(self, elements):
         """
         Set the elements that should be loaded.
         """
-        self.__imageElements = list(sorted(imageElements, key=lambda x: x.var('fullPath')))
+        self.__elements = list(sorted(elements, key=lambda x: x.var('fullPath')))
         self.__update()
 
     def showInfo(self):
         """
-        Return if the image information widget is visible.
+        Return if the element information widget is visible.
         """
         return self.__showInfo
 
@@ -165,8 +208,8 @@ class ImageElementViewer(QtWidgets.QLabel):
         """
         Update the slider information.
         """
-        if self.__imageElements:
-            self.__slider.setMaximum(len(self.__imageElements) - 1)
+        if self.__elements:
+            self.__slider.setMaximum(len(self.__elements) - 1)
             self.__slider.setValue(0)
             self.__onSliderChange(0)
 
@@ -178,7 +221,7 @@ class ImageElementViewer(QtWidgets.QLabel):
         self.__currentFileLabel.setVisible(False)
         self.__slider.setVisible(False)
 
-    def __finishedLoad(self, fullPath, qimage, spec):
+    def __finishedLoad(self, element, qimage):
         """
         Slot called when the thread finishes loading the image.
         """
@@ -189,47 +232,26 @@ class ImageElementViewer(QtWidgets.QLabel):
         self.__slider.move(0, self.pixmap().height() + 5)
         self.__currentFileLabel.setFixedWidth(self.pixmap().width())
 
-        if spec is not None:
-            textLines = [os.path.basename(fullPath)]
-            textLines.append("")
-            textLines.append("Spec:")
-            textLines.append("  Resolution: {} x {}".format(spec.width, spec.height))
-            textLines.append("  Format: {}".format(spec.format))
-            textLines.append("  Channels: {}".format(", ".join(spec.channelnames)))
-
-            metadata = []
-            for param in spec.extra_attribs:
-                metadata.append("  {}: {}".format(param.name, str(param.value)))
-
-            if metadata:
-                textLines.append("")
-                textLines.append("Metadata:")
-                textLines += metadata
-
-            self.__currentFileLabel.setPlainText('\n'.join(textLines))
-        self.__currentFileLabel.setReadOnly(True)
+        self.__currentFileLabel.setText(element.var('name'))
         self.__currentFileLabel.move(0, self.pixmap().height() + 20)
-        currentFileHeight = self.height() - self.__currentFileLabel.y()
-        if currentFileHeight > 0:
-            self.__currentFileLabel.setFixedHeight(currentFileHeight)
 
-        self.__slider.setVisible(len(self.__imageElements) > 1)
-        self.__currentFileLabel.setVisible(self.showInfo() and len(self.__imageElements))
+        self.__slider.setVisible(len(self.__elements) > 1)
+        self.__currentFileLabel.setVisible(self.showInfo() and len(self.__elements))
 
     def __onSliderChange(self, value):
         """
         Slot called when the slider is changed.
         """
-        if not self.__imageElements:
+        if not self.__elements:
             self.__reset()
             return
 
-        element = self.__imageElements[value]
-        self.__loadImageThread.setImageFullPath(element.var('fullPath'), self.width(), self.height())
-        self.__loadImageThread.start()
+        element = self.__elements[value]
+        self.__loadMediaThread.setElement(element, self.width(), self.height())
+        self.__loadMediaThread.start()
 
     def __setShowInfo(self, visible):
         """
-        Specify whether the text field displaying the image information should be visible
+        Specify whether the text field displaying the metadata information should be visible.
         """
         self.__showInfo = visible
