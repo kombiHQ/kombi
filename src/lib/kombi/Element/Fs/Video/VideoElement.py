@@ -20,6 +20,7 @@ class VideoElement(FileElement):
 
         # setting a video tag
         self.setTag('video', self.path().name)
+        self.setTag('previewFilePath', self.var('filePath'))
 
         # setting icon
         self.setTag('icon', 'icons/elements/video.png')

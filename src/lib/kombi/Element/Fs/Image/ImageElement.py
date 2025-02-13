@@ -15,6 +15,7 @@ class ImageElement(FileElement):
 
         # setting a image tag
         self.setVar('imageType', 'single')
+        self.setTag('previewFilePath', self.var('filePath'))
 
         # setting icon
         self.setTag('icon', 'icons/elements/image.png')
