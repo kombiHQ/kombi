@@ -55,12 +55,6 @@ class LoadMediaThread(QtCore.QThread):
 
         self.loadedSignal.emit(self.__element, resultImage)
 
-    def __elementFilePath(self):
-        """
-        Return the file path that should be loaded by the viewer.
-        """
-        return self.__element.tag('viewerFilePath', self.__element.var('filePath', None))
-
     def __loadMovie(self):
         """
         Load a frame from the video.
@@ -70,7 +64,7 @@ class LoadMediaThread(QtCore.QThread):
             "-v",
             "quiet",
             "-i",
-            self.__elementFilePath(),
+            self.__element.tag('previewFilePath'),
             "-vframes",
             "1",
             "-f",
@@ -100,12 +94,12 @@ class LoadMediaThread(QtCore.QThread):
         try:
             import OpenImageIO as oiio
         except ImportError:
-            resultImage = QtGui.QImage(self.__elementFilePath())
+            resultImage = QtGui.QImage(self.__element.tag('previewFilePath'))
         else:
             # opening the source image to generate a resized image
             inputImageBuf = oiio.ImageBuf(
                 OiioElement.supportedString(
-                    self.__elementFilePath()
+                    self.__element.tag('previewFilePath')
                 )
             )
 
@@ -182,6 +176,7 @@ class ElementViewer(QtWidgets.QLabel):
         self.__loadingIndicator.setVisible(False)
 
         self.__slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
+        self.__slider.setObjectName('viewer')
         self.__slider.setParent(self)
         self.__slider.setTickInterval(1)
         self.__loadingIndicator.setParent(self)
@@ -228,7 +223,7 @@ class ElementViewer(QtWidgets.QLabel):
 
         validElements = []
         for element in sorted(elements, key=lambda x: x.var('fullPath')):
-            if element.tag('viewerFilePath', element.var('filePath', None)):
+            if element.tag('previewFilePath', None):
                 validElements.append(element)
 
         self.__elements = validElements
@@ -269,7 +264,7 @@ class ElementViewer(QtWidgets.QLabel):
             pixmap = Resource.pixmap("icons/noPreviewAvailable.png")
 
         self.setPixmap(pixmap)
-        self.setToolTip(os.path.basename(element.tag('viewerFilePath', element.var('filePath', ''))))
+        self.setToolTip(os.path.basename(element.tag('previewFilePath', '')))
         self.__currentElement = element
 
         self.__slider.setFixedWidth(self.pixmap().width())
