@@ -4,6 +4,8 @@ import subprocess
 from kombi.Element.Fs.Image.OiioElement import OiioElement
 from kombi.Element.Fs.Image import ImageElement
 from kombi.Element.Fs.Video import VideoElement
+from kombi.Task.Desktop.LaunchWithDefaultApplicationTask import LaunchWithDefaultApplicationTask
+from kombi.Task import Task
 from ..Resource import Resource
 from Qt import QtCore, QtGui, QtWidgets
 
@@ -53,6 +55,12 @@ class LoadMediaThread(QtCore.QThread):
 
         self.loadedSignal.emit(self.__element, resultImage)
 
+    def __elementFilePath(self):
+        """
+        Return the file path that should be loaded by the viewer.
+        """
+        return self.__element.tag('viewerFilePath', self.__element.var('filePath', None))
+
     def __loadMovie(self):
         """
         Load a frame from the video.
@@ -62,7 +70,7 @@ class LoadMediaThread(QtCore.QThread):
             "-v",
             "quiet",
             "-i",
-            self.__element.var('filePath'),
+            self.__elementFilePath(),
             "-vframes",
             "1",
             "-f",
@@ -92,17 +100,17 @@ class LoadMediaThread(QtCore.QThread):
         try:
             import OpenImageIO as oiio
         except ImportError:
-            resultImage = QtGui.QImage(self.__element.var('filePath'))
+            resultImage = QtGui.QImage(self.__elementFilePath())
         else:
             # opening the source image to generate a resized image
             inputImageBuf = oiio.ImageBuf(
                 OiioElement.supportedString(
-                    self.__element.var('filePath')
+                    self.__elementFilePath()
                 )
             )
 
             if not inputImageBuf or inputImageBuf.spec().width == 0:
-                self.loadedSignal.emit(self.__element, resultImage, inputImageBuf.spec())
+                self.loadedSignal.emit(self.__element, resultImage)
                 return
 
             inputSpec = inputImageBuf.spec()
@@ -163,6 +171,7 @@ class ElementViewer(QtWidgets.QLabel):
 
         self.__loadMediaThread = LoadMediaThread()
         self.__loading = False
+        self.__currentElement = None
         self.__loadMediaThread.loadedSignal.connect(self.__finishedLoad)
         self.__loadingMovie = Resource.qmovie("icons/loading.gif")
         loadingSize = QtCore.QSize(self.__loadingSize, self.__loadingSize)
@@ -195,7 +204,16 @@ class ElementViewer(QtWidgets.QLabel):
             )
         )
 
-    def resizeEvent(self, _):
+    def mouseReleaseEvent(self, ev):
+        """
+        Triggered when the user has clicked on the viewer.
+        """
+        if ev.button() == QtCore.Qt.LeftButton:
+            task = Task.create('elementViewerLaunch')
+            task.add(self.__currentElement)
+            task.output()
+
+    def resizeEvent(self, event):
         """
         Reset the current display.
         """
@@ -207,23 +225,32 @@ class ElementViewer(QtWidgets.QLabel):
         Set the elements that should be loaded.
         """
         self.__reset()
-        self.__elements = list(sorted(elements, key=lambda x: x.var('fullPath')))
+
+        validElements = []
+        for element in sorted(elements, key=lambda x: x.var('fullPath')):
+            if element.tag('viewerFilePath', element.var('filePath', None)):
+                validElements.append(element)
+
+        self.__elements = validElements
         self.__update()
 
     def __update(self):
         """
         Update the slider information.
         """
+        self.setCursor(QtCore.Qt.ArrowCursor)
         if self.__elements:
             self.__slider.setMaximum(len(self.__elements) - 1)
             self.__slider.setValue(0)
             self.__onSliderChange(0)
+            self.setCursor(QtCore.Qt.PointingHandCursor)
 
     def __reset(self):
         """
         Invalid the current display.
         """
         self.setPixmap(QtGui.QPixmap())
+        self.__currentElement = None
         self.__loadingIndicator.setVisible(False)
         self.__loadingMovie.stop()
         self.__slider.setVisible(False)
@@ -242,7 +269,8 @@ class ElementViewer(QtWidgets.QLabel):
             pixmap = Resource.pixmap("icons/noPreviewAvailable.png")
 
         self.setPixmap(pixmap)
-        self.setToolTip(element.var('baseName'))
+        self.setToolTip(os.path.basename(element.tag('viewerFilePath', element.var('filePath', ''))))
+        self.__currentElement = element
 
         self.__slider.setFixedWidth(self.pixmap().width())
         self.__slider.move(0, self.pixmap().height() + 5)
@@ -269,9 +297,14 @@ class ElementViewer(QtWidgets.QLabel):
         self.__loadMediaThread.setElement(element, self.width(), self.height())
         self.__loadingIndicator.move((self.width() - self.__loadingSize) / 2, (self.height() - self.__loadingSize) / 2)
 
-        # in case the data is loaded under 400ms we don't even bother showing the
+        # in case the data is loaded under 250ms we don't even bother showing the
         # loading indicator
         self.__loading = True
-        QtCore.QTimer.singleShot(400, self.__showLoadingIndicator)
+        QtCore.QTimer.singleShot(250, self.__showLoadingIndicator)
 
         self.__loadMediaThread.start()
+
+
+# This is registered as a custom task, enabling you to override it with a
+# different task if you need a custom procedure or behavior.
+Task.register('elementViewerLaunch', LaunchWithDefaultApplicationTask)
