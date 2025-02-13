@@ -68,7 +68,7 @@ class Resource(object):
         if cls.__defaultFontSize.isdigit():
             dpi = QtWidgets.QApplication.primaryScreen().logicalDotsPerInch()
             return int(cls.__defaultFontSize) * dpi / 96
-        
+
     @classmethod
     def qmovie(cls, name):
         """
