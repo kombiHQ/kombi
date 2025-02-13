@@ -17,12 +17,25 @@ class LoadMediaThread(QtCore.QThread):
     __elementCache = {}
     __ffmpegExecutable = os.environ.get('KOMBI_FFMPEG_EXECUTABLE', 'ffmpeg')
 
-    def __init__(self, element=None):
+    def __init__(self, element=None, previewTag='previewFilePath'):
         """
         Create a LoadMediaThread object.
         """
         super(LoadMediaThread, self).__init__()
         self.setElement(element)
+        self.setPreviewTag(previewTag)
+
+    def setPreviewTag(self, tagName):
+        """
+        Sets the name of the tag that should be loaded.
+        """
+        self.__previewTag = tagName
+
+    def previewTag(self):
+        """
+        Return the name of the tag used to load the media.
+        """
+        return self.__previewTag
 
     def setElement(self, element, width=None, height=None):
         """
@@ -64,7 +77,7 @@ class LoadMediaThread(QtCore.QThread):
             "-v",
             "quiet",
             "-i",
-            self.__element.tag('previewFilePath'),
+            self.__element.tag(self.previewTag()),
             "-vframes",
             "1",
             "-f",
@@ -94,12 +107,12 @@ class LoadMediaThread(QtCore.QThread):
         try:
             import OpenImageIO as oiio
         except ImportError:
-            resultImage = QtGui.QImage(self.__element.tag('previewFilePath'))
+            resultImage = QtGui.QImage(self.__element.tag(self.previewTag()))
         else:
             # opening the source image to generate a resized image
             inputImageBuf = oiio.ImageBuf(
                 OiioElement.supportedString(
-                    self.__element.tag('previewFilePath')
+                    self.__element.tag(self.previewTag())
                 )
             )
 
@@ -149,11 +162,20 @@ class LoadMediaThread(QtCore.QThread):
 
 class ElementViewer(QtWidgets.QLabel):
     """
-    Basic element viewer widget.
+    This widget is designed to display Image and Movie element types.
+
+    It functions by detecting the preview tag associated with the element and
+    loading the corresponding content into the viewer for display.
     """
     __loadingSize = 80
 
-    def __init__(self, elements, backgroundColor='#000000', centerAlignment=True):
+    def __init__(
+        self,
+        elements,
+        previewTag='previewFilePath',
+        backgroundColor='#000000',
+        centerAlignment=True
+    ):
         """
         Create an ElementViewer object.
         """
@@ -184,7 +206,14 @@ class ElementViewer(QtWidgets.QLabel):
         self.__slider.valueChanged.connect(self.__onSliderChange)
         self.setStyleSheet('background-color: {}'.format(backgroundColor))
 
+        self.__setPreviewTag(previewTag)
         self.setElements(elements)
+
+    def previewTag(self):
+        """
+        Return the name of the tag used for preview.
+        """
+        return self.__previewTag
 
     def mouseMoveEvent(self, ev):
         """
@@ -264,7 +293,7 @@ class ElementViewer(QtWidgets.QLabel):
             pixmap = Resource.pixmap("icons/noPreviewAvailable.png")
 
         self.setPixmap(pixmap)
-        self.setToolTip(os.path.basename(element.tag('previewFilePath', '')))
+        self.setToolTip(os.path.basename(element.tag(self.previewTag(), '')))
         self.__currentElement = element
 
         self.__slider.setFixedWidth(self.pixmap().width())
@@ -296,7 +325,10 @@ class ElementViewer(QtWidgets.QLabel):
 
         element = self.__elements[value]
         self.__loadMediaThread.setElement(element, self.width(), self.height())
-        self.__loadingIndicator.move((self.width() - self.__loadingSize) / 2, (self.height() - self.__loadingSize) / 2)
+        self.__loadingIndicator.move(
+            int((self.width() - self.__loadingSize) / 2),
+            int((self.height() - self.__loadingSize) / 2)
+        )
 
         # in case the data is loaded under 250ms we don't even bother showing the
         # loading indicator
@@ -304,6 +336,12 @@ class ElementViewer(QtWidgets.QLabel):
         QtCore.QTimer.singleShot(250, self.__showLoadingIndicator)
 
         self.__loadMediaThread.start()
+
+    def __setPreviewTag(self, tagName):
+        """
+        Sets the name of the tag that should be used by the viewer.
+        """
+        self.__previewTag = tagName
 
 
 # This is registered as a custom task, enabling you to override it with a
