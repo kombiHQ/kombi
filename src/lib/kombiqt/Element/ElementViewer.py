@@ -58,7 +58,7 @@ class LoadMediaThread(QtCore.QThread):
         Load a frame from the video.
         """
         ffmpegCommand = [
-            "ffmpeg",
+            self.__ffmpegExecutable,
             "-v",
             "quiet",
             "-i",
@@ -162,6 +162,7 @@ class ElementViewer(QtWidgets.QLabel):
         self.setAlignment(QtCore.Qt.AlignHCenter)
 
         self.__loadMediaThread = LoadMediaThread()
+        self.__loading = False
         self.__loadMediaThread.loadedSignal.connect(self.__finishedLoad)
         self.__loadingMovie = Resource.qmovie("icons/loading.gif")
         loadingSize = QtCore.QSize(self.__loadingSize, self.__loadingSize)
@@ -176,8 +177,6 @@ class ElementViewer(QtWidgets.QLabel):
         self.__slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
         self.__slider.setParent(self)
         self.__slider.setTickInterval(1)
-        self.__currentFileLabel = QtWidgets.QLabel()
-        self.__currentFileLabel.setParent(self)
         self.__loadingIndicator.setParent(self)
 
         self.__slider.valueChanged.connect(self.__onSliderChange)
@@ -233,7 +232,6 @@ class ElementViewer(QtWidgets.QLabel):
         Invalid the current display.
         """
         self.setPixmap(QtGui.QPixmap())
-        self.__currentFileLabel.setVisible(False)
         self.__loadingIndicator.setVisible(False)
         self.__loadingMovie.stop()
         self.__slider.setVisible(False)
@@ -242,6 +240,7 @@ class ElementViewer(QtWidgets.QLabel):
         """
         Slot called when the thread finishes loading the image.
         """
+        self.__loading = False
         self.__loadingIndicator.setVisible(False)
         self.__loadingMovie.stop()
 
@@ -251,16 +250,20 @@ class ElementViewer(QtWidgets.QLabel):
             pixmap = Resource.pixmap("icons/noPreviewAvailable.png")
 
         self.setPixmap(pixmap)
+        self.setToolTip(element.var('baseName'))
 
         self.__slider.setFixedWidth(self.pixmap().width())
         self.__slider.move(0, self.pixmap().height() + 5)
-        self.__currentFileLabel.setFixedWidth(self.pixmap().width())
-
-        self.__currentFileLabel.setText(element.var('name'))
-        self.__currentFileLabel.move(0, self.pixmap().height() + 20)
-
         self.__slider.setVisible(len(self.__elements) > 1)
-        self.__currentFileLabel.setVisible(self.showInfo() and len(self.__elements))
+
+    def __showLoadingIndicator(self):
+        """
+        Triggered after a few ms to display the loading indicator in case the element has not being loaded yet.
+        """
+        if not self.__loading:
+            return
+        self.__loadingMovie.start()
+        self.__loadingIndicator.setVisible(True)
 
     def __onSliderChange(self, value):
         """
@@ -272,10 +275,13 @@ class ElementViewer(QtWidgets.QLabel):
 
         element = self.__elements[value]
         self.__loadMediaThread.setElement(element, self.width(), self.height())
-        self.__loadingIndicator.setVisible(True)
         self.__loadingIndicator.move((self.width() - self.__loadingSize) / 2, (self.height() - self.__loadingSize) / 2)
 
-        self.__loadingMovie.start()
+        # in case the data is loaded under 250ms we don't even bother showing the
+        # loading indicator
+        self.__loading = True
+        QtCore.QTimer.singleShot(250, self.__showLoadingIndicator)
+
         self.__loadMediaThread.start()
 
     def __setShowInfo(self, visible):
