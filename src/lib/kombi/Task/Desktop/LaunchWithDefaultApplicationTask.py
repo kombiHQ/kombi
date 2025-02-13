@@ -48,10 +48,10 @@ class LaunchWithDefaultApplicationTask(Task):
             os.startfile(filePath)
         # macOS
         elif system == "darwin":
-            subprocess.run(["open", file_path])
+            subprocess.run(["open", filePath])
         # Linux
         else:
-            subprocess.run(["xdg-open", file_path])
+            subprocess.run(["xdg-open", filePath])
 
         return element
 
