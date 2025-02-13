@@ -1,1 +1,2 @@
 from .RevealInFileManagerTask import RevealInFileManagerTask
+from .LaunchWithDefaultApplicationTask import LaunchWithDefaultApplicationTask
