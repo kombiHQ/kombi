@@ -10,14 +10,14 @@ class MovElement(VideoElement):
 
     __ffprobeExecutable = os.environ.get('KOMBI_FFPROBE_EXECUTABLE', 'ffprobe')
 
-    def var(self, name):
+    def var(self, name, *args, **kwargs):
         """
         Return var value using lazy loading implementation for firstFrame and lastFrame.
         """
         if self.__ffprobeExecutable and name in ('firstFrame', 'lastFrame', 'duration', 'durationTs') and name not in self.varNames():
             self.__lazyInfo()
 
-        return super(MovElement, self).var(name)
+        return super(MovElement, self).var(name, *args, **kwargs)
 
     @classmethod
     def test(cls, path, parentElement):

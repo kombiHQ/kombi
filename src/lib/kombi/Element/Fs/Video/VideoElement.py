@@ -24,14 +24,14 @@ class VideoElement(FileElement):
         # setting icon
         self.setTag('icon', 'icons/elements/video.png')
 
-    def var(self, name):
+    def var(self, name, *args, **kwargs):
         """
         Return var value using lazy loading implementation for width and height.
         """
         if self.__ffprobeExecutable and name in ('width', 'height') and name not in self.varNames():
             self.__computeWidthHeight()
 
-        return super(VideoElement, self).var(name)
+        return super(VideoElement, self).var(name, *args, **kwargs)
 
     def __computeWidthHeight(self):
         """

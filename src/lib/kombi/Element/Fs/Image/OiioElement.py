@@ -32,7 +32,7 @@ class OiioElement(ImageElement):
         'oiiotool'
     )
 
-    def var(self, name):
+    def var(self, name, *args, **kwargs):
         """
         Return var value using lazy loading implementation for width and height.
         """
@@ -59,7 +59,7 @@ class OiioElement(ImageElement):
             else:
                 self.__computeWidthHeight()
 
-        return super(OiioElement, self).var(name)
+        return super(OiioElement, self).var(name, *args, **kwargs)
 
     @classmethod
     def supportedString(cls, text):
