@@ -151,7 +151,7 @@ class ElementViewer(QtWidgets.QLabel):
     """
     __loadingSize = 80
 
-    def __init__(self, elements, showInfo=True, backgroundColor='#000000'):
+    def __init__(self, elements, backgroundColor='#000000'):
         """
         Create an ElementViewer object.
         """
@@ -171,8 +171,6 @@ class ElementViewer(QtWidgets.QLabel):
         self.__loadingIndicator.setMovie(self.__loadingMovie)
         self.__loadingIndicator.resize(loadingSize)
         self.__loadingIndicator.setVisible(False)
-
-        self.__setShowInfo(showInfo)
 
         self.__slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
         self.__slider.setParent(self)
@@ -211,12 +209,6 @@ class ElementViewer(QtWidgets.QLabel):
         self.__reset()
         self.__elements = list(sorted(elements, key=lambda x: x.var('fullPath')))
         self.__update()
-
-    def showInfo(self):
-        """
-        Return if the element information widget is visible.
-        """
-        return self.__showInfo
 
     def __update(self):
         """
@@ -283,9 +275,3 @@ class ElementViewer(QtWidgets.QLabel):
         QtCore.QTimer.singleShot(400, self.__showLoadingIndicator)
 
         self.__loadMediaThread.start()
-
-    def __setShowInfo(self, visible):
-        """
-        Specify whether the text field displaying the metadata information should be visible.
-        """
-        self.__showInfo = visible
