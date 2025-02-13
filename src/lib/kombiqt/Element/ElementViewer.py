@@ -278,6 +278,7 @@ class ElementViewer(QtWidgets.QLabel):
         self.__loadingIndicator.setVisible(False)
         self.__loadingMovie.stop()
         self.__slider.setVisible(False)
+        self.setPixmap(Resource.pixmap("icons/noPreviewAvailable.png"))
 
     def __finishedLoad(self, element, qimage):
         """
