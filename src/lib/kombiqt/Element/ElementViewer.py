@@ -277,10 +277,10 @@ class ElementViewer(QtWidgets.QLabel):
         self.__loadMediaThread.setElement(element, self.width(), self.height())
         self.__loadingIndicator.move((self.width() - self.__loadingSize) / 2, (self.height() - self.__loadingSize) / 2)
 
-        # in case the data is loaded under 250ms we don't even bother showing the
+        # in case the data is loaded under 400ms we don't even bother showing the
         # loading indicator
         self.__loading = True
-        QtCore.QTimer.singleShot(250, self.__showLoadingIndicator)
+        QtCore.QTimer.singleShot(400, self.__showLoadingIndicator)
 
         self.__loadMediaThread.start()
 
