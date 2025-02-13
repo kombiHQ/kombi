@@ -349,7 +349,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__elementViewer.setMinimumWidth(300)
         self.__elementViewer.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
 
-        self.__elementViewer.setWidget(ElementViewer([]))
+        self.__elementViewer.setWidget(ElementViewer([], centerAlignment=False))
         self.__elementViewer.setVisible(False)
 
         imageViewerButton = QtWidgets.QPushButton()

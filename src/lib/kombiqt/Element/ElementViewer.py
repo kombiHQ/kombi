@@ -159,7 +159,7 @@ class ElementViewer(QtWidgets.QLabel):
     """
     __loadingSize = 80
 
-    def __init__(self, elements, backgroundColor='#000000'):
+    def __init__(self, elements, backgroundColor='#000000', centerAlignment=True):
         """
         Create an ElementViewer object.
         """
@@ -167,7 +167,7 @@ class ElementViewer(QtWidgets.QLabel):
         self.setMouseTracking(True)
 
         self.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
-        self.setAlignment(QtCore.Qt.AlignHCenter)
+        self.setAlignment(QtCore.Qt.AlignCenter if centerAlignment else QtCore.Qt.AlignHCenter)
 
         self.__loadMediaThread = LoadMediaThread()
         self.__loading = False
@@ -273,7 +273,13 @@ class ElementViewer(QtWidgets.QLabel):
         self.__currentElement = element
 
         self.__slider.setFixedWidth(self.pixmap().width())
-        self.__slider.move(0, self.pixmap().height() + 5)
+
+        height = self.pixmap().height()
+        if self.alignment() == QtCore.Qt.AlignCenter:
+            height /= 2
+            height += self.height() / 2
+
+        self.__slider.move(0, int(height) - 10)
         self.__slider.setVisible(len(self.__elements) > 1)
 
     def __showLoadingIndicator(self):
