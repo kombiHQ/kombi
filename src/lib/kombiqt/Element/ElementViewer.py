@@ -24,6 +24,7 @@ class LoadMediaThread(QtCore.QThread):
         super(LoadMediaThread, self).__init__()
         self.setElement(element)
         self.setPreviewTag(previewTag)
+        self.__abort = False
 
     def setPreviewTag(self, tagName):
         """
@@ -66,7 +67,8 @@ class LoadMediaThread(QtCore.QThread):
                 QtCore.Qt.KeepAspectRatio
             )
 
-        self.loadedSignal.emit(self.__element, resultImage)
+        if not self.__abort:
+            self.loadedSignal.emit(self.__element, resultImage)
 
     def __loadMovie(self):
         """
@@ -159,6 +161,22 @@ class LoadMediaThread(QtCore.QThread):
             )
 
         return resultImage
+
+    def __del__(self):
+        """
+        We need to wait for the thread to be finished before destroying it.
+        """
+        self.__abort = True
+        try:
+            if self.isRunning():
+                self.quit()
+                self.wait()
+
+        # We intentionally ignore any runtime errors that may occur at this point, as
+        # they could be caused by the internal C++ object already being deleted. For example:
+        # RuntimeError: Internal C++ object (LoadMediaThread) has already been deleted.
+        except RuntimeError:
+            pass
 
 class ElementViewer(QtWidgets.QLabel):
     """
