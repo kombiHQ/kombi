@@ -101,14 +101,14 @@ class RunTaskHoldersWidget(QtWidgets.QWidget):
         taskHolder = self.taskHolders()[0]
         self.__selectedDispatcher = DispatcherListWidget()
         self.__selectedDispatcher.selectDispatcher(self.defaultDispatcherName())
-        if '__uiHintDispatcher' in taskHolder.varNames():
-            self.__selectedDispatcher.selectDispatcher(taskHolder.var('__uiHintDispatcher'))
+        if '__uiHintDispatcher' in taskHolder.tagNames():
+            self.__selectedDispatcher.selectDispatcher(taskHolder.tag('__uiHintDispatcher'))
 
         self.__mainLayout.addWidget(self.__executionSettingsWidget)
 
         runButton = QtWidgets.QPushButton('Execute')
-        if '__uiHintExecuteButtonLabel' in taskHolder.varNames():
-            runButton.setText(taskHolder.var('__uiHintExecuteButtonLabel'))
+        if '__uiHintExecuteButtonLabel' in taskHolder.tagNames():
+            runButton.setText(taskHolder.tag('__uiHintExecuteButtonLabel'))
 
         runButton.setFocusPolicy(QtCore.Qt.NoFocus)
         runButton.setToolTip('Performs the task')
