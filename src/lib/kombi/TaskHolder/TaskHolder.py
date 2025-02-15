@@ -91,6 +91,7 @@ class TaskHolder(object):
             )
         self.__setTaskWrapper(taskWrapper)
         self.__vars = {}
+        self.__tags = {}
 
     def setRegroupTag(self, groupTagName):
         """
@@ -127,6 +128,40 @@ class TaskHolder(object):
         Return the status for the task holder.
         """
         return self.__status
+
+    def addTag(self, name, value):
+        """
+        Add a tag to the task holder.
+        """
+        self.__tags[name] = value
+
+    def hasTag(self, name):
+        """
+        Return a boolean telling if the input tag is defined.
+        """
+        return name in self.tagNames()
+
+    def tagNames(self):
+        """
+        Return a list of tag names.
+        """
+        return self.__tags.keys()
+
+    def tag(self, name, defaultValue=__sentinelValue):
+        """
+        Return the value for tag.
+        """
+        if name not in self.__tags:
+            if defaultValue is self.__sentinelValue:
+                raise TaskHolderInvalidVarNameError(
+                    'Invalid tag name "{0}'.format(
+                        name
+                    )
+                )
+            else:
+                return defaultValue
+
+        return self.__tags[name]
 
     def addVar(self, name, value, isContextVar=False):
         """
@@ -275,6 +310,18 @@ class TaskHolder(object):
             if addTaskHolderVars:
                 # cloning element so we can modify it safely
                 element = element.clone()
+
+                for tagName in self.tagNames():
+
+                    # in case the tag has already been
+                    # defined in the element we skip it
+                    if tagName in element.tagNames():
+                        continue
+
+                    element.setTag(
+                        tagName,
+                        self.tag(tagName)
+                    )
 
                 for varName in self.varNames():
 
@@ -462,6 +509,10 @@ class TaskHolder(object):
         for varName in taskHolder.varNames():
             taskHolderVars[varName] = taskHolder.var(varName)
 
+        taskHolderTags = {}
+        for tagName in taskHolder.tagNames():
+            taskHolderTags[tagName] = taskHolder.tag(tagName)
+
         output = {
             'template': {
                 'target': targetTemplate,
@@ -470,6 +521,7 @@ class TaskHolder(object):
                 'import': importTemplates
             },
             'vars': taskHolderVars,
+            'tags': taskHolderTags,
             'status': taskHolder.status(),
             'contextVarNames': taskHolder.contextVarNames(),
             'regroupTag': taskHolder.regroupTag(),
@@ -524,6 +576,13 @@ class TaskHolder(object):
                 varName,
                 varValue,
                 varName in contextVarNames
+            )
+
+        # adding tags
+        for tagName, tagValue in taskHolderContents['tags'].items():
+            taskHolder.addVar(
+                tagName,
+                tagValue
             )
 
         # adding sub task holders
