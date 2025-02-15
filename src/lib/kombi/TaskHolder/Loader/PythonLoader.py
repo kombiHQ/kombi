@@ -24,14 +24,13 @@ class PythonLoader(Loader):
             "*/*.py"
           ],
           "vars": {
-            "prefix": "/tmp/test",
+            "prefix": "/tmp/test"
+          },
+          "tags": {
             "__uiHintSourceColumns": [
                 "shot",
                 "type"
             ]
-          },
-          "tags": {
-            "__uiHintIconSize": 32
           },
           "elements": {
             "myCustomElementType < png": "{job:3}_{shot:3}_{seq:3}_{plateName}_{vendorVersion:3i}.####.png"
@@ -118,6 +117,7 @@ class PythonLoader(Loader):
         if 'tasks' not in contents:
             return
 
+        tags = self.__parseTags(contents)
         contextVars = dict(list(contextVars.items()) + list(self.__parseVars(contents).items()))
 
         # task holders checking
@@ -166,8 +166,8 @@ class PythonLoader(Loader):
                 taskHolder.setStatus(taskHolderInfo['status'])
 
             # adding tags to the task holder
-            for tagName, tagValue in self.__parseTags(taskHolderInfo).items():
-                taskHolder.addVar(
+            for tagName, tagValue in list(tags.items()) + list(self.__parseTags(taskHolderInfo).items()):
+                taskHolder.addTag(
                     tagName,
                     tagValue
                 )

@@ -14,6 +14,9 @@ class TaskHolderError(KombiError):
 class TaskHolderInvalidVarNameError(TaskHolderError):
     """Task holder invalid var name error."""
 
+class TaskHolderInvalidTagNameError(TaskHolderError):
+    """Task holder invalid tag name error."""
+
 class _TaskHolderSentinelValue:
     """Task holder sentinel value."""
 
@@ -153,7 +156,7 @@ class TaskHolder(object):
         """
         if name not in self.__tags:
             if defaultValue is self.__sentinelValue:
-                raise TaskHolderInvalidVarNameError(
+                raise TaskHolderInvalidTagNameError(
                     'Invalid tag name "{0}'.format(
                         name
                     )
@@ -580,7 +583,7 @@ class TaskHolder(object):
 
         # adding tags
         for tagName, tagValue in taskHolderContents['tags'].items():
-            taskHolder.addVar(
+            taskHolder.addTag(
                 tagName,
                 tagValue
             )
