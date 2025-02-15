@@ -289,13 +289,14 @@ class ElementViewer(QtWidgets.QLabel):
 
     def __reset(self):
         """
-        Invalid the current display.
+        Reset the display.
         """
         self.setPixmap(QtGui.QPixmap())
         self.__currentElement = None
         self.__loadingIndicator.setVisible(False)
         self.__loadingMovie.stop()
         self.__slider.setVisible(False)
+        self.setToolTip('')
         self.setPixmap(Resource.pixmap("icons/noPreviewAvailable.png"))
 
     def __finishedLoad(self, element, qimage):
