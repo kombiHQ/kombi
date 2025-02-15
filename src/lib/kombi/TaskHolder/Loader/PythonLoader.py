@@ -30,6 +30,9 @@ class PythonLoader(Loader):
                 "type"
             ]
           },
+          "tags": {
+            "__uiHintIconSize": 32
+          },
           "elements": {
             "myCustomElementType < png": "{job:3}_{shot:3}_{seq:3}_{plateName}_{vendorVersion:3i}.####.png"
           },
@@ -161,6 +164,13 @@ class PythonLoader(Loader):
             # setting status of the task holder
             if 'status' in taskHolderInfo:
                 taskHolder.setStatus(taskHolderInfo['status'])
+
+            # adding tags to the task holder
+            for tagName, tagValue in self.__parseTags(taskHolderInfo).items():
+                taskHolder.addVar(
+                    tagName,
+                    tagValue
+                )
 
             # adding variables to the task holder
             for varName, varValue in list(contextVars.items()) + list(self.__parseVars(taskHolderInfo).items()):
@@ -314,6 +324,20 @@ class PythonLoader(Loader):
                 task.setMetadata(taskMetadataName, taskMetadataValue)
 
         return task
+
+    @classmethod
+    def __parseTags(cls, contents):
+        """
+        Return the tags defined inside of the contents.
+        """
+        result = {}
+        if 'tags' in contents:
+            # tags checking
+            if not isinstance(contents['tags'], dict):
+                raise PythonLoaderContentError('Expecting a dict of tags!')
+            result = dict(contents['tags'])
+
+        return result
 
     @classmethod
     def __parseVars(cls, contents):
