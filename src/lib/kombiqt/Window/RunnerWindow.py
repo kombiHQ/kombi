@@ -156,7 +156,7 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__backButton.setVisible(self.__splitter.orientation() == QtCore.Qt.Horizontal)
         self.__executeButton.setVisible(True)
 
-        if self.__taskHolders and self.__taskHolders[0].var('__uiHintBottomExecutionSettings', None):
+        if self.__taskHolders and self.__taskHolders[0].tag('__uiHintBottomExecutionSettings', None):
             if not checkedElements and self.__rootElements:
                 checkedElements = [self.__rootElements[-1]]
             self.__executionSettings.refresh(checkedElements, [self.__taskHolders[0]])
@@ -230,37 +230,37 @@ class RunnerWindow(QtWidgets.QMainWindow):
         self.__executionSettingsEmptyMessageLabel.setVisible(False)
         self.__elementListWidget.setup(self.__taskHolders)
         for taskHolder in self.__taskHolders:
-            if '__uiHintCloseAfterExecution' in taskHolder.varNames():
-                self.__closeAfterExecution = taskHolder.var('__uiHintCloseAfterExecution')
+            if '__uiHintCloseAfterExecution' in taskHolder.tagNames():
+                self.__closeAfterExecution = taskHolder.tag('__uiHintCloseAfterExecution')
 
-            if '__uiHintShowPreview' in taskHolder.varNames() and taskHolder.var('__uiHintShowPreview'):
+            if '__uiHintShowPreview' in taskHolder.tagNames() and taskHolder.tag('__uiHintShowPreview'):
                 self.__onToggleImageViewer(True)
 
-            if '__uiHintTitle' in taskHolder.varNames():
+            if '__uiHintTitle' in taskHolder.tagNames():
                 self.__logo.setTextFormat(QtCore.Qt.RichText)
-                self.__logo.setText("<b><big><big> {}".format(taskHolder.var('__uiHintTitle')))
+                self.__logo.setText("<b><big><big> {}".format(taskHolder.tag('__uiHintTitle')))
 
-            if '__uiHintDispatcher' in taskHolder.varNames():
-                self.__selectedDispatcher.selectDispatcher(taskHolder.var('__uiHintDispatcher'))
+            if '__uiHintDispatcher' in taskHolder.tagNames():
+                self.__selectedDispatcher.selectDispatcher(taskHolder.tag('__uiHintDispatcher'))
 
-            if '__uiHintFilterDefaultTypes' in taskHolder.varNames():
-                filterDefaultTypes = taskHolder.var('__uiHintFilterDefaultTypes')
+            if '__uiHintFilterDefaultTypes' in taskHolder.tagNames():
+                filterDefaultTypes = taskHolder.tag('__uiHintFilterDefaultTypes')
 
-            if '__uiHintGlobRecursively' in taskHolder.varNames():
-                self.__uiHintGlobRecursively = taskHolder.var('__uiHintGlobRecursively')
+            if '__uiHintGlobRecursively' in taskHolder.tagNames():
+                self.__uiHintGlobRecursively = taskHolder.tag('__uiHintGlobRecursively')
 
-            if '__uiHintBottomExecutionSettings' in taskHolder.varNames() and taskHolder.var('__uiHintBottomExecutionSettings'):
+            if '__uiHintBottomExecutionSettings' in taskHolder.tagNames() and taskHolder.tag('__uiHintBottomExecutionSettings'):
                 self.__splitter.setOrientation(QtCore.Qt.Vertical)
                 self.__executionSettingsAreaWidget.setVisible(True)
-                if '__uiHintBottomExecutionSettingsEmptyMessage' in taskHolder.varNames():
-                    self.__executionSettingsEmptyMessageLabel.setText(taskHolder.var('__uiHintBottomExecutionSettingsEmptyMessage'))
+                if '__uiHintBottomExecutionSettingsEmptyMessage' in taskHolder.tagNames():
+                    self.__executionSettingsEmptyMessageLabel.setText(taskHolder.tag('__uiHintBottomExecutionSettingsEmptyMessage'))
                 self.refreshExecutionSettings()
 
-            elif '__uiHintSkipSourceStep' in taskHolder.varNames():
-                skipSourceStep = taskHolder.var('__uiHintSkipSourceStep')
+            elif '__uiHintSkipSourceStep' in taskHolder.tagNames():
+                skipSourceStep = taskHolder.tag('__uiHintSkipSourceStep')
 
-            if '__uiHintExecuteButtonLabel' in taskHolder.varNames():
-                self.__executeButton.setText(taskHolder.var('__uiHintExecuteButtonLabel'))
+            if '__uiHintExecuteButtonLabel' in taskHolder.tagNames():
+                self.__executeButton.setText(taskHolder.tag('__uiHintExecuteButtonLabel'))
 
             # if there is a task holder that does not have any type specified to it, then we display all elements by
             # passing an empty list to the filter
@@ -429,8 +429,8 @@ class RunnerWindow(QtWidgets.QMainWindow):
             self.__logo.setText(self.__customHeader)
         else:
             logoFilePath = "icons/header.png"
-            if '__uiHintLogo' in self.__taskHolders[0].varNames() and self.__taskHolders[0].var('__uiHintLogo'):
-                logoFilePath = self.__taskHolders[0].var('__uiHintLogo')
+            if '__uiHintLogo' in self.__taskHolders[0].tagNames() and self.__taskHolders[0].tag('__uiHintLogo'):
+                logoFilePath = self.__taskHolders[0].tag('__uiHintLogo')
                 if not os.path.isabs(logoFilePath):
                     logoFilePath = os.path.realpath(os.path.join(self.__taskHolders[0].var('configDirectory'), logoFilePath))
 

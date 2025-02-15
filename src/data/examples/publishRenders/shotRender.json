@@ -4,7 +4,9 @@
   ],
   "vars": {
     "prefix": "/tmp",
-    "job": "RND",
+    "job": "RND"
+  },
+  "tags": {
     "__uiHintSourceColumns": [
       "shot",
       "step",

@@ -49,7 +49,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
         self.setIconSize(QtCore.QSize(32, 32))
         self.__taskHolders = []
-        self.__uiHintSourceColumns = []
+        self.__columns = []
 
         self.__viewMode = 'group'
 
@@ -119,15 +119,15 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
         if taskHolders:
             for taskHolder in self.__taskHolders:
-                if '__uiHintIconSize' in taskHolder.varNames():
-                    iconSize = taskHolder.var('__uiHintIconSize')
+                if '__uiHintIconSize' in taskHolder.tagNames():
+                    iconSize = taskHolder.tag('__uiHintIconSize')
                     self.setIconSize(QtCore.QSize(iconSize, iconSize))
 
-                if '__uiHintCheckedByDefault' in taskHolder.varNames():
-                    self.setCheckableState(taskHolder.var('__uiHintCheckedByDefault'))
+                if '__uiHintCheckedByDefault' in taskHolder.tagNames():
+                    self.setCheckableState(taskHolder.tag('__uiHintCheckedByDefault'))
 
-                if 'configDirectory' in taskHolder.varNames():
-                    configDirectory = taskHolder.var('configDirectory')
+                if 'configDirectory' in taskHolder.tagNames():
+                    configDirectory = taskHolder.tag('configDirectory')
                     configSignature = hashlib.md5(configDirectory.encode()).hexdigest()
                     self.__overridesConfig = Config(configSignature, 'taskOverrides')
                     self.__overridesConfig.setValue('configDirectory', configDirectory, serialize=False)
@@ -385,8 +385,8 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         """
         # updating columns
         columns = []
-        for taskHolder in filter(lambda x: '__uiHintSourceColumns' in x.varNames(), taskHolders):
-            for columnName in filter(lambda x: x not in columns, taskHolder.var('__uiHintSourceColumns')):
+        for taskHolder in filter(lambda x: '__uiHintSourceColumns' in x.tagNames(), taskHolders):
+            for columnName in filter(lambda x: x not in columns, taskHolder.tag('__uiHintSourceColumns')):
                 columns.append(columnName)
 
         # fix-me: workaround necessary to avoid the bug of not showing
@@ -394,10 +394,10 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         if not len(columns):
             columns.append(' ')
 
-        if columns != self.__uiHintSourceColumns:
-            self.__uiHintSourceColumns = columns
+        if columns != self.__columns:
+            self.__columns = columns
             header = QtWidgets.QTreeWidgetItem(
-                [''] + list(map(lambda x: Template.runProcedure('camelcasetospaced', x), self.__uiHintSourceColumns))
+                [''] + list(map(lambda x: Template.runProcedure('camelcasetospaced', x), self.__columns))
             )
 
             self.setHeaderItem(
@@ -472,7 +472,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
             overrides = self.__overridesConfig.value('overrides')
 
         # adding column information
-        for index, column in enumerate(self.__uiHintSourceColumns):
+        for index, column in enumerate(self.__columns):
 
             hasOverride = False
             value = ''
@@ -606,7 +606,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
                 continue
 
             selectedColumn = selectedIndex.column()
-            columnName = self.__uiHintSourceColumns[selectedColumn - 1]
+            columnName = self.__columns[selectedColumn - 1]
 
             selectedElements.update(elements)
             columnNames.add(columnName)
@@ -645,7 +645,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
                 continue
 
             selectedColumn = selectedIndex.column()
-            columnName = self.__uiHintSourceColumns[selectedColumn - 1]
+            columnName = self.__columns[selectedColumn - 1]
 
             hintValue = ""
             fileChooserName = '{}.fileChooserOnOverride'.format(columnName)

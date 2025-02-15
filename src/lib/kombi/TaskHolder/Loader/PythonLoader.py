@@ -24,7 +24,9 @@ class PythonLoader(Loader):
             "*/*.py"
           ],
           "vars": {
-            "prefix": "/tmp/test",
+            "prefix": "/tmp/test"
+          },
+          "tags": {
             "__uiHintSourceColumns": [
                 "shot",
                 "type"
@@ -115,6 +117,7 @@ class PythonLoader(Loader):
         if 'tasks' not in contents:
             return
 
+        tags = self.__parseTags(contents)
         contextVars = dict(list(contextVars.items()) + list(self.__parseVars(contents).items()))
 
         # task holders checking
@@ -161,6 +164,13 @@ class PythonLoader(Loader):
             # setting status of the task holder
             if 'status' in taskHolderInfo:
                 taskHolder.setStatus(taskHolderInfo['status'])
+
+            # adding tags to the task holder
+            for tagName, tagValue in list(tags.items()) + list(self.__parseTags(taskHolderInfo).items()):
+                taskHolder.addTag(
+                    tagName,
+                    tagValue
+                )
 
             # adding variables to the task holder
             for varName, varValue in list(contextVars.items()) + list(self.__parseVars(taskHolderInfo).items()):
@@ -314,6 +324,20 @@ class PythonLoader(Loader):
                 task.setMetadata(taskMetadataName, taskMetadataValue)
 
         return task
+
+    @classmethod
+    def __parseTags(cls, contents):
+        """
+        Return the tags defined inside of the contents.
+        """
+        result = {}
+        if 'tags' in contents:
+            # tags checking
+            if not isinstance(contents['tags'], dict):
+                raise PythonLoaderContentError('Expecting a dict of tags!')
+            result = dict(contents['tags'])
+
+        return result
 
     @classmethod
     def __parseVars(cls, contents):

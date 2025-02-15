@@ -2,6 +2,9 @@
 scripts:
 - "*/*.py"
 vars:
+  prefix: "/tmp"
+tags:
+  __uiHintBottomExecutionSettingsEmptyMessage: "Select valid element"
   __uiHintShowDispatchedMessage: false
   __uiHintBottomExecutionSettings: false
   __uiHintSourceColumns:
@@ -10,11 +13,11 @@ vars:
   - job
   - seq
   - shot
-  prefix: "/tmp"
-  __uiHintBottomExecutionSettingsEmptyMessage: "Select valid element"
 tasks:
+- run: launchWithDefaultApplication
 - run: convertImage
   options:
+    preview: ""
     date: "1950-01-22"
     hexcolor: "#049f73"
     filePathPicker: ""
@@ -61,8 +64,14 @@ tasks:
       - True
       - "Testing4"
   metadata:
+    task.options.preview:
+      template: True
     ui:
       options:
+        preview:
+          main: True
+          visual: "element"
+          preview: True
         filePathPicker:
           main: True
           visual: "filePath"
@@ -85,6 +94,7 @@ tasks:
           main: True
           min: 0.0
           max: 1.0
+          rebuildOnChange: True
         floatNoRange:
           main: True
           width: 300

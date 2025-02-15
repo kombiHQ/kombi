@@ -3,8 +3,10 @@
     "*/*.py"
   ],
   "vars": {
-    "__uiHintSourceColumns": ["frame"],
     "prefix": "/tmp"
+  },
+  "tags": {
+    "__uiHintSourceColumns": ["frame"]
   },
   "tasks": [
     {
