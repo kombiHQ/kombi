@@ -126,8 +126,8 @@ class ElementListWidget(QtWidgets.QTreeWidget):
                 if 'uiHintCheckedByDefault' in taskHolder.tagNames():
                     self.setCheckableState(taskHolder.tag('uiHintCheckedByDefault'))
 
-                if 'configDirectory' in taskHolder.tagNames():
-                    configDirectory = taskHolder.tag('configDirectory')
+                if 'configDirectory' in taskHolder.varNames():
+                    configDirectory = taskHolder.var('configDirectory')
                     configSignature = hashlib.md5(configDirectory.encode()).hexdigest()
                     self.__overridesConfig = Config(configSignature, 'taskOverrides')
                     self.__overridesConfig.setValue('configDirectory', configDirectory, serialize=False)
