@@ -46,7 +46,7 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
         navigationLayout.setSpacing(2)
 
         for element in self.__elements:
-            elementNavigationButton = _LevelPushButton(element.var('name'))
+            elementNavigationButton = _LevelPushButton(element.tag('label'))
             elementNavigationButton.setFlat(True)
             elementNavigationButton.clicked.connect(functools.partial(self.__onNavigationClicked, element))
             elementNavigationButton.contextMenu.connect(functools.partial(self.__onNavigationContextMenu, element))

@@ -8,7 +8,7 @@ from kombi.Element import ElementContext
 from kombi.Element.Fs import FsElement
 from ..Resource import Resource
 from ..Menu.TasksMenu import TasksMenu
-from ..Element import ElementListWidget
+from ..Element import ElementListWidget, ElementsTreeWidgetItem
 from ..Element.ElementViewer import ElementViewer
 from ..Element.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
 from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget
@@ -115,7 +115,11 @@ class RunnerWindow(QtWidgets.QMainWindow):
             baseName = os.path.basename(fullPath)
             for index in range(self.__elementListWidget.topLevelItemCount()):
                 item = self.__elementListWidget.topLevelItem(index)
-                for element in item.elements:
+
+                if not isinstance(item, ElementsTreeWidgetItem):
+                    continue
+
+                for element in item.elements():
                     if element.var('name') != baseName:
                         continue
                     self.__elementListWidget.setCurrentItem(item, 0)
@@ -540,9 +544,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
         """
         Slot triggered when an item is double clicked on the element list.
         """
-        if not item.elements[0].isLeaf():
-            self.__rootElements.append(item.elements[0])
-            self.setRootElement(item.elements[0])
+        if isinstance(item, ElementsTreeWidgetItem) and not item.elements()[0].isLeaf():
+            self.__rootElements.append(item.elements()[0])
+            self.setRootElement(item.elements()[0])
 
     def __onSelectSourceDir(self):
         """

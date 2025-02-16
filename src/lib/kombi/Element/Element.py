@@ -102,6 +102,7 @@ class Element(object):
             self.setVar('fullPath', '/')
 
         self.setVar('name', name)
+        self.setTag('label', name)
 
         # setting icon
         if self.isLeaf():

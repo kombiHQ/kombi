@@ -223,7 +223,7 @@ class DeadlineDispatcher(RenderfarmDispatcher):
 
             taskLabel = "{} {}".format(
                 taskLabel,
-                task.elements()[0].var('name')
+                task.elements()[0].tag('label')
             )
 
             args += [

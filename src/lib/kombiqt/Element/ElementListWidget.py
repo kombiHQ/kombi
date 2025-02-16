@@ -12,6 +12,7 @@ from ..Widget.ComboBoxInputDialog import ComboBoxInputDialog
 from ..Resource import Resource
 from Qt import QtWidgets, QtGui, QtCore
 
+
 class ElementListWidget(QtWidgets.QTreeWidget):
     """
     Widget used to list elements.
@@ -174,15 +175,15 @@ class ElementListWidget(QtWidgets.QTreeWidget):
             item = self.topLevelItem(i)
 
             # collections
-            if not hasattr(item, 'elements'):
+            if not isinstance(item, ElementsTreeWidgetItem):
                 for childIndex in range(item.childCount()):
                     childItem = item.child(childIndex)
-                    if childItem.checkState(0) and hasattr(childItem, 'elements'):
-                        result.extend(childItem.elements)
+                    if childItem.checkState(0) and isinstance(childItem, ElementsTreeWidgetItem):
+                        result.extend(childItem.elements())
 
             # root items
-            elif item.checkState(0) and hasattr(item, 'elements'):
-                result.extend(item.elements)
+            elif item.checkState(0) and isinstance(item, ElementsTreeWidgetItem):
+                result.extend(item.elements())
 
         result = list(map(lambda x: x.clone(), result))
         if applyOverrides:
@@ -198,8 +199,8 @@ class ElementListWidget(QtWidgets.QTreeWidget):
             selectedItem = self.itemFromIndex(selectedIndex)
 
             elements = []
-            if hasattr(selectedItem, 'elements'):
-                elements = selectedItem.elements[:]
+            if isinstance(selectedItem, ElementsTreeWidgetItem):
+                elements = selectedItem.elements()[:]
             if not elements:
                 continue
 
@@ -221,15 +222,15 @@ class ElementListWidget(QtWidgets.QTreeWidget):
             item = self.topLevelItem(i)
 
             # collections
-            if not hasattr(item, 'elements'):
+            if not isinstance(item, ElementsTreeWidgetItem):
                 for childIndex in range(item.childCount()):
                     childItem = item.child(childIndex)
-                    if hasattr(childItem, 'elements'):
-                        result.extend(childItem.elements)
+                    if isinstance(childItem, ElementsTreeWidgetItem):
+                        result.extend(childItem.elements())
 
             # root items
-            elif hasattr(item, 'elements'):
-                result.extend(item.elements)
+            elif isinstance(item, ElementsTreeWidgetItem):
+                result.extend(item.elements())
 
         result = list(map(lambda x: x.clone(), result))
         if applyOverrides:
@@ -254,9 +255,9 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
             for groupName in groupedElements.keys():
                 if groupName:
-                    parent = QtWidgets.QTreeWidgetItem(self)
+                    parent = ElementsTreeWidgetItem(self)
                     self.__updateIcon(parent, groupedElements[groupName][0])
-                    parent.elements = list(groupedElements[groupName])
+                    parent.setElements(list(groupedElements[groupName]))
 
                     # visible data
                     visibleGroupName = groupName + '   '
@@ -408,18 +409,18 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         """
         Create a new child item in the tree.
         """
-        child = QtWidgets.QTreeWidgetItem(parent)
-        child.elements = [element]
+        child = ElementsTreeWidgetItem(parent)
+        child.setElements([element])
         self.__updateIcon(child, element)
 
         # visible data
-        child.setData(0, QtCore.Qt.EditRole, element.var('name') + '   ')
+        child.setData(0, QtCore.Qt.EditRole, element.tag('label') + '   ')
         self.__addSourceTreeColumnData(element, child)
 
         elementTypes.add(element.var('type'))
 
         if self.__showVars:
-            variables = QtWidgets.QTreeWidgetItem(child)
+            variables = ElementsTreeWidgetItem(child)
             variables.setData(
                 0,
                 QtCore.Qt.EditRole,
@@ -437,7 +438,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
                 )
 
         if self.__showTags:
-            tags = QtWidgets.QTreeWidgetItem(child)
+            tags = ElementsTreeWidgetItem(child)
             tags.setData(
                 0,
                 QtCore.Qt.EditRole,
@@ -600,8 +601,8 @@ class ElementListWidget(QtWidgets.QTreeWidget):
             selectedItem = self.itemFromIndex(selectedIndex)
 
             elements = []
-            if hasattr(selectedItem, 'elements'):
-                elements = selectedItem.elements[:]
+            if isinstance(selectedItem, ElementsTreeWidgetItem):
+                elements = selectedItem.elements()[:]
             if not elements:
                 continue
 
@@ -639,8 +640,8 @@ class ElementListWidget(QtWidgets.QTreeWidget):
             selectedItem = self.itemFromIndex(selectedIndex)
 
             elements = []
-            if hasattr(selectedItem, 'elements'):
-                elements = selectedItem.elements[:]
+            if isinstance(selectedItem, ElementsTreeWidgetItem):
+                elements = selectedItem.elements()[:]
             if not elements:
                 continue
 
@@ -693,7 +694,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
                         value = QtWidgets.QFileDialog.getOpenFileName(
                             self,
                             "Select a file to override: {}".format(
-                                elements[0].var('name')
+                                elements[0].tag('label')
                             ),
                             self.__overridePreviousSelectedLocation,
                             ext
@@ -795,7 +796,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         for selectedIndex in self.selectionModel().selectedIndexes():
             selectedItem = self.itemFromIndex(selectedIndex)
 
-            if hasattr(selectedItem, 'elements'):
+            if isinstance(selectedItem, ElementsTreeWidgetItem):
                 selectedItem.setCheckState(0, currentItem.checkState(0))
 
         self.__ignoreCheckedEvents = False
@@ -804,7 +805,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         """
         Slot triggered when the column button is clicked.
         """
-        elements = treeItemWeakRef().elements
+        elements = treeItemWeakRef().elements()
 
         # executing callable
         refresh = False
@@ -843,3 +844,26 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         Slot triggered to restore the vertical scrollbar position.
         """
         self.verticalScrollBar().setSliderPosition(self.__verticalSourceScrollBarLatestPos)
+
+class ElementsTreeWidgetItem(QtWidgets.QTreeWidgetItem):
+    """
+    Tree widget item implementation that supports elements.
+    """
+    def __init__(self, *args, **kwargs):
+        """
+        Create an ElementsTreeWidgetItem object.
+        """
+        super().__init__(*args, **kwargs)
+        self.setElements([])
+
+    def setElements(self, elements):
+        """
+        Set the elements associated with the item.
+        """
+        self.__elements = elements
+
+    def elements(self):
+        """
+        Return the elements associated with the item.
+        """
+        return self.__elements

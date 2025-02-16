@@ -189,7 +189,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 # default label
                 label = "{}/{} [{}]".format(
                     os.path.basename(taskHolder.var('configDirectory', '')) or taskHolder.task().type(),
-                    elementsGroup[0].tag('group') if 'group' in elementsGroup[0].tagNames() else elementsGroup[0].var('name'),
+                    elementsGroup[0].tag('group') if 'group' in elementsGroup[0].tagNames() else elementsGroup[0].tag('label'),
                     datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 )
 
@@ -303,7 +303,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
             alreadyFailed = False
             for elementList in Element.group(matchedElements):
-                nameSuffix = elementList[0].var('name')
+                nameSuffix = elementList[0].tag('label')
 
                 if 'group' in elementList[0].tagNames():
                     nameSuffix = "{} ({} total)".format(
@@ -648,6 +648,9 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         elif template == "export":
             taskHolder.exportTemplate().setInputString(value)
+
+class TaskTreeWidgetItem(QtWidgets.QTreeWidgetItem):
+    pass
 
 class _TreeItemSeparatorWidget(QtWidgets.QWidget):
     """
