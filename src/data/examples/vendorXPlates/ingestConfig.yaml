@@ -4,10 +4,10 @@ scripts:
 vars:
   prefix: "/tmp"
 tags:
-  __uiHintBottomExecutionSettingsEmptyMessage: "Select valid element"
-  __uiHintShowDispatchedMessage: false
-  __uiHintBottomExecutionSettings: false
-  __uiHintSourceColumns:
+  uiHintBottomExecutionSettingsEmptyMessage: "Select valid element"
+  uiHintShowDispatchedMessage: false
+  uiHintBottomExecutionSettings: false
+  uiHintColumns:
   - frame
   - type
   - job

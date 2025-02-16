@@ -7,7 +7,7 @@
     "job": "RND"
   },
   "tags": {
-    "__uiHintSourceColumns": [
+    "uiHintColumns": [
       "assetName",
       "step",
       "variant",

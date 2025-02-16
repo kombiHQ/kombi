@@ -27,7 +27,7 @@ class PythonLoader(Loader):
             "prefix": "/tmp/test"
           },
           "tags": {
-            "__uiHintSourceColumns": [
+            "uiHintColumns": [
                 "shot",
                 "type"
             ]

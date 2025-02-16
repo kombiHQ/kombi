@@ -167,8 +167,8 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         # behavior can be toggled on or off using a UI hint
         if showDispatchedMessage is None:
             showDispatchedMessage = dispatcher.type() != 'runtime'
-            if self.__clonedTaskHolders and '__uiHintShowDispatchedMessage' in self.__clonedTaskHolders[0].tagNames():
-                showDispatchedMessage = self.__clonedTaskHolders[0].tag('__uiHintShowDispatchedMessage')
+            if self.__clonedTaskHolders and 'uiHintShowDispatchedMessage' in self.__clonedTaskHolders[0].tagNames():
+                showDispatchedMessage = self.__clonedTaskHolders[0].tag('uiHintShowDispatchedMessage')
 
         if self.__messageBox:
             self.__messageBox.reject()

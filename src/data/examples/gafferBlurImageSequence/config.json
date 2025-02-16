@@ -6,7 +6,7 @@
     "prefix": "/tmp"
   },
   "tags": {
-    "__uiHintSourceColumns": ["frame"]
+    "uiHintColumns": ["frame"]
   },
   "tasks": [
     {

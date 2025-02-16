@@ -119,12 +119,12 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
         if taskHolders:
             for taskHolder in self.__taskHolders:
-                if '__uiHintIconSize' in taskHolder.tagNames():
-                    iconSize = taskHolder.tag('__uiHintIconSize')
+                if 'uiHintIconSize' in taskHolder.tagNames():
+                    iconSize = taskHolder.tag('uiHintIconSize')
                     self.setIconSize(QtCore.QSize(iconSize, iconSize))
 
-                if '__uiHintCheckedByDefault' in taskHolder.tagNames():
-                    self.setCheckableState(taskHolder.tag('__uiHintCheckedByDefault'))
+                if 'uiHintCheckedByDefault' in taskHolder.tagNames():
+                    self.setCheckableState(taskHolder.tag('uiHintCheckedByDefault'))
 
                 if 'configDirectory' in taskHolder.tagNames():
                     configDirectory = taskHolder.tag('configDirectory')
@@ -385,8 +385,8 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         """
         # updating columns
         columns = []
-        for taskHolder in filter(lambda x: '__uiHintSourceColumns' in x.tagNames(), taskHolders):
-            for columnName in filter(lambda x: x not in columns, taskHolder.tag('__uiHintSourceColumns')):
+        for taskHolder in filter(lambda x: 'uiHintColumns' in x.tagNames(), taskHolders):
+            for columnName in filter(lambda x: x not in columns, taskHolder.tag('uiHintColumns')):
                 columns.append(columnName)
 
         # fix-me: workaround necessary to avoid the bug of not showing
