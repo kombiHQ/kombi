@@ -188,7 +188,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             for taskHolder, elementsGroup in self.executionTaskHolders():
                 # default label
                 label = "{}/{} [{}]".format(
-                    os.path.basename(taskHolder.var('configDirectory')),
+                    os.path.basename(taskHolder.var('configDirectory', '')) or taskHolder.task().type(),
                     elementsGroup[0].tag('group') if 'group' in elementsGroup[0].tagNames() else elementsGroup[0].var('name'),
                     datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 )
