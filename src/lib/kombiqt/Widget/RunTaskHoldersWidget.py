@@ -52,12 +52,11 @@ class RunTaskHoldersWidget(QtWidgets.QWidget):
         """
         runTaskHoldersWidget = cls(taskHolders, elements, defaultDispatcherName)
 
-        dialog = QtWidgets.QDialog(parent)
+        dialog = _RunTaskHoldersDialog(parent)
         dialog.resize(width, height)
-        dialog.result = False
 
         def __closeDialog(success):
-            dialog.result = success
+            dialog.setSuccess(success)
             if success:
                 dialog.close()
         runTaskHoldersWidget.executionSuccess.connect(__closeDialog)
@@ -148,3 +147,27 @@ class RunTaskHoldersWidget(QtWidgets.QWidget):
             assert isinstance(taskHolder, TaskHolder), 'Invalid task holder type'
 
         self.__taskHolders = taskHolders
+
+class _RunTaskHoldersDialog(QtWidgets.QDialog):
+    """
+    Custom Dialog used to run the task holders.
+    """
+
+    def __init__(self, parent=None):
+        """
+        Create _RunTaskHoldersDialog object.
+        """
+        super().__init__(parent)
+        self.setSuccess(False)
+
+    def setSuccess(self, value):
+        """
+        Set the execution success.
+        """
+        self.__sucess = value
+
+    def success(self):
+        """
+        Return the execution success.
+        """
+        return self.__sucess
