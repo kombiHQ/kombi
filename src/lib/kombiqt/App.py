@@ -3,7 +3,7 @@ import sys
 from Qt import QtWidgets
 from kombi.Element.Fs.FsElement import FsElement
 from kombi.Element import Element
-from .Window.RunnerWindow import RunnerWindow
+from .Window.MainWindow import MainWindow
 from .Resource import Resource
 from .Style import Style
 
@@ -36,10 +36,10 @@ class App(QtWidgets.QApplication):
 
         # showing configuration directory picker
         if not configurationDirectory:
-            configurationDirectory = RunnerWindow.pickConfigurationDirectory(configurationDirectory)
+            configurationDirectory = MainWindow.pickConfigurationDirectory(configurationDirectory)
 
         # loading task holders
-        taskHolders = RunnerWindow.loadConfigurationTaskHolders(configurationDirectory)
+        taskHolders = MainWindow.loadConfigurationTaskHolders(configurationDirectory)
 
         # source element path
         rootElement = None
@@ -50,7 +50,7 @@ class App(QtWidgets.QApplication):
             if rootElement.isLeaf():
                 rootElement = Element.create([rootElement])
 
-        self.__mainWindow = RunnerWindow(taskHolders, rootElement)
+        self.__mainWindow = MainWindow(taskHolders, rootElement)
         self.__mainWindow.setWindowIcon(Resource.icon('icons/kombi.png'))
         self.__mainWindow.show()
         self.__mainWindow.activateWindow()

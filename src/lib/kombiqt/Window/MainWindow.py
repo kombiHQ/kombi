@@ -15,9 +15,12 @@ from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
 from ..Widget.ScriptEditorWidget import ScriptEditorWidget
 
-class RunnerWindow(QtWidgets.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow):
     """
-    Basic graphical interface to pick files to run through a kombi configuration.
+    A graphical user interface for interacting with Kombi configurations.
+
+    Signals:
+    - `preRenderElements`: Emitted when the element list is about to be rendered.
     """
 
     preRenderElements = QtCore.Signal(list)
@@ -25,9 +28,9 @@ class RunnerWindow(QtWidgets.QMainWindow):
 
     def __init__(self, taskHolders, rootElement=None, customHeader='', viewMode='group', **kwargs):
         """
-        Create a Kombi app.
+        Create a MainWindow object.
         """
-        super(RunnerWindow, self).__init__(**kwargs)
+        super(MainWindow, self).__init__(**kwargs)
 
         self.setStyleSheet(Resource.stylesheet())
 

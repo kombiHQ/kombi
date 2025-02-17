@@ -1,1 +1,1 @@
-from .RunnerWindow import RunnerWindow
+from .MainWindow import MainWindow
