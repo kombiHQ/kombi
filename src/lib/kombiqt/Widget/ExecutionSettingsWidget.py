@@ -36,11 +36,6 @@ class ExecutionSettingsWidgetRequiredError(ExecutionSettingsWidgetError):
         """
         return self.__task
 
-class CustomTreeWidget(QtWidgets.QTreeWidget):
-    def __init__(self, *args, **kwargs):
-        super(CustomTreeWidget, self).__init__(*args, **kwargs)
-        self.setFrameShape(QtWidgets.QFrame.WinPanel)
-
 class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
     """
     This widget is used to list the tasks options.
