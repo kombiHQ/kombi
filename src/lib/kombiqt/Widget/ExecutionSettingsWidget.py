@@ -2,9 +2,9 @@ import os
 import datetime
 import functools
 import traceback
-import weakref
 from ..OptionVisual import OptionVisual
 from kombi.Element import Element
+from kombi.TaskHolder import TaskHolder
 from kombi.Task import Task, TaskValidationError
 from kombi.Template import Template
 from kombi.ProcessExecution import ProcessExecution
@@ -88,7 +88,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
                 # checking for required task options. In case we found a required task
                 # with none value we will raise an exception
-                for task in item.taskHolder.childTasks():
+                for task in item.taskHolder().childTasks():
 
                     # running validations without any elements (this will allow validations
                     # that verify for options to take affect in all tasks)
@@ -148,14 +148,14 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
                 # running validations
                 try:
-                    item.taskHolder.task().validate(item.elementList)
+                    item.taskHolder().task().validate(item.elements())
                 except TaskValidationError as err:
                     raise ExecutionSettingsWidgetRequiredError(
                         str(err),
-                        item.taskHolder.task()
+                        item.taskHolder().task()
                     )
 
-                result.append((item.taskHolder, item.elementList))
+                result.append((item.taskHolder(), item.elements()))
 
         return result
 
@@ -280,7 +280,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             )
         )
 
-        for index, taskHolder in enumerate(self.__clonedTaskHolders):
+        for taskHolder in self.__clonedTaskHolders:
             try:
                 matchedElements = taskHolder.query(self.__elements)
             except Exception as error:
@@ -296,9 +296,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 raise error
 
             if taskHolder.importTemplates():
-                child = self.__createTask(self, taskHolder)
-                child.taskHolderIndex = index
-                child.taskHolder = taskHolder
+                self.__createTask(self, taskHolder)
                 continue
 
             alreadyFailed = False
@@ -334,13 +332,9 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 matchedChild = self.__createTask(
                     self,
                     taskHolder,
-                    nameSuffix
+                    nameSuffix,
+                    elements=elementList
                 )
-
-                taskHolder.entry = weakref.ref(matchedChild)
-                matchedChild.taskHolderIndex = index
-                matchedChild.elementList = elementList
-                matchedChild.taskHolder = taskHolder
 
                 # option to enable the task holder
                 matchedChild.setCheckState(0, QtCore.Qt.Checked)
@@ -387,13 +381,12 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         return optionVisualWidget
 
-    def __createTask(self, parentEntry, taskHolder, suffix='', mainOptions=None, path=''):
+    def __createTask(self, parentEntry, taskHolder, suffix='', mainOptions=None, path='', elements=None):
         """
         Create the task widget information.
         """
         taskName = taskHolder.task().type()
-
-        taskChild = QtWidgets.QTreeWidgetItem(parentEntry)
+        taskChild = ExecutionSettingsTreeWidgetItem(parentEntry, taskHolder, elements)
         taskChild.setData(0, QtCore.Qt.EditRole, Template.runProcedure('camelcasetospaced', taskName) + '   ')
         taskChild.setData(1, QtCore.Qt.EditRole, suffix)
         isRootTask = mainOptions is None
@@ -649,8 +642,45 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         elif template == "export":
             taskHolder.exportTemplate().setInputString(value)
 
-class TaskTreeWidgetItem(QtWidgets.QTreeWidgetItem):
-    pass
+class ExecutionSettingsTreeWidgetItem(QtWidgets.QTreeWidgetItem):
+    """
+    Custom tree widget item used to represent a task holder in the execution settings tree.
+    """
+    def __init__(self, parent, taskHolder, elements=None):
+        """
+        Create ExecutionSettingsTreeWidgetItem object.
+        """
+        super().__init__(parent)
+        self.__elements = []
+
+        self.__setTaskHolder(taskHolder)
+        if elements:
+            self.__setElements(elements)
+
+    def taskHolder(self):
+        """
+        Return the task holder associated with the tree item.
+        """
+        return self.__taskHolder
+
+    def elements(self):
+        """
+        Return a list of elements associated with the tree item.
+        """
+        return self.__elements
+
+    def __setElements(self, elements):
+        """
+        Set the elements associated with the tree item.
+        """
+        self.__elements = elements
+
+    def __setTaskHolder(self, taskHolder):
+        """
+        Set the task holder associated with the tree item.
+        """
+        assert isinstance(taskHolder, TaskHolder), 'Invalid task holder type'
+        self.__taskHolder = taskHolder
 
 class _TreeItemSeparatorWidget(QtWidgets.QWidget):
     """

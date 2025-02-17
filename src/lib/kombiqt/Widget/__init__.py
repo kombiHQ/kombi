@@ -1,4 +1,4 @@
-from .ExecutionSettingsWidget import ExecutionSettingsWidget, ExecutionSettingsWidgetError, ExecutionSettingsWidgetRequiredError
+from .ExecutionSettingsWidget import ExecutionSettingsWidget, ExecutionSettingsTreeWidgetItem, ExecutionSettingsWidgetError, ExecutionSettingsWidgetRequiredError
 from .DispatcherListWidget import DispatcherListWidget
 from .MultiInputDialog import MultiInputDialog
 from .ComboBoxInputDialog import ComboBoxInputDialog
