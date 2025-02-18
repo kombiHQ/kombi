@@ -61,6 +61,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         self.__elements = []
         self.__clonedTaskHolders = []
         self.__changedOptions = {}
+        self.__verticalSourceScrollBarLatestPos = 0
 
         self.taskHolderOptionChangedSignal.connect(self.__onTaskHolderOptionChanged)
 
@@ -261,6 +262,35 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         """
         pass
 
+    def __updateRootItem(self, taskHolder):
+        """
+        This method is used to update the root item based on the input task holder.
+        """
+        self.__verticalSourceScrollBarLatestPos = self.verticalScrollBar().value()
+        self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        for index in range(self.topLevelItemCount()):
+            rootItem = self.topLevelItem(index)
+            if taskHolder.task() not in rootItem.taskHolder().childTasks():
+                continue
+
+            # clearing all children
+            childrenExpanded = []
+            for _ in range(rootItem.childCount()):
+                childrenExpanded.append(rootItem.child(0).isExpanded())
+                rootItem.takeChild(0)
+
+            # computing new children
+            self.__populateTask(rootItem)
+
+            # restoring the expanded state
+            if len(childrenExpanded) == rootItem.childCount():
+                for childIndex, childExpanded in enumerate(childrenExpanded):
+                    rootItem.child(childIndex).setExpanded(childExpanded)
+            break
+
+        # workaround necessary to restore the position of the scrollbar
+        QtCore.QTimer.singleShot(0, self.__onRestoreVerticalScrollBar)
+
     def __refreshWidgets(self):
         """
         Refresh all tasks/options widgets.
@@ -291,7 +321,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 raise error
 
             if taskHolder.importTemplates():
-                self.__createTask(self, taskHolder)
+                self.__createTask(self, taskHolder.clone())
                 continue
 
             alreadyFailed = False
@@ -326,7 +356,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
                 matchedChild = self.__createTask(
                     self,
-                    taskHolder,
+                    taskHolder.clone(),
                     nameSuffix,
                     elements=elementList
                 )
@@ -335,8 +365,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                 matchedChild.setCheckState(0, QtCore.Qt.Checked)
 
         for taskHolder, optionNames in self.__changedOptions.items():
-            if self.__onTaskHolderOptionChanged(taskHolder, optionNames):
-                break
+            self.__onTaskHolderOptionChanged(taskHolder, optionNames)
 
         self.__changedOptions = {}
 
@@ -380,12 +409,21 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         """
         Create the task widget information.
         """
-        taskName = taskHolder.task().type()
         taskChild = ExecutionSettingsTreeWidgetItem(parentEntry, taskHolder, elements)
-        taskChild.setData(0, QtCore.Qt.EditRole, Template.runProcedure('camelcasetospaced', taskName) + '   ')
+        taskChild.setData(0, QtCore.Qt.EditRole, Template.runProcedure('camelcasetospaced', taskHolder.task().type()) + '   ')
         taskChild.setData(1, QtCore.Qt.EditRole, suffix)
+        taskChild.setExpanded(mainOptions is None)
+        self.__populateTask(taskChild, mainOptions=mainOptions, path=path)
+
+        return taskChild
+
+    def __populateTask(self, item, mainOptions=None, path=''):
+        """
+        Utility method used to populate the content for the task.
+        """
+        taskHolder = item.taskHolder()
+        taskName = taskHolder.task().type()
         isRootTask = mainOptions is None
-        taskChild.setExpanded(isRootTask)
 
         # creating the path
         path = path if not path else '{}/'.format(path)
@@ -393,18 +431,18 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         # options
         if mainOptions is None:
-            mainOptions = QtWidgets.QTreeWidgetItem(taskChild)
+            mainOptions = QtWidgets.QTreeWidgetItem(item)
             mainOptions.setData(0, QtCore.Qt.EditRole, 'Main')
             mainOptions.setExpanded(True)
             mainOptions.setHidden(True)
 
         # only showing task advanced in under the root level once
         if isRootTask:
-            advancedEntry = QtWidgets.QTreeWidgetItem(taskChild)
+            advancedEntry = QtWidgets.QTreeWidgetItem(item)
             advancedEntry.setData(0, QtCore.Qt.EditRole, 'Advanced')
             advancedEntry.setExpanded(False)
         else:
-            advancedEntry = taskChild
+            advancedEntry = item
 
         for optionName in taskHolder.task().optionNames():
             uiOptionMetadataName = 'ui.options.{}'.format(optionName)
@@ -538,7 +576,11 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         if mainOptions.isHidden() and mainOptions.childCount():
             mainOptions.setHidden(False)
 
-        return taskChild
+    def __onRestoreVerticalScrollBar(self):
+        """
+        Slot triggered to restore the vertical scrollbar position.
+        """
+        self.verticalScrollBar().setSliderPosition(self.__verticalSourceScrollBarLatestPos)
 
     def __statusWidget(self, taskHolder):
         """
@@ -607,7 +649,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             return False
 
         try:
-            self.__refreshWidgets()
+            self.__updateRootItem(taskHolder)
         except Exception:
             traceback.print_exc()
 
