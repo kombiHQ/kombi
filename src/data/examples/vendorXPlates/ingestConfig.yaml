@@ -6,7 +6,8 @@ vars:
 tags:
   uiHintBottomExecutionSettingsEmptyMessage: "Select valid element"
   uiHintShowDispatchedMessage: false
-  uiHintBottomExecutionSettings: false
+  uiHintBottomExecutionSettings: true
+  uiHintCheckedByDefault: true
   uiHintColumns:
   - frame
   - type
@@ -14,7 +15,6 @@ tags:
   - seq
   - shot
 tasks:
-- run: launchWithDefaultApplication
 - run: convertImage
   options:
     preview: ""
@@ -203,4 +203,4 @@ tasks:
             main: True
             label: "height"
     target: "(parentdirname {filePath})/thumbnail.png"
-
+- run: launchWithDefaultApplication
