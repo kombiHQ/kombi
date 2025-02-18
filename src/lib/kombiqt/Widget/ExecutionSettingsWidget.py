@@ -59,7 +59,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.setUniformRowHeights(False)
         self.__elements = []
-        self.__clonedTaskHolders = []
+        self.__taskHolders = []
         self.__changedOptions = {}
         self.__verticalSourceScrollBarLatestPos = 0
 
@@ -69,7 +69,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         """
         Update the execution settings.
         """
-        self.__clonedTaskHolders = list(map(lambda x: x.clone(), taskHolders))
+        self.__taskHolders = taskHolders
         self.__elements = list(elements)
         self.__refreshWidgets()
 
@@ -163,8 +163,8 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         # behavior can be toggled on or off using a UI hint
         if showDispatchedMessage is None:
             showDispatchedMessage = dispatcher.type() != 'runtime'
-            if self.__clonedTaskHolders and 'uiHintShowDispatchedMessage' in self.__clonedTaskHolders[0].tagNames():
-                showDispatchedMessage = self.__clonedTaskHolders[0].tag('uiHintShowDispatchedMessage')
+            if self.__taskHolders and 'uiHintShowDispatchedMessage' in self.__taskHolders[0].tagNames():
+                showDispatchedMessage = self.__taskHolders[0].tag('uiHintShowDispatchedMessage')
 
         if self.__messageBox:
             self.__messageBox.reject()
@@ -305,7 +305,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             )
         )
 
-        for taskHolder in self.__clonedTaskHolders:
+        for taskHolder in self.__taskHolders:
             try:
                 matchedElements = taskHolder.query(self.__elements)
             except Exception as error:
@@ -327,6 +327,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
             alreadyFailed = False
             for elementList in Element.group(matchedElements):
                 nameSuffix = elementList[0].tag('label')
+                clonedTaskHolder = taskHolder.clone()
 
                 if 'group' in elementList[0].tagNames():
                     nameSuffix = "{} ({} total)".format(
@@ -335,7 +336,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
                     )
 
                 try:
-                    taskHolder.task().setup(elementList)
+                    clonedTaskHolder.task().setup(elementList)
                 except Exception as err:
                     traceback.print_exc()
 
@@ -356,7 +357,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
                 matchedChild = self.__createTask(
                     self,
-                    taskHolder.clone(),
+                    clonedTaskHolder,
                     nameSuffix,
                     elements=elementList
                 )
