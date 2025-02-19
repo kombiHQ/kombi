@@ -377,12 +377,7 @@ apt-get install graphviz
 
 </details>
 
-### Download and unzip the release
-```
-# TODO
-```
-
-## Building Kombi for development
+## Kombi Development
 
 <details><summary>Details</summary>
 <p>
@@ -392,8 +387,6 @@ apt-get install graphviz
 #### Dependencies
 Name | Version 
 --- | --- 
-CMake | 2.8+
-Make | 3.0+
 Pylama | 7.0+
 
 #### Running tests
@@ -408,17 +401,18 @@ cd <SRC_LOCATION>
 ./runlint
 ```
 
-#### Building Kombi
-> Hint for windows users: The volumes are available under `/cygdrive/<volume>` in cygwin 
+#### Creating deployment package
 
 ```bash
 cd <SRC_LOCATION>
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX=<TARGET_LOCATION> -G "Unix Makefiles" ..
-make all install
+python3 package.py
 ```
 
+For advanced options please use the flag `--help`:
+```bash
+cd <SRC_LOCATION>
+python3 package.py --help
+```
 </details>
 
 ## Licensing
