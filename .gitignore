@@ -28,6 +28,8 @@ develop-eggs/
 dist/
 downloads/
 eggs/
+kombi.zip
+archive.zip
 .eggs/
 lib64/
 parts/

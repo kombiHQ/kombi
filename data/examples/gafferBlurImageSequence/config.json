@@ -3,8 +3,10 @@
     "*/*.py"
   ],
   "vars": {
-    "__uiHintSourceColumns": [],
     "prefix": "/tmp"
+  },
+  "tags": {
+    "uiHintColumns": ["frame"]
   },
   "tasks": [
     {
@@ -30,6 +32,19 @@
             "frameRate": 23.976,
             "sourceColorSpace": "bt709",
             "targetColorSpace": "smpte170m"
+          },
+          "metadata": {
+            "ui.options": {
+              "frameRate": {
+                "main": true
+              },
+              "sourceColorSpace": {
+                "main": true
+              },
+              "targetColorSpace": {
+                "main": true
+              }
+            }
           },
           "target": "(dirname {filePath})/{name}.mov",
           "tasks": [

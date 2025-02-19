@@ -3,13 +3,15 @@
     "*/*.py"
   ],
   "vars": {
-    "__uiHintSourceColumns": [
+    "prefix": "/tmp"
+  },
+  "tags": {
+    "uiHintColumns": [
       "type",
       "job",
       "seq",
       "shot"
-    ],
-    "prefix": "/tmp"
+    ]
   },
   "tasks": [
     {

@@ -2,20 +2,178 @@
 scripts:
 - "*/*.py"
 vars:
-  __uiHintSourceColumns:
+  prefix: "/tmp"
+tags:
+  uiHintBottomExecutionSettingsEmptyMessage: "Select valid element"
+  uiHintShowDispatchedMessage: false
+  uiHintBottomExecutionSettings: true
+  uiHintCheckedByDefault: true
+  uiHintColumns:
+  - frame
   - type
   - job
   - seq
   - shot
-  prefix: "/tmp"
 tasks:
 - run: convertImage
+  options:
+    preview: ""
+    date: "1950-01-22"
+    hexcolor: "#049f73"
+    filePathPicker: ""
+    filePath: ""
+    filePath2: ""
+    bool: True
+    float: 0.1
+    floatNoRange: 999999999999999999999.0
+    int: 1
+    intNoRange: 1
+    hidden: "not visible"
+    separator: "separate me"
+    array:
+      - 1
+      - 2
+      - 3
+      - True
+      - False
+      - null
+    arraySideBySide:
+      - 1001
+      - 1200
+    longText: ""
+    text: ""
+    preset: ""
+    preset2: ""
+    preset3: ""
+    bla: ""
+    aab:
+      bla: 1
+      bla2: 2
+      testing3BlaBlaLongName: "long name"
+      testing2: False
+    dictOrientationTest:
+      bla: 1
+      bla2: 2
+      testing3BlaBlaLongName: "long name"
+      testing2: False
+    abc:
+      - "Testing"
+      - "Testing2"
+      - 4
+      - "Testing3"
+      - True
+      - "Testing4"
   metadata:
+    task.options.preview:
+      template: True
+    ui:
+      options:
+        preview:
+          main: True
+          visual: "element"
+          preview: True
+        filePathPicker:
+          main: True
+          visual: "filePath"
+          title: "Title for the picker"
+          allowedExtensions: [
+            "json"
+          ]
+        date:
+          main: True
+          visual: "date"
+        hexcolor:
+          main: True
+          visual: "hexcolor"
+        dictOrientationTest:
+          main: True
+          orientation: 'horizontal'
+        bool:
+          main: True
+        float:
+          main: True
+          min: 0.0
+          max: 1.0
+          rebuildOnChange: True
+        floatNoRange:
+          main: True
+          width: 300
+        int:
+          main: True
+          min: -10
+          max: 10
+        intNoRange:
+          main: True
+        hidden:
+          main: True
+          hidden: True
+        separator:
+          main: True
+          separator: True
+        array:
+          main: True
+          items:
+            '1':
+              label: "Custom Label"
+        arraySideBySide:
+          main: True
+          'label': 'Frame Range'
+          orientation: 'horizontal'
+          items:
+            '0':
+              label: "Start Frame"
+            '1':
+              label: "End Frame"
+        longText:
+          main: True
+          visual: "longText"
+          height: 400
+        text:
+          main: True
+        filePath:
+          main: True
+          visual: "directoryPath"
+        filePath2:
+          main: True
+          visual: "directoryPath"
+          presets: ["A", "B", "C"]
+        preset:
+          main: True
+          presets: ['A', 'B', 'C']
+          visual: "presets"
+          styleSheet: "background-color: #00FF00; color: #000000"
+        preset2:
+          main: True
+          presets: ['A', 'B', 'C']
+          visual: "presets"
+        preset3:
+          main: True
+          presets: ['A', 'B', 'C']
+          visual: "presets"
+        aab:
+          main: True
+          items:
+            testing3BlaBlaLongName:
+              main: True
+              label: "custom Label"
+              visual: "longText"
+        bla:
+          main: True
+          regex: "[a-zA-Z]*"
+          caseStyle: "uppercase"
+        abc:
+          main: True
+          items:
+            1:
+              visual: "longText"
+            4:
+              main: True
+              label: "testing index"
     match.types:
     - vendorXPngPlate
-    match.vars:
-      imageType:
-      - sequence
+    # match.vars:
+    #   imageType:
+    #   - sequence
   target: "{prefix}/jobs/{job}/seq/{seq}/shot/{shot}/plates/{plateName}/(newver <parent> as <ver>)/{width}x{height}_exr/{job}_{seq}_{shot}_<ver>.(pad {frame} 6).exr"
   tasks:
   - run: vendorData
@@ -35,5 +193,14 @@ tasks:
       targetColorSpace: smpte170m
     target: "(parentdirname {filePath})/plate.mov"
   - run: sequenceThumbnail
+    metadata:
+      ui:
+        options:
+          width:
+            main: True
+            label: "width"
+          height:
+            main: True
+            label: "height"
     target: "(parentdirname {filePath})/thumbnail.png"
-
+- run: launchWithDefaultApplication

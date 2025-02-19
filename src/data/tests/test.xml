@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testA xmlns="TestNamespace">
-	<testB id="123">
-		<testC>testing child C</testC>
-		<testD>
-			<testD1>1 2 3</testD1>
-		</testD>
-	</testB>
-</testA>

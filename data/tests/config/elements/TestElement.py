@@ -21,7 +21,8 @@ class TestElement(kombi.Element.Fs.Image.ExrElement):
         if not super(TestElement, cls).test(path, parentElement):
             return False
 
-        return path.name.startswith('testSeq') or path.name.startswith("test_0")
+        name = path.name
+        return name.startswith('testSeq') or name.startswith("test_0")
 
 
 # registering element
