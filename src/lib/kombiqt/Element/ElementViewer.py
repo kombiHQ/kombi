@@ -250,7 +250,7 @@ class ElementViewer(QtWidgets.QLabel):
         """
         Triggered when the user has clicked on the viewer.
         """
-        if ev.button() == QtCore.Qt.LeftButton:
+        if self.__elements and ev.button() == QtCore.Qt.LeftButton:
             task = Task.create('elementViewerLaunch')
             task.add(self.__currentElement)
             task.output()
