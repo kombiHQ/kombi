@@ -1,5 +1,7 @@
 import os
+import sys
 import json
+import pathlib
 from collections import OrderedDict
 from fnmatch import fnmatch
 from ..Task import Task
@@ -7,6 +9,14 @@ from ..TaskWrapper import TaskWrapper
 from ..Template import Template
 from ..Element import Element, Matcher
 from ..KombiError import KombiError
+
+# optional dependency
+try:
+    import pycallgraph
+except ImportError:
+    hasPyCallGraph = False
+else:
+    hasPyCallGraph = True
 
 class TaskHolderError(KombiError):
     """Task holder error."""
@@ -38,7 +48,7 @@ class TaskHolder(object):
     )
     __sentinelValue = _TaskHolderSentinelValue()
 
-    def __init__(self, task, targetTemplate=None, filterTemplate=None, exportTemplate=None):
+    def __init__(self, task, targetTemplate=None, filterTemplate=None, exportTemplate=None, profileTemplate=None):
         """
         Create a task holder object.
         """
@@ -64,6 +74,11 @@ class TaskHolder(object):
         if exportTemplate is None:
             exportTemplate = Template()
         self.__setExportTemplate(exportTemplate)
+
+        # setting profile template
+        if profileTemplate is None:
+            profileTemplate = Template()
+        self.__setProfileTemplate(profileTemplate)
 
         # creating element matcher
         matchTypes = []
@@ -240,6 +255,12 @@ class TaskHolder(object):
         Return a list of templates used to import elements during run.
         """
         return self.__importTemplates
+
+    def profileTemplate(self):
+        """
+        Return the profile template associated with the task holder.
+        """
+        return self.__profileTemplate
 
     def setTask(self, task):
         """
@@ -489,6 +510,20 @@ class TaskHolder(object):
 
         self.__exportTemplate = exportTemplate
 
+    def __setProfileTemplate(self, profileTemplate):
+        """
+        Associate a profile template with the task holder.
+
+        This template is used to export a profile image that
+        visualizes the execution of a task. When a path is
+        specified in the template, it saves a PNG image that
+        captures the profiled execution.
+        """
+        assert isinstance(profileTemplate, Template), \
+            "Invalid template type"
+
+        self.__profileTemplate = profileTemplate
+
     def __setTaskWrapper(self, taskWrapper):
         """
         Override the default task wrapper.
@@ -506,6 +541,7 @@ class TaskHolder(object):
         targetTemplate = taskHolder.targetTemplate().inputString()
         filterTemplate = taskHolder.filterTemplate().inputString()
         exportTemplate = taskHolder.exportTemplate().inputString()
+        profileTemplate = taskHolder.profileTemplate().inputString()
         importTemplates = list(map(lambda x: x.inputString(), taskHolder.importTemplates()))
 
         taskHolderVars = {}
@@ -521,7 +557,8 @@ class TaskHolder(object):
                 'target': targetTemplate,
                 'filter': filterTemplate,
                 'export': exportTemplate,
-                'import': importTemplates
+                'import': importTemplates,
+                'profile': profileTemplate
             },
             'vars': taskHolderVars,
             'tags': taskHolderTags,
@@ -546,6 +583,7 @@ class TaskHolder(object):
         targetTemplate = Template(taskHolderContents['template']['target'])
         filterTemplate = Template(taskHolderContents['template']['filter'])
         exportTemplate = Template(taskHolderContents['template']['export'])
+        profileTemplate = Template(taskHolderContents['template']['profile'])
         importTemplates = taskHolderContents['template']['import']
         regroupTag = taskHolderContents.get('regroupTag', '')
 
@@ -557,7 +595,8 @@ class TaskHolder(object):
             task,
             targetTemplate,
             filterTemplate,
-            exportTemplate
+            exportTemplate,
+            profileTemplate
         )
 
         # setting regroup tag
@@ -617,6 +656,9 @@ class TaskHolder(object):
 
         taskHolder.addElements(elements)
         result = []
+        taskHolderVars = {}
+        for varName in taskHolder.varNames():
+            taskHolderVars[varName] = taskHolder.var(varName)
 
         # ignoring the execution of the task
         if taskHolder.status() == 'ignore' or not taskHolder.task().elements():
@@ -629,16 +671,43 @@ class TaskHolder(object):
 
         # running task through the wrapper
         else:
-            taskElements = taskHolder.taskWrapper().run(taskHolder.task())
+            taskElements = []
+            profileTemplate = taskHolder.profileTemplate().value(taskHolderVars)
+
+            if not hasPyCallGraph and profileTemplate:
+                sys.stderr.write(
+                    'Error, unable to profile execution. The "pycallgraph" dependency is missing!\n'
+                )
+                sys.stderr.flush()
+
+            if hasPyCallGraph and profileTemplate:
+                graphviz = pycallgraph.output.GraphvizOutput()
+                profileOutput = pathlib.Path(profileTemplate).as_posix()
+
+                if os.path.isdir(profileOutput):
+                    profileOutput += '/profile'
+
+                # including the extension in case it has not been defined
+                if not profileOutput.lower().endswith('.png'):
+                    profileOutput += '.png'
+                graphviz.output_file = profileOutput
+
+                with pycallgraph.PyCallGraph(output=graphviz):
+                    taskElements.extend(taskHolder.taskWrapper().run(taskHolder.task()))
+
+                sys.stdout.write(
+                    'Execution profile has been saved to: {}\n'.format(profileOutput)
+                )
+                sys.stdout.flush()
+            else:
+                taskElements.extend(taskHolder.taskWrapper().run(taskHolder.task()))
+
             result += taskElements
 
         # exporting the result when export template is defined
         if taskHolder.exportTemplate().inputString():
 
             # processing template
-            taskHolderVars = {}
-            for varName in taskHolder.varNames():
-                taskHolderVars[varName] = taskHolder.var(varName)
             exportTemplate = taskHolder.exportTemplate().value(taskHolderVars)
 
             # writing elements
