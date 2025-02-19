@@ -1,4 +1,5 @@
 import json
+import sys
 import copy
 from collections import OrderedDict
 from ..Resource import Resource
@@ -7,6 +8,14 @@ from ..Element import Element
 from ..Template import Template
 from ..TaskReporter import TaskReporter
 from ..KombiError import KombiError
+
+# optional dependency
+try:
+    import pycallgraph
+except ImportError:
+    hasPyCallGraph = False
+else:
+    hasPyCallGraph = True
 
 class TaskError(KombiError):
     """Task error."""
@@ -37,6 +46,7 @@ class Task(object):
 
     Task Metadata:
         - output.reporter: name of the reporter used to display the output of the task or none (empty string)
+        - output.profile: file path used to profile the execution and exporting it as a PNG heatmap
     """
 
     __registered = {}
@@ -260,7 +270,29 @@ class Task(object):
         self.validate(self.elements())
 
         # performing task
-        outputElements = self._perform()
+        outputElements = []
+
+        profiledExecution = False
+        if self.hasMetadata('output.profile') and self.metadata('output.profile'):
+            if not hasPyCallGraph:
+                sys.stderr.write(
+                    'Error, unable to profile execution. The "pycallgraph" dependency is missing!\n'
+                )
+                sys.stderr.flush()
+            else:
+                profiledExecution = True
+                graphviz = pycallgraph.output.GraphvizOutput()
+                graphviz.output_file = self.metadata('output.profile')
+                with pycallgraph.PyCallGraph(output=graphviz):
+                    outputElements.extend(self._perform())
+
+                sys.stdout.write(
+                    'Execution profile has been saved to: {}\n'.format(graphviz.output_file)
+                )
+                sys.stdout.flush()
+
+        if not profiledExecution:
+            outputElements.extend(self._perform())
 
         # Copy all context variables to output elements
         for outputElement in outputElements:

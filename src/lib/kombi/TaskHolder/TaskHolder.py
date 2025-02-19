@@ -1,5 +1,4 @@
 import os
-import sys
 import json
 import pathlib
 from collections import OrderedDict
@@ -9,14 +8,6 @@ from ..TaskWrapper import TaskWrapper
 from ..Template import Template
 from ..Element import Element, Matcher
 from ..KombiError import KombiError
-
-# optional dependency
-try:
-    import pycallgraph
-except ImportError:
-    hasPyCallGraph = False
-else:
-    hasPyCallGraph = True
 
 class TaskHolderError(KombiError):
     """Task holder error."""
@@ -671,17 +662,8 @@ class TaskHolder(object):
 
         # running task through the wrapper
         else:
-            taskElements = []
             profileTemplate = taskHolder.profileTemplate().value(taskHolderVars)
-
-            if not hasPyCallGraph and profileTemplate:
-                sys.stderr.write(
-                    'Error, unable to profile execution. The "pycallgraph" dependency is missing!\n'
-                )
-                sys.stderr.flush()
-
-            if hasPyCallGraph and profileTemplate:
-                graphviz = pycallgraph.output.GraphvizOutput()
+            if profileTemplate:
                 profileOutput = pathlib.Path(profileTemplate).as_posix()
 
                 if os.path.isdir(profileOutput):
@@ -690,18 +672,10 @@ class TaskHolder(object):
                 # including the extension in case it has not been defined
                 if not profileOutput.lower().endswith('.png'):
                     profileOutput += '.png'
-                graphviz.output_file = profileOutput
 
-                with pycallgraph.PyCallGraph(output=graphviz):
-                    taskElements.extend(taskHolder.taskWrapper().run(taskHolder.task()))
+                taskHolder.task().setMetadata('output.profile', profileOutput)
 
-                sys.stdout.write(
-                    'Execution profile has been saved to: {}\n'.format(profileOutput)
-                )
-                sys.stdout.flush()
-            else:
-                taskElements.extend(taskHolder.taskWrapper().run(taskHolder.task()))
-
+            taskElements = taskHolder.taskWrapper().run(taskHolder.task())
             result += taskElements
 
         # exporting the result when export template is defined
