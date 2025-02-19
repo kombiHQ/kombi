@@ -47,7 +47,10 @@ def main():
         os.path.join(CURRENT_DIRECTORY, 'src', 'lib'): ['__pycache__']
     }
 
+    rootFiles = ['LICENSE', 'info.json']
     with zipfile.ZipFile(args.output, 'w', zipfile.ZIP_DEFLATED) as file:
+        for rootFile in rootFiles:
+            file.write(os.path.join(CURRENT_DIRECTORY, rootFile), rootFile)
         for rootDirectory, ignoreDirectories in directoriesToZip.items():
             __zipContent(rootDirectory, rootDirectory, ignoreDirectories, file)
 
