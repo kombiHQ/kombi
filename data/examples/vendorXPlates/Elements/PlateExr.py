@@ -4,9 +4,6 @@ from kombi.Element.VarExtractor import VarExtractor
 class PlateExr(ExrElement):
     """
     Implements an internal exr plate.
-
-    Alternatively you can use inline elements instead of this implementation,
-    please check the example: vendorXPlatesInlineElements
     """
 
     # name example: "foo_abc_def.v0001.000001.exr"
@@ -33,7 +30,7 @@ class PlateExr(ExrElement):
         """
         # perform the tests for the base classes
         if super(PlateExr, cls).test(data, parentElement):
-            return VarExtractor(data.baseName(), cls.namePattern).match()
+            return VarExtractor(data.name, cls.namePattern).match()
 
         return False
 

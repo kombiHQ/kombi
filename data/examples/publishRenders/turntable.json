@@ -4,8 +4,10 @@
   ],
   "vars": {
     "prefix": "/tmp/data/job",
-    "job": "RND",
-    "__uiHintSourceColumns": [
+    "job": "RND"
+  },
+  "tags": {
+    "uiHintColumns": [
       "assetName",
       "step",
       "variant",

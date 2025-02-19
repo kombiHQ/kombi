@@ -4,9 +4,6 @@ from kombi.Element.VarExtractor import VarExtractor
 class VendorXPngPlate(PngElement):
     """
     Implements a custom vendor "X" png plate element.
-
-    Alternatively you can use inline elements instead of this implementation,
-    please check the example: vendorXPlatesInlineElements
     """
 
     # name example: "foo_def_abc_foo_001.0001.png"
@@ -46,7 +43,7 @@ class VendorXPngPlate(PngElement):
         """
         # perform the tests for the base classes
         if super(VendorXPngPlate, cls).test(data, parentElement):
-            return VarExtractor(data.baseName(), cls.namePattern).match()
+            return VarExtractor(data.name, cls.namePattern).match()
 
         return False
 
