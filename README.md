@@ -333,11 +333,13 @@ Open Color IO (including python bindings) | 1.0+
 Gaffer | 0.53+
 PySide | 2.0+
 PyYAML | 6.0+
+Py Call Graph | 2.1+
 Qt.py | 2.4+
 FFmpeg (including ffprobe) | 3.0+
 nuke | 9.0+
 maya | 2016+
 deadline | 9.0+
+Graphviz | 12.1+
 
 ## Installation
 
@@ -354,8 +356,10 @@ pip install PySide6
 pip install PyYAML
 pip install Qt.Py
 pip install oiio-static-python
+pip install python-call-graph
 apt-get install make cmake
 apt-get install ffmpeg
+apt-get install graphviz
 ```
 </details>
 
@@ -368,6 +372,7 @@ apt-get install ffmpeg
 - [Qt.Py](https://pypi.org/project/QtPy)
 - [PyYAML](https://pypi.org/project/PyYAML)
 - [PySide2](https://pypi.org/project/PySide2)
+- [Py Call Graph](https://pypi.org/project/python-call-graph)
 - [Open Image IO](https://pypi.org/project/oiio-static-python/) (Unofficial)
 
 </details>

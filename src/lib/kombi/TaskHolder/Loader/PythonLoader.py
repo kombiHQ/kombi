@@ -33,7 +33,7 @@ class PythonLoader(Loader):
             ]
           },
           "elements": {
-            "myCustomElementType < png": "{job:3}_{shot:3}_{seq:3}_{plateName}_{vendorVersion:3i}.####.png"
+            "myCustomElementType": "{job:3}_{shot:3}_{seq:3}_{plateName}_{vendorVersion:3i}.####.png"
           },
           "tasks": [
             {
@@ -147,12 +147,16 @@ class PythonLoader(Loader):
             # getting the export template
             exportTemplate = Template(taskHolderInfo.get('export', ''))
 
+            # profile execution
+            profileTemplate = Template(taskHolderInfo.get('profile', ''))
+
             # creating a task holder
             taskHolder = TaskHolder(
                 task,
                 targetTemplate,
                 filterTemplate,
-                exportTemplate
+                exportTemplate,
+                profileTemplate
             )
 
             # regroup tag

@@ -561,6 +561,19 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         )
         templateWidget.editingFinished.connect(functools.partial(self.__editTemplate, templateWidget, 'export', taskHolder))
 
+        # profile
+        profileEntry = QtWidgets.QTreeWidgetItem(taskSetupEntry)
+        profileEntry.setData(0, QtCore.Qt.EditRole, 'Profile')
+        profileEntry.setToolTip(0, 'When a path is provided, saves a PNG image about a profile for the task execution')
+        profileEntry.setTextAlignment(0, QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
+        templateWidget = QtWidgets.QLineEdit(taskHolder.profileTemplate().inputString())
+        self.setItemWidget(
+            profileEntry,
+            1,
+            templateWidget
+        )
+        templateWidget.editingFinished.connect(functools.partial(self.__editTemplate, templateWidget, 'profile', taskHolder))
+
         # imports
         if taskHolder.importTemplates():
             importsChild = QtWidgets.QTreeWidgetItem(taskSetupEntry)
@@ -679,6 +692,9 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
 
         elif template == "export":
             taskHolder.exportTemplate().setInputString(value)
+
+        elif template == "profile":
+            taskHolder.profileTemplate().setInputString(value)
 
 class ExecutionSettingsTreeWidgetItem(QtWidgets.QTreeWidgetItem):
     """
