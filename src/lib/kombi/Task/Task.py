@@ -241,7 +241,7 @@ class Task(object):
         the task.
         """
 
-    def output(self, taskReporter=None):
+    def output(self):
         """
         Perform and result a list of elements created by task.
         """
