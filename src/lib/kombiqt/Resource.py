@@ -3,13 +3,26 @@ import sys
 from glob import glob
 from Qt import QtCore, QtGui, QtWidgets
 
+def _resolveResoucesLocation():
+    """
+    Utility to resolve the resources location.
+    """
+    dataUI = ("data", "ui")
+    rootLocation = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    deployedLocation = os.path.join(rootLocation, *dataUI)
+    if os.path.exists(deployedLocation):
+        return deployedLocation
+
+    # dev location
+    return os.path.join(os.path.dirname(rootLocation), *dataUI)
+
 class Resource(object):
     """
     Utility class used to load resources used by the interface.
     """
 
     __cache = {}
-    __resourcesLocation = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "ui")
+    __resourcesLocation = _resolveResoucesLocation()
     __defaultFontName = os.environ.get('KOMBI_UI_DEFAULT_FONT_NAME', 'Ubuntu')
     __defaultMonospaceFontName = os.environ.get('KOMBI_UI_DEFAULT_MONOSPACE_FONT_NAME', 'JetBrains Mono')
     __defaultFontSize = os.environ.get('KOMBI_UI_DEFAULT_FONT_SIZE', '12')
