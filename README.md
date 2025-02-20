@@ -338,7 +338,7 @@ PySide | 2.0+
 PyYAML | 6.0+
 Py Call Graph | 2.1+
 Qt.py | 2.4+
-FFmpeg (including ffprobe) | 3.0+
+FFmpeg (including ffprobe) | 7.0+
 nuke | 9.0+
 maya | 2016+
 deadline | 9.0+
