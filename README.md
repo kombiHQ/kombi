@@ -18,7 +18,7 @@ Kombi is especially useful for automating and integrating various executables or
 
 By leveraging declarative definitions, Kombi accelerates prototyping and simplifies maintenance by reducing the need for boilerplate code:
 
-<details open="true"><summary>YAML</summary>
+<details><summary>YAML</summary>
 <p>
 
 
@@ -127,7 +127,7 @@ target = "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ve
 
 Running kombi:
 
-<details open="true"><summary>Loading and running configs via the API (recommended)</summary>
+<details><summary>Loading and running configs via the API (recommended)</summary>
 <p>
 
 ```python
@@ -339,7 +339,7 @@ FFmpeg (including ffprobe) | 3.0+
 nuke | 9.0+
 maya | 2016+
 deadline | 9.0+
-Graphviz | 12.1+
+graphviz | 12.1+
 
 ## Installation
 
@@ -350,7 +350,7 @@ In case you are building the dependencies manually skip the step below:
 <details><summary>Linux</summary>
 <p>
 
-#### Ubuntu 18.04 (bionic) and derivatives:
+#### Ubuntu and derivatives:
 ```bash
 pip install PySide6
 pip install PyYAML
@@ -366,7 +366,6 @@ apt-get install graphviz
 <details><summary>windows</summary>
 <p>
 
-- [Cygwin](https://www.cygwin.com)
 - [Python 3.6+](https://www.python.org/downloads)
 - [FFmpeg](https://ffmpeg.org)
 - [Qt.Py](https://pypi.org/project/QtPy)
@@ -381,8 +380,6 @@ apt-get install graphviz
 
 <details><summary>Details</summary>
 <p>
-    
-> For windows users please make sure you have the posix tools available on your system. It can be done through [Cygwin](https://www.cygwin.com) (During the installation make sure to select `cmake` and `make` under `Devel` category).
 
 #### Dependencies
 Name | Version 
