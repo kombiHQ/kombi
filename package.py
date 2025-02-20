@@ -37,7 +37,6 @@ def main():
     if not args.fullData:
         excludeDataDirectories += [
             'doc',
-            'examples',
             'tests'
         ]
 
