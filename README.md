@@ -323,7 +323,7 @@ print(mainWindow().elementListWidget().selectedElements())
 - windows
 
 ### Requirement
-Python 3.5+
+Python 3.7+
 
 ### Optional Dependencies
 <details>
@@ -370,7 +370,7 @@ apt-get install graphviz
 <details><summary>windows</summary>
 <p>
 
-- [Python 3.6+](https://www.python.org/downloads)
+- [Python 3.7+](https://www.python.org/downloads)
 - [FFmpeg](https://ffmpeg.org)
 - [Qt.Py](https://pypi.org/project/QtPy)
 - [PyYAML](https://pypi.org/project/PyYAML)
