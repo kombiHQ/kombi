@@ -326,6 +326,9 @@ print(mainWindow().elementListWidget().selectedElements())
 Python 3.5+
 
 ### Optional Dependencies
+<details>
+<p>
+
 Name | Version
 --- | ---
 Open Image IO (including python bindings/binary tools) | 1.7+
@@ -340,6 +343,7 @@ nuke | 9.0+
 maya | 2016+
 deadline | 9.0+
 graphviz | 12.1+
+</details>
 
 ## Installation
 
