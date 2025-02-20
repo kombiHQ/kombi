@@ -1,3 +1,4 @@
+import os
 import json
 import sys
 import copy
@@ -51,6 +52,10 @@ class Task(object):
 
     __registered = {}
     __sentinelValue = _TaskSentinelValue()
+    __dotExecutable = os.environ.get(
+        'KOMBI_GRAPHVIZ_DOT_EXECUTABLE',
+        'dot'
+    )
 
     def __init__(self, taskType):
         """
@@ -283,6 +288,7 @@ class Task(object):
                 profiledExecution = True
                 graphviz = pycallgraph.output.GraphvizOutput()
                 graphviz.output_file = self.metadata('output.profile')
+                graphviz.tool = self.__dotExecutable
                 with pycallgraph.PyCallGraph(output=graphviz):
                     outputElements.extend(self._perform())
 
