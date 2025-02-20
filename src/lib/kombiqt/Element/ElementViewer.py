@@ -3,6 +3,7 @@ import platform
 import subprocess
 from kombi.Element.Fs.Image import ImageElement
 from kombi.Element.Fs.Video import VideoElement
+from kombi.Element.Fs.Audio import AudioElement
 from kombi.Task.Desktop.LaunchWithDefaultApplicationTask import LaunchWithDefaultApplicationTask
 from kombi.Task import Task
 from ..Resource import Resource
@@ -56,9 +57,9 @@ class LoadMediaThread(QtCore.QThread):
             if isinstance(self.__element, ImageElement):
                 resultImage = QtGui.QImage(self.__element.tag(self.previewTag()))
                 if resultImage.isNull():
-                    resultImage = self.__fmpegGrabImage()
-            elif isinstance(self.__element, VideoElement):
-                resultImage = self.__fmpegGrabImage()
+                    resultImage = self.__ffmpegFetchImage()
+            elif isinstance(self.__element, (VideoElement, AudioElement)):
+                resultImage = self.__ffmpegFetchImage()
             self.__elementCache[self.__element] = resultImage
 
         if not resultImage.isNull() and self.__width is not None and self.__height is not None:
@@ -71,16 +72,24 @@ class LoadMediaThread(QtCore.QThread):
         if not self.__abort:
             self.loadedSignal.emit(self.__element, resultImage)
 
-    def __fmpegGrabImage(self):
+    def __ffmpegFetchImage(self):
         """
-        Load a frame from the video or image (raw formats) using ffmpeg.
+        Load a frame from the video/image (raw formats) or generate a waveform from the input audio.
         """
+        extraArgs = []
+        if isinstance(self.__element, AudioElement):
+            extraArgs += [
+                '-filter_complex',
+                'showwavespic=colors=green|yellow'
+            ]
+
         ffmpegCommand = [
             self.__ffmpegExecutable,
             "-v",
             "quiet",
             "-i",
             self.__element.tag(self.previewTag()),
+            *extraArgs,
             "-vframes",
             "1",
             "-f",
@@ -120,7 +129,7 @@ class LoadMediaThread(QtCore.QThread):
 
 class ElementViewer(QtWidgets.QLabel):
     """
-    This widget is designed to display Image and Movie element types.
+    This widget is designed to display media element types (image, movie and audio).
 
     It functions by detecting the preview tag associated with the element and
     loading the corresponding content into the viewer for display.
