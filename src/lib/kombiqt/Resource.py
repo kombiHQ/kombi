@@ -1,7 +1,7 @@
 import os
 import sys
 from glob import glob
-from Qt import QtCore, QtGui, QtWidgets
+from Qt import QtCore, QtGui
 
 def _resolveResoucesLocation():
     """
@@ -25,7 +25,7 @@ class Resource(object):
     __resourcesLocation = _resolveResoucesLocation()
     __defaultFontName = os.environ.get('KOMBI_UI_DEFAULT_FONT_NAME', 'Ubuntu')
     __defaultMonospaceFontName = os.environ.get('KOMBI_UI_DEFAULT_MONOSPACE_FONT_NAME', 'JetBrains Mono')
-    __defaultFontSize = os.environ.get('KOMBI_UI_DEFAULT_FONT_SIZE', '12')
+    __defaultFontSize = os.environ.get('KOMBI_UI_DEFAULT_FONT_SIZE', '13')
     __loadedFont = False
     __loadedMonospaceFont = False
 
@@ -76,11 +76,10 @@ class Resource(object):
     @classmethod
     def fontSize(cls):
         """
-        Return the default font size based on the current dpi.
+        Return the default font size.
         """
-        if cls.__defaultFontSize.isdigit():
-            dpi = QtWidgets.QApplication.primaryScreen().logicalDotsPerInch()
-            return int(cls.__defaultFontSize) * dpi / 96
+        assert cls.__defaultFontSize.isdigit(), 'Invalid font size assigned to KOMBI_UI_DEFAULT_FONT_SIZE'
+        return int(cls.__defaultFontSize)
 
     @classmethod
     def qmovie(cls, name):

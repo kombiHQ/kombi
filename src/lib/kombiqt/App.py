@@ -1,6 +1,6 @@
 import os
 import sys
-from Qt import QtWidgets
+from Qt import QtWidgets, QtCore
 from kombi.Element.Fs.FsElement import FsElement
 from kombi.Element import Element
 from .Window.MainWindow import MainWindow
@@ -22,6 +22,10 @@ class App(QtWidgets.QApplication):
         Create a Kombi app.
         """
         super(App, self).__init__(argv, **kwargs)
+
+        # disabling dpi scaling to prevent inconsistent font rendering
+        self.setAttribute(QtCore.Qt.AA_DisableHighDpiScaling, True)
+        self.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, False)
 
         Style.apply(self)
 
