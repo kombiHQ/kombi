@@ -18,3 +18,4 @@ class AudioElement(FileElement):
 
         # setting icon
         self.setTag('icon', 'icons/elements/audio.png')
+        self.setTag('previewFilePath', self.var('filePath'))
