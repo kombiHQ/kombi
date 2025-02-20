@@ -1,7 +1,6 @@
 import os
 import platform
 import subprocess
-from kombi.Element.Fs.Image.OiioElement import OiioElement
 from kombi.Element.Fs.Image import ImageElement
 from kombi.Element.Fs.Video import VideoElement
 from kombi.Task.Desktop.LaunchWithDefaultApplicationTask import LaunchWithDefaultApplicationTask
@@ -55,9 +54,11 @@ class LoadMediaThread(QtCore.QThread):
             resultImage = self.__elementCache[self.__element]
         else:
             if isinstance(self.__element, ImageElement):
-                resultImage = self.__loadImage()
+                resultImage = QtGui.QImage(self.__element.tag(self.previewTag()))
+                if resultImage.isNull():
+                    resultImage = self.__fmpegGrabImage()
             elif isinstance(self.__element, VideoElement):
-                resultImage = self.__loadMovie()
+                resultImage = self.__fmpegGrabImage()
             self.__elementCache[self.__element] = resultImage
 
         if not resultImage.isNull() and self.__width is not None and self.__height is not None:
@@ -70,9 +71,9 @@ class LoadMediaThread(QtCore.QThread):
         if not self.__abort:
             self.loadedSignal.emit(self.__element, resultImage)
 
-    def __loadMovie(self):
+    def __fmpegGrabImage(self):
         """
-        Load a frame from the video.
+        Load a frame from the video or image (raw formats) using ffmpeg.
         """
         ffmpegCommand = [
             self.__ffmpegExecutable,
@@ -100,67 +101,6 @@ class LoadMediaThread(QtCore.QThread):
             return QtGui.QImage.fromData(QtCore.QByteArray(stdout))
 
         return QtGui.QImage()
-
-    def __loadImage(self):
-        """
-        Load an image.
-        """
-        resultImage = QtGui.QImage()
-        try:
-            import OpenImageIO as oiio
-        except ImportError:
-            resultImage = QtGui.QImage(self.__element.tag(self.previewTag()))
-        else:
-            # opening the source image to generate a resized image
-            inputImageBuf = oiio.ImageBuf(
-                OiioElement.supportedString(
-                    self.__element.tag(self.previewTag())
-                )
-            )
-
-            if not inputImageBuf or inputImageBuf.spec().width == 0:
-                self.loadedSignal.emit(self.__element, resultImage)
-                return
-
-            inputSpec = inputImageBuf.spec()
-            # output spec
-            outputSpec = oiio.ImageSpec(
-                inputSpec.width,
-                inputSpec.height,
-                inputSpec.nchannels,
-                inputSpec.format
-            )
-
-            # resized image buf
-            resizedImageBuf = oiio.ImageBuf(
-                outputSpec
-            )
-
-            temporaryBuffer = oiio.ImageBuf()
-            useRGB = []
-            for channelname in inputSpec.channelnames:
-                if channelname.upper() in ("R", "G", "B"):
-                    useRGB.append(channelname)
-
-            oiio.ImageBufAlgo.channels(
-                temporaryBuffer,
-                inputImageBuf,
-                ("R", "G", "B") if len(useRGB) == 3 else (inputSpec.channelnames[0],)
-            )
-            resizedImageBuf = temporaryBuffer
-
-            if self.__element.var('ext').lower() in ("exr", "dpx"):
-                oiio.ImageBufAlgo.colorconvert(resizedImageBuf, resizedImageBuf, "Linear", "sRGB")
-
-            pixelData = resizedImageBuf.get_pixels(oiio.UINT8)
-            resultImage = QtGui.QImage(
-                pixelData,
-                inputSpec.width,
-                inputSpec.height,
-                QtGui.QImage.Format_RGB888 if len(useRGB) else QtGui.QImage.Format_Grayscale8
-            )
-
-        return resultImage
 
     def __del__(self):
         """
