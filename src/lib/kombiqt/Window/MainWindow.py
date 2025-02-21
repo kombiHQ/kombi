@@ -6,6 +6,7 @@ from kombi.TaskHolder.Loader import Loader
 from kombi.Dispatcher import Dispatcher
 from kombi.Element import ElementContext
 from kombi.Element.Fs import FsElement
+from .PreferencesWindow import PreferencesWindow
 from ..Resource import Resource
 from ..Menu.TasksMenu import TasksMenu
 from ..Element import ElementListWidget, ElementsTreeWidgetItem
@@ -41,6 +42,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__buildWidgets()
 
         self.__elementListWidget.setViewMode(viewMode)
+
+        # preferences
+        preferencesAction = self.__sourceViewModeMenu.addAction('Preferences')
+        preferencesAction.triggered.connect(functools.partial(PreferencesWindow.popup, self))
+        self.__sourceViewModeMenu.addSeparator()
 
         # updating view mode
         listingModeMenu = self.__sourceViewModeMenu.addMenu('Listing Mode')

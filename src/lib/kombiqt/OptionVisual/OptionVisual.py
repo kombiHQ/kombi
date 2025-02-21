@@ -44,7 +44,7 @@ class OptionVisual(QtWidgets.QWidget):
 
     def optionValue(self):
         """
-        Return the option value assigned to the visual during the creation.
+        Return the option value (this value is updated automatically by the valueChanged signal).
         """
         return self.__optionValue
 
