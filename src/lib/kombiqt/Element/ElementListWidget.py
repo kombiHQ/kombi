@@ -21,7 +21,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
     modifed = QtCore.Signal()
     parentContextMenu = QtCore.Signal()
 
-    def __init__(self):
+    def __init__(self, defaultIconSize=Resource.listIconSize()):
         """
         Create a ElementListWidget object.
         """
@@ -48,7 +48,9 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         self.setHeaderItem(header)
 
-        self.setIconSize(QtCore.QSize(32, 32))
+        # the icon size can be potentially overridden by the element tag uiHintIconSize
+        # assigned to the task holder
+        self.setIconSize(QtCore.QSize(defaultIconSize, defaultIconSize))
         self.__taskHolders = []
         self.__columns = []
 
