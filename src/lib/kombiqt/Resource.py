@@ -2,6 +2,7 @@ import os
 import sys
 from glob import glob
 from Qt import QtCore, QtGui
+from kombi.Config import Config
 
 def _resolveResoucesLocation():
     """
@@ -22,10 +23,12 @@ class Resource(object):
     """
 
     __cache = {}
+    __userConfig = Config('userPreferences')
     __resourcesLocation = _resolveResoucesLocation()
     __defaultFontName = os.environ.get('KOMBI_UI_DEFAULT_FONT_NAME', 'Ubuntu')
     __defaultMonospaceFontName = os.environ.get('KOMBI_UI_DEFAULT_MONOSPACE_FONT_NAME', 'JetBrains Mono')
     __defaultFontSize = os.environ.get('KOMBI_UI_DEFAULT_FONT_SIZE', '13')
+    __defaultListIconSize = os.environ.get('KOMBI_UI_DEFAULT_LIST_ICON_SIZE', '32')
     __loadedFont = False
     __loadedMonospaceFont = False
 
@@ -74,12 +77,28 @@ class Resource(object):
         return cls.__defaultMonospaceFontName
 
     @classmethod
-    def fontSize(cls):
+    def fontSize(cls, ignoreUserConfig=False):
         """
         Return the default font size.
         """
+        if not ignoreUserConfig:
+            if cls.userConfig().hasKey('fontSize'):
+                return cls.userConfig().value('fontSize')
+
         assert cls.__defaultFontSize.isdigit(), 'Invalid font size assigned to KOMBI_UI_DEFAULT_FONT_SIZE'
         return int(cls.__defaultFontSize)
+
+    @classmethod
+    def listIconSize(cls, ignoreUserConfig=False):
+        """
+        Return the default icon size when listing elements.
+        """
+        if not ignoreUserConfig:
+            if cls.userConfig().hasKey('listIconSize'):
+                return cls.userConfig().value('listIconSize')
+
+        assert cls.__defaultListIconSize.isdigit(), 'Invalid list icon size assigned to KOMBI_UI_DEFAULT_LIST_ICON_SIZE'
+        return int(cls.__defaultListIconSize)
 
     @classmethod
     def qmovie(cls, name):
@@ -171,6 +190,13 @@ class Resource(object):
         """
         for ttfFilePath in glob(os.path.join(cls.__resourcesLocation, "fonts", "*.ttf")):
             QtGui.QFontDatabase.addApplicationFont(ttfFilePath)
+
+    @classmethod
+    def userConfig(cls):
+        """
+        Return the user config.
+        """
+        return cls.__userConfig
 
     @classmethod
     def stylesheet(cls):
