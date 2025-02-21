@@ -65,13 +65,13 @@ class PreferencesWindow(QtWidgets.QDialog):
         listIconSize = self.__listIconSizeWidget.optionValue()
 
         # when font size is the same size as the default one, removing user preference
-        if fontSize == Resource.fontSize():
+        if fontSize == Resource.fontSize(ignoreUserConfig=True):
             Resource.userConfig().removeKey('fontSize')
         else:
             Resource.userConfig().setValue('fontSize', fontSize)
 
         # when list icon size is the same size as the default one, removing user preference
-        if listIconSize == Resource.listIconSize():
+        if listIconSize == Resource.listIconSize(ignoreUserConfig=True):
             Resource.userConfig().removeKey('listIconSize')
         else:
             Resource.userConfig().setValue('listIconSize', listIconSize)
