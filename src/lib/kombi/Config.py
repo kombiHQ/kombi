@@ -5,11 +5,11 @@ import pathlib
 import traceback
 from .KombiError import KombiError
 
-class _ConfigSentinelValue:
-    """Config sentinel value."""
-
 class ConfigKeyError(KombiError):
     """Config Key Error."""
+
+class _ConfigSentinelValue:
+    """Config sentinel value."""
 
 class Config(object):
     """
