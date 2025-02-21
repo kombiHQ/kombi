@@ -3,11 +3,19 @@ import sys
 import json
 import pathlib
 import traceback
+from .KombiError import KombiError
+
+class _ConfigSentinelValue:
+    """Config sentinel value."""
+
+class ConfigKeyError(KombiError):
+    """Config Key Error."""
 
 class Config(object):
     """
     This class can be used to store arbitrary config data.
     """
+    __sentinelValue = _ConfigSentinelValue()
     __configBaseDirectoryEnv = os.environ.get('KOMBI_CONFIG_DIRECTORY')
 
     def __init__(self, name, group=''):
@@ -62,17 +70,39 @@ class Config(object):
         """
         return key in self.__data
 
+    def removeKey(self, key, serialize=True):
+        """
+        Remove the key from the config.
+        """
+        if key not in self.__data:
+            return
+
+        del self.__data[key]
+        if serialize:
+            self.__serialize()
+
     def keys(self):
         """
         Return all keys stored under the config.
         """
         return self.__data.keys()
 
-    def value(self, key):
+    def value(self, key, defaultValue=__sentinelValue):
         """
         Return the value for the input key.
+
+        In case a defaultValue is not specified this method will raise the
+        exception ConfigKeyError when the key does not exist.
         """
-        return self.__data[key]
+        if key in self.__data:
+            return self.__data[key]
+
+        if defaultValue is self.__sentinelValue:
+            raise ConfigKeyError(
+                'Invalid key "{}"'.format(key)
+            )
+        else:
+            return defaultValue
 
     def clear(self):
         """
