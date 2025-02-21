@@ -27,7 +27,7 @@ class MovElement(VideoElement):
         if not super(MovElement, cls).test(path, parentElement):
             return False
 
-        return path.suffix[1:] == 'mov'
+        return path.suffix[1:] in ('mov', 'mp4')
 
     def __lazyInfo(self):
         """
