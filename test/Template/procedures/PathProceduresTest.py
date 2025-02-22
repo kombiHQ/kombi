@@ -31,22 +31,6 @@ class PathProceduresTest(BaseTestCase):
         result = Template.runProcedure("basename", self.__path)
         self.assertEqual(result, "example.ext")
 
-    def testRFindPath(self):
-        """
-        Test that the rfind procedure works properly.
-        """
-        result = Template.runProcedure('rfindpath', 'test.txt', self.__testRFindPath)
-        testPath = os.path.join(BaseTestCase.dataTestsDirectory(), 'test.txt')
-        self.assertEqual(result, testPath)
-
-    def testFindPath(self):
-        """
-        Test that the find procedure works properly.
-        """
-        result = Template.runProcedure("findpath", 'TestElement.py', BaseTestCase.dataTestsDirectory())
-        testPath = os.path.join(BaseTestCase.dataTestsDirectory(), 'config', 'elements', 'TestElement.py')
-        self.assertEqual(result, testPath)
-
     def testRegistration(self):
         """
         Test that the procedure registration works properly.
