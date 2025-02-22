@@ -1,6 +1,5 @@
 import os
 from ..Task import Task
-from ... import Element
 from ...Element.Fs import FsElement
 
 class FrameImageTask(Task):
@@ -142,9 +141,9 @@ class FrameImageTask(Task):
                 outputImageBuf,
                 int(burnin['x']),
                 int(burnin['y']),
-                Element.Fs.Image.OiioElement.supportedString(burnin['text']),
+                burnin['text'],
                 int(burnin['size']),
-                Element.Fs.Image.OiioElement.supportedString(burnin['font']),
+                burnin['font'],
                 self.__fromHexColor(burnin['color'])
             )
 
@@ -208,11 +207,7 @@ class FrameImageTask(Task):
         """
         import OpenImageIO as oiio
 
-        return oiio.ImageBuf(
-            Element.Fs.Image.OiioElement.supportedString(
-                filePath
-            )
-        )
+        return oiio.ImageBuf(filePath)
 
 
 # registering task

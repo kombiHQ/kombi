@@ -5,19 +5,12 @@ from ...Element import ElementError
 from .ImageElement import ImageElement
 
 # check of openimageio is available
-hasUnicodeSupport = True
 hasOpenImageIO = False
 try:
     import OpenImageIO
+    hasOpenImageIO = True
 except ImportError:
     pass
-else:
-    hasOpenImageIO = True
-    # check if oiio was built with support for unicode
-    try:
-        OpenImageIO.ImageInput.open(u'')
-    except Exception:
-        hasUnicodeSupport = False
 
 class OiioElementReadFileError(ElementError):
     """Oiio Read File Error."""
@@ -41,7 +34,7 @@ class OiioElement(ImageElement):
             # parent directory element "1920x1080". For more details take a look
             # at "Directory" element.
             if hasOpenImageIO:
-                imageInput = OpenImageIO.ImageInput.open(self.supportedString(str(self.path())))
+                imageInput = OpenImageIO.ImageInput.open(str(self.path()))
 
                 # making sure the image has been successfully loaded
                 if imageInput is None:
@@ -60,16 +53,6 @@ class OiioElement(ImageElement):
                 self.__computeWidthHeight()
 
         return super(OiioElement, self).var(name, *args, **kwargs)
-
-    @classmethod
-    def supportedString(cls, text):
-        """
-        Return a string supported type in OIIO.
-        """
-        if not hasUnicodeSupport:
-            text = str(text)
-
-        return text
 
     def __computeWidthHeight(self):
         """
@@ -91,7 +74,7 @@ class OiioElement(ImageElement):
         )
 
         # capturing the output
-        output, error = process.communicate()
+        output, _ = process.communicate()
         infoLines = output.decode('utf-8', errors='ignore').splitlines()
         if not infoLines:
             return
@@ -114,6 +97,6 @@ class OiioElement(ImageElement):
                 height = match.group(2)
                 break
 
-        if width is not None:
+        if width is not None and height is not None:
             self.setVar('width', int(width))
             self.setVar('height', int(height))

@@ -1,5 +1,4 @@
 from fnmatch import fnmatch
-from ...Element.Fs.Image.OiioElement import OiioElement
 from ..Task import Task, TaskError
 
 class LoadImageMetadataTaskError(TaskError):
@@ -42,7 +41,7 @@ class LoadImageMetadataTask(Task):
         for element in self.elements():
             newElement = element.clone()
 
-            inputSpec = oiio.ImageInput.open(OiioElement.supportedString(element.var('fullPath'))).spec()
+            inputSpec = oiio.ImageInput.open(element.var('fullPath')).spec()
             for metadataName in filter(lambda x: x.startswith('_'), self.optionNames()):
                 found = self.option('skipIfVarAlreadyDefined') and metadataName in element.varNames()
 

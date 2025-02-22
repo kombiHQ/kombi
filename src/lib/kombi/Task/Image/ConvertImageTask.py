@@ -2,7 +2,6 @@ import os
 import multiprocessing
 
 from ..Task import Task, TaskError
-from ... import Element
 from ...Element.Fs import FsElement
 
 class ConvertImageTaskError(TaskError):
@@ -53,16 +52,10 @@ class ConvertImageTask(Task):
         """
         import OpenImageIO as oiio
 
-        targetFilePath = Element.Fs.Image.OiioElement.supportedString(
-            self.target(element)
-        )
+        targetFilePath = self.target(element)
 
         # opening the source image
-        inputImageBuf = oiio.ImageBuf(
-            Element.Fs.Image.OiioElement.supportedString(
-                element.var('filePath')
-            )
-        )
+        inputImageBuf = oiio.ImageBuf(element.var('filePath'))
 
         # output image buf
         outImageBuf = inputImageBuf

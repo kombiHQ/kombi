@@ -3,7 +3,6 @@ from array import array
 from .UpdateImageMetadataTask import UpdateImageMetadataTask
 from .OcioTask import OcioTask
 from ..Task import Task
-from ... import Element
 
 class FileColorTransformationTask(OcioTask):
     """
@@ -51,11 +50,7 @@ class FileColorTransformationTask(OcioTask):
             )
 
             # source image
-            sourceImage = oiio.ImageInput.open(
-                Element.Fs.Image.OiioElement.supportedString(
-                    element.var('filePath')
-                )
-            )
+            sourceImage = oiio.ImageInput.open(element.var('filePath'))
             spec = sourceImage.spec()
             spec.set_format(oiio.FLOAT)
 
@@ -68,9 +63,7 @@ class FileColorTransformationTask(OcioTask):
                 groupTransform
             ).applyRGB(pixels)
 
-            targetFilePath = Element.Fs.Image.OiioElement.supportedString(
-                self.target(element)
-            )
+            targetFilePath = self.target(element)
 
             # trying to create the directory automatically in case it does not exist
             try:

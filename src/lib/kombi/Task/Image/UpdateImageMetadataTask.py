@@ -1,6 +1,5 @@
 import os
 from ..Task import Task
-from ...Element.Fs.Image.OiioElement import OiioElement
 from ...Element.Fs import FsElement
 
 class UpdateImageMetadataTask(Task):
@@ -30,14 +29,10 @@ class UpdateImageMetadataTask(Task):
         """
         import OpenImageIO as oiio
 
-        targetFilePath = OiioElement.supportedString(
-            self.target(element)
-        )
+        targetFilePath = self.target(element)
 
         # converting image using open image io
-        inputImageFilePath = OiioElement.supportedString(
-            element.var('filePath')
-        )
+        inputImageFilePath = element.var('filePath')
 
         # trying to create the directory automatically in case it does not exist
         try:
@@ -86,8 +81,8 @@ class UpdateImageMetadataTask(Task):
 
         for name, value in metadata.items():
             spec.attribute(
-                OiioElement.supportedString(name),
-                OiioElement.supportedString(value) if isinstance(value, str) else value
+                name,
+                value if isinstance(value, str) else value
             )
 
 

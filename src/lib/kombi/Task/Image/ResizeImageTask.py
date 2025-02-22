@@ -1,9 +1,7 @@
 import os
-# TODO: disabled because of gaffer
 import multiprocessing
 from ...Template import Template
 from ..Task import Task
-from ... import Element
 
 class ResizeImageTask(Task):
     """
@@ -48,9 +46,7 @@ class ResizeImageTask(Task):
                     element
                 ))
 
-            targetFilePath = Element.Fs.Image.OiioElement.supportedString(
-                self.target(element)
-            )
+            targetFilePath = self.target(element)
 
             # trying to create the directory automatically in case it does not exist
             try:
@@ -59,11 +55,7 @@ class ResizeImageTask(Task):
                 pass
 
             # opening the source image to generate a resized image
-            inputImageBuf = oiio.ImageBuf(
-                Element.Fs.Image.OiioElement.supportedString(
-                    element.var('filePath')
-                )
-            )
+            inputImageBuf = oiio.ImageBuf(element.var('filePath'))
             inputSpec = inputImageBuf.spec()
 
             # output spec

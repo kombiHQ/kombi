@@ -2,7 +2,6 @@ import os
 from fnmatch import fnmatch
 from ...Task import Task, TaskError
 from ...Element import Element
-from ...Element.Fs.Image.OiioElement import OiioElement
 
 class CheckSequenceTaskError(TaskError):
     """Base check sequence task exception."""
@@ -129,7 +128,7 @@ class CheckSequenceTask(Task):
 
                 # required metadata check
                 for requiredMetadata in self.option("requiredMetadata"):
-                    inputSpec = oiio.ImageInput.open(OiioElement.supportedString(element.var("fullPath"))).spec()
+                    inputSpec = oiio.ImageInput.open(element.var("fullPath")).spec()
 
                     found = False
                     for attribute in inputSpec.extra_attribs:
