@@ -1,4 +1,7 @@
+import os
 from Qt import QtWidgets
+from kombi.Task import Task
+from kombi.Element.Fs.FsElement import FsElement
 from ..OptionVisual.IntOptionVisual import IntOptionVisual
 from ..Resource import Resource
 
@@ -50,12 +53,25 @@ class PreferencesWindow(QtWidgets.QDialog):
         mainLayout.addWidget(QtWidgets.QLabel('Icon size when listing elements (default {}):'.format(Resource.listIconSize(ignoreUserConfig=True))))
         mainLayout.addWidget(self.__listIconSizeWidget)
         mainLayout.addWidget(self.__listIconPreviewWidget, 100)
+        mainLayout.addSpacing(20)
 
-        mainLayout.addSpacing(40)
+        preferencesDirectoryWidget = QtWidgets.QLabel('<a href="pref">Show preferences directory</a>')
+        preferencesDirectoryWidget.linkActivated.connect(self.__onPreferencesDirectoryClicked)
+        mainLayout.addWidget(preferencesDirectoryWidget)
+        mainLayout.addSpacing(20)
+
         saveButtonWidget = QtWidgets.QPushButton('Save')
         saveButtonWidget.clicked.connect(self.__onSave)
         mainLayout.addWidget(saveButtonWidget)
         self.setLayout(mainLayout)
+
+    def __onPreferencesDirectoryClicked(self, _):
+        """
+        Display the preferences directory.
+        """
+        task = Task.create('revealInFileManager')
+        task.add(FsElement.createFromPath(os.path.dirname(Resource.userConfig().filePath())))
+        task.output()
 
     def __onSave(self):
         """
