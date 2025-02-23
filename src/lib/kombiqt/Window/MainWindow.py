@@ -246,8 +246,8 @@ class MainWindow(QtWidgets.QMainWindow):
             if 'uiHintCloseAfterExecution' in taskHolder.tagNames():
                 self.__closeAfterExecution = taskHolder.tag('uiHintCloseAfterExecution')
 
-            if taskHolder.tag('uiHintShowPreview', None):
-                self.__onToggleImageViewer(True)
+            if taskHolder.hasTag('uiHintShowPreview'):
+                self.__elementViewer.setVisible(taskHolder.tag('uiHintShowPreview'))
 
             if 'uiHintTitle' in taskHolder.tagNames():
                 self.__logo.setTextFormat(QtCore.Qt.RichText)
@@ -363,18 +363,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__elementViewer.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
 
         self.__elementViewer.setWidget(ElementViewer([], centerAlignment=False))
-        self.__elementViewer.setVisible(False)
 
-        imageViewerButton = QtWidgets.QPushButton()
-        imageViewerButton.setToolTip('Toggles the display of the preview panel')
-        imageViewerButton.setIcon(
+        viewerButton = QtWidgets.QPushButton()
+        viewerButton.setToolTip('Toggles the display of the preview panel')
+        viewerButton.setIcon(
             Resource.icon("icons/imageViewer.png")
         )
 
         sourceControlMain.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.__elementViewer)
-        sourceBarLayout.addWidget(imageViewerButton)
+        self.__elementViewer.setVisible(Resource.userConfig().value('showPreview', True))
+        sourceBarLayout.addWidget(viewerButton)
 
-        imageViewerButton.clicked.connect(self.__onToggleImageViewer)
+        viewerButton.clicked.connect(self.__onToggleViewer)
 
         scriptEditorButton = QtWidgets.QPushButton()
         scriptEditorButton.setToolTip('Toogles the display of the script editor')
@@ -529,14 +529,19 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.__scriptEditor.setVisible(not self.__scriptEditor.isVisible())
 
-    def __onToggleImageViewer(self, forceVisibility=False):
+    def __onToggleViewer(self):
         """
-        Slot triggered when the image preview button is pressed.
+        Slot triggered when the viewer button is pressed.
         """
-        self.__elementViewer.setVisible(not self.__elementViewer.isVisible() or forceVisibility)
+        self.__elementViewer.setVisible(not self.__elementViewer.isVisible())
 
-        if self.__elementViewer.isVisible() or forceVisibility:
+        if self.__elementViewer.isVisible():
             self.__onSourceTreeSelectionChanged()
+
+        if self.__elementViewer.isVisible() == Resource.userConfig().value('showPreview', None):
+            return
+
+        Resource.userConfig().setValue('showPreview', self.__elementViewer.isVisible())
 
     def __onBack(self):
         """
