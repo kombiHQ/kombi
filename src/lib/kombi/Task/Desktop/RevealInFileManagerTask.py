@@ -34,7 +34,7 @@ class RevealInFileManagerTask(Task):
         # linux <3
         args = []
         if platform.system() == 'Linux':
-            args.append('nautilus')
+            args.append('xdg-open')
             args += filePaths
         # windows
         elif platform.system() == 'Windows':
