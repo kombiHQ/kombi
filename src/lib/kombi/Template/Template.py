@@ -146,6 +146,19 @@ class Template(object):
         return finalResolvedTemplate
 
     @classmethod
+    def isProcedure(cls, rawTemplate, procedureName=''):
+        """
+        Return a boolean telling if input rawTemplate is a procedure.
+        """
+        if not rawTemplate or not isinstance(rawTemplate, str):
+            return False
+
+        processedTemplate = rawTemplate.strip()
+        return processedTemplate.startswith('(') and \
+            processedTemplate[1:].strip().startswith(procedureName) and \
+            processedTemplate.endswith(')')
+
+    @classmethod
     def registerProcedure(cls, name, procedureCallable):
         """
         Register a callable as procedure.
