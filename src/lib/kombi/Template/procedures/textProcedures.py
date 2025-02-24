@@ -37,6 +37,17 @@ def concat(*args):
     """
     return ''.join(args)
 
+def resolve(*args):
+    """
+    Return a resolved string.
+    """
+    result = ''
+    for value in args:
+        if value == '':
+            value = ' '
+        result += value
+    return result
+
 def capitalize(string):
     """
     Return string capitalized.
@@ -154,6 +165,12 @@ Template.registerProcedure(
 Template.registerProcedure(
     'concat',
     concat
+)
+
+# concatenate
+Template.registerProcedure(
+    'resolve',
+    resolve
 )
 
 # lower case
