@@ -74,6 +74,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         self.__splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
         self.__mainLayout = QtWidgets.QVBoxLayout()
         self.__mainLayout.setContentsMargins(0, 0, 0, 0)
+        self.__mainLayout.setSpacing(0)
         self.__codeEditor = _CodeEditorWidget()
         self.__codeEditor.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.__codeEditor.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -88,6 +89,11 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         self.__splitter.addWidget(self.__codeEditor)
         self.setLayout(self.__mainLayout)
         self.__codeEditor.executeCode.connect(self.executeCode)
+        self.__statusBar = QtWidgets.QLabel('')
+        self.__statusBar.setObjectName('scriptEditorStatus')
+        self.__statusBar.setAlignment(QtCore.Qt.AlignRight)
+        self.__mainLayout.addWidget(self.__statusBar)
+        self.__codeEditor.cursorPositionChanged.connect(self.__onUpdateStatus)
 
     def executeCode(self, code):
         """
@@ -151,6 +157,17 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         Update the script editor configuration when the code changes.
         """
         self.codeChanged.emit()
+
+    def __onUpdateStatus(self):
+        """
+        Triggered when text cursor is changed to update the status bar.
+        """
+        cursor = self.__codeEditor.textCursor()
+        line = cursor.blockNumber() + 1
+        column = cursor.columnNumber() + 1
+
+        # Update the status bar text
+        self.__statusBar.setText(f"Line: {line}, Column: {column} ")
 
 class _LineNumberAreaWidget(QtWidgets.QWidget):
     """

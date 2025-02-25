@@ -422,3 +422,7 @@ QLabel#fontSizePreview, QLabel#listIconSizePreview {
     border-radius: 3px;
     padding: 4px
 }
+
+QLabel#scriptEditorStatus {
+    color: #999999
+}
