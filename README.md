@@ -337,6 +337,7 @@ Gaffer | 0.53+
 PySide | 2.0+
 PyYAML | 6.0+
 Py Call Graph | 2.1+
+Jedi | 0.19+
 Qt.py | 2.4+
 FFmpeg (including ffprobe) | 7.0+
 nuke | 9.0+
@@ -361,6 +362,7 @@ pip install PyYAML
 pip install Qt.Py
 pip install oiio-static-python
 pip install python-call-graph
+pip install jedi
 apt-get install make cmake
 apt-get install ffmpeg
 apt-get install graphviz
@@ -376,6 +378,7 @@ apt-get install graphviz
 - [PyYAML](https://pypi.org/project/PyYAML)
 - [PySide2](https://pypi.org/project/PySide2)
 - [Py Call Graph](https://pypi.org/project/python-call-graph)
+- [Jedi](https://pypi.org/project/jedi/)
 - [Open Image IO](https://pypi.org/project/oiio-static-python/) (Unofficial)
 
 </details>
