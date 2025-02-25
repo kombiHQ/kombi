@@ -214,16 +214,33 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         """
         Handle key press events for custom behavior.
         """
+        cursor = self.textCursor()
+
         # Control+Enter: Execute selected code
         if event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Return:
-            cursor = self.textCursor()
             code = cursor.selectedText()
             if not code:
                 code = self.toPlainText()
             self.executeCode.emit(code.replace('\u2029', '\n'))
+        # Control+/: Replace the selected text with the new commented/uncommented code
+        elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Slash:
+            lines = cursor.selectedText().splitlines()
+
+            # Check if the lines are already commented
+            newLines = []
+            if list(filter(lambda x: x.strip().startswith('#'), lines)):
+                for line in lines:
+                    processedLine = line.lstrip('#').lstrip()
+                    if len(line) != processedLine:
+                        newLines.append(line.replace("#", '', 1))
+                    else:
+                        newLines.append(line)
+            # Comment the selected lines
+            else:
+                newLines = map(lambda x: '#' + x, lines)
+            cursor.insertText('\n'.join(newLines))
         # Enter: Insert a new line with proper indentation
         elif event.key() == QtCore.Qt.Key_Return and self.textCursor().block().length() - 1 == self.textCursor().positionInBlock():
-            cursor = self.textCursor()
             cursor.movePosition(QtGui.QTextCursor.EndOfBlock)
             currentLine = cursor.block().text()
             indentation = len(currentLine) - len(currentLine.lstrip())
@@ -232,7 +249,6 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             self.setTextCursor(cursor)
         # Backspace: Remove indentation if the line is empty
         elif event.key() == QtCore.Qt.Key_Backspace:
-            cursor = self.textCursor()
             cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
             currentLine = cursor.block().text()
             if currentLine.strip() == "":
@@ -247,7 +263,6 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
                 super().keyPressEvent(event)
         # Tab: Insert 4 spaces
         elif event.key() == QtCore.Qt.Key_Tab:
-            cursor = self.textCursor()
             selectedText = cursor.selectedText()
             selectionStart = cursor.selectionStart()
             if selectedText:
@@ -269,7 +284,6 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
                 self.setTextCursor(cursor)
         # Shift+Tab: Remove 4 spaces if they exist at the start of the line
         elif event.key() == QtCore.Qt.Key_Backtab:
-            cursor = self.textCursor()
             selectedText = cursor.selectedText()
             selectionStart = cursor.selectionStart()
             if selectedText:
@@ -277,11 +291,11 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
                 lines = selectedText.splitlines()
                 newLines = []
                 for line in lines:
-                    # Check if the line starts with 4 spaces
-                    if line.startswith("    "):  # 4 spaces
-                        newLines.append(line[4:])  # Remove the first 4 spaces
+                    totalSpaces = len(line) - len(line.lstrip())
+                    if line.startswith(' '):
+                        newLines.append(line[4 if totalSpaces >= 4 else totalSpaces:])
                     else:
-                        newLines.append(line)  # Keep the line as it is
+                        newLines.append(line)
 
                 # Replace the selected text with the new lines
                 cursor.insertText('\n'.join(newLines))
