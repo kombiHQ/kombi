@@ -14,7 +14,7 @@ from ..Element.ElementViewer import ElementViewer
 from ..Element.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
 from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
-from ..Widget.ScriptEditorWidget import ScriptEditorWidget
+from ..Widget.ScriptEditorTabWidget import ScriptEditorTabWidget
 
 class MainWindow(QtWidgets.QMainWindow):
     """
@@ -317,7 +317,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.resize(1280, 720)
 
         centralWidget = QtWidgets.QWidget()
-        self.setCentralWidget(centralWidget)
+        self.__scriptEditorTabWidget = ScriptEditorTabWidget(mainWidget=centralWidget)
+        self.setCentralWidget(self.__scriptEditorTabWidget)
 
         centralWidget.setLayout(QtWidgets.QVBoxLayout())
         self.__splitter = QtWidgets.QSplitter()
@@ -328,7 +329,6 @@ class MainWindow(QtWidgets.QMainWindow):
         sourceBarLayout = QtWidgets.QHBoxLayout()
 
         self.__elementsLevelNavigationWidget = ElementsLevelNavigationWidget()
-        self.__scriptEditor = None
         self.__sourceDirButton = QtWidgets.QPushButton()
         self.__sourceDirButton.setToolTip('Selects a source directory')
         self.__sourceDirButton.setIcon(
@@ -377,11 +377,11 @@ class MainWindow(QtWidgets.QMainWindow):
         viewerButton.clicked.connect(self.__onToggleViewer)
 
         scriptEditorButton = QtWidgets.QPushButton()
-        scriptEditorButton.setToolTip('Toogles the display of the script editor')
+        scriptEditorButton.setToolTip('Adds a new script editor tab')
         scriptEditorButton.setIcon(
             Resource.icon("icons/python.png")
         )
-        scriptEditorButton.clicked.connect(self.__onToggleScriptEditor)
+        scriptEditorButton.clicked.connect(lambda _: self.__scriptEditorTabWidget.addScriptEditor())
 
         sourceBarLayout.addWidget(scriptEditorButton)
         sourceBarLayout.addWidget(self.__sourceViewModeButton)
@@ -398,7 +398,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__nextButton.setIcon(
             Resource.icon("icons/next.png")
         )
-        self.__nextButton.clicked.connect(lambda x: self.refreshExecutionSettings())
+        self.__nextButton.clicked.connect(lambda _: self.refreshExecutionSettings())
 
         self.__backButton = QtWidgets.QPushButton("Back")
         self.__backButton.setIcon(
@@ -516,18 +516,6 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
         self.__elementViewer.widget().setElements(elements)
-
-    def __onToggleScriptEditor(self):
-        """
-        Slot triggered when the script editor button is pressed.
-        """
-        if self.__scriptEditor is None:
-            self.__scriptEditor = ScriptEditorWidget()
-            self.__splitter.addWidget(self.__scriptEditor)
-            self.__scriptEditor.setVisible(True)
-            return
-
-        self.__scriptEditor.setVisible(not self.__scriptEditor.isVisible())
 
     def __onToggleViewer(self):
         """

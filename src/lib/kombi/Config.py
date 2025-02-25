@@ -53,7 +53,7 @@ class Config(object):
         self.__data[key] = value
 
         if serialize:
-            self.__serialize()
+            self.serialize()
 
     def setValues(self, **kwargs):
         """
@@ -62,7 +62,7 @@ class Config(object):
         for key, value in kwargs.items():
             self.setValue(key, value, serialize=False)
 
-        self.__serialize()
+        self.serialize()
 
     def hasKey(self, key):
         """
@@ -79,7 +79,7 @@ class Config(object):
 
         del self.__data[key]
         if serialize:
-            self.__serialize()
+            self.serialize()
 
     def keys(self):
         """
@@ -109,7 +109,7 @@ class Config(object):
         Purge all data under the config.
         """
         self.__data = {}
-        self.__serialize()
+        self.serialize()
 
     def filePath(self):
         """
@@ -146,7 +146,7 @@ class Config(object):
                 sys.stderr.flush()
                 traceback.print_exc()
 
-    def __serialize(self):
+    def serialize(self):
         """
         Serialize the config data.
         """

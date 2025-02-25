@@ -5,3 +5,4 @@ from .ComboBoxInputDialog import ComboBoxInputDialog
 from .RenderfarmDispatcherPriorityWidget import RenderfarmDispatcherPriorityWidget
 from .RunTaskHoldersWidget import RunTaskHoldersWidget
 from .ScriptEditorWidget import ScriptEditorWidget
+from .ScriptEditorTabWidget import ScriptEditorTabWidget
