@@ -348,7 +348,7 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         else:
             super().keyPressEvent(event)
 
-        if hasJediSupport and event.key() == QtCore.Qt.Key_Return:
+        if hasJediSupport and event.key() in (QtCore.Qt.Key_Return, QtCore.Qt.Key_ParenLeft, QtCore.Qt.Key_ParenRight, QtCore.Qt.Key_Space):
             self.__completer.popup().hide()
 
         elif hasJediSupport and event.key() == QtCore.Qt.Key_Period or self.__completer.popup().isVisible():
@@ -495,7 +495,9 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         Insert the suggestion it into the editor at the current cursor position.
         """
         cursor = self.textCursor()
-        cursor.insertText(suggestion[len(cursor.block().text().split('.')[-1]):])
+        textBeforeCursor = self.toPlainText()[:cursor.position()]
+        currentLineText = textBeforeCursor.splitlines()[-1]
+        cursor.insertText(suggestion[len(currentLineText.split('.')[-1]):])
 
 class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     """
