@@ -4,6 +4,12 @@ from io import StringIO
 from contextlib import redirect_stdout
 import traceback
 
+try:
+    import jedi
+    hasJediSupport = True
+except ImportError:
+    hasJediSupport = False
+
 # making a copy of the globals at this point. This will be shared with the
 # code execution
 codeExecutionGlobals = dict(globals())  # noqa: E402
@@ -73,7 +79,8 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         self.__splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
         self.__mainLayout = QtWidgets.QVBoxLayout()
-        self.__mainLayout.setContentsMargins(0, 0, 0, 0)
+        self.__mainLayout.setContentsMargins(4, 4, 4, 2)
+        self.__mainLayout.setSpacing(0)
         self.__codeEditor = _CodeEditorWidget()
         self.__codeEditor.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.__codeEditor.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -88,6 +95,11 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         self.__splitter.addWidget(self.__codeEditor)
         self.setLayout(self.__mainLayout)
         self.__codeEditor.executeCode.connect(self.executeCode)
+        self.__statusBar = QtWidgets.QLabel('')
+        self.__statusBar.setObjectName('scriptEditorStatus')
+        self.__statusBar.setAlignment(QtCore.Qt.AlignRight)
+        self.__mainLayout.addWidget(self.__statusBar)
+        self.__codeEditor.cursorPositionChanged.connect(self.__onUpdateStatus)
 
     def executeCode(self, code):
         """
@@ -152,6 +164,17 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         self.codeChanged.emit()
 
+    def __onUpdateStatus(self):
+        """
+        Triggered when text cursor is changed to update the status bar.
+        """
+        cursor = self.__codeEditor.textCursor()
+        line = cursor.blockNumber() + 1
+        column = cursor.columnNumber() + 1
+
+        # Update the status bar text
+        self.__statusBar.setText(f"Line: {line}, Column: {column} ")
+
 class _LineNumberAreaWidget(QtWidgets.QWidget):
     """
     Custom widget to hold the area used to render the line numbers.
@@ -206,6 +229,12 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         self.cursorPositionChanged.connect(self.updateLineNumberArea)
         self.setAcceptRichText(False)  # Only accept plain text
 
+        self.__completer = QtWidgets.QCompleter(self)
+        self.__completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.__completer.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
+        self.__completer.setWidget(self)
+        self.__completer.activated.connect(self.__acceptSuggestion)
+
         _PythonSyntaxHighlighter(self.document())
 
         self.updateLineNumberAreaWidth(0)  # Initialize the line number area width
@@ -214,16 +243,36 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         """
         Handle key press events for custom behavior.
         """
+        cursor = self.textCursor()
+
+        if self.__completer.popup().isVisible() and self.__completer.popup().currentIndex().isValid() and event.key() == QtCore.Qt.Key_Return:
+            self.__acceptSuggestion(self.__completer.popup().currentIndex().data())
+
         # Control+Enter: Execute selected code
-        if event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Return:
-            cursor = self.textCursor()
+        elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Return:
             code = cursor.selectedText()
             if not code:
                 code = self.toPlainText()
             self.executeCode.emit(code.replace('\u2029', '\n'))
+        # Control+/: Replace the selected text with the new commented/uncommented code
+        elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Slash:
+            lines = cursor.selectedText().splitlines()
+
+            # Check if the lines are already commented
+            newLines = []
+            if list(filter(lambda x: x.strip().startswith('#'), lines)):
+                for line in lines:
+                    processedLine = line.lstrip('#').lstrip()
+                    if len(line) != processedLine:
+                        newLines.append(line.replace("#", '', 1))
+                    else:
+                        newLines.append(line)
+            # Comment the selected lines
+            else:
+                newLines = map(lambda x: '#' + x, lines)
+            cursor.insertText('\n'.join(newLines))
         # Enter: Insert a new line with proper indentation
         elif event.key() == QtCore.Qt.Key_Return and self.textCursor().block().length() - 1 == self.textCursor().positionInBlock():
-            cursor = self.textCursor()
             cursor.movePosition(QtGui.QTextCursor.EndOfBlock)
             currentLine = cursor.block().text()
             indentation = len(currentLine) - len(currentLine.lstrip())
@@ -232,7 +281,6 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             self.setTextCursor(cursor)
         # Backspace: Remove indentation if the line is empty
         elif event.key() == QtCore.Qt.Key_Backspace:
-            cursor = self.textCursor()
             cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
             currentLine = cursor.block().text()
             if currentLine.strip() == "":
@@ -247,7 +295,6 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
                 super().keyPressEvent(event)
         # Tab: Insert 4 spaces
         elif event.key() == QtCore.Qt.Key_Tab:
-            cursor = self.textCursor()
             selectedText = cursor.selectedText()
             selectionStart = cursor.selectionStart()
             if selectedText:
@@ -269,7 +316,6 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
                 self.setTextCursor(cursor)
         # Shift+Tab: Remove 4 spaces if they exist at the start of the line
         elif event.key() == QtCore.Qt.Key_Backtab:
-            cursor = self.textCursor()
             selectedText = cursor.selectedText()
             selectionStart = cursor.selectionStart()
             if selectedText:
@@ -277,11 +323,11 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
                 lines = selectedText.splitlines()
                 newLines = []
                 for line in lines:
-                    # Check if the line starts with 4 spaces
-                    if line.startswith("    "):  # 4 spaces
-                        newLines.append(line[4:])  # Remove the first 4 spaces
+                    totalSpaces = len(line) - len(line.lstrip())
+                    if line.startswith(' '):
+                        newLines.append(line[4 if totalSpaces >= 4 else totalSpaces:])
                     else:
-                        newLines.append(line)  # Keep the line as it is
+                        newLines.append(line)
 
                 # Replace the selected text with the new lines
                 cursor.insertText('\n'.join(newLines))
@@ -297,9 +343,16 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
                     cursor.movePosition(QtGui.QTextCursor.EndOfBlock, QtGui.QTextCursor.KeepAnchor)
                     cursor.insertText(text[4:])
                     self.setTextCursor(cursor)
+
         # Default behavior for other keys
         else:
             super().keyPressEvent(event)
+
+        if hasJediSupport and event.key() == QtCore.Qt.Key_Return:
+            self.__completer.popup().hide()
+
+        elif hasJediSupport and event.key() == QtCore.Qt.Key_Period or self.__completer.popup().isVisible():
+            self.__updateAutoComplete()
 
     def lineNumberAreaWidth(self):
         """
@@ -395,6 +448,54 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             top = bottom
             bottom = top + int(self.document().documentLayout().blockBoundingRect(block).height())
             blockNumber += 1
+
+    def __updateAutoComplete(self):
+        """
+        Update the auto-completion suggestions.
+
+        Uses the Jedi library to query for suggestions and displays them in a popup.
+        """
+        cursor = self.textCursor()
+        textBeforeCursor = self.toPlainText()[:cursor.position()]
+        currentLineText = textBeforeCursor.splitlines()[-1]
+
+        if not len(currentLineText.strip()):
+            self.__completer.popup().hide()
+            return
+
+        # query jedi for auto complete suggestions
+        try:
+            completions = jedi.Script(self.toPlainText()).complete(
+                len(textBeforeCursor.split('\n')),
+                len(currentLineText)
+            )
+        except Exception:
+            pass
+        else:
+            self.__displaySuggestions(list(map(lambda x: x.name, completions)))
+
+    def __displaySuggestions(self, suggestions):
+        """
+        Display the given list of suggestions in the auto-completion popup.
+        """
+        if not suggestions:
+            return
+        self.__model = QtCore.QStringListModel(suggestions, self.__completer)
+        self.__completer.setModel(self.__model)
+        self.__completer.setCompletionPrefix('')
+
+        cursorRect = self.mapToGlobal(self.cursorRect().bottomRight())
+
+        self.__completer.complete()
+        self.__completer.popup().setGeometry(cursorRect.x() + 30, cursorRect.y() + 10, 300, 150)
+        self.__completer.popup().scrollToTop()
+
+    def __acceptSuggestion(self, suggestion):
+        """
+        Insert the suggestion it into the editor at the current cursor position.
+        """
+        cursor = self.textCursor()
+        cursor.insertText(suggestion[len(cursor.block().text().split('.')[-1]):])
 
 class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     """
