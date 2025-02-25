@@ -248,6 +248,10 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         if self.__completer.popup().isVisible() and self.__completer.popup().currentIndex().isValid() and event.key() == QtCore.Qt.Key_Return:
             self.__acceptSuggestion(self.__completer.popup().currentIndex().data())
 
+        # Control+G: Change the current line
+        elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_G:
+            self.__gotoLinePopup()
+
         # Control+Enter: Execute selected code
         elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Return:
             code = cursor.selectedText()
@@ -448,6 +452,25 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             top = bottom
             bottom = top + int(self.document().documentLayout().blockBoundingRect(block).height())
             blockNumber += 1
+
+    def __gotoLinePopup(self):
+        """
+        Display a popup to change the line.
+        """
+        line, ok = QtWidgets.QInputDialog.getText(
+            self,
+            "Script Editor",
+            "Goto line:",
+            text=''
+        )
+        if ok and line.isdigit():
+            cursor = self.textCursor()
+            cursor.movePosition(QtGui.QTextCursor.Start)
+
+            for _ in range(int(line) - 1):
+                cursor.movePosition(QtGui.QTextCursor.Down)
+
+            self.setTextCursor(cursor)
 
     def __updateAutoComplete(self):
         """
