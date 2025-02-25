@@ -4,6 +4,12 @@ from io import StringIO
 from contextlib import redirect_stdout
 import traceback
 
+try:
+    import jedi
+    hasJediSupport = True
+except ImportError:
+    hasJediSupport = False
+
 # making a copy of the globals at this point. This will be shared with the
 # code execution
 codeExecutionGlobals = dict(globals())  # noqa: E402
@@ -73,7 +79,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         self.__splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
         self.__mainLayout = QtWidgets.QVBoxLayout()
-        self.__mainLayout.setContentsMargins(0, 0, 0, 0)
+        self.__mainLayout.setContentsMargins(4, 4, 4, 2)
         self.__mainLayout.setSpacing(0)
         self.__codeEditor = _CodeEditorWidget()
         self.__codeEditor.setWordWrapMode(QtGui.QTextOption.NoWrap)
@@ -223,6 +229,12 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         self.cursorPositionChanged.connect(self.updateLineNumberArea)
         self.setAcceptRichText(False)  # Only accept plain text
 
+        self.__completer = QtWidgets.QCompleter(self)
+        self.__completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.__completer.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
+        self.__completer.setWidget(self)
+        self.__completer.activated.connect(self.__acceptSuggestion)
+
         _PythonSyntaxHighlighter(self.document())
 
         self.updateLineNumberAreaWidth(0)  # Initialize the line number area width
@@ -233,8 +245,11 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         """
         cursor = self.textCursor()
 
+        if self.__completer.popup().isVisible() and self.__completer.popup().currentIndex().isValid() and event.key() == QtCore.Qt.Key_Return:
+            self.__acceptSuggestion(self.__completer.popup().currentIndex().data())
+
         # Control+Enter: Execute selected code
-        if event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Return:
+        elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Return:
             code = cursor.selectedText()
             if not code:
                 code = self.toPlainText()
@@ -328,9 +343,16 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
                     cursor.movePosition(QtGui.QTextCursor.EndOfBlock, QtGui.QTextCursor.KeepAnchor)
                     cursor.insertText(text[4:])
                     self.setTextCursor(cursor)
+
         # Default behavior for other keys
         else:
             super().keyPressEvent(event)
+
+        if hasJediSupport and event.key() == QtCore.Qt.Key_Return:
+            self.__completer.popup().hide()
+
+        elif hasJediSupport and event.key() == QtCore.Qt.Key_Period or self.__completer.popup().isVisible():
+            self.__updateAutoComplete()
 
     def lineNumberAreaWidth(self):
         """
@@ -426,6 +448,54 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             top = bottom
             bottom = top + int(self.document().documentLayout().blockBoundingRect(block).height())
             blockNumber += 1
+
+    def __updateAutoComplete(self):
+        """
+        Update the auto-completion suggestions.
+
+        Uses the Jedi library to query for suggestions and displays them in a popup.
+        """
+        cursor = self.textCursor()
+        textBeforeCursor = self.toPlainText()[:cursor.position()]
+        currentLineText = textBeforeCursor.splitlines()[-1]
+
+        if not len(currentLineText.strip()):
+            self.__completer.popup().hide()
+            return
+
+        # query jedi for auto complete suggestions
+        try:
+            completions = jedi.Script(self.toPlainText()).complete(
+                len(textBeforeCursor.split('\n')),
+                len(currentLineText)
+            )
+        except Exception:
+            pass
+        else:
+            self.__displaySuggestions(list(map(lambda x: x.name, completions)))
+
+    def __displaySuggestions(self, suggestions):
+        """
+        Display the given list of suggestions in the auto-completion popup.
+        """
+        if not suggestions:
+            return
+        self.__model = QtCore.QStringListModel(suggestions, self.__completer)
+        self.__completer.setModel(self.__model)
+        self.__completer.setCompletionPrefix('')
+
+        cursorRect = self.mapToGlobal(self.cursorRect().bottomRight())
+
+        self.__completer.complete()
+        self.__completer.popup().setGeometry(cursorRect.x() + 30, cursorRect.y() + 10, 300, 150)
+        self.__completer.popup().scrollToTop()
+
+    def __acceptSuggestion(self, suggestion):
+        """
+        Insert the suggestion it into the editor at the current cursor position.
+        """
+        cursor = self.textCursor()
+        cursor.insertText(suggestion[len(cursor.block().text().split('.')[-1]):])
 
 class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     """
