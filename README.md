@@ -300,7 +300,7 @@ Kombi comes with a built-in script editor, which can be particularly helpful in 
 
 Use `<ctrl>` + `<enter>` to run the code. In case there is a selection in place only the selected code will be performed.
 
-Hit the python button to show the script-editor:
+Hit the python button to add a script-editor tab to the main interface. These tabs and their contents remain consistent across sessions:
 
 <img src="data/doc/kombi-script-editor-button.png?v=1"/>
 <br/><br/>
