@@ -9,26 +9,19 @@ import traceback
 codeExecutionGlobals = dict(globals())  # noqa: E402
 
 from Qt import QtCore, QtGui, QtWidgets
-from kombi.Config import Config
-
 
 class ScriptEditorWidget(QtWidgets.QWidget):
     """
     Python script editor widget.
     """
+    codeChanged = QtCore.Signal()
 
     def __init__(self, parent=None) -> None:
         """
         Initialize the ScriptEditorWidget.
         """
         super().__init__(parent)
-
         self.__buildWidget()
-
-        # load any previous saved session
-        self.__scriptEditorConfig = Config('scriptEditor')
-        if self.__scriptEditorConfig.hasKey('code'):
-            self.setCode(self.__scriptEditorConfig.value('code'))
 
     def keyPressEvent(self, event):
         """
@@ -157,7 +150,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         Update the script editor configuration when the code changes.
         """
-        self.__scriptEditorConfig.setValue('code', self.__codeEditor.toPlainText())
+        self.codeChanged.emit()
 
 class _LineNumberAreaWidget(QtWidgets.QWidget):
     """
