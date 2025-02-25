@@ -437,7 +437,7 @@ class Task(object):
         return list(Task.__registered.keys())
 
     @staticmethod
-    def create(taskType, *args, **kwargs):
+    def create(taskType, *args, **kwargs) -> 'Task':
         """
         Create a task object.
         """
@@ -453,7 +453,7 @@ class Task(object):
         return task
 
     @staticmethod
-    def createFromJson(jsonContents):
+    def createFromJson(jsonContents) -> 'Task':
         """
         Create a task based on the jsonContents (serialized via toJson).
         """

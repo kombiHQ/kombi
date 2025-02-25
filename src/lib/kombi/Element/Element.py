@@ -354,7 +354,7 @@ class Element(object):
         raise NotImplementedError
 
     @staticmethod
-    def create(data, parentElement=None):
+    def create(data, parentElement=None) -> 'Element':
         """
         Create a element for the input data.
         """
@@ -459,7 +459,7 @@ class Element(object):
         return list(result)
 
     @staticmethod
-    def createFromJson(jsonContents):
+    def createFromJson(jsonContents) -> 'Element':
         """
         Create a element based on the jsonContents (serialized via toJson).
         """
