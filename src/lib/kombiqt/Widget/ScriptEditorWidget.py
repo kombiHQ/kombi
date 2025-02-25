@@ -472,7 +472,13 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         except Exception:
             pass
         else:
-            self.__displaySuggestions(list(map(lambda x: x.name, completions)))
+            suggestions = []
+            for completion in completions:
+                if completion.type == 'function':
+                    suggestions.append(completion.name + '()')
+                else:
+                    suggestions.append(completion.name)
+            self.__displaySuggestions(suggestions)
 
     def __displaySuggestions(self, suggestions):
         """
