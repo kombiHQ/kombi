@@ -1,4 +1,5 @@
 import re
+import functools
 import weakref
 from io import StringIO
 from contextlib import redirect_stdout
@@ -49,6 +50,15 @@ class ScriptEditorWidget(QtWidgets.QWidget):
             self.__outputWidget.setStyleSheet(f"font-size: {size}px")
             self.__codeEditor.setStyleSheet(f"font-size: {size}px")
 
+        # Control+F: find text
+        elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_F:
+            self.__findWidget.selectAll()
+            self.__findWidget.setFocus()
+
+        # Escape: reset the focus back to the code editor
+        elif event.key() == QtCore.Qt.Key_Escape and self.__findWidget.hasFocus():
+            self.__codeEditor.setFocus()
+
         super().keyPressEvent(event)
 
     def wheelEvent(self, event):
@@ -95,11 +105,22 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         self.__splitter.addWidget(self.__codeEditor)
         self.setLayout(self.__mainLayout)
         self.__codeEditor.executeCode.connect(self.executeCode)
-        self.__statusBar = QtWidgets.QLabel('')
-        self.__statusBar.setObjectName('scriptEditorStatus')
-        self.__statusBar.setAlignment(QtCore.Qt.AlignRight)
-        self.__mainLayout.addWidget(self.__statusBar)
+        self.__textCursorPositionLabel = QtWidgets.QLabel('')
+        self.__textCursorPositionLabel.setObjectName('textCursorPositionLabel')
+        self.__textCursorPositionLabel.setAlignment(QtCore.Qt.AlignRight)
         self.__codeEditor.cursorPositionChanged.connect(self.__onUpdateStatus)
+
+        self.__findWidget = QtWidgets.QLineEdit()
+        self.__findWidget.setObjectName('findText')
+        self.__findWidget.setPlaceholderText('Find (press Enter to cycle through matches)')
+        self.__findWidget.textEdited.connect(functools.partial(self.__onFindTextEdit, False))
+        self.__findWidget.returnPressed.connect(functools.partial(self.__onFindTextEdit, True))
+        statusLayout = QtWidgets.QHBoxLayout()
+        statusLayout.addWidget(self.__findWidget)
+        statusLayout.addStretch()
+        statusLayout.addWidget(self.__textCursorPositionLabel)
+        self.__mainLayout.addLayout(statusLayout)
+        self.__searchLastPost = 0
 
     def executeCode(self, code):
         """
@@ -158,6 +179,39 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         self.__outputWidget.clear()
 
+    def __onFindTextEdit(self, moveCursor, text=''):
+        """
+        Triggered when the find has changed.
+        """
+        # clearing any existing selection before starting the search
+        text = self.__findWidget.text()
+        cursor = self.__codeEditor.textCursor()
+        cursor.clearSelection()
+        self.__codeEditor.setTextCursor(cursor)
+
+        # in case the find text is ":<digits>" we actually move line (like vim)
+        if text.startswith(':') and text[1:].isdigit():
+            self.__codeEditor.gotoLine(int(text[1:]))
+            return
+
+        if not text:
+            self.__searchLastPost = 0
+            return
+
+        content = self.__codeEditor.toPlainText()
+        postion = content.find(text, self.__searchLastPost if moveCursor else 0)
+
+        #  looping back to the begin
+        if postion == -1:
+            postion = content.find(text)
+
+        # moving text cursor and selecting text
+        if postion != -1:
+            cursor.setPosition(postion)
+            cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, len(text))
+            self.__codeEditor.setTextCursor(cursor)
+            self.__searchLastPost = postion + len(text)
+
     def __onCodeEditorChanged(self):
         """
         Update the script editor configuration when the code changes.
@@ -173,7 +227,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         column = cursor.columnNumber() + 1
 
         # Update the status bar text
-        self.__statusBar.setText(f"Line: {line}, Column: {column} ")
+        self.__textCursorPositionLabel.setText(f"Line: {line}, Column: {column} ")
 
 class _LineNumberAreaWidget(QtWidgets.QWidget):
     """
@@ -251,7 +305,6 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         # Control+G: Change the current line
         elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_G:
             self.__gotoLinePopup()
-
         # Control+Enter: Execute selected code
         elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Return:
             code = cursor.selectedText()
@@ -453,6 +506,18 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             bottom = top + int(self.document().documentLayout().blockBoundingRect(block).height())
             blockNumber += 1
 
+    def gotoLine(self, line):
+        """
+        Go to specific line in the code.
+        """
+        cursor = self.textCursor()
+        cursor.movePosition(QtGui.QTextCursor.Start)
+
+        for _ in range(int(line) - 1):
+            cursor.movePosition(QtGui.QTextCursor.Down)
+
+        self.setTextCursor(cursor)
+
     def __gotoLinePopup(self):
         """
         Display a popup to change the line.
@@ -464,13 +529,7 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             text=''
         )
         if ok and line.isdigit():
-            cursor = self.textCursor()
-            cursor.movePosition(QtGui.QTextCursor.Start)
-
-            for _ in range(int(line) - 1):
-                cursor.movePosition(QtGui.QTextCursor.Down)
-
-            self.setTextCursor(cursor)
+            self.gotoLine(line)
 
     def __updateAutoComplete(self):
         """
@@ -527,6 +586,12 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         textBeforeCursor = self.toPlainText()[:cursor.position()]
         currentLineText = textBeforeCursor.splitlines()[-1]
         cursor.insertText(suggestion[len(currentLineText.split('.')[-1]):])
+
+        # when the suggestion is a callable, lets move the cursor one char back
+        if suggestion.endswith('()'):
+            cursor.movePosition(QtGui.QTextCursor.Left, QtGui.QTextCursor.KeepAnchor, 1)
+            cursor.clearSelection()
+            self.setTextCursor(cursor)
 
 class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     """
