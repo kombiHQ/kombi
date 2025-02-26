@@ -350,6 +350,8 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         """
         super(_CodeEditorWidget, self).__init__(parent)
         self.setObjectName('codeEditor')
+        self.setStyleSheet('font-size: {}px'.format(Resource.fontSize()))
+
         self.__lineNumberArea = _LineNumberAreaWidget(self)
 
         self.document().blockCountChanged.connect(self.updateLineNumberArea)
@@ -487,12 +489,7 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         """
         Calculate the width required for the line number area.
         """
-        digits = 1
-        m = max(1, self.document().blockCount())
-        while m >= 10:
-            m /= 10
-            digits += 1
-        space = 13 + self.fontMetrics().horizontalAdvance('9') * digits
+        space = 20 + self.fontMetrics().horizontalAdvance(str(self.document().blockCount()))
         return space
 
     def updateLineNumberArea(self):
