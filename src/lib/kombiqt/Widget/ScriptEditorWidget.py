@@ -195,6 +195,10 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         self.__codeEditor.setPlainText(code)
 
+        cursor = self.__codeEditor.textCursor()
+        cursor.movePosition(QtGui.QTextCursor.EndOfBlock)
+        self.__codeEditor.setTextCursor(cursor)
+
     def output(self):
         """
         Get the current output from the output widget.
