@@ -423,6 +423,11 @@ QLabel#fontSizePreview, QLabel#listIconSizePreview {
     padding: 4px
 }
 
-QLabel#scriptEditorStatus {
-    color: #999999
+QLabel#textCursorPositionLabel {
+    color: #999999;
+    font-family: "<monospaceFontName>";
+}
+
+QLineEdit#findText{
+    font-family: "<monospaceFontName>";
 }
