@@ -31,6 +31,7 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         self.tabCloseRequested.connect(self.__onTabClose)
         self.tabBar().tabRenamed.connect(self.__onCodeChanged)
         self.tabBar().tabMoved.connect(self.__onTabMoved)
+        self.tabBar().currentChanged.connect(self.__onTabChanged)
 
         self.displayUpdate()
 
@@ -103,6 +104,14 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         self.removeTab(index)
 
         self.__bakeTabs()
+
+    def __onTabChanged(self, tabIndex):
+        """
+        Triggered when tab index changed.
+        """
+        widget = self.widget(tabIndex)
+        if isinstance(widget, ScriptEditorWidget):
+            widget.codeEditorWidget().setFocus()
 
     def __onTabMoved(self, *_):
         """

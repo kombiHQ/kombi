@@ -201,6 +201,18 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         return self.__outputWidget.toPlainText()
 
+    def codeEditorWidget(self):
+        """
+        Return the code editor widget.
+        """
+        return self.__codeEditor
+
+    def outputWidget(self):
+        """
+        Return the output widget.
+        """
+        return self.__outputWidget
+
     def clearOutput(self):
         """
         Clear the output widget.
@@ -229,7 +241,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
 
     def __setReplaceDisplay(self, display):
         """
-        Set the display of replace widget.
+        Set the display of the replace widget.
         """
         self.__replaceWidget.setVisible(display)
         self.__replaceAll.setVisible(display)
@@ -240,7 +252,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
 
     def __onFindTextEdit(self, moveCursor, text=''):
         """
-        Triggered when the find has changed.
+        Triggered when the find field has changed.
         """
         # clearing any existing selection before starting the search
         text = self.__findWidget.text()
@@ -336,11 +348,10 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         self.setObjectName('codeEditor')
         self.__lineNumberArea = _LineNumberAreaWidget(self)
 
-        self.document().blockCountChanged.connect(self.updateLineNumberAreaWidth)
+        self.document().blockCountChanged.connect(self.updateLineNumberArea)
         self.verticalScrollBar().valueChanged.connect(self.updateLineNumberArea)
-        self.textChanged.connect(self.updateLineNumberArea)
         self.cursorPositionChanged.connect(self.updateLineNumberArea)
-        self.setAcceptRichText(False)  # Only accept plain text
+        self.setAcceptRichText(False)
 
         self.__completer = QtWidgets.QCompleter(self)
         self.__completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
@@ -349,8 +360,6 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         self.__completer.activated.connect(self.__acceptSuggestion)
 
         _PythonSyntaxHighlighter(self.document())
-
-        self.updateLineNumberAreaWidth(0)  # Initialize the line number area width
 
     def keyPressEvent(self, event):
         """
@@ -482,12 +491,6 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         space = 13 + self.fontMetrics().horizontalAdvance('9') * digits
         return space
 
-    def updateLineNumberAreaWidth(self, _):
-        """
-        Update the width of the line number area.
-        """
-        self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
-
     def updateLineNumberArea(self):
         """
         Update the line number area.
@@ -495,7 +498,7 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         self.verticalScrollBar().setSliderPosition(self.verticalScrollBar().sliderPosition())
         rect = self.contentsRect()
         self.__lineNumberArea.update(0, rect.y(), self.__lineNumberArea.width(), rect.height())
-        self.updateLineNumberAreaWidth(0)
+        self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
         dy = self.verticalScrollBar().sliderPosition()
         if dy > -1:
             self.__lineNumberArea.scroll(0, dy)
@@ -533,6 +536,7 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         """
         self.verticalScrollBar().setSliderPosition(self.verticalScrollBar().sliderPosition())
         painter = QtGui.QPainter(self.__lineNumberArea)
+        painter.setFont(self.font())
         painter.fillRect(event.rect(), self.__backgroundColor)
         blockNumber = self.firstVisibleBlockId()
         block = self.document().findBlockByNumber(blockNumber)
