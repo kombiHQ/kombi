@@ -11,6 +11,7 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
     It allows adding script editor tabs, renaming tabs, closing tabs,
     and saving/restoring tab states via user configuration.
     """
+    tabDisplayUpdate = QtCore.Signal(bool)
     __scriptEditorsConfig = Config('scriptEditors')
 
     def __init__(self, mainWidget=None, loadUserTabs=True, parent=None):
@@ -33,6 +34,14 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         self.tabBar().tabMoved.connect(self.__onTabMoved)
         self.tabBar().currentChanged.connect(self.__onTabChanged)
 
+        scriptEditorButton = QtWidgets.QPushButton()
+        scriptEditorButton.setToolTip('Adds a new script editor tab')
+        scriptEditorButton.setIcon(
+            Resource.icon("icons/python.png")
+        )
+        scriptEditorButton.clicked.connect(lambda _: self.addScriptEditor())
+        self.setCornerWidget(scriptEditorButton, corner=QtCore.Qt.TopRightCorner)
+
         self.displayUpdate()
 
     def mainWidget(self):
@@ -41,7 +50,7 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         """
         return self.__mainWidget
 
-    def addScriptEditor(self, code="", tabName="Script Editor"):
+    def addScriptEditor(self, code="", tabName="Script Editor", setFocus=True):
         """
         Add a new script editor tab to the widget.
         """
@@ -51,14 +60,29 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         self.displayUpdate()
         codeEditor.codeChanged.connect(functools.partial(self.__onCodeChanged, tabIndex))
 
+        if setFocus:
+            self.setCurrentIndex(tabIndex)
+
+    def hasScriptEditorTabs(self):
+        """
+        Return a boolean telling if there are script editor tabs.
+        """
+        for i in range(self.tabBar().count()):
+            if isinstance(self.widget(i), ScriptEditorWidget):
+                return True
+        return False
+
     def displayUpdate(self):
         """
         Update the visibility of the tab bar based on the number of tabs.
         """
-        if self.tabBar().count() <= 1:
-            self.tabBar().hide()
-        else:
+        showTabs = self.hasScriptEditorTabs()
+        if showTabs:
             self.tabBar().show()
+        else:
+            self.tabBar().hide()
+
+        self.tabDisplayUpdate.emit(showTabs)
 
     def __setMainWidget(self, mainWidget):
         """
@@ -95,7 +119,7 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
             if not keyName.isdigit():
                 continue
             tabInfo = self.__scriptEditorsConfig.value(keyName)
-            self.addScriptEditor(tabInfo['code'], tabInfo['label'])
+            self.addScriptEditor(tabInfo['code'], tabInfo['label'], setFocus=False)
 
     def __onTabClose(self, index):
         """
