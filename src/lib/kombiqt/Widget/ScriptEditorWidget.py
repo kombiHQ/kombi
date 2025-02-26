@@ -63,9 +63,15 @@ class ScriptEditorWidget(QtWidgets.QWidget):
             self.__findWidget.selectAll()
             self.__findWidget.setFocus()
 
+        # Control+H: find/replace text
+        elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_H:
+            self.__setReplaceDisplay(True)
+            self.__findWidget.selectAll()
+            self.__findWidget.setFocus()
+
         # Escape: reset the focus back to the code editor
         elif event.key() == QtCore.Qt.Key_Escape and self.__findWidget.hasFocus():
-            self.__codeEditor.setFocus()
+            self.__setReplaceDisplay(False)
 
         super().keyPressEvent(event)
 
@@ -123,10 +129,24 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         self.__findWidget.setPlaceholderText('Find (press Enter to cycle through matches)')
         self.__findWidget.textEdited.connect(functools.partial(self.__onFindTextEdit, False))
         self.__findWidget.returnPressed.connect(functools.partial(self.__onFindTextEdit, True))
+
+        self.__replaceWidget = QtWidgets.QLineEdit()
+        self.__replaceWidget.setObjectName('findText')
+        self.__replaceWidget.setPlaceholderText('Replace')
+        self.__replaceAll = QtWidgets.QPushButton('Replace All')
+        self.__replaceCancel = QtWidgets.QPushButton('Cancel')
+        self.__replaceCancel.pressed.connect(functools.partial(self.__setReplaceDisplay, False))
+        self.__replaceAll.pressed.connect(self.__onReplaceAll)
+
         statusLayout = QtWidgets.QHBoxLayout()
         statusLayout.addWidget(self.__findWidget)
+        statusLayout.addWidget(self.__replaceWidget)
+        statusLayout.addWidget(self.__replaceAll)
+        statusLayout.addSpacing(5)
+        statusLayout.addWidget(self.__replaceCancel)
         statusLayout.addStretch()
         statusLayout.addWidget(self.__textCursorPositionLabel)
+        self.__setReplaceDisplay(False)
         self.__mainLayout.addLayout(statusLayout)
         self.__searchLastPost = 0
 
@@ -186,6 +206,37 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         Clear the output widget.
         """
         self.__outputWidget.clear()
+
+    def __onReplaceAll(self):
+        """
+        Triggered when replace all button is pressed.
+        """
+        reply = QtWidgets.QMessageBox.question(
+            self,
+            "Replace all",
+            "Are you sure you want to replace all?",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            QtWidgets.QMessageBox.No
+        )
+
+        if reply == QtWidgets.QMessageBox.Yes:
+            self.__codeEditor.setPlainText(
+                self.__codeEditor.toPlainText().replace(
+                    self.__findWidget.text(),
+                    self.__replaceWidget.text()
+                )
+            )
+
+    def __setReplaceDisplay(self, display):
+        """
+        Set the display of replace widget.
+        """
+        self.__replaceWidget.setVisible(display)
+        self.__replaceAll.setVisible(display)
+        self.__replaceCancel.setVisible(display)
+
+        if not display:
+            self.__codeEditor.setFocus()
 
     def __onFindTextEdit(self, moveCursor, text=''):
         """
