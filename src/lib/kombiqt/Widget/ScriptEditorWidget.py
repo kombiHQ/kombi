@@ -555,9 +555,8 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             translateY = 0
 
         top = self.viewport().geometry().top()
-        if blockNumber == 0:
-            additionalMargin = self.document().documentMargin() - 1 - self.verticalScrollBar().sliderPosition()
-        else:
+        additionalMargin = 0
+        if blockNumber:
             additionalMargin = self.document().documentLayout().blockBoundingRect(prevBlock).translated(0, translateY).intersected(self.viewport().geometry()).height()
         top += additionalMargin
         bottom = top + int(self.document().documentLayout().blockBoundingRect(block).height())
