@@ -376,16 +376,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
         viewerButton.clicked.connect(self.__onToggleViewer)
 
-        scriptEditorButton = QtWidgets.QPushButton()
-        scriptEditorButton.setToolTip('Adds a new script editor tab')
-        scriptEditorButton.setIcon(
+        self.__scriptEditorButton = QtWidgets.QPushButton()
+        self.__scriptEditorButton.setToolTip('Adds a new script editor tab')
+        self.__scriptEditorButton.setIcon(
             Resource.icon("icons/python.png")
         )
-        scriptEditorButton.clicked.connect(lambda _: self.__scriptEditorTabWidget.addScriptEditor())
+        self.__scriptEditorButton.clicked.connect(lambda _: self.__scriptEditorTabWidget.addScriptEditor())
+        self.__scriptEditorTabWidget.tabDisplayUpdate.connect(lambda x: self.__scriptEditorButton.setVisible(not x))
+        sourceBarLayout.addWidget(self.__scriptEditorButton)
+        self.__scriptEditorButton.setVisible(not self.__scriptEditorTabWidget.hasScriptEditorTabs())
 
-        sourceBarLayout.addWidget(scriptEditorButton)
         sourceBarLayout.addWidget(self.__sourceViewModeButton)
-
         sourceLayout.addLayout(sourceBarLayout)
 
         self.__sourceAreaWidget = QtWidgets.QWidget()
