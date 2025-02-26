@@ -1,9 +1,10 @@
 import re
-import functools
 import weakref
+import functools
+import traceback
 from io import StringIO
 from contextlib import redirect_stdout
-import traceback
+from ..Resource import Resource
 
 try:
     import jedi
@@ -34,6 +35,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         Control the script editor font size by detecting ctr + = and ctrl + -.
         """
+        # Control+- or Control+=: control the font zoom
         if event.modifiers() == QtCore.Qt.ControlModifier and event.key() in (QtCore.Qt.Key_Equal, QtCore.Qt.Key_Minus):
             currentFont = self.__outputWidget.font()
             size = currentFont.pixelSize()
@@ -47,6 +49,12 @@ class ScriptEditorWidget(QtWidgets.QWidget):
                 size = 1
 
             currentFont.setPixelSize(size)
+            self.__outputWidget.setStyleSheet(f"font-size: {size}px")
+            self.__codeEditor.setStyleSheet(f"font-size: {size}px")
+
+        # Control+0: reset font zoom
+        elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_0:
+            size = Resource.fontSize()
             self.__outputWidget.setStyleSheet(f"font-size: {size}px")
             self.__codeEditor.setStyleSheet(f"font-size: {size}px")
 
