@@ -1,3 +1,4 @@
+import os
 import re
 import weakref
 import functools
@@ -24,16 +25,21 @@ class ScriptEditorWidget(QtWidgets.QWidget):
     """
     codeChanged = QtCore.Signal()
 
-    def __init__(self, parent=None) -> None:
+    def __init__(self, code='', filePath='', parent=None) -> None:
         """
         Initialize the ScriptEditorWidget.
         """
         super().__init__(parent)
+
         self.__buildWidget()
+        self.setFilePath(filePath)
+        if code:
+            self.setCode(code)
+        self.__buildConnections()
 
     def keyPressEvent(self, event):
         """
-        Control the script editor font size by detecting ctr + = and ctrl + -.
+        Handle the hotkeys available for the script editor.
         """
         # Control+- or Control+=: control the font zoom
         if event.modifiers() == QtCore.Qt.ControlModifier and event.key() in (QtCore.Qt.Key_Equal, QtCore.Qt.Key_Minus):
@@ -57,6 +63,10 @@ class ScriptEditorWidget(QtWidgets.QWidget):
             size = Resource.fontSize()
             self.__outputWidget.setStyleSheet(f"font-size: {size}px")
             self.__codeEditor.setStyleSheet(f"font-size: {size}px")
+
+        # Control+S: save
+        elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_S and self.filePath():
+            self.saveFile()
 
         # Control+F: find text
         elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_F:
@@ -101,42 +111,36 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         Build the base widgets.
         """
-        self.__splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        self.__verticalSplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
         self.__mainLayout = QtWidgets.QVBoxLayout()
         self.__mainLayout.setContentsMargins(4, 4, 4, 2)
         self.__mainLayout.setSpacing(0)
         self.__codeEditor = _CodeEditorWidget()
         self.__codeEditor.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.__codeEditor.setFocusPolicy(QtCore.Qt.StrongFocus)
-        self.__codeEditor.textChanged.connect(self.__onCodeEditorChanged)
         self.__outputWidget = QtWidgets.QTextEdit()
         self.__outputWidget.setObjectName('codeEditor')
         self.__outputWidget.setAcceptRichText(False)
         self.__outputWidget.setReadOnly(True)
         self.__outputWidget.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.__mainLayout.addWidget(self.__splitter)
-        self.__splitter.addWidget(self.__outputWidget)
-        self.__splitter.addWidget(self.__codeEditor)
+        self.__mainLayout.addWidget(self.__verticalSplitter, 10)
+
+        self.__verticalSplitter.addWidget(self.__outputWidget)
+        self.__verticalSplitter.addWidget(self.__codeEditor)
         self.setLayout(self.__mainLayout)
-        self.__codeEditor.executeCode.connect(self.executeCode)
         self.__textCursorPositionLabel = QtWidgets.QLabel('')
         self.__textCursorPositionLabel.setObjectName('textCursorPositionLabel')
         self.__textCursorPositionLabel.setAlignment(QtCore.Qt.AlignRight)
-        self.__codeEditor.cursorPositionChanged.connect(self.__onUpdateStatus)
 
         self.__findWidget = QtWidgets.QLineEdit()
         self.__findWidget.setObjectName('findText')
         self.__findWidget.setPlaceholderText('Find (press Enter to cycle through matches)')
-        self.__findWidget.textEdited.connect(functools.partial(self.__onFindTextEdit, False))
-        self.__findWidget.returnPressed.connect(functools.partial(self.__onFindTextEdit, True))
 
         self.__replaceWidget = QtWidgets.QLineEdit()
         self.__replaceWidget.setObjectName('findText')
         self.__replaceWidget.setPlaceholderText('Replace')
         self.__replaceAll = QtWidgets.QPushButton('Replace All')
         self.__replaceCancel = QtWidgets.QPushButton('Cancel')
-        self.__replaceCancel.pressed.connect(functools.partial(self.__setReplaceDisplay, False))
-        self.__replaceAll.pressed.connect(self.__onReplaceAll)
 
         statusLayout = QtWidgets.QHBoxLayout()
         statusLayout.addWidget(self.__findWidget)
@@ -147,8 +151,22 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         statusLayout.addStretch()
         statusLayout.addWidget(self.__textCursorPositionLabel)
         self.__setReplaceDisplay(False)
-        self.__mainLayout.addLayout(statusLayout)
+        self.__mainLayout.addLayout(statusLayout, 0)
         self.__searchLastPost = 0
+
+    def __buildConnections(self):
+        """
+        Build all the base widget connections.
+        """
+        self.__codeEditor.textChanged.connect(self.__onCodeEditorChanged)
+        self.__codeEditor.executeCode.connect(self.executeCode)
+        self.__codeEditor.cursorPositionChanged.connect(self.__onUpdateStatus)
+
+        self.__findWidget.textEdited.connect(functools.partial(self.__onFindTextEdit, False))
+        self.__findWidget.returnPressed.connect(functools.partial(self.__onFindTextEdit, True))
+
+        self.__replaceCancel.pressed.connect(functools.partial(self.__setReplaceDisplay, False))
+        self.__replaceAll.pressed.connect(self.__onReplaceAll)
 
     def executeCode(self, code):
         """
@@ -198,6 +216,56 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         cursor = self.__codeEditor.textCursor()
         cursor.movePosition(QtGui.QTextCursor.EndOfBlock)
         self.__codeEditor.setTextCursor(cursor)
+
+    def setFilePath(self, filePath, loadCode=True):
+        """
+        Associate a file path with the script editor.
+
+        When defined the code will be serialized using the file path when changed.
+        """
+        self.__filePath = filePath
+
+        if filePath and loadCode:
+            if not os.path.exists(filePath):
+                return
+
+            self.loadFile()
+
+    def filePath(self):
+        """
+        Return the file associated with the file path with the script editor.
+        """
+        return self.__filePath
+
+    def saveFile(self):
+        """
+        Save the code to the file path.
+        """
+        assert self.filePath(), "File path not defined!"
+
+        with open(self.filePath(), 'w') as f:
+            f.write(self.code())
+
+    def isModified(self):
+        """
+        Return a boolean telling if the code is different from the original contents of the file path.
+        """
+        assert self.filePath(), "File path not defined!"
+
+        if not os.path.exists(self.filePath()):
+            return True
+
+        with open(self.filePath()) as f:
+            return hash(f.read()) != hash(self.code())
+
+    def loadFile(self):
+        """
+        Load the code from the file path.
+        """
+        assert self.filePath(), "File path not defined!"
+
+        with open(self.filePath()) as f:
+            self.setCode(f.read())
 
     def output(self):
         """
@@ -264,7 +332,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         cursor.clearSelection()
         self.__codeEditor.setTextCursor(cursor)
 
-        # in case the find text is ":<digits>" we actually move line (like vim)
+        # in case the find text is ":<digits>" we actually move to the line (like vim)
         if text.startswith(':') and text[1:].isdigit():
             self.__codeEditor.gotoLine(int(text[1:]))
             return
@@ -698,10 +766,10 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__applyHighlight(self.__strings, text, self.__stringFormat)
         self.__applyHighlight(self.__comments, text, self.__commentFormat)
 
-    def __applyHighlight(self, pattern, text, text_format):
+    def __applyHighlight(self, pattern, text, textFormat, *args):
         """
         Apply the syntax highlighting using the provided regular expression pattern.
         """
-        for match in re.finditer(pattern, text):
+        for match in re.finditer(pattern, text, *args):
             start, end = match.span()
-            self.setFormat(start, end - start, text_format)
+            self.setFormat(start, end - start, textFormat)
