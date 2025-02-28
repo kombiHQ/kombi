@@ -7,11 +7,11 @@ class DateOptionVisual(OptionVisual):
     Implement the widget for a date option.
     """
 
-    def __init__(self, optionName, optionValue, uiHints=None):
+    def __init__(self, optionValue, uiHints=None):
         """
         Create DateOptionVisual object.
         """
-        super().__init__(optionName, optionValue, uiHints)
+        super().__init__(optionValue, uiHints)
 
         self.__buildWidget()
 

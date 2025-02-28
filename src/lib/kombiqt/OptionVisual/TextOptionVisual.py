@@ -7,11 +7,11 @@ class TextOptionVisual(OptionVisual):
     Implement the widget for a text option.
     """
 
-    def __init__(self, optionName, optionValue, uiHints=None):
+    def __init__(self, optionValue, uiHints=None):
         """
         Create TextOptionVisual object.
         """
-        super().__init__(optionName, optionValue, uiHints)
+        super().__init__(optionValue, uiHints)
         self.__pendingTextEdited = False
         self.__buildWidget()
 

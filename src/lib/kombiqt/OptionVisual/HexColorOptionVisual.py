@@ -7,11 +7,11 @@ class HexColorOptionVisual(OptionVisual):
     Implement the widget for a hex color option.
     """
 
-    def __init__(self, optionName, optionValue, uiHints=None):
+    def __init__(self, optionValue, uiHints=None):
         """
         Create HexColorOptionVisual object.
         """
-        super().__init__(optionName, optionValue, uiHints)
+        super().__init__(optionValue, uiHints)
 
         self.__buildWidget()
 

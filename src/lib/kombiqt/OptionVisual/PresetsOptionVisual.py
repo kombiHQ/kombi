@@ -7,11 +7,11 @@ class PresetsOptionVisual(OptionVisual):
     Implement the widget for a presets visual.
     """
 
-    def __init__(self, optionName, optionValue, uiHints=None):
+    def __init__(self, optionValue, uiHints=None):
         """
         Create PresetsOptionVisual object.
         """
-        super().__init__(optionName, optionValue, uiHints)
+        super().__init__(optionValue, uiHints)
 
         self.__buildWidget()
 

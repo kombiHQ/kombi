@@ -10,11 +10,11 @@ class FilePathOptionVisual(OptionVisual):
     Implement the widget for a text option.
     """
 
-    def __init__(self, optionName, optionValue, uiHints=None):
+    def __init__(self, optionValue, uiHints=None):
         """
         Create FilePathOptionVisual object.
         """
-        super().__init__(optionName, optionValue, uiHints)
+        super().__init__(optionValue, uiHints)
 
         self.__buildWidget()
 

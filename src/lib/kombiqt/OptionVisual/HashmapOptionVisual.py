@@ -8,11 +8,11 @@ class HashmapOptionVisual(OptionVisual):
     Implement the widget for a hashmap option.
     """
 
-    def __init__(self, optionName, optionValue, uiHints=None):
+    def __init__(self, optionValue, uiHints=None):
         """
         Create HashmapOptionVisual object.
         """
-        super().__init__(optionName, optionValue, uiHints)
+        super().__init__(optionValue, uiHints)
 
         self.__buildWidget()
 
@@ -37,7 +37,7 @@ class HashmapOptionVisual(OptionVisual):
             if uiHints.get('hidden', False):
                 continue
 
-            itemWidget = OptionVisual.create(optionName, optionValue, uiHints)
+            itemWidget = OptionVisual.create(optionValue, uiHints)
             itemWidget.valueChanged.connect(functools.partial(self.__onItemValueChanged, optionName))
 
             label = uiHints.get('label', optionName)

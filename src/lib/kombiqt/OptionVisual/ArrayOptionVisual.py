@@ -8,11 +8,11 @@ class ArrayOptionVisual(OptionVisual):
     Implement the widget for an array option.
     """
 
-    def __init__(self, optionName, optionValue, uiHints=None):
+    def __init__(self, optionValue, uiHints=None):
         """
         Create ArrayOptionVisual object.
         """
-        super().__init__(optionName, optionValue, uiHints)
+        super().__init__(optionValue, uiHints)
 
         self.__buildWidget()
 
@@ -32,7 +32,7 @@ class ArrayOptionVisual(OptionVisual):
         for i, optionValue in enumerate(self.optionValue()):
             optionName = str(i)
             uiHints = itemsUiHints.get(optionName, {})
-            itemWidget = OptionVisual.create(optionName, optionValue, uiHints)
+            itemWidget = OptionVisual.create(optionValue, uiHints)
             itemWidget.valueChanged.connect(functools.partial(self.__onItemValueChanged, i))
 
             label = uiHints.get('label', optionName)
