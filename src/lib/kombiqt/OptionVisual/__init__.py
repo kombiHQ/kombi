@@ -13,3 +13,4 @@ from .ElementOptionVisual import ElementOptionVisual
 from .HexColorOptionVisual import HexColorOptionVisual
 from .DateOptionVisual import DateOptionVisual
 from .FilePathOptionVisual import FilePathOptionVisual
+from .PathBrowserOptionVisual import PathBrowserOptionVisual
