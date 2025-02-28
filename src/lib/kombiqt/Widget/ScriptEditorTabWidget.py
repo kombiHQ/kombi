@@ -1,5 +1,5 @@
 import functools
-from Qt import QtWidgets, QtCore
+from Qt import QtWidgets, QtCore, QtGui
 from kombi.Config import Config
 from ..Resource import Resource
 from ..Widget.ScriptEditorWidget import ScriptEditorWidget
@@ -50,13 +50,26 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         """
         return self.__mainWidget
 
-    def addScriptEditor(self, code="", tabName="Script Editor", setFocus=True):
+    def addScriptEditor(self, code='', filePath='', tabName='Script Editor', setFocus=True):
         """
         Add a new script editor tab to the widget.
         """
-        codeEditor = ScriptEditorWidget()
-        codeEditor.setCode(code)
-        tabIndex = self.addTab(codeEditor, Resource.icon("icons/python.png"), tabName)
+        # in case the input file path is already loaded. Don't create a new tab.
+        if filePath:
+            for i in range(self.tabBar().count()):
+                widget = self.widget(i)
+                if isinstance(widget, ScriptEditorWidget) and widget.filePath() == filePath:
+                    tabIndex = i
+                    if setFocus:
+                        self.setCurrentIndex(tabIndex)
+                    return
+
+        codeEditor = ScriptEditorWidget(code, filePath)
+        icon = Resource.icon("icons/python.png")
+        if filePath:
+            icon = QtWidgets.QFileIconProvider().icon(QtCore.QFileInfo(filePath))
+
+        tabIndex = self.addTab(codeEditor, icon, tabName)
         self.displayUpdate()
         codeEditor.codeChanged.connect(functools.partial(self.__onCodeChanged, tabIndex))
 
@@ -119,7 +132,7 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
             if not keyName.isdigit():
                 continue
             tabInfo = self.__scriptEditorsConfig.value(keyName)
-            self.addScriptEditor(tabInfo['code'], tabInfo['label'], setFocus=False)
+            self.addScriptEditor(tabInfo['code'], tabInfo['filePath'], tabInfo['label'], setFocus=False)
 
     def __onTabClose(self, index):
         """
@@ -150,10 +163,17 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         codeEditor = self.widget(tabIndex)
         tabName = self.tabText(tabIndex)
 
+        if codeEditor.filePath():
+            self.tabBar().setTabTextColor(
+                tabIndex,
+                QtGui.QColor('green' if codeEditor.isModified() else '')
+            )
+
         self.__scriptEditorsConfig.setValue(
             str(tabIndex),
             {
                 'label': tabName,
+                'filePath': codeEditor.filePath(),
                 'code': codeEditor.code()
             },
             serialize
@@ -180,8 +200,18 @@ class _ScriptEditorTabBarWidget(QtWidgets.QTabBar):
         if not isinstance(self.parent().widget(index), ScriptEditorWidget):
             return
 
+        scriptEditor = self.parent().widget(index)
+
         menu = QtWidgets.QMenu(self)
         renameAction = QtWidgets.QAction("Rename Tab", self)
+
+        reloadAction = None
+        saveAction = None
+        if scriptEditor.filePath():
+            reloadAction = QtWidgets.QAction("Reload File", self)
+            saveAction = QtWidgets.QAction("Save File", self)
+            menu.addAction(reloadAction)
+            menu.addAction(saveAction)
 
         menu.addAction(renameAction)
         action = menu.exec_(self.mapToGlobal(event.pos()))
@@ -197,3 +227,7 @@ class _ScriptEditorTabBarWidget(QtWidgets.QTabBar):
 
                 # emitting a signal about the tab has been renamed
                 self.tabRenamed.emit(index)
+        elif reloadAction and action == reloadAction:
+            scriptEditor.loadFile()
+        elif saveAction and action == saveAction:
+            scriptEditor.saveFile()

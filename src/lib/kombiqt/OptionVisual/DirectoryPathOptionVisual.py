@@ -41,7 +41,7 @@ class DirectoryPathOptionVisual(OptionVisual):
             self.__editableWidget.addItems(presets)
             self.__editableWidget.setEditable(True)
 
-        folderPicker = QtWidgets.QPushButton('Select Directory')
+        folderPicker = QtWidgets.QPushButton(self.uiHints().get('label', 'Select Directory'))
         folderPicker.setFocusPolicy(QtCore.Qt.NoFocus)
         folderPicker.clicked.connect(self.__onPickerSelectDir)
         folderPicker.setIcon(Resource.icon('icons/folder.png'))
@@ -89,3 +89,4 @@ OptionVisual.register('directoryPath', DirectoryPathOptionVisual)
 # registering examples
 OptionVisual.registerExample('directoryPath', 'default', '/file/path')
 OptionVisual.registerExample('directoryPath', 'presets', '', {'presets': ['/filePathA', '/filePathB']})
+OptionVisual.registerExample('directoryPath', 'buttonLabel', '', {'label': '...'})
