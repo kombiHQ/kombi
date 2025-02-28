@@ -1,12 +1,10 @@
 import os
-import pathlib
 import functools
-import mimetypes
 import traceback
 from Qt import QtCore, QtWidgets, QtGui
 from kombi.TaskHolder.Loader import Loader
 from kombi.Dispatcher import Dispatcher
-from kombi.Element import ElementContext
+from kombi.Element import Element, ElementContext
 from kombi.Element.Fs import FsElement
 from .PreferencesWindow import PreferencesWindow
 from ..Resource import Resource
@@ -16,10 +14,9 @@ from ..Element.ElementViewer import ElementViewer
 from ..Element.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
 from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
-from ..Widget.ScriptEditorTabWidget import ScriptEditorTabWidget
-from ..OptionVisual.PathBrowserOptionVisual import PathBrowserOptionVisual
+from ..Window.ScriptEditorWindow import ScriptEditorWindow
 
-class MainWindow(QtWidgets.QMainWindow):
+class MainWindow(ScriptEditorWindow):
     """
     A graphical user interface for interacting with Kombi configurations.
 
@@ -34,7 +31,10 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         Create a MainWindow object.
         """
-        super(MainWindow, self).__init__(**kwargs)
+        super().__init__(mainWidget=QtWidgets.QWidget(), **kwargs)
+
+        self.setWindowTitle('Kombi')
+        self.resize(1280, 720)
 
         self.setStyleSheet(Resource.stylesheet())
 
@@ -217,56 +217,41 @@ class MainWindow(QtWidgets.QMainWindow):
 
         return taskHolderLoader.taskHolders()
 
-    def keyPressEvent(self, event):
+    @classmethod
+    def run(cls, args):
         """
-        Control the script editor font size by detecting ctr + = and ctrl + -.
+        Create a basic graphical interface to pick files to run through a kombi configuration.
+
+        Example:
+            kombi-gui <CONFIGURATION-DIRECTORY> [<INPUT-FILES-DIRECTORY>]
         """
-        # F1: show tree
-        if event.key() == QtCore.Qt.Key_F1:
-            if self.__horizontalSplitter.count() == 1:
-                self.__scriptEditorFileBrowser = PathBrowserOptionVisual(
-                    'self.__scriptEditorFileBrowser',
-                    '',
-                    {
-                        'rootPath': Resource.userConfig().value(
-                            'scriptEditorRootPath',
-                            pathlib.Path.home().as_posix()
-                        ),
-                        'showColumns': False
-                    }
-                )
+        # getting configuration directory from the args
+        configurationDirectory = ''
+        if len(args) > 1:
+            configurationDirectory = args[1]
 
-                self.__scriptEditorFileBrowser.rootChanged.connect(self.__onScriptEditorFileBrowserRootChanged)
-                self.__scriptEditorFileBrowser.doubleClick.connect(self.__onScriptEditorDoubleClick)
-                self.__horizontalSplitter.insertWidget(0, self.__scriptEditorFileBrowser)
-                self.__horizontalSplitter.setSizes((200, 600))
-                self.__horizontalSplitter.setStretchFactor(0, 0)
-                self.__horizontalSplitter.setStretchFactor(1, 1)
+        # otherwise from the environment
+        elif 'KOMBIAPP_CONFIG_DIR' in os.environ:
+            configurationDirectory = os.environ['KOMBIAPP_CONFIG_DIR']
 
-            else:
-                browserWidget = self.__horizontalSplitter.widget(0)
-                browserWidget.setVisible(not browserWidget.isVisible())
+        # showing configuration directory picker
+        if not configurationDirectory:
+            configurationDirectory = MainWindow.pickConfigurationDirectory(configurationDirectory)
 
-        super().keyPressEvent(event)
+        # loading task holders
+        taskHolders = MainWindow.loadConfigurationTaskHolders(configurationDirectory)
 
-    def __onScriptEditorFileBrowserRootChanged(self, rootPath):
-        """
-        Triggered when the root path is changed in the script editor file browser.
-        """
-        Resource.userConfig().setValue('scriptEditorRootPath', rootPath)
+        # source element path
+        rootElement = None
+        if len(args) > 2:
+            rootElement = FsElement.createFromPath(args[2])
+            # wrapping the leaf element a collection element, so it can be
+            # displayed in the UI
+            if rootElement.isLeaf():
+                rootElement = Element.create([rootElement])
 
-    def __onScriptEditorDoubleClick(self):
-        """
-        Triggered when an item is double clicked inside of the script editor file browser.
-        """
-        filePath = self.__scriptEditorFileBrowser.optionValue()
-        if not filePath:
-            return
-
-        mimeType = mimetypes.guess_type(filePath)[0]
-        if mimeType and mimeType.startswith('text/'):
-            baseName = os.path.basename(filePath)
-            self.__scriptEditorTabWidget.addScriptEditor(filePath=filePath, tabName=baseName)
+        mainWindow = cls(taskHolders, rootElement)
+        return mainWindow
 
     def __updateElementList(self, rootElement):
         """
@@ -367,17 +352,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         Create the widgets.
         """
-        self.setWindowTitle('Kombi')
-        self.resize(1280, 720)
-
-        self.__horizontalSplitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
-        centralWidget = QtWidgets.QWidget()
-        self.__scriptEditorTabWidget = ScriptEditorTabWidget(mainWidget=centralWidget)
-        self.__horizontalSplitter.addWidget(self.__scriptEditorTabWidget)
-
-        self.setCentralWidget(self.__horizontalSplitter)
-
-        centralWidget.setLayout(QtWidgets.QVBoxLayout())
+        self.mainWidget().setLayout(QtWidgets.QVBoxLayout())
         self.__splitter = QtWidgets.QSplitter()
 
         sourceLayout = QtWidgets.QVBoxLayout()
@@ -438,10 +413,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__scriptEditorButton.setIcon(
             Resource.icon("icons/python.png")
         )
-        self.__scriptEditorButton.clicked.connect(lambda _: self.__scriptEditorTabWidget.addScriptEditor())
-        self.__scriptEditorTabWidget.tabDisplayUpdate.connect(lambda x: self.__scriptEditorButton.setVisible(not x))
+        self.__scriptEditorButton.clicked.connect(lambda _: self.tabWidget().addScriptEditor())
+        self.tabWidget().tabDisplayUpdate.connect(lambda x: self.__scriptEditorButton.setVisible(not x))
         sourceBarLayout.addWidget(self.__scriptEditorButton)
-        self.__scriptEditorButton.setVisible(not self.__scriptEditorTabWidget.hasScriptEditorTabs())
+        self.__scriptEditorButton.setVisible(not self.tabWidget().hasScriptEditorTabs())
 
         sourceBarLayout.addWidget(self.__sourceViewModeButton)
         sourceLayout.addLayout(sourceBarLayout)
@@ -492,7 +467,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # header
         headerLayout = QtWidgets.QHBoxLayout()
-        centralWidget.layout().addLayout(headerLayout)
+        self.mainWidget().layout().addLayout(headerLayout)
 
         self.__logo = QtWidgets.QLabel()
         if self.__customHeader:
@@ -511,9 +486,9 @@ class MainWindow(QtWidgets.QMainWindow):
         headerLayout.addWidget(self.__logo)
         headerLayout.addStretch()
 
-        centralWidget.layout().addWidget(self.__splitter)
+        self.mainWidget().layout().addWidget(self.__splitter)
         buttonLayout = QtWidgets.QHBoxLayout()
-        centralWidget.layout().addLayout(buttonLayout)
+        self.mainWidget().layout().addLayout(buttonLayout)
 
         self.__executeButton = QtWidgets.QPushButton('Execute')
         self.__executeButton.setVisible(False)
