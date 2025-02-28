@@ -363,9 +363,13 @@ pip install Qt.Py
 pip install oiio-static-python
 pip install python-call-graph
 pip install jedi
-apt-get install make cmake
 apt-get install ffmpeg
 apt-get install graphviz
+```
+
+In recent versions of Ubuntu, you may also need to install `libxcb-cursor0` in order to use the `xcb` plugin for Qt:
+```
+apt install libxcb-cursor0
 ```
 </details>
 
