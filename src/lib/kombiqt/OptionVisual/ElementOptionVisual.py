@@ -10,11 +10,11 @@ class ElementOptionVisual(OptionVisual):
     """
     __defaultPreviewHeight = 240
 
-    def __init__(self, optionName, optionValue, uiHints=None):
+    def __init__(self, optionValue, uiHints=None):
         """
         Create ElementOptionVisual object.
         """
-        super().__init__(optionName, optionValue, uiHints)
+        super().__init__(optionValue, uiHints)
 
         self.__buildWidget()
 

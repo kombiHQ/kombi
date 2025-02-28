@@ -10,13 +10,12 @@ class OptionVisual(QtWidgets.QWidget):
     __registeredFallbackDefaultVisuals = {}
     __registeredOptionVisualExamples = {}
 
-    def __init__(self, optionName, optionValue, uiHints=None):
+    def __init__(self, optionValue, uiHints=None):
         """
         Create an OptionVisual object.
         """
         super().__init__()
 
-        self.__setOptionName(optionName)
         self.__setOptionValue(optionValue)
         self.__setUIHint(uiHints or {})
 
@@ -36,12 +35,6 @@ class OptionVisual(QtWidgets.QWidget):
         """
         return self.__uiHints
 
-    def optionName(self):
-        """
-        Return the option name assigned to the visual during the creation.
-        """
-        return self.__optionName
-
     def optionValue(self):
         """
         Return the option value (this value is updated automatically by the valueChanged signal).
@@ -56,14 +49,6 @@ class OptionVisual(QtWidgets.QWidget):
 
         self.__uiHints = uiHints
 
-    def __setOptionName(self, optionName):
-        """
-        Set the option name.
-        """
-        assert isinstance(optionName, str), "option name needs to be defined as string!"
-
-        self.__optionName = optionName
-
     def __setOptionValue(self, optionValue):
         """
         Set the option value.
@@ -71,7 +56,7 @@ class OptionVisual(QtWidgets.QWidget):
         self.__optionValue = optionValue
 
     @classmethod
-    def create(cls, optionName, optionValue, uiHints=None):
+    def create(cls, optionValue, uiHints=None):
         """
         Factory an option visual widget.
 
@@ -89,10 +74,9 @@ class OptionVisual(QtWidgets.QWidget):
                 if isinstance(optionValue, valueType):
                     registeredName = fallbackRegisteredName
                     break
-        assert registeredName, f"Value '{optionValue}' for option '{optionName}' is not supported!"
+        assert registeredName, f"Value '{optionValue}' for option is not supported!"
 
         return cls.__registeredOptionVisuals[registeredName](
-            optionName,
             optionValue,
             uiHints
         )
@@ -114,7 +98,7 @@ class OptionVisual(QtWidgets.QWidget):
             uiHints = dict(exampleData['uiHints'])
         uiHints['visual'] = registeredOptionVisualName
 
-        return cls.create('example', exampleData['value'], uiHints)
+        return cls.create(exampleData['value'], uiHints)
 
     @classmethod
     def registeredNames(cls):

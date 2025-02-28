@@ -71,7 +71,6 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
             rootPath = Resource.userConfig().value('scriptEditorRootPath', pathlib.Path.home().as_posix())
 
         self.__scriptEditorFileBrowser = PathBrowserOptionVisual(
-            'scriptEditor',
             '',
             {
                 'rootPath': rootPath,

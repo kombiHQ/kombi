@@ -394,7 +394,7 @@ class ExecutionSettingsWidget(QtWidgets.QTreeWidget):
         if taskHolder.task().hasMetadata(uiOptionMetadataName):
             uiHints = taskHolder.task().metadata(uiOptionMetadataName)
 
-        optionVisualWidget = OptionVisual.create(optionName, optionValue, uiHints)
+        optionVisualWidget = OptionVisual.create(optionValue, uiHints)
         # in case the value has changed during the construction lets update it directly to the task
         if optionVisualWidget.optionValue() != optionValue:
             if taskHolder not in self.__changedOptions:

@@ -12,11 +12,11 @@ class PathBrowserOptionVisual(OptionVisual):
     doubleClick = QtCore.Signal()
     rootChanged = QtCore.Signal(str)
 
-    def __init__(self, optionName, optionValue, uiHints=None):
+    def __init__(self, optionValue, uiHints=None):
         """
         Create PathBrowserOptionVisual object.
         """
-        super().__init__(optionName, optionValue, uiHints)
+        super().__init__(optionValue, uiHints)
 
         self.__buildWidget()
 
@@ -31,7 +31,6 @@ class PathBrowserOptionVisual(OptionVisual):
 
         rootPath = self.uiHints().get('rootPath', '').replace('\\', '/')
         self.__rootWidget = DirectoryPathOptionVisual(
-            'root',
             rootPath,
             {
                 'label': self.uiHints().get('rootButtonLabel', '')
