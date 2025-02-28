@@ -1,5 +1,7 @@
 import os
+import pathlib
 import functools
+import mimetypes
 import traceback
 from Qt import QtCore, QtWidgets, QtGui
 from kombi.TaskHolder.Loader import Loader
@@ -15,13 +17,14 @@ from ..Element.ElementsLevelNavigationWidget import ElementsLevelNavigationWidge
 from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
 from ..Widget.ScriptEditorTabWidget import ScriptEditorTabWidget
+from ..OptionVisual.PathBrowserOptionVisual import PathBrowserOptionVisual
 
 class MainWindow(QtWidgets.QMainWindow):
     """
     A graphical user interface for interacting with Kombi configurations.
 
     Signals:
-    - `preRenderElements`: Emitted when the element list is about to be rendered.
+    - preRenderElements: Emitted when the element list is about to be rendered.
     """
 
     preRenderElements = QtCore.Signal(list)
@@ -214,6 +217,57 @@ class MainWindow(QtWidgets.QMainWindow):
 
         return taskHolderLoader.taskHolders()
 
+    def keyPressEvent(self, event):
+        """
+        Control the script editor font size by detecting ctr + = and ctrl + -.
+        """
+        # F1: show tree
+        if event.key() == QtCore.Qt.Key_F1:
+            if self.__horizontalSplitter.count() == 1:
+                self.__scriptEditorFileBrowser = PathBrowserOptionVisual(
+                    'self.__scriptEditorFileBrowser',
+                    '',
+                    {
+                        'rootPath': Resource.userConfig().value(
+                            'scriptEditorRootPath',
+                            pathlib.Path.home().as_posix()
+                        ),
+                        'showColumns': False
+                    }
+                )
+
+                self.__scriptEditorFileBrowser.rootChanged.connect(self.__onScriptEditorFileBrowserRootChanged)
+                self.__scriptEditorFileBrowser.doubleClick.connect(self.__onScriptEditorDoubleClick)
+                self.__horizontalSplitter.insertWidget(0, self.__scriptEditorFileBrowser)
+                self.__horizontalSplitter.setSizes((200, 600))
+                self.__horizontalSplitter.setStretchFactor(0, 0)
+                self.__horizontalSplitter.setStretchFactor(1, 1)
+
+            else:
+                browserWidget = self.__horizontalSplitter.widget(0)
+                browserWidget.setVisible(not browserWidget.isVisible())
+
+        super().keyPressEvent(event)
+
+    def __onScriptEditorFileBrowserRootChanged(self, rootPath):
+        """
+        Triggered when the root path is changed in the script editor file browser.
+        """
+        Resource.userConfig().setValue('scriptEditorRootPath', rootPath)
+
+    def __onScriptEditorDoubleClick(self):
+        """
+        Triggered when an item is double clicked inside of the script editor file browser.
+        """
+        filePath = self.__scriptEditorFileBrowser.optionValue()
+        if not filePath:
+            return
+
+        mimeType = mimetypes.guess_type(filePath)[0]
+        if mimeType and mimeType.startswith('text/'):
+            baseName = os.path.basename(filePath)
+            self.__scriptEditorTabWidget.addScriptEditor(filePath=filePath, tabName=baseName)
+
     def __updateElementList(self, rootElement):
         """
         Update the element list.
@@ -316,9 +370,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle('Kombi')
         self.resize(1280, 720)
 
+        self.__horizontalSplitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         centralWidget = QtWidgets.QWidget()
         self.__scriptEditorTabWidget = ScriptEditorTabWidget(mainWidget=centralWidget)
-        self.setCentralWidget(self.__scriptEditorTabWidget)
+        self.__horizontalSplitter.addWidget(self.__scriptEditorTabWidget)
+
+        self.setCentralWidget(self.__horizontalSplitter)
 
         centralWidget.setLayout(QtWidgets.QVBoxLayout())
         self.__splitter = QtWidgets.QSplitter()
