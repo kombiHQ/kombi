@@ -352,17 +352,16 @@ In case you are building the dependencies manually skip the step below:
 
 ### Install dependencies
 
+#### Python:
+```bash
+pip install PySide6 PyYAML Qt.Py oiio-static-python python-call-graph jedi
+```
+
 <details><summary>Linux</summary>
 <p>
 
 #### Ubuntu and derivatives:
 ```bash
-pip install PySide6
-pip install PyYAML
-pip install Qt.Py
-pip install oiio-static-python
-pip install python-call-graph
-pip install jedi
 apt-get install ffmpeg
 apt-get install graphviz
 ```
@@ -373,18 +372,13 @@ apt install libxcb-cursor0
 ```
 </details>
 
-<details><summary>windows</summary>
+<details><summary>Windows</summary>
 <p>
 
 - [Python 3.7+](https://www.python.org/downloads)
 - [FFmpeg](https://ffmpeg.org)
-- [Qt.Py](https://pypi.org/project/QtPy)
-- [PyYAML](https://pypi.org/project/PyYAML)
-- [PySide2](https://pypi.org/project/PySide2)
-- [Py Call Graph](https://pypi.org/project/python-call-graph)
-- [Jedi](https://pypi.org/project/jedi/)
-- [Open Image IO](https://pypi.org/project/oiio-static-python/) (Unofficial)
-
+- [Graphviz](https://graphviz.org)
+  
 </details>
 
 ## Kombi Development
