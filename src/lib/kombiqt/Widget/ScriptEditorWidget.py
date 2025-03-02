@@ -433,7 +433,13 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         self.__completer.setWidget(self)
         self.__completer.activated.connect(self.__acceptSuggestion)
 
-        _PythonSyntaxHighlighter(self.document())
+        self.__highlighter = _PythonSyntaxHighlighter(self.document())
+
+    def highlighter(self):
+        """
+        Return the syntax highlight associated with the document.
+        """
+        return self.__highlighter
 
     def keyPressEvent(self, event):
         """
@@ -731,8 +737,10 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     __keywords = r"\b(def|class|as|in|not|and|or|if|else|elif|for|while|try|except|finally|with|import|from|return|yield|pass|break|continue|del|global|lambda|assert|raise|True|False|None)\b"
     __comments = r"#.*"
     __numeric = r"[0-9]"
+    __decorators = r"^\s*@.*$"
     __strings = r"\"[^\"]*\"|\'[^\']*\'"
     __functions = r"\b[A-Za-z_][A-Za-z0-9_]*\b(?=\()"
+    __docstrings = r'"""([\s\S]*?)"""|\'\'\'([\s\S]*?)\'\'\''
 
     def __init__(self, parent=None):
         """
@@ -763,8 +771,26 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__applyHighlight(self.__numeric, text, self.__numericFormat)
         self.__applyHighlight(self.__keywords, text, self.__keywordFormat)
         self.__applyHighlight(self.__functions, text, self.__functionFormat)
+        self.__applyHighlight(self.__decorators, text, self.__functionFormat)
         self.__applyHighlight(self.__strings, text, self.__stringFormat)
         self.__applyHighlight(self.__comments, text, self.__commentFormat)
+
+    def highlightDocument(self):
+        """
+        Compute the highlights for the document, especially when the highlight spans multiple lines.
+        """
+        cursor = QtGui.QTextCursor(self.document())
+        cursor.beginEditBlock()
+
+        for match in re.finditer(self.__docstrings, self.document().toPlainText()):
+            start = match.start()
+            end = match.end()
+
+            cursor.setPosition(start)
+            cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
+            cursor.setCharFormat(self.__stringFormat)
+
+        cursor.endEditBlock()
 
     def __applyHighlight(self, pattern, text, textFormat, *args):
         """
