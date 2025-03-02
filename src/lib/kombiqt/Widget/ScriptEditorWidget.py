@@ -24,6 +24,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
     Python script editor widget.
     """
     codeChanged = QtCore.Signal()
+    __codeChangedWaitTime = 2500
 
     def __init__(self, code='', filePath='', parent=None) -> None:
         """
@@ -36,6 +37,12 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         if code:
             self.setCode(code)
         self.__buildConnections()
+
+        # for performance optimization, code changes are
+        # only computed after the user stops typing
+        self.__codeChangedTimer = QtCore.QTimer()
+        self.__codeChangedTimer.setSingleShot(True)
+        self.__codeChangedTimer.timeout.connect(self.__codeChangedEmitSignal)
 
     def keyPressEvent(self, event):
         """
@@ -359,7 +366,15 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         Update the script editor configuration when the code changes.
         """
+        self.__codeChangedTimer.stop()
+        self.__codeChangedTimer.start(self.__codeChangedWaitTime)
+
+    def __codeChangedEmitSignal(self):
+        """
+        Emit the code changed signal.
+        """
         self.codeChanged.emit()
+        self.__codeEditor.highlighter().highlightDocument()
 
     def __onUpdateStatus(self):
         """
@@ -371,6 +386,13 @@ class ScriptEditorWidget(QtWidgets.QWidget):
 
         # Update the status bar text
         self.__textCursorPositionLabel.setText(f"Line: {line}, Column: {column} ")
+
+    def __del__(self):
+        """
+        Stop any running timer before the object is deleted.
+        """
+        self.__codeChangedTimer.stop()
+
 
 class _LineNumberAreaWidget(QtWidgets.QWidget):
     """
