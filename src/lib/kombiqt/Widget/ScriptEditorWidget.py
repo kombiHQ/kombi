@@ -223,6 +223,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         cursor = self.__codeEditor.textCursor()
         cursor.movePosition(QtGui.QTextCursor.EndOfBlock)
         self.__codeEditor.setTextCursor(cursor)
+        self.__codeEditor.highlighter().highlightDocument()
 
     def setFilePath(self, filePath, loadCode=True):
         """
@@ -391,7 +392,15 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         Stop any running timer before the object is deleted.
         """
-        self.__codeChangedTimer.stop()
+        try:
+            if self.__codeChangedTimer.isActive():
+                self.__codeChangedTimer.stop()
+                self.codeChanged.emit()
+        # We intentionally ignore any runtime errors that may occur at this point, as
+        # they could be caused by the internal C++ object already being deleted. For example:
+        # RuntimeError: Internal C++ object (self.__codeChangedTimer) has already been deleted.
+        except RuntimeError:
+            pass
 
 
 class _LineNumberAreaWidget(QtWidgets.QWidget):
