@@ -1,4 +1,6 @@
 import pathlib
+from kombi.Task import Task
+from kombi.Element.Fs.FsElement import FsElement
 from Qt import QtWidgets, QtCore
 from .OptionVisual import OptionVisual
 from .DirectoryPathOptionVisual import DirectoryPathOptionVisual
@@ -40,7 +42,8 @@ class PathBrowserOptionVisual(OptionVisual):
         self.__fileSystemModel = _FileSystemModel()
         self.__fileSystemModel.setRootPath(self.__rootWidget.optionValue())
 
-        self.__treeWidget = QtWidgets.QTreeView()
+        self.__treeWidget = _TreeView()
+        self.__treeWidget.contextMenu.connect(self.__onContextMenu)
         self.__treeWidget.setTextElideMode(QtCore.Qt.ElideNone)
         self.__treeWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.__treeWidget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -60,6 +63,57 @@ class PathBrowserOptionVisual(OptionVisual):
 
         mainLayout.addWidget(self.__rootWidget)
         mainLayout.addWidget(self.__treeWidget)
+
+    def __onContextMenu(self, event):
+        """
+        Implement a context menu for the selected item in the tree.
+        """
+        contextMenu = QtWidgets.QMenu(self)
+
+        revealInFileManagerAction = QtWidgets.QAction("Reveal in file manager", self)
+        revealInFileManagerAction.triggered.connect(self.__onRevealInFileManager)
+        contextMenu.addAction(revealInFileManagerAction)
+
+        launchWithDefaultApplicationAction = QtWidgets.QAction("Open with default application", self)
+        launchWithDefaultApplicationAction.triggered.connect(self.__onLaunchWithDefaultApplication)
+        contextMenu.addAction(launchWithDefaultApplicationAction)
+
+        if self.uiHints().get('showCreateDirectory', True) and pathlib.Path(self.optionValue()).is_dir():
+            createSubDirectoryAction = QtWidgets.QAction("Create Sub-Directory", self)
+            createSubDirectoryAction.triggered.connect(self.__onCreateSubDirectory)
+            contextMenu.addAction(createSubDirectoryAction)
+
+        contextMenu.exec_(event.globalPos())
+
+    def __onRevealInFileManager(self):
+        """
+        Triggered when the action "Reveal in File manager" is selected.
+        """
+        task = Task.create('revealInFileManager')
+        task.add(FsElement.createFromPath(self.optionValue()))
+        task.output()
+
+    def __onLaunchWithDefaultApplication(self):
+        """
+        Triggered when the action "Launch with default application" is selected.
+        """
+        task = Task.create('launchWithDefaultApplication')
+        task.add(FsElement.createFromPath(self.optionValue()))
+        task.output()
+
+    def __onCreateSubDirectory(self):
+        """
+        Triggered when the action "Create sub-directory" is selected.
+        """
+        currentDirectory = pathlib.Path(self.optionValue())
+        newDirectoryName, ok = QtWidgets.QInputDialog.getText(
+            self,
+            f"Create sub-directory under {currentDirectory.name}:",
+            "Enter directory name:",
+            text=""
+        )
+        if ok and newDirectoryName:
+            currentDirectory.joinpath(newDirectoryName).mkdir()
 
     def __onRootChanged(self, location):
         """
@@ -84,6 +138,18 @@ class PathBrowserOptionVisual(OptionVisual):
         Triggered when an user double click in a file/directory in the browser.
         """
         self.doubleClick.emit()
+
+class _TreeView(QtWidgets.QTreeView):
+    """
+    Custom QTreeView subclass that emits a signal when the context menu event is triggered.
+    """
+    contextMenu = QtCore.Signal(object)
+
+    def contextMenuEvent(self, event):
+        """
+        Override the default context menu event to emit the contextMenu signal.
+        """
+        self.contextMenu.emit(event)
 
 class _FileSystemModel(QtWidgets.QFileSystemModel):
     """
