@@ -180,7 +180,7 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         Utility method used to update the code editor tab status.
         """
         codeEditor = self.widget(tabIndex)
-        if not codeEditor.filePath():
+        if not codeEditor or not codeEditor.filePath():
             return
 
         self.tabBar().setTabTextColor(
