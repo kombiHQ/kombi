@@ -1,7 +1,8 @@
 import os
+import sys
 import pathlib
-import mimetypes
 from Qt import QtWidgets, QtCore
+from kombi.Element.Fs.FsElement import FsElement
 from ..Resource import Resource
 from ..OptionVisual.PathBrowserOptionVisual import PathBrowserOptionVisual
 from ..Widget.ScriptEditorTabWidget import ScriptEditorTabWidget
@@ -70,6 +71,12 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
         if not rootPath:
             rootPath = Resource.userConfig().value('scriptEditorRootPath', pathlib.Path.home().as_posix())
 
+        # in case a file path is passed as root path we open it in a new tab without showing
+        # the file browser
+        if not pathlib.Path(rootPath).is_dir():
+            self.__openFilePath(rootPath)
+            return
+
         self.__scriptEditorFileBrowser = PathBrowserOptionVisual(
             '',
             {
@@ -99,7 +106,15 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
         if not filePath:
             return
 
-        mimeType = mimetypes.guess_type(filePath)[0]
-        if mimeType and mimeType.startswith('text/'):
+        self.__openFilePath(filePath)
+
+    def __openFilePath(self, filePath):
+        """
+        Utility method to open the input file path.
+        """
+        if not FsElement.isBinary(filePath):
             baseName = os.path.basename(filePath)
             self.__scriptEditorTabWidget.addScriptEditor(filePath=filePath, tabName=baseName)
+        else:
+            sys.stderr.write("Script editor error, cannot open binary file: {}\n".format(filePath))
+            sys.stderr.flush()
