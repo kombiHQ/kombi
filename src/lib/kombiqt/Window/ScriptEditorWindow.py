@@ -103,7 +103,7 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
         Triggered when an item is double clicked inside of the script editor file browser.
         """
         filePath = self.__scriptEditorFileBrowser.optionValue()
-        if not filePath:
+        if not filePath or pathlib.Path(filePath).is_dir():
             return
 
         self.__openFilePath(filePath)
