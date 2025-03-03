@@ -71,6 +71,7 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
 
         tabIndex = self.addTab(codeEditor, icon, tabName)
         self.displayUpdate()
+        self.__updateTabStatus(tabIndex)
         codeEditor.codeChanged.connect(functools.partial(self.__onCodeChanged, tabIndex))
 
         if setFocus:
@@ -162,12 +163,7 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         """
         codeEditor = self.widget(tabIndex)
         tabName = self.tabText(tabIndex)
-
-        if codeEditor.filePath():
-            self.tabBar().setTabTextColor(
-                tabIndex,
-                QtGui.QColor('green' if codeEditor.isModified() else '')
-            )
+        self.__updateTabStatus(tabIndex)
 
         self.__scriptEditorsConfig.setValue(
             str(tabIndex),
@@ -177,6 +173,19 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
                 'code': codeEditor.code()
             },
             serialize
+        )
+
+    def __updateTabStatus(self, tabIndex):
+        """
+        Utility method used to update the code editor tab status.
+        """
+        codeEditor = self.widget(tabIndex)
+        if not codeEditor.filePath():
+            return
+
+        self.tabBar().setTabTextColor(
+            tabIndex,
+            QtGui.QColor('green' if codeEditor.isModified() else '')
         )
 
 class _ScriptEditorTabBarWidget(QtWidgets.QTabBar):
