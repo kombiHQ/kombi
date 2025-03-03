@@ -14,6 +14,9 @@ class FsElement(Element):
     # the number of path elements cached for faster file system queries over
     # the network. To disable caching, set KOMBI_FSELEMENT_CACHE_SIZE to 0.
     __pathCacheSize = int(os.environ.get('KOMBI_FSELEMENT_CACHE_SIZE', '50'))
+    __asciiCharacters = ''.join(
+        [chr(code) for code in range(32, 127)] + list('\b\f\n\r\t')
+    )
 
     def __init__(self, pathStrOrPath, parentElement=None):
         """
@@ -121,6 +124,34 @@ class FsElement(Element):
         Clear the cached path query.
         """
         FsElement.__pathCache = {}
+
+    @classmethod
+    def isBinary(cls, filePath, readBytes=512, threshold=0.3):
+        """
+        Return a boolean telling if input file path is a binary file.
+
+        Implementation based on:
+        https://gist.github.com/magnetikonline/7a21ec5f5bcdbf7adb92f9d617e6198f
+        """
+        # read chunk of file
+        with open(filePath, 'r', encoding='ISO-8859-1') as f:
+            fileData = f.read(readBytes)
+
+        # store chunk length read
+        dataLength = len(fileData)
+        if not dataLength:
+            # empty files considered ascii
+            return False
+
+        if '\x00' in fileData:
+            # file containing null bytes is binary
+            return True
+
+        # remove all text characters from file chunk, get remaining length
+        binaryLength = len(list(filter(lambda x: x not in cls.__asciiCharacters, fileData)))
+
+        # if percentage of binary characters above threshold, binary file
+        return (float(binaryLength) / dataLength) >= threshold
 
     def __setPath(self, path):
         """
