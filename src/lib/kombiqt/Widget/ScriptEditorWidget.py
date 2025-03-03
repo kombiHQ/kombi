@@ -34,6 +34,12 @@ class ScriptEditorWidget(QtWidgets.QWidget):
 
         self.__buildWidget()
         self.setFilePath(filePath)
+
+        # when loading the file path lets collapse the output widget
+        # by default
+        if filePath:
+            self.__verticalSplitter.setSizes((0, 100))
+
         if code:
             self.setCode(code)
         self.__buildConnections()
