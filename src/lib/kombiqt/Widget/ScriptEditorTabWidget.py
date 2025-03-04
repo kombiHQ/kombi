@@ -173,6 +173,9 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         Triggered when code inside a script editor tab has changed.
         """
         scriptEditor = self.widget(tabIndex)
+        if scriptEditor is None:
+            return
+
         tabName = self.tabText(tabIndex)
         self.__updateTabStatus(tabIndex)
 
