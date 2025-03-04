@@ -1,6 +1,10 @@
+import pathlib
+import difflib
 import functools
 from Qt import QtWidgets, QtCore, QtGui
 from kombi.Config import Config
+from kombi.Task import Task
+from kombi.Element.Fs.FsElement import FsElement
 from ..Resource import Resource
 from ..Widget.ScriptEditorWidget import ScriptEditorWidget
 
@@ -28,6 +32,10 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
 
         if loadUserTabs:
             self.__loadUserTabs()
+
+            # after loading the tabs, we need to update their indices
+            # to ensure they are aligned with the current active tab index.
+            self.__bakeTabs()
 
         self.tabCloseRequested.connect(self.__onTabClose)
         self.tabBar().tabRenamed.connect(self.__onCodeChanged)
@@ -64,15 +72,15 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
                         self.setCurrentIndex(tabIndex)
                     return
 
-        codeEditor = ScriptEditorWidget(code, filePath)
+        scriptEditor = ScriptEditorWidget(code, filePath)
         icon = Resource.icon("icons/python.png")
         if filePath:
             icon = QtWidgets.QFileIconProvider().icon(QtCore.QFileInfo(filePath))
 
-        tabIndex = self.addTab(codeEditor, icon, tabName)
+        tabIndex = self.addTab(scriptEditor, icon, tabName)
         self.displayUpdate()
         self.__updateTabStatus(tabIndex)
-        codeEditor.codeChanged.connect(functools.partial(self.__onCodeChanged, tabIndex))
+        scriptEditor.codeChanged.connect(functools.partial(self.__onCodeChanged, tabIndex))
 
         if setFocus:
             self.setCurrentIndex(tabIndex)
@@ -129,11 +137,14 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         """
         Load previously saved script editor tabs from the user configuration.
         """
-        for keyName in self.__scriptEditorsConfig.keys():
-            if not keyName.isdigit():
-                continue
+        for keyName in sorted(filter(lambda x: x.isdigit(), self.__scriptEditorsConfig.keys()), key=lambda x: int(x)):
             tabInfo = self.__scriptEditorsConfig.value(keyName)
-            self.addScriptEditor(tabInfo['code'], tabInfo['filePath'], tabInfo['label'], setFocus=False)
+            self.addScriptEditor(
+                tabInfo['code'],
+                tabInfo['filePath'],
+                tabInfo['label'],
+                setFocus=False
+            )
 
     def __onTabClose(self, index):
         """
@@ -161,7 +172,7 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         """
         Triggered when code inside a script editor tab has changed.
         """
-        codeEditor = self.widget(tabIndex)
+        scriptEditor = self.widget(tabIndex)
         tabName = self.tabText(tabIndex)
         self.__updateTabStatus(tabIndex)
 
@@ -169,8 +180,8 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
             str(tabIndex),
             {
                 'label': tabName,
-                'filePath': codeEditor.filePath(),
-                'code': codeEditor.code()
+                'filePath': scriptEditor.filePath(),
+                'code': scriptEditor.code()
             },
             serialize
         )
@@ -179,13 +190,22 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         """
         Utility method used to update the code editor tab status.
         """
-        codeEditor = self.widget(tabIndex)
-        if not codeEditor or not codeEditor.filePath():
+        scriptEditor = self.widget(tabIndex)
+        if not scriptEditor or not scriptEditor.filePath():
             return
 
+        modified = scriptEditor.isModified()
         self.tabBar().setTabTextColor(
             tabIndex,
-            QtGui.QColor('green' if codeEditor.isModified() else '')
+            QtGui.QColor('green' if modified else '')
+        )
+
+        if scriptEditor.filePath():
+            self.setTabText(tabIndex, pathlib.Path(scriptEditor.filePath()).name)
+
+        self.setTabToolTip(
+            tabIndex,
+            scriptEditor.filePath() + (' (Unsaved)' if modified else '') if scriptEditor.filePath() else ''
         )
 
 class _ScriptEditorTabBarWidget(QtWidgets.QTabBar):
@@ -205,6 +225,7 @@ class _ScriptEditorTabBarWidget(QtWidgets.QTabBar):
         Handle the right-click context menu on the tab bar.
         """
         index = self.tabAt(event.pos())
+        self.setCurrentIndex(index)
 
         if not isinstance(self.parent().widget(index), ScriptEditorWidget):
             return
@@ -212,23 +233,40 @@ class _ScriptEditorTabBarWidget(QtWidgets.QTabBar):
         scriptEditor = self.parent().widget(index)
 
         menu = QtWidgets.QMenu(self)
-        renameAction = QtWidgets.QAction("Rename Tab", self)
 
+        clearOutputAction = QtWidgets.QAction("Clear output", self)
+        menu.addAction(clearOutputAction)
+
+        renameAction = None
         reloadAction = None
-        saveAction = None
+        diffAction = None
+        revealAction = None
+        copyPathAction = None
+        saveAction = QtWidgets.QAction("Save file", self)
+        menu.addAction(saveAction)
         if scriptEditor.filePath():
-            reloadAction = QtWidgets.QAction("Reload File", self)
-            saveAction = QtWidgets.QAction("Save File", self)
+            reloadAction = QtWidgets.QAction("Reload file", self)
             menu.addAction(reloadAction)
-            menu.addAction(saveAction)
 
-        menu.addAction(renameAction)
+            diffAction = QtWidgets.QAction("Diff changes", self)
+            menu.addAction(diffAction)
+
+            revealAction = QtWidgets.QAction("Reveal in file manager", self)
+            menu.addAction(revealAction)
+
+            copyPathAction = QtWidgets.QAction("Copy path to clipboard", self)
+            menu.addAction(copyPathAction)
+        else:
+            renameAction = QtWidgets.QAction("Rename tab", self)
+            menu.addAction(renameAction)
+
         action = menu.exec_(self.mapToGlobal(event.pos()))
 
-        if action == renameAction:
+        # rename
+        if renameAction and action == renameAction:
             newName, ok = QtWidgets.QInputDialog.getText(
                 self,
-                "Rename Tab",
+                "Rename tab",
                 "Enter new tab name:", text=self.tabText(index)
             )
             if ok and newName:
@@ -236,7 +274,42 @@ class _ScriptEditorTabBarWidget(QtWidgets.QTabBar):
 
                 # emitting a signal about the tab has been renamed
                 self.tabRenamed.emit(index)
+
+        # clear output
+        elif clearOutputAction and action == clearOutputAction:
+            scriptEditor.setOutputDisplay(True)
+            scriptEditor.clearOutput()
+
+        # copy path to clipboard
+        elif copyPathAction and action == copyPathAction:
+            QtWidgets.QApplication.clipboard().setText(scriptEditor.filePath())
+
+        # reveal in file manager
+        elif revealAction and action == revealAction:
+            task = Task.create('revealInFileManager')
+            task.add(FsElement.createFromPath(scriptEditor.filePath()))
+            task.output()
+
+        # reload file
         elif reloadAction and action == reloadAction:
             scriptEditor.loadFile()
+            self.tabRenamed.emit(index)
+
+        # diff
+        elif diffAction and action == diffAction:
+            currentChanges = scriptEditor.code().splitlines()
+            fileLines = []
+            if scriptEditor.filePath():
+                with open(scriptEditor.filePath()) as f:
+                    fileLines = f.read().splitlines()
+
+            diffOutput = []
+            for line in difflib.unified_diff(fileLines, currentChanges, fromfile=scriptEditor.filePath(), tofile='Script Editor Session'):
+                diffOutput.append(line)
+
+            scriptEditor.setOutputDisplay(True)
+            scriptEditor.outputWidget().append('\n'.join(diffOutput) if diffOutput else 'Diff: No changes were found.')
+
+        # save current script
         elif saveAction and action == saveAction:
             scriptEditor.saveFile()
