@@ -222,7 +222,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
                     # using eval() to evaluate the code and print the result. This is helpful
                     # for debugging by allowing you to inspect the result of expressions
                     # line by line without needing to insert additional print statements.
-                    # Note that eval() is limited in functionality and will likely raise 
+                    # Note that eval() is limited in functionality and will likely raise
                     # a SyntaxError if used with non-expression code. However, it works well
                     # for evaluating simple expressions or function calls.
                     print(eval(code, codeExecutionGlobals))
