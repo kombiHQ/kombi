@@ -218,7 +218,19 @@ class ScriptEditorWidget(QtWidgets.QWidget):
 
         with redirect_stdout(f):
             try:
-                exec(code, codeExecutionGlobals)
+               try:
+                    # using eval() to evaluate the code and print the result. This is helpful
+                    # for debugging by allowing you to inspect the result of expressions
+                    # line by line without needing to insert additional print statements.
+                    # Note that eval() is limited in functionality and will likely raise 
+                    # a SyntaxError if used with non-expression code. However, it works well
+                    # for evaluating simple expressions or function calls.
+                    print(eval(code, codeExecutionGlobals))
+                except SyntaxError:
+                    # if eval() raises a SyntaxError, fallback to using exec().
+                    # Unlike eval(), exec() executes entire code and does not return
+                    # a result, making it suitable for more complex statements or scripts.
+                    exec(code, codeExecutionGlobals)
             except Exception:
                 failed = True
                 errorLines = traceback.format_exc().splitlines()
