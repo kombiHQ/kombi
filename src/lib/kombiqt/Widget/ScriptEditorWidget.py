@@ -218,7 +218,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
 
         with redirect_stdout(f):
             try:
-               try:
+                try:
                     # using eval() to evaluate the code and print the result. This is helpful
                     # for debugging by allowing you to inspect the result of expressions
                     # line by line without needing to insert additional print statements.
