@@ -81,7 +81,8 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
             '',
             {
                 'rootPath': rootPath,
-                'showColumns': False
+                'showColumns': False,
+                'displayIcons': False
             }
         )
 

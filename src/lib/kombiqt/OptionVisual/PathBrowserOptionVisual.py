@@ -1,7 +1,7 @@
 import pathlib
 from kombi.Task import Task
 from kombi.Element.Fs.FsElement import FsElement
-from Qt import QtWidgets, QtCore
+from Qt import QtWidgets, QtCore, QtGui
 from .OptionVisual import OptionVisual
 from .DirectoryPathOptionVisual import DirectoryPathOptionVisual
 from ..Resource import Resource
@@ -39,7 +39,7 @@ class PathBrowserOptionVisual(OptionVisual):
             }
         )
         self.__rootWidget.valueChanged.connect(self.__onRootChanged)
-        self.__fileSystemModel = _FileSystemModel()
+        self.__fileSystemModel = _FileSystemModel(displayIcons=self.uiHints().get('displayIcons', True))
         self.__fileSystemModel.setRootPath(self.__rootWidget.optionValue())
 
         self.__treeWidget = _TreeView()
@@ -155,10 +155,40 @@ class _FileSystemModel(QtWidgets.QFileSystemModel):
     """
     File system model used by the tree widget.
     """
+    __nullPixmap = None
+
+    def __init__(self, displayIcons=True):
+        """
+        Create _FileSystemModel object.
+        """
+        super().__init__()
+        self.__setDisplayIcons(displayIcons)
+
     def data(self, index, role):
+        """
+        Return the model data.
+        """
+        if not self.displayIcons() and role == QtCore.Qt.DecorationRole and index.column() == 0:
+            if self.__nullPixmap is None:
+                self.__nullPixmap = QtGui.QPixmap()
+
+            return self.__nullPixmap
+
         if role == QtCore.Qt.DecorationRole and index.column() == 0 and self.isDir(index):
             return Resource.icon('icons/elements/children.png')
         return super().data(index, role)
+
+    def displayIcons(self):
+        """
+        Return a boolean telling if the icons are being display.
+        """
+        return self.__displayIcons
+
+    def __setDisplayIcons(self, value):
+        """
+        Set a boolean telling if the model should display the icons.
+        """
+        self.__displayIcons = value
 
 
 # registering option visual
@@ -168,3 +198,4 @@ OptionVisual.register('pathBrowser', PathBrowserOptionVisual)
 OptionVisual.registerExample('pathBrowser', 'rootPath', '', {'rootPath': pathlib.Path.home().as_posix()})
 OptionVisual.registerExample('pathBrowser', 'hideColumns', '', {'rootPath': pathlib.Path.home().as_posix(), 'showColumns': False})
 OptionVisual.registerExample('pathBrowser', 'rootButtonLabel', '', {'rootPath': pathlib.Path.home().as_posix(), 'rootButtonLabel': 'Custom Label'})
+OptionVisual.registerExample('pathBrowser', 'hideIcons', '', {'rootPath': pathlib.Path.home().as_posix(), 'displayIcons': False})
