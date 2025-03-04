@@ -38,7 +38,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         # when loading the file path lets collapse the output widget
         # by default
         if filePath:
-            self.__verticalSplitter.setSizes((0, 100))
+            self.setOutputDisplay(False)
 
         if code:
             self.setCode(code)
@@ -48,7 +48,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         # only computed after the user stops typing
         self.__codeChangedTimer = QtCore.QTimer()
         self.__codeChangedTimer.setSingleShot(True)
-        self.__codeChangedTimer.timeout.connect(self.__codeChangedEmitSignal)
+        self.__codeChangedTimer.timeout.connect(self.__emitCodeChangedSignal)
 
     def keyPressEvent(self, event):
         """
@@ -78,7 +78,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
             self.__codeEditor.setStyleSheet(f"font-size: {size}px")
 
         # Control+S: save
-        elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_S and self.filePath():
+        elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_S:
             self.saveFile()
 
         # Control+F: find text
@@ -181,13 +181,33 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         self.__replaceCancel.pressed.connect(functools.partial(self.__setReplaceDisplay, False))
         self.__replaceAll.pressed.connect(self.__onReplaceAll)
 
+    def setOutputDisplay(self, display):
+        """
+        Control the display of output widget.
+        """
+        if display:
+            if not self.outputDisplay():
+                self.__verticalSplitter.setSizes((50, 50))
+        else:
+            self.__verticalSplitter.setSizes((0, 100))
+
+    def outputDisplay(self):
+        """
+        Return if the output widget is being displayed.
+        """
+        return self.__verticalSplitter.sizes()[0] > 0
+
     def executeCode(self, code):
         """
         Execute the code using exec() and capture any output.
         """
+        # making sure the code is saved before execution
+        self.__emitCodeChangedSignal()
+
         f = StringIO()
         failed = False
         self.__outputWidget.append(code)
+        self.setOutputDisplay(True)
 
         mainWindow = self
         while mainWindow.parent():
@@ -255,10 +275,24 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         Save the code to the file path.
         """
-        assert self.filePath(), "File path not defined!"
+        if not self.filePath():
+            fileName, _ = QtWidgets.QFileDialog.getSaveFileName(
+                self,
+                'Save Script',
+                '',
+                'Python Files (*.py);;All Files (*)'
+            )
+
+            # cancelled
+            if not fileName:
+                return
+
+            self.setFilePath(fileName, loadCode=False)
 
         with open(self.filePath(), 'w') as f:
             f.write(self.code())
+
+        self.__emitCodeChangedSignal()
 
     def isModified(self):
         """
@@ -376,12 +410,16 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         self.__codeChangedTimer.stop()
         self.__codeChangedTimer.start(self.__codeChangedWaitTime)
 
-    def __codeChangedEmitSignal(self):
+    def __emitCodeChangedSignal(self):
         """
         Emit the code changed signal.
         """
-        self.codeChanged.emit()
+        # in case there is a pending timer
         self.__codeEditor.highlighter().highlightDocument()
+        if self.__codeChangedTimer.isActive():
+            self.__codeChangedTimer.stop()
+
+        self.codeChanged.emit()
 
     def __onUpdateStatus(self):
         """
@@ -471,6 +509,9 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         self.__completer.activated.connect(self.__acceptSuggestion)
 
         self.__highlighter = _PythonSyntaxHighlighter(self.document())
+
+        # workaround necessary to show the blinking text cursor
+        self.setPlainText('')
 
     def highlighter(self):
         """
@@ -650,6 +691,7 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         painter = QtGui.QPainter(self.__lineNumberArea)
         painter.setFont(self.font())
         painter.fillRect(event.rect(), self.__backgroundColor)
+
         blockNumber = self.firstVisibleBlockId()
         block = self.document().findBlockByNumber(blockNumber)
         if blockNumber > 0:
@@ -674,7 +716,14 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
                     painter.setPen(self.__lineAreaActiveLine)
                 else:
                     painter.setPen(self.__lineAreaInactiveLine)
-                painter.drawText(-5, top, self.__lineNumberArea.width(), self.fontMetrics().height(), QtCore.Qt.AlignRight, str(blockNumber + 1))
+                painter.drawText(
+                    -5,
+                    int(top),
+                    self.__lineNumberArea.width(),
+                    self.fontMetrics().height(),
+                    QtCore.Qt.AlignRight,
+                    str(blockNumber + 1)
+                )
             block = block.next()
             top = bottom
             bottom = top + int(self.document().documentLayout().blockBoundingRect(block).height())
