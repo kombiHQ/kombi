@@ -1,4 +1,3 @@
-import os
 import platform
 import subprocess
 from ..Task import Task
@@ -32,27 +31,26 @@ class RevealInFileManagerTask(Task):
         filePaths.extend(map(lambda x: x.var('filePath'), self.elements()))
 
         # linux <3
-        args = []
         if platform.system() == 'Linux':
-            args.append('xdg-open')
-            args += filePaths
+            args = []
+            filePathsEncoded = ','.join(map(lambda x: f'"file://{x}"', filePaths))
+            args.append('dbus-send')
+            args.append('--session')
+            args.append('--print-reply')
+            args.append('--dest=org.freedesktop.FileManager1')
+            args.append('--type=method_call')
+            args.append('/org/freedesktop/FileManager1')
+            args.append('org.freedesktop.FileManager1.ShowItems')
+            args.append(f'array:string:{filePathsEncoded}')
+            args.append('string:""')
+            subprocess.Popen(' '.join(args), shell=True)
+
         # windows
         elif platform.system() == 'Windows':
-            args = ('explorer.exe', '/select,' + filePaths[0].replace('/', '\\'))
+            subprocess.Popen(('explorer.exe', '/select,' + filePaths[0].replace('/', '\\')))
         # macos
         elif platform.system() == 'Darwin':
-            args = ('open', filePaths)
-
-        assert args
-
-        env = dict(os.environ)
-        if 'PYTHONHOME' in env:
-            del env['PYTHONHOME']
-
-        if 'LD_LIBRARY_PATH' in env:
-            del env['LD_LIBRARY_PATH']
-
-        subprocess.Popen(args, env=env)
+            subprocess.Popen(('open', filePaths))
 
         return super(RevealInFileManagerTask, self)._perform()
 
