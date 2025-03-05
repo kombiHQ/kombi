@@ -90,7 +90,6 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
         self.__scriptEditorFileBrowser.doubleClick.connect(self.__onScriptEditorDoubleClick)
         self.__horizontalSplitter.insertWidget(0, self.__scriptEditorFileBrowser)
         self.__horizontalSplitter.setSizes((200, 600))
-        self.__horizontalSplitter.setStretchFactor(0, 0)
         self.__horizontalSplitter.setStretchFactor(1, 1)
 
     def __onScriptEditorFileBrowserRootChanged(self, rootPath):
