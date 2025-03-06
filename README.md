@@ -389,7 +389,8 @@ apt install libxcb-cursor0
 #### Dependencies
 Name | Version 
 --- | --- 
-Pylama | 7.0+
+Pylama | 7+
+Setup Tools | 75+
 
 #### Running tests
 ```bash
@@ -398,6 +399,11 @@ cd <SRC_LOCATION>
 ```
 
 #### Running linters
+Install requirements:
+```
+pip install pylama setuptools
+```
+Run linter:
 ```bash
 cd <SRC_LOCATION>
 ./runlint
