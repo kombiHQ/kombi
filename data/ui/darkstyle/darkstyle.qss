@@ -430,3 +430,34 @@ QLabel#textCursorPositionLabel {
 QLineEdit#findText{
     font-family: "<monospaceFontName>";
 }
+
+QTreeView#noIcons{
+    show-decoration-selected: 1;
+    background-color: #282c34;
+    font-family: "<monospaceFontName>";
+}
+
+QTreeView#noIcons::branch,
+QTreeView#noIcons::branch:selected,
+QTreeView#noIcons::branch:selected:active,
+QTreeView#noIcons::branch:selected:!active {
+    alternate-background-color: transparent;
+    background-color: transparent;
+    border-color: transparent;
+    background: none;
+    selection-background-color: transparent;
+}
+
+QTreeView#noIcons::branch:has-children:!has-siblings:closed,
+QTreeView#noIcons::branch:closed:has-children:has-siblings {
+    border-image: none;
+    image: url(darkstyle/icon_branch_closed_blue.png);
+    selection-background-color: transparent;
+}
+
+QTreeView#noIcons::branch:open:has-children:!has-siblings,
+QTreeView#noIcons::branch:open:has-children:has-siblings  {
+    border-image: none;
+    image: url(darkstyle/icon_branch_open_blue.png);
+    selection-background-color: transparent;
+}
