@@ -353,8 +353,15 @@ In case you are building the dependencies manually skip the step below:
 ### Install dependencies
 
 #### Python:
+
+Note: Kombi is compatible with both `PySide2` and `PySide6`. Please use the version that best suits your requirements.
 ```bash
-pip install PySide6 PyYAML Qt.Py oiio-static-python python-call-graph jedi
+pip install PySide6 PyYAML Qt.Py python-call-graph jedi
+```
+
+Additionally, if you want to support the image processing tasks, you will need to install OpenImageIO. Otherwise, feel free to skip this step:
+```
+pip install oiio-static-python
 ```
 
 <details><summary>Linux</summary>
