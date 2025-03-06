@@ -22,6 +22,10 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
         self.setStyleSheet(Resource.stylesheet())
 
         self.__buildWidgets(mainWidget)
+        self.__fileBrowserVisibility = Resource.userConfig().value(
+            'scriptEditorFileBrowser',
+            False
+        )
 
         if mainWidget is None:
             self.__createFileBrowserWidget(rootPath)
@@ -45,7 +49,10 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
         Build the base widgets.
         """
         self.__horizontalSplitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        self.__scriptEditorFileBrowser = None
         self.__scriptEditorTabWidget = ScriptEditorTabWidget(mainWidget=mainWidget)
+        self.__scriptEditorTabWidget.tabBar().currentChanged.connect(self.__onTabChanged)
+
         self.__horizontalSplitter.addWidget(self.__scriptEditorTabWidget)
 
         self.setCentralWidget(self.__horizontalSplitter)
@@ -56,18 +63,45 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
         """
         # F1: show tree
         if event.key() == QtCore.Qt.Key_F1:
-            if self.__horizontalSplitter.count() == 1:
-                self.__createFileBrowserWidget()
-            else:
-                browserWidget = self.__horizontalSplitter.widget(0)
-                browserWidget.setVisible(not browserWidget.isVisible())
+            currentTabIndex = self.__scriptEditorTabWidget.tabBar().currentIndex()
+            if self.__scriptEditorTabWidget.isTabScriptEditor(currentTabIndex):
+                if self.__horizontalSplitter.count() == 1:
+                    self.__createFileBrowserWidget()
+                else:
+                    browserWidget = self.__horizontalSplitter.widget(0)
+                    browserWidget.setVisible(not browserWidget.isVisible())
+                    self.__fileBrowserVisibility = browserWidget.isVisible()
+                    Resource.userConfig().setValue(
+                        'scriptEditorFileBrowser',
+                        self.__fileBrowserVisibility
+                    )
+                return
 
         super().keyPressEvent(event)
+
+    def __onTabChanged(self, tabIndex):
+        """
+        Triggered when tab is changed.
+        """
+        if not self.tabWidget().isTabScriptEditor(tabIndex) and self.__scriptEditorFileBrowser:
+            self.__fileBrowserVisibility = self.__scriptEditorFileBrowser.isVisible()
+            self.__scriptEditorFileBrowser.setVisible(False)
+        elif self.__fileBrowserVisibility:
+            self.__createFileBrowserWidget()
+            if not self.__scriptEditorFileBrowser.isVisible():
+                self.__scriptEditorFileBrowser.setVisible(True)
+                Resource.userConfig().setValue(
+                    'scriptEditorFileBrowser',
+                    True
+                )
 
     def __createFileBrowserWidget(self, rootPath=''):
         """
         The file browser widget is created on demand only when requested.
         """
+        if self.__scriptEditorFileBrowser is not None:
+            return
+
         if not rootPath:
             rootPath = Resource.userConfig().value('scriptEditorRootPath', pathlib.Path.home().as_posix())
 
