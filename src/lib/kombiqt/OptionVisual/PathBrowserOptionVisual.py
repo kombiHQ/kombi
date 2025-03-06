@@ -43,6 +43,9 @@ class PathBrowserOptionVisual(OptionVisual):
         self.__fileSystemModel.setRootPath(self.__rootWidget.optionValue())
 
         self.__treeWidget = _TreeView()
+        if not self.uiHints().get('displayIcons', True):
+            self.__treeWidget.setObjectName('noIcons')
+            self.__treeWidget.setItemDelegate(_ItemDelegate())
         self.__treeWidget.contextMenu.connect(self.__onContextMenu)
         self.__treeWidget.setTextElideMode(QtCore.Qt.ElideNone)
         self.__treeWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
@@ -151,6 +154,24 @@ class _TreeView(QtWidgets.QTreeView):
         """
         self.contextMenu.emit(event)
 
+class _ItemDelegate(QtWidgets.QStyledItemDelegate):
+    """
+    Custom delegate use to handle the no icon support.
+    """
+    __directoryColor = QtGui.QColor(91, 172, 238)
+    __fileColor = QtGui.QColor(171, 177, 187)
+
+    def paint(self, painter, option, index):
+        """
+        Paint a different text color for directories vs files.
+        """
+        if index.model().isDir(index):
+            option.palette.setColor(QtGui.QPalette.Text, self.__directoryColor)
+        else:
+            option.palette.setColor(QtGui.QPalette.Text, self.__fileColor)
+
+        return super().paint(painter, option, index)
+
 class _FileSystemModel(QtWidgets.QFileSystemModel):
     """
     File system model used by the tree widget.
@@ -174,8 +195,12 @@ class _FileSystemModel(QtWidgets.QFileSystemModel):
 
             return self.__nullPixmap
 
-        if role == QtCore.Qt.DecorationRole and index.column() == 0 and self.isDir(index):
+        elif not self.displayIcons() and role == QtCore.Qt.DisplayRole and index.column() == 0 and self.isDir(index):
+            return super().data(index, role) + '/'
+
+        elif role == QtCore.Qt.DecorationRole and index.column() == 0 and self.isDir(index):
             return Resource.icon('icons/elements/children.png')
+
         return super().data(index, role)
 
     def displayIcons(self):
