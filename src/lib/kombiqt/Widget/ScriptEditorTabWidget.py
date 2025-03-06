@@ -106,6 +106,13 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
 
         self.tabDisplayUpdate.emit(showTabs)
 
+    def isTabScriptEditor(self, tabIndex):
+        """
+        Return a boolean if tab contains a script editor.
+        """
+        widget = self.widget(tabIndex)
+        return isinstance(widget, ScriptEditorWidget)
+
     def __setMainWidget(self, mainWidget):
         """
         Set the main widget tab that will not be closable.
