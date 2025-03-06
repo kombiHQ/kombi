@@ -397,7 +397,7 @@ apt install libxcb-cursor0
 Name | Version 
 --- | --- 
 Pylama | 7+
-Setup Tools | 75+
+Setuptools | 75+
 
 #### Running tests
 ```bash
