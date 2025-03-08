@@ -48,9 +48,37 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
             Resource.icon("icons/python.png")
         )
         scriptEditorButton.clicked.connect(lambda _: self.addScriptEditor())
-        self.setCornerWidget(scriptEditorButton, corner=QtCore.Qt.TopRightCorner)
+
+        buttonsWidget = QtWidgets.QWidget()
+        self.__cornerButtonsLayout = QtWidgets.QHBoxLayout()
+        self.__cornerButtonsLayout.setContentsMargins(10, 0, 10, 0)
+        buttonsWidget.setLayout(self.__cornerButtonsLayout)
+        self.appendCornerButtonWidget(scriptEditorButton)
+
+        self.setCornerWidget(buttonsWidget, corner=QtCore.Qt.TopRightCorner)
 
         self.displayUpdate()
+
+    def appendCornerButtonWidget(self, widget):
+        """
+        Append a custom widget to the right corner panel.
+        """
+        assert isinstance(widget, QtWidgets.QWidget), 'Invalid widget type!'
+
+        self.__cornerButtonsLayout.addWidget(widget)
+
+    def printHelp(self, additionalHelp=None):
+        """
+        Print the formatted help in the output widget.
+
+        The additionalHelp argument allows you to pass a list of extra lines
+        that will be included as part of the help content.
+        """
+        if not self.isTabScriptEditor(self.currentIndex()):
+            return
+
+        scriptEditor = self.widget(self.currentIndex())
+        scriptEditor.printHelp(additionalHelp)
 
     def mainWidget(self):
         """
@@ -207,7 +235,7 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         modified = scriptEditor.isModified()
         self.tabBar().setTabTextColor(
             tabIndex,
-            QtGui.QColor('green' if modified else '')
+            QtGui.QColor(152, 195, 121) if modified else QtGui.QColor('')
         )
 
         if scriptEditor.filePath():
