@@ -44,27 +44,6 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
         """
         return self.__scriptEditorTabWidget
 
-    def __buildWidgets(self, mainWidget):
-        """
-        Build the base widgets.
-        """
-        self.__horizontalSplitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
-        self.__scriptEditorFileBrowser = None
-        self.__scriptEditorTabWidget = ScriptEditorTabWidget(mainWidget=mainWidget)
-        self.__scriptEditorTabWidget.tabBar().currentChanged.connect(self.__onTabChanged)
-
-        self.__horizontalSplitter.addWidget(self.__scriptEditorTabWidget)
-
-        self.setCentralWidget(self.__horizontalSplitter)
-
-        helpButton = QtWidgets.QPushButton()
-        helpButton.setToolTip('Help')
-        helpButton.setIcon(
-            Resource.icon("icons/help.png")
-        )
-        helpButton.clicked.connect(lambda _: self.printHelp())
-        self.__scriptEditorTabWidget.appendCornerButtonWidget(helpButton)
-
     def printHelp(self):
         """
         Print the formatted help in the output widget.
@@ -96,6 +75,27 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
                 return
 
         super().keyPressEvent(event)
+
+    def __buildWidgets(self, mainWidget):
+        """
+        Build the base widgets.
+        """
+        self.__horizontalSplitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        self.__scriptEditorFileBrowser = None
+        self.__scriptEditorTabWidget = ScriptEditorTabWidget(mainWidget=mainWidget)
+        self.__scriptEditorTabWidget.tabBar().currentChanged.connect(self.__onTabChanged)
+
+        self.__horizontalSplitter.addWidget(self.__scriptEditorTabWidget)
+
+        self.setCentralWidget(self.__horizontalSplitter)
+
+        helpButton = QtWidgets.QPushButton()
+        helpButton.setToolTip('Help')
+        helpButton.setIcon(
+            Resource.icon("icons/help.png")
+        )
+        helpButton.clicked.connect(lambda _: self.printHelp())
+        self.__scriptEditorTabWidget.appendCornerButtonWidget(helpButton)
 
     def __onTabChanged(self, tabIndex):
         """
