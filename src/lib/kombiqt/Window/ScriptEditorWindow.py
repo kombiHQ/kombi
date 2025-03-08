@@ -3,6 +3,7 @@ import sys
 import pathlib
 from Qt import QtWidgets, QtCore
 from kombi.Element.Fs.FsElement import FsElement
+from kombi.Config import Config
 from ..Resource import Resource
 from ..OptionVisual.PathBrowserOptionVisual import PathBrowserOptionVisual
 from ..Widget.ScriptEditorTabWidget import ScriptEditorTabWidget
@@ -12,7 +13,7 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
     Kombi script editor window.
     """
 
-    def __init__(self, rootPath='', mainWidget=None, parent=None):
+    def __init__(self, rootPath='', mainWidget=None, config=None, parent=None):
         """
         Create ScriptEditorWindow object.
         """
@@ -21,8 +22,9 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
         self.setWindowIcon(Resource.icon('icons/kombi.png'))
         self.setStyleSheet(Resource.stylesheet())
 
+        self.__setConfig(config or Config('scriptEditorWindow'))
         self.__buildWidgets(mainWidget)
-        self.__fileBrowserVisibility = Resource.userConfig().value(
+        self.__fileBrowserVisibility = self.config().value(
             'scriptEditorFileBrowser',
             False
         )
@@ -67,14 +69,31 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
                 else:
                     browserWidget = self.__horizontalSplitter.widget(0)
                     browserWidget.setVisible(not browserWidget.isVisible())
+
                     self.__fileBrowserVisibility = browserWidget.isVisible()
-                    Resource.userConfig().setValue(
+                    self.config().setValue(
                         'scriptEditorFileBrowser',
                         self.__fileBrowserVisibility
                     )
+
+                self.__helpButton.setVisible(self.__fileBrowserVisibility.isVisible())
                 return
 
         super().keyPressEvent(event)
+
+    def config(self):
+        """
+        Return the config associated with the script editor.
+        """
+        return self.__config
+
+    def __setConfig(self, config):
+        """
+        Set the config used to store the script editor preferences.
+        """
+        assert isinstance(config, Config), "Invalid config type"
+
+        self.__config = config
 
     def __buildWidgets(self, mainWidget):
         """
@@ -89,13 +108,14 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
 
         self.setCentralWidget(self.__horizontalSplitter)
 
-        helpButton = QtWidgets.QPushButton()
-        helpButton.setToolTip('Help')
-        helpButton.setIcon(
+        self.__helpButton = QtWidgets.QPushButton()
+        self.__helpButton.setToolTip('Help')
+        self.__helpButton.setIcon(
             Resource.icon("icons/help.png")
         )
-        helpButton.clicked.connect(lambda _: self.printHelp())
-        self.__scriptEditorTabWidget.appendCornerButtonWidget(helpButton)
+        self.__helpButton.clicked.connect(lambda _: self.printHelp())
+        self.__helpButton.setVisible(False)
+        self.__scriptEditorTabWidget.appendCornerButtonWidget(self.__helpButton)
 
     def __onTabChanged(self, tabIndex):
         """
@@ -108,10 +128,12 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
             self.__createFileBrowserWidget()
             if not self.__scriptEditorFileBrowser.isVisible():
                 self.__scriptEditorFileBrowser.setVisible(True)
-                Resource.userConfig().setValue(
+                self.config().setValue(
                     'scriptEditorFileBrowser',
                     True
                 )
+        if self.__scriptEditorFileBrowser:
+            self.__helpButton.setVisible(self.__scriptEditorFileBrowser.isVisible())
 
     def __createFileBrowserWidget(self, rootPath=''):
         """
