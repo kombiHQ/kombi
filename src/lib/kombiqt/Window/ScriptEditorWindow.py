@@ -57,6 +57,24 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
 
         self.setCentralWidget(self.__horizontalSplitter)
 
+        helpButton = QtWidgets.QPushButton()
+        helpButton.setToolTip('Help')
+        helpButton.setIcon(
+            Resource.icon("icons/help.png")
+        )
+        helpButton.clicked.connect(lambda _: self.printHelp())
+        self.__scriptEditorTabWidget.appendCornerButtonWidget(helpButton)
+
+    def printHelp(self):
+        """
+        Print the formatted help in the output widget.
+        """
+        additionalHelp = [
+            "F1       Toggle the file browser display."
+        ]
+
+        self.__scriptEditorTabWidget.printHelp(additionalHelp)
+
     def keyPressEvent(self, event):
         """
         Handle showing the file browser hotkey.
