@@ -98,6 +98,28 @@ class ScriptEditorWidget(QtWidgets.QWidget):
 
         super().keyPressEvent(event)
 
+    def printHelp(self, additionalHelp=None):
+        """
+        Print the formatted help in the output widget.
+
+        The additionalHelp argument allows you to pass a list of extra lines
+        that will be included as part of the help content.
+        """
+        self.setOutputDisplay(True)
+
+        self.__outputWidget.setTextColor(QtGui.QColor(130, 130, 130))
+        self.__outputWidget.setFontWeight(QtGui.QFont.Normal)
+        self.__outputWidget.append("Script Editor Shortcuts:")
+        if additionalHelp:
+            for line in additionalHelp:
+                self.__outputWidget.append(line)
+        self.__outputWidget.append("CTRL+/   Comment or uncomment the selected lines of code.")
+        self.__outputWidget.append("CTRL+S   Save the current script.")
+        self.__outputWidget.append("CTRL+F   Focus the \"Find\" field to search for text.")
+        self.__outputWidget.append("CTRL+H   Open the \"Find and Replace\" field to search and replace text.")
+        self.__outputWidget.append("CTRL+G   Go to a specific line in the script.")
+        self.__outputWidget.setTextColor(QtGui.QColor(171, 178, 191))
+
     def wheelEvent(self, event):
         """
         Control the script editor font size.
