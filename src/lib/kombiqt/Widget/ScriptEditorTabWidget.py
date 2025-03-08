@@ -17,6 +17,7 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
     """
     tabDisplayUpdate = QtCore.Signal(bool)
     __scriptEditorsConfig = Config('scriptEditors')
+    __showTabIcon = False
 
     def __init__(self, mainWidget=None, loadUserTabs=True, parent=None):
         """
@@ -25,7 +26,7 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         super().__init__(parent=parent)
         self.setTabBar(_ScriptEditorTabBarWidget())
         self.setTabsClosable(True)
-        self.setMovable(True)
+        self.setMovable(False)
 
         if mainWidget:
             self.__setMainWidget(mainWidget)
@@ -101,11 +102,13 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
                     return
 
         scriptEditor = ScriptEditorWidget(code, filePath)
-        icon = Resource.icon("icons/python.png")
-        if filePath:
-            icon = QtWidgets.QFileIconProvider().icon(QtCore.QFileInfo(filePath))
+        tabIndex = self.addTab(scriptEditor, tabName)
+        if self.__showTabIcon:
+            icon = Resource.icon("icons/python.png")
+            if filePath:
+                icon = QtWidgets.QFileIconProvider().icon(QtCore.QFileInfo(filePath))
+            self.setTabIcon(tabIndex, icon)
 
-        tabIndex = self.addTab(scriptEditor, icon, tabName)
         self.displayUpdate()
         self.__updateTabStatus(tabIndex)
         scriptEditor.codeChanged.connect(functools.partial(self.__onCodeChanged, tabIndex))
