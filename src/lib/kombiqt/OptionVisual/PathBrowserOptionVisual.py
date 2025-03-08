@@ -44,6 +44,7 @@ class PathBrowserOptionVisual(OptionVisual):
 
         self.__treeWidget = _TreeView()
         if not self.uiHints().get('displayIcons', True):
+            self.__rootWidget.setObjectName('monospace')
             self.__treeWidget.setObjectName('noIcons')
             self.__treeWidget.setItemDelegate(_ItemDelegate())
         self.__treeWidget.contextMenu.connect(self.__onContextMenu)

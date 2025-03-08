@@ -427,7 +427,7 @@ QLabel#textCursorPositionLabel {
     font-family: "<monospaceFontName>";
 }
 
-QLineEdit#findText{
+QLineEdit#findText, QWidget#monospace > QLineEdit {
     font-family: "<monospaceFontName>";
 }
 
