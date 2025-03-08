@@ -76,7 +76,7 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
                         self.__fileBrowserVisibility
                     )
 
-                self.__helpButton.setVisible(self.__fileBrowserVisibility.isVisible())
+                self.__helpButton.setVisible(self.__fileBrowserVisibility)
                 return
 
         super().keyPressEvent(event)
