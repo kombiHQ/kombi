@@ -888,12 +888,13 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         """
         Compute the highlighting for the input text block.
         """
+        self.__highlightRanges = []
         self.__applyHighlight(self.__numeric, text, self.__numericFormat)
         self.__applyHighlight(self.__keywords, text, self.__keywordFormat)
         self.__applyHighlight(self.__functions, text, self.__functionFormat)
         self.__applyHighlight(self.__decorators, text, self.__functionFormat)
         self.__applyHighlight(self.__strings, text, self.__stringFormat)
-        self.__applyHighlight(self.__comments, text, self.__commentFormat)
+        self.__applyHighlight(self.__comments, text, self.__commentFormat, checkRanges=True)
 
     def highlightDocument(self):
         """
@@ -912,10 +913,20 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
 
         cursor.endEditBlock()
 
-    def __applyHighlight(self, pattern, text, textFormat, *args):
+    def __applyHighlight(self, pattern, text, textFormat, checkRanges=False, *args):
         """
         Apply the syntax highlighting using the provided regular expression pattern.
         """
         for match in re.finditer(pattern, text, *args):
             start, end = match.span()
+            skip = False
+            for ignoreStart, ignoreEnd in self.__highlightRanges:
+                if checkRanges and start > ignoreStart and start < ignoreEnd:
+                    self.__highlightRanges.append([start, end])
+                    skip = True
+                    break
+
+            if skip:
+                continue
+            self.__highlightRanges.append([start, end])
             self.setFormat(start, end - start, textFormat)
