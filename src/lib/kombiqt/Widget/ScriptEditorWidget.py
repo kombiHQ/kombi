@@ -868,6 +868,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         Create ab _PythonSyntaxHighlighter object.
         """
         super().__init__(parent)
+        self.__defaultTextFormat = QtGui.QTextCharFormat()
 
         self.__numericFormat = QtGui.QTextCharFormat()
         self.__numericFormat.setForeground(QtGui.QColor(204, 151, 87))
@@ -906,8 +907,17 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         """
         self.__documentDocstrings = []
         cursor = QtGui.QTextCursor(self.document())
+
+        # resetting all highlight before proceeding
+        cursor.movePosition(QtGui.QTextCursor.Start)
+        while not cursor.atEnd():
+            cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+            cursor.movePosition(QtGui.QTextCursor.EndOfBlock, QtGui.QTextCursor.KeepAnchor)
+            cursor.setCharFormat(self.__defaultTextFormat)
+            cursor.movePosition(QtGui.QTextCursor.NextBlock)
         cursor.beginEditBlock()
 
+        # highlighting multi-line docstrings
         for match in re.finditer(self.__docstrings, self.document().toPlainText()):
             start = match.start()
             end = match.end()
@@ -935,10 +945,10 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
                     skip = True
                     break
 
-            if not skip:
+            if not skip and checkRanges:
                 # ignoring previous highlighted
                 for ignoreStart, ignoreEnd in self.__highlightRanges:
-                    if checkRanges and start > ignoreStart and start < ignoreEnd:
+                    if start > ignoreStart and start < ignoreEnd:
                         self.__highlightRanges.append([start, end])
                         skip = True
                         break
