@@ -833,6 +833,7 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         cursorRect = self.mapToGlobal(self.cursorRect().bottomRight())
 
         self.__completer.complete()
+        self.__completer.popup().setFont(self.font())
         self.__completer.popup().setGeometry(cursorRect.x() + 30, cursorRect.y() + 10, 300, 150)
         self.__completer.popup().scrollToTop()
 
