@@ -884,10 +884,13 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__functionFormat = QtGui.QTextCharFormat()
         self.__functionFormat.setForeground(QtGui.QColor(97, 175, 238))
 
+        self.__documentDocstrings = []
+
     def highlightBlock(self, text):
         """
         Compute the highlighting for the input text block.
         """
+        # processing highlight for current block
         self.__highlightRanges = []
         self.__applyHighlight(self.__numeric, text, self.__numericFormat)
         self.__applyHighlight(self.__keywords, text, self.__keywordFormat)
@@ -900,12 +903,14 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         """
         Compute the highlights for the document, especially when the highlight spans multiple lines.
         """
+        self.__documentDocstrings = []
         cursor = QtGui.QTextCursor(self.document())
         cursor.beginEditBlock()
 
         for match in re.finditer(self.__docstrings, self.document().toPlainText()):
             start = match.start()
             end = match.end()
+            self.__documentDocstrings.append([start, end])
 
             cursor.setPosition(start)
             cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
@@ -917,14 +922,25 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         """
         Apply the syntax highlighting using the provided regular expression pattern.
         """
+        currentBlockPosition = self.currentBlock().position()
         for match in re.finditer(pattern, text, *args):
-            start, end = match.span()
             skip = False
-            for ignoreStart, ignoreEnd in self.__highlightRanges:
-                if checkRanges and start > ignoreStart and start < ignoreEnd:
-                    self.__highlightRanges.append([start, end])
+            start, end = match.span()
+
+            # ignoring any highlight inside of doc strings (computed
+            # separately)
+            for docstringStart, docstringEnd in self.__documentDocstrings:
+                if currentBlockPosition + start > docstringStart and currentBlockPosition + end < docstringEnd:
                     skip = True
                     break
+
+            if not skip:
+                # ignoring previous highlighted
+                for ignoreStart, ignoreEnd in self.__highlightRanges:
+                    if checkRanges and start > ignoreStart and start < ignoreEnd:
+                        self.__highlightRanges.append([start, end])
+                        skip = True
+                        break
 
             if skip:
                 continue
