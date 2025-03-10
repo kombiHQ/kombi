@@ -132,8 +132,7 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
                     'scriptEditorFileBrowser',
                     True
                 )
-        if self.__scriptEditorFileBrowser:
-            self.__helpButton.setVisible(self.__scriptEditorFileBrowser.isVisible())
+        self.__helpButton.setVisible(self.tabWidget().isTabScriptEditor(tabIndex))
 
     def __createFileBrowserWidget(self, rootPath=''):
         """
