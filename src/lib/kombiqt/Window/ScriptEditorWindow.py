@@ -32,6 +32,9 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
         if mainWidget is None:
             self.__createFileBrowserWidget(rootPath)
 
+        self.__helpButton.setVisible(
+            self.tabWidget().isTabScriptEditor(self.tabWidget().currentIndex())
+        )
         self.resize(1280, 720)
 
     def mainWidget(self):
