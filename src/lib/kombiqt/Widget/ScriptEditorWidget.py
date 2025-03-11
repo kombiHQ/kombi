@@ -957,4 +957,9 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
             if skip:
                 continue
             self.__highlightRanges.append([start, end])
-            self.setFormat(start, end - start, textFormat)
+
+            # apply to the whole line
+            if checkRanges:
+                self.setFormat(start, len(text), textFormat)
+            else:
+                self.setFormat(start, end - start, textFormat)
