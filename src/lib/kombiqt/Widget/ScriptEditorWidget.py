@@ -863,7 +863,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     """
     __keywords = r"\b(def|class|as|in|not|and|or|if|else|elif|for|while|try|except|finally|with|import|from|return|yield|pass|break|continue|del|global|lambda|assert|raise|True|False|None)\b"
     __comments = r"#.*?(?=#|$)"
-    __numeric = r"[0-9]"
+    __numeric = r"\b[0-9]*\b"
     __decorators = r"^\s*@.*$"
     __strings = r"\"[^\"]*\"|\'[^\']*\'"
     __functions = r"\b[A-Za-z_][A-Za-z0-9_]*\b(?=\()"
