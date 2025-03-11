@@ -38,6 +38,9 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
             # to ensure they are aligned with the current active tab index.
             self.__bakeTabs()
 
+        if not self.count():
+            self.addScriptEditor()
+
         self.tabCloseRequested.connect(self.__onTabClose)
         self.tabBar().tabRenamed.connect(self.__onCodeChanged)
         self.tabBar().tabMoved.connect(self.__onTabMoved)
@@ -191,6 +194,9 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         self.removeTab(index)
 
         self.__bakeTabs()
+
+        if not self.count():
+            self.addScriptEditor()
 
     def __onTabChanged(self, tabIndex):
         """
