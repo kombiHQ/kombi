@@ -865,7 +865,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     __comments = r"#.*?(?=#|$)"
     __numeric = r"\b[0-9]*\b"
     __decorators = r"^\s*@.*$"
-    __strings = r"\"[^\"]*\"|\'[^\']*\'"
+    __strings = r"(['\"])(?:(?!\1|\\).|\\.)*?\1"
     __functions = r"\b[A-Za-z_][A-Za-z0-9_]*\b(?=\()"
     __docstrings = r'"""([\s\S]*?)"""|\'\'\'([\s\S]*?)\'\'\''
 
