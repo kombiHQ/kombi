@@ -844,7 +844,12 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         cursor = self.textCursor()
         textBeforeCursor = self.toPlainText()[:cursor.position()]
         currentLineText = textBeforeCursor.splitlines()[-1]
-        cursor.insertText(suggestion[len(currentLineText.split('.')[-1]):])
+        cursor.movePosition(
+            QtGui.QTextCursor.Left,
+            QtGui.QTextCursor.KeepAnchor,
+            len(currentLineText.split('.')[-1])
+        )
+        cursor.insertText(suggestion)
 
         # when the suggestion is a callable, lets move the cursor one char back
         if suggestion.endswith('()'):
