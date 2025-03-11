@@ -867,6 +867,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     __decorators = r"^\s*@.*$"
     __strings = r"(['\"])(?:(?!\1|\\).|\\.)*?\1"
     __functions = r"\b[A-Za-z_][A-Za-z0-9_]*\b(?=\()"
+    __classes = r"\b(?<=class)\s+[A-Za-z_][A-Za-z0-9_]*\b[\s]*?(?=:)"
     __docstrings = r'"""([\s\S]*?)"""|\'\'\'([\s\S]*?)\'\'\''
 
     def __init__(self, parent=None):
@@ -903,6 +904,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__applyHighlight(self.__numeric, text, self.__numericFormat)
         self.__applyHighlight(self.__keywords, text, self.__keywordFormat)
         self.__applyHighlight(self.__functions, text, self.__functionFormat)
+        self.__applyHighlight(self.__classes, text, self.__functionFormat)
         self.__applyHighlight(self.__decorators, text, self.__functionFormat)
         self.__applyHighlight(self.__strings, text, self.__stringFormat)
         self.__applyHighlight(self.__comments, text, self.__commentFormat, checkRanges=True)
