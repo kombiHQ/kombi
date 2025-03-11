@@ -61,7 +61,7 @@ class PathBrowserOptionVisual(OptionVisual):
         self.__onRootChanged(self.__rootWidget.optionValue())
         self.__treeWidget.setUniformRowHeights(True)
         self.__treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
-        self.__treeWidget.doubleClicked.connect(self.__onDoubleClick)
+        self.__treeWidget.activated.connect(self.__onActivated)
         self.__treeWidget.selectionModel().selectionChanged.connect(self.__onSelectionChanged)
         self.__treeWidget.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
 
@@ -137,9 +137,9 @@ class PathBrowserOptionVisual(OptionVisual):
             newPath = self.__fileSystemModel.filePath(selectedIndexes[0])
         self.valueChanged.emit(newPath)
 
-    def __onDoubleClick(self, _):
+    def __onActivated(self, _):
         """
-        Triggered when an user double click in a file/directory in the browser.
+        Triggered when an user double click or hit enter in a file/directory in the browser.
         """
         self.doubleClick.emit()
 
