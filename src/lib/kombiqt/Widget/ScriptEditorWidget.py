@@ -24,7 +24,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
     Python script editor widget.
     """
     codeChanged = QtCore.Signal()
-    __codeChangedWaitTime = 2500
+    __codeChangedWaitTime = 1000
 
     def __init__(self, code='', filePath='', parent=None) -> None:
         """
