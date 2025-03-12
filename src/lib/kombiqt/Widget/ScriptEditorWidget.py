@@ -1,5 +1,6 @@
 import os
 import re
+import keyword
 import builtins
 import weakref
 import functools
@@ -862,7 +863,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     """
     Implement a basic python syntax highlighter.
     """
-    __keywords = r"\b(def|class|as|in|not|and|or|if|else|elif|for|while|try|except|finally|with|import|from|return|yield|pass|break|continue|del|global|lambda|assert|raise)\b"
+    __keywords = r"\b({})\b".format('|'.join(filter(lambda x: not hasattr(builtins, x), keyword.kwlist)))
     __builtins = r"((?<=^)|(?<=[^.]))\b({})\b".format('|'.join(dir(builtins)))
     __comments = r"#.*?(?=#|$)"
     __numeric = r"\b[0-9]*\b"
