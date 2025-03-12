@@ -1,5 +1,6 @@
 import os
 import re
+import builtins
 import weakref
 import functools
 import traceback
@@ -862,13 +863,13 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     Implement a basic python syntax highlighter.
     """
     __keywords = r"\b(def|class|as|in|not|and|or|if|else|elif|for|while|try|except|finally|with|import|from|return|yield|pass|break|continue|del|global|lambda|assert|raise)\b"
-    __types = r"\b(True|False|None)\b"
+    __builtins = r"((?<=^)|(?<=[^.]))\b({})\b".format('|'.join(dir(builtins)))
     __comments = r"#.*?(?=#|$)"
     __numeric = r"\b[0-9]*\b"
     __decorators = r"^\s*@.*$"
     __strings = r"(['\"])(?:(?!\1|\\).|\\.)*?\1"
-    __functions = r"((?<=^)|(?<=[^.]))\b[A-Za-z_][A-Za-z0-9_]*\b(?=\()"
-    __classes = r"\b(?<=class)\s+[A-Za-z_][A-Za-z0-9_]*\b[\s]*?(?=:)"
+    __functions = r"\b(?<=def)\s+[A-Za-z_][A-Za-z0-9_]*\b[\s]*?(?=\()"
+    __classes = r"\b(?<=class)\s+[A-Za-z_][A-Za-z0-9_]*\b[\s]*?(?=:|\()"
     __docstrings = r'"""([\s\S]*?)"""|\'\'\'([\s\S]*?)\'\'\''
 
     def __init__(self, parent=None):
@@ -904,7 +905,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__highlightRanges = []
         self.__applyHighlight(self.__numeric, text, self.__numericFormat)
         self.__applyHighlight(self.__keywords, text, self.__keywordFormat)
-        self.__applyHighlight(self.__types, text, self.__functionFormat)
+        self.__applyHighlight(self.__builtins, text, self.__functionFormat)
         self.__applyHighlight(self.__functions, text, self.__functionFormat)
         self.__applyHighlight(self.__classes, text, self.__functionFormat)
         self.__applyHighlight(self.__decorators, text, self.__functionFormat)
