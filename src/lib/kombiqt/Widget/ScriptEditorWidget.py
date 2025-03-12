@@ -801,6 +801,10 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         textBeforeCursor = self.toPlainText()[:cursor.position()]
         currentLineText = textBeforeCursor.splitlines()[-1]
 
+        # in case of numbers don't show auto-complete
+        if currentLineText.split(' ')[-1].split('#')[-1].split(',')[-1].split('(')[-1].replace('.', '').isdigit():
+            return
+
         if not len(currentLineText.strip()):
             self.__completer.popup().hide()
             return
