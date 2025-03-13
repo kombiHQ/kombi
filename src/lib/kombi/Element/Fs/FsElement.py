@@ -93,8 +93,7 @@ class FsElement(Element):
 
         The path query results are cached to improve performance, as the same path
         might be queried multiple times by different element types calling the
-        superclass, which can be expensive over the network. If the cache exceeds
-        the maximum size, the oldest cached entry is removed.
+        superclass, which can be expensive over the network.
         """
         pathId = hash(path)
 
