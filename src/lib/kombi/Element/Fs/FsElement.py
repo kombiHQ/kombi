@@ -1,4 +1,5 @@
 import os
+import time
 import sys
 from pathlib import Path
 from .. import Element
@@ -9,11 +10,13 @@ class FsElement(Element):
     """
     __invalidPath = None
     __pathCache = {}
+    __pathLifespan = {}
 
-    # the path cache speeds up data retrieval over the network by storing previously fetched results.
-    # However, it may cause data to become outdated. Therefore, use the environment KOMBI_FSELEMENT_ENABLE_CACHE
-    # to disable caching if needed.
-    __usePathCache = bool(os.environ.get('KOMBI_FSELEMENT_ENABLE_CACHE', '1').lower() in ('1', 'true'))
+    # this cache speeds up data retrieval over the network by storing previously fetched results.
+    # If you want to disable this cache, assign 0 to the environment variable KOMBI_FSELEMENT_CACHE_LIFESPAN
+    # The value of this cache is in seconds, representing how long a cached path should be valid.
+    # After this period, the cache is discarded and the path is recomputed.
+    __pathCacheTotalLifespan = int(os.environ.get('KOMBI_FSELEMENT_CACHE_LIFESPAN', '60'))
     __asciiCharacters = ''.join(
         [chr(code) for code in range(32, 127)] + list('\b\f\n\r\t')
     )
@@ -90,32 +93,50 @@ class FsElement(Element):
     def cachedPathQuery(path, attr, *args, **kwargs):
         """
         Retrieve or compute and cache the value of an attribute for the given path.
-
-        The path query results are cached to improve performance, as the same path
-        might be queried multiple times by different element types calling the
-        superclass, which can be expensive over the network.
         """
-        pathId = hash(path)
+        # in case the cache is disabled. Compute and return the value right away
+        if FsElement.__pathCacheTotalLifespan == 0:
+            return FsElement.__queryPathAttribute(path, attr, *args, **kwargs)
 
+        pathId = hash(path)
+        currentTime = time.time()
+        expiredPathIds = set()
+        # computing expired cache entries
+        for cachePathId, lifespan in FsElement.__pathLifespan.items():
+            if lifespan + FsElement.__pathCacheTotalLifespan < currentTime:
+                expiredPathIds.add(cachePathId)
+            # when we get a lifespan that is still alive we can stop the lookup
+            # right here. Since, the entries are added in order.
+            else:
+                break
+
+        # purging expired cache entries
+        for expiredPathId in expiredPathIds:
+            del FsElement.__pathLifespan[expiredPathId]
+            del FsElement.__pathCache[expiredPathId]
+
+        # creating entry for path in the cache
         if pathId not in FsElement.__pathCache:
             FsElement.__pathCache[pathId] = {}
+            FsElement.__pathLifespan[pathId] = currentTime
 
-        if not FsElement.__usePathCache or attr not in FsElement.__pathCache[pathId]:
-            value = getattr(path, attr)
-            if callable(value):
-                value = value(*args, **kwargs)
-            FsElement.__pathCache[pathId][attr] = value
+        # computing attribute
+        if attr not in FsElement.__pathCache[pathId]:
+            value = FsElement.__queryPathAttribute(path, attr, *args, **kwargs)
+            FsElement.setCachedPathQuery(pathId, attr, value)
 
+        # returning from the cache
         return FsElement.__pathCache[pathId][attr]
-    
+
     @staticmethod
-    def setCachedPathQuery(path, attr, value):
+    def setCachedPathQuery(pathOrPathId, attr, value):
         """
         Set a computed value for a specified attribute in the cache.
         """
-        pathId = hash(path)
+        pathId = pathOrPathId if isinstance(pathOrPathId, int) else hash(pathOrPathId)
         if pathId not in FsElement.__pathCache:
             FsElement.__pathCache[pathId] = {}
+            FsElement.__pathLifespan[pathId] = time.time()
         FsElement.__pathCache[pathId][attr] = value
 
     @staticmethod
@@ -124,6 +145,7 @@ class FsElement(Element):
         Clear the cached path query.
         """
         FsElement.__pathCache = {}
+        FsElement.__pathLifespan = {}
 
     @classmethod
     def isBinary(cls, filePath, readBytes=512, threshold=0.3):
@@ -152,6 +174,16 @@ class FsElement(Element):
 
         # if percentage of binary characters above threshold, binary file
         return (float(binaryLength) / dataLength) >= threshold
+
+    @staticmethod
+    def __queryPathAttribute(path, attr, *args, **kwargs):
+        """
+        Return the value for a path attribute.
+        """
+        value = getattr(path, attr)
+        if callable(value):
+            value = value(*args, **kwargs)
+        return value
 
     def __setPath(self, path):
         """
