@@ -116,11 +116,11 @@ class ScriptEditorWidget(QtWidgets.QWidget):
             for line in additionalHelp:
                 self.__outputWidget.append(line)
         self.__outputWidget.append("CTRL+Enter  Execute selected lines, or the entire script if none is selected.")
-        self.__outputWidget.append("CTRL+/      Comment or uncomment the selected lines.")
+        self.__outputWidget.append("CTRL+/      Comment or uncomment selected lines.")
         self.__outputWidget.append("CTRL+S      Save the current script.")
         self.__outputWidget.append("CTRL+F      Focus the \"Find\" field to search for text.")
         self.__outputWidget.append("CTRL+H      Open the \"Find and Replace\" field to search and replace text.")
-        self.__outputWidget.append("CTRL+G      Go to a specific line in the script.")
+        self.__outputWidget.append("CTRL+G      Go to specific line.")
         self.__outputWidget.setTextColor(QtGui.QColor(171, 178, 191))
 
     def wheelEvent(self, event):
