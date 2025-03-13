@@ -70,8 +70,15 @@ class DirectoryElement(FsElement):
         """
         result = []
         currentPath = str(self.path())
-        for childFile in os.listdir(currentPath):
-            childPath = pathlib.Path(os.path.join(currentPath, childFile))
+
+        # Using os.scandir for performance improvements, as it provides both the entry name
+        # and type (file or directory) in a single call
+        for childEntry in os.scandir(currentPath):
+            childPath = pathlib.Path(os.path.join(currentPath, childEntry.name))
+            self.setCachedPathQuery(childPath, 'exists', True)
+            self.setCachedPathQuery(childPath, 'is_file', childEntry.is_file())
+            self.setCachedPathQuery(childPath, 'is_dir', childEntry.is_dir())
+
             childElement = Element.create(childPath, self)
             result.append(childElement)
 
