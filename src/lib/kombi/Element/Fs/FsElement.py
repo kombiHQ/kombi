@@ -10,10 +10,10 @@ class FsElement(Element):
     __invalidPath = None
     __pathCache = {}
 
-    # use the environment variable KOMBI_FSELEMENT_CACHE_SIZE to control
-    # the number of path elements cached for faster file system queries over
-    # the network. To disable caching, set KOMBI_FSELEMENT_CACHE_SIZE to 0.
-    __pathCacheSize = int(os.environ.get('KOMBI_FSELEMENT_CACHE_SIZE', '50'))
+    # the path cache speeds up data retrieval over the network by storing previously fetched results.
+    # However, it may cause data to become outdated. Therefore, use the environment KOMBI_FSELEMENT_ENABLE_CACHE
+    # to disable caching if needed.
+    __usePathCache = bool(os.environ.get('KOMBI_FSELEMENT_ENABLE_CACHE', '1').lower() in ('1', 'true'))
     __asciiCharacters = ''.join(
         [chr(code) for code in range(32, 127)] + list('\b\f\n\r\t')
     )
@@ -35,9 +35,8 @@ class FsElement(Element):
         self.setVar('ext', path.suffix[1:])
         self.setVar('baseName', path.name)
         self.setVar('name', self.var('baseName'))
-        if 'sourceDirectory' not in self.varNames():
-            if not path.is_dir():
-                self.setVar('sourceDirectory', str(path.parent))
+        if 'sourceDirectory' not in self.varNames() and not self.cachedPathQuery(path, 'is_dir'):
+            self.setVar('sourceDirectory', str(path.parent))
 
     def path(self):
         """
@@ -97,26 +96,28 @@ class FsElement(Element):
         superclass, which can be expensive over the network. If the cache exceeds
         the maximum size, the oldest cached entry is removed.
         """
-        # Using a combination of id(path) and hash(path) to ensure a unique identifier.
-        # The object ID (from id()) can be repurposed by the garbage collector if the object is collected,
-        # so combining it with hash(path) provides a more reliable way to uniquely identify the object
-        # throughout its lifetime.
-        pathId = (id(path), hash(path))
-
-        # remove the oldest item when the cache exceeds the maximum size
-        if len(FsElement.__pathCache) > FsElement.__pathCacheSize:
-            FsElement.__pathCache.pop(next(iter(FsElement.__pathCache)))
+        pathId = hash(path)
 
         if pathId not in FsElement.__pathCache:
             FsElement.__pathCache[pathId] = {}
 
-        if attr not in FsElement.__pathCache[pathId]:
+        if not FsElement.__usePathCache or attr not in FsElement.__pathCache[pathId]:
             value = getattr(path, attr)
             if callable(value):
                 value = value(*args, **kwargs)
             FsElement.__pathCache[pathId][attr] = value
 
         return FsElement.__pathCache[pathId][attr]
+    
+    @staticmethod
+    def setCachedPathQuery(path, attr, value):
+        """
+        Set a computed value for a specified attribute in the cache.
+        """
+        pathId = hash(path)
+        if pathId not in FsElement.__pathCache:
+            FsElement.__pathCache[pathId] = {}
+        FsElement.__pathCache[pathId][attr] = value
 
     @staticmethod
     def clearCache():
