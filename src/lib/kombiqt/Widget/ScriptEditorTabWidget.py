@@ -191,8 +191,22 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         """
         Triggered when tab close button is pressed.
         """
-        self.removeTab(index)
+        # prompting for confirmation to prevent potential data loss
+        if self.isTabScriptEditor(index):
+            tabWidget = self.widget(index)
+            if tabWidget.filePath() and tabWidget.isModified() or \
+                    len(tabWidget.code()) and not tabWidget.filePath():
+                closeConfirmation = QtWidgets.QMessageBox.question(
+                    self,
+                    'Close Tab: {}'.format(self.tabText(index)),
+                    'Are you sure you want to close? Unsaved changes will be lost.',
+                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                    QtWidgets.QMessageBox.No
+                )
+                if closeConfirmation != QtWidgets.QMessageBox.Yes:
+                    return
 
+        self.removeTab(index)
         self.__bakeTabs()
 
         if not self.count():
