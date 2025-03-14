@@ -303,9 +303,13 @@ class _ScriptEditorTabBarWidget(QtWidgets.QTabBar):
         diffAction = None
         revealAction = None
         copyPathAction = None
+        saveAsAction = None
         saveAction = QtWidgets.QAction("Save file", self)
         menu.addAction(saveAction)
         if scriptEditor.filePath():
+            saveAsAction = QtWidgets.QAction("Save file as...", self)
+            menu.addAction(saveAsAction)
+
             reloadAction = QtWidgets.QAction("Reload file", self)
             menu.addAction(reloadAction)
 
@@ -374,3 +378,7 @@ class _ScriptEditorTabBarWidget(QtWidgets.QTabBar):
         # save current script
         elif saveAction and action == saveAction:
             scriptEditor.saveFile()
+
+        # save as current script
+        elif saveAsAction and action == saveAsAction:
+            scriptEditor.saveFile(ignoreCurrentFilePath=True)
