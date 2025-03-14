@@ -81,7 +81,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
 
         # Control+S: save
         elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_S:
-            self.saveFile()
+            self.saveFile(ignoreCurrentFilePath=False)
 
         # Control+F: find text
         elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_F:
@@ -308,15 +308,15 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         return self.__filePath
 
-    def saveFile(self):
+    def saveFile(self, ignoreCurrentFilePath=False):
         """
         Save the code to the file path.
         """
-        if not self.filePath():
+        if ignoreCurrentFilePath or not self.filePath():
             fileName, _ = QtWidgets.QFileDialog.getSaveFileName(
                 self,
                 'Save Script',
-                '',
+                self.filePath(),
                 'Python Files (*.py);;All Files (*)'
             )
 
