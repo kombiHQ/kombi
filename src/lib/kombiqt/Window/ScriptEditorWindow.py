@@ -54,7 +54,7 @@ class ScriptEditorWindow(QtWidgets.QMainWindow):
         Print the formatted help in the output widget.
         """
         additionalHelp = [
-            "F1          Toggle the file browser display."
+            "F1                  Toggle the file browser display."
         ]
 
         self.__scriptEditorTabWidget.printHelp(additionalHelp)
