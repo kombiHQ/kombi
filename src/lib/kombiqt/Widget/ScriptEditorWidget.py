@@ -5,6 +5,9 @@ import builtins
 import weakref
 import functools
 import traceback
+from kombi.Task import Task
+from kombi.Template import Template
+from kombi.Element.Fs.FsElement import FsElement
 from io import StringIO
 from contextlib import redirect_stdout
 from ..Resource import Resource
@@ -14,6 +17,13 @@ try:
     hasJediSupport = True
 except ImportError:
     hasJediSupport = False
+
+try:
+    import pycallgraph
+except ImportError:
+    hasPyCallGraph = False
+else:
+    hasPyCallGraph = True
 
 # making a copy of the globals at this point. This will be shared with the
 # code execution
@@ -115,12 +125,14 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         if additionalHelp:
             for line in additionalHelp:
                 self.__outputWidget.append(line)
-        self.__outputWidget.append("CTRL+Enter  Execute selected lines, or the entire script if none is selected.")
-        self.__outputWidget.append("CTRL+/      Comment or uncomment selected lines.")
-        self.__outputWidget.append("CTRL+S      Save the current script.")
-        self.__outputWidget.append("CTRL+F      Focus the \"Find\" field to search for text.")
-        self.__outputWidget.append("CTRL+H      Open the \"Find and Replace\" field to search and replace text.")
-        self.__outputWidget.append("CTRL+G      Go to specific line.")
+        self.__outputWidget.append("CTRL+Enter          Execute selected lines, or the entire script if none is selected.")
+        if hasPyCallGraph:
+            self.__outputWidget.append("CTRL+SHIFT+Enter    Same as above but, profiling the execution and launching the profile when the execution is completed.")
+        self.__outputWidget.append("CTRL+/              Comment or uncomment selected lines.")
+        self.__outputWidget.append("CTRL+S              Save the current script.")
+        self.__outputWidget.append("CTRL+F              Focus the \"Find\" field to search for text.")
+        self.__outputWidget.append("CTRL+H              Open the \"Find and Replace\" field to search and replace text.")
+        self.__outputWidget.append("CTRL+G              Go to specific line.")
         self.__outputWidget.setTextColor(QtGui.QColor(171, 178, 191))
 
     def wheelEvent(self, event):
@@ -523,6 +535,10 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
     __lineAreaActiveLine = QtGui.QColor(131, 137, 150)
     __lineAreaInactiveLine = QtGui.QColor(91, 97, 110)
     __backgroundColor = QtGui.QColor(40, 44, 52)
+    __dotExecutable = os.environ.get(
+        'KOMBI_GRAPHVIZ_DOT_EXECUTABLE',
+        'dot'
+    )
 
     def __init__(self, parent=None):
         """
@@ -568,12 +584,33 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         # Control+G: Change the current line
         elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_G:
             self.__gotoLinePopup()
-        # Control+Enter: Execute selected code
-        elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Return:
+        # Control+Enter: Execute code
+        elif QtCore.Qt.ControlModifier in event.modifiers() and event.key() == QtCore.Qt.Key_Return:
             code = cursor.selectedText()
             if not code:
                 code = self.toPlainText()
-            self.executeCode.emit(code.replace('\u2029', '\n'))
+
+            # cleaning-up code before execution
+            code = code.replace('\u2029', '\n')
+
+            # when CTRL + SHIFT + ENTER is pressed profiling the execution
+            if hasPyCallGraph and QtCore.Qt.ShiftModifier in event.modifiers():
+                profileOutputPng = Template('(tmp)/kombi_profile_(rand).png').value()
+                graphviz = pycallgraph.output.GraphvizOutput()
+                graphviz.output_file = profileOutputPng
+                graphviz.tool = self.__dotExecutable
+                with pycallgraph.PyCallGraph(output=graphviz):
+                    self.executeCode.emit(code)
+
+                # launching profile
+                if os.path.exists(profileOutputPng):
+                    launchDefaultApplicationTask = Task.create('launchWithDefaultApplication')
+                    launchDefaultApplicationTask.add(FsElement.createFromPath(profileOutputPng))
+                    launchDefaultApplicationTask.output()
+            # otherwise, only execute the code
+            else:
+                self.executeCode.emit(code)
+
         # Control+/: Replace the selected text with the new commented/uncommented code
         elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Slash:
             lines = cursor.selectedText().splitlines()
