@@ -36,6 +36,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
     Python script editor widget.
     """
     codeChanged = QtCore.Signal()
+    openFilePath = QtCore.Signal(str, int)
     __codeChangedWaitTime = 1000
 
     def __init__(self, code='', filePath='', parent=None) -> None:
@@ -168,11 +169,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         self.__codeEditor = _CodeEditorWidget()
         self.__codeEditor.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.__codeEditor.setFocusPolicy(QtCore.Qt.StrongFocus)
-        self.__outputWidget = QtWidgets.QTextEdit()
-        self.__outputWidget.setObjectName('codeEditor')
-        self.__outputWidget.setAcceptRichText(False)
-        self.__outputWidget.setReadOnly(True)
-        self.__outputWidget.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.__outputWidget = _OutputTextEdit()
         self.__mainLayout.addWidget(self.__verticalSplitter, 10)
 
         self.__verticalSplitter.addWidget(self.__outputWidget)
@@ -217,6 +214,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
 
         self.__replaceCancel.pressed.connect(functools.partial(self.__setReplaceDisplay, False))
         self.__replaceAll.pressed.connect(self.__onReplaceAll)
+        self.__outputWidget.openFilePath.connect(self.openFilePath.emit)
 
     def setOutputDisplay(self, display):
         """
@@ -363,6 +361,12 @@ class ScriptEditorWidget(QtWidgets.QWidget):
 
         with open(self.filePath()) as f:
             self.setCode(f.read())
+
+    def gotoLine(self, line):
+        """
+        Go to specific line in the code.
+        """
+        self.__codeEditor.gotoLine(line)
 
     def output(self):
         """
@@ -815,6 +819,22 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
 
         self.setTextCursor(cursor)
 
+        if line > 0:
+            self.centerVerticalScroll()
+
+    def centerVerticalScroll(self):
+        """
+        Center vertical scroll based on current line.
+        """
+        cursor = self.textCursor()
+        blockNumber = cursor.blockNumber()
+
+        blockHeight = self.document().documentLayout().blockBoundingRect(cursor.block()).height()
+        totalHeight = self.viewport().height()
+
+        scrollPosition = int(blockNumber * blockHeight - totalHeight / 2 + blockHeight / 2)
+        self.verticalScrollBar().setValue(scrollPosition)
+
     def __gotoLinePopup(self):
         """
         Display a popup to change the line.
@@ -899,6 +919,64 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             cursor.movePosition(QtGui.QTextCursor.Left, QtGui.QTextCursor.KeepAnchor, 1)
             cursor.clearSelection()
             self.setTextCursor(cursor)
+
+class _OutputTextEdit(QtWidgets.QTextEdit):
+    """
+    Output text edit widget.
+    """
+    openFilePath = QtCore.Signal(str, int)
+    __exceptionFilePathRegEx = r'^.*File "(.*\.[pP][yY])", line ([0-9]+)'
+
+    def __init__(self, *args, **kwargs):
+        """
+        Create an _OutputTextEdit object.
+        """
+        super().__init__(*args, **kwargs)
+        self.setObjectName('codeEditor')
+        self.setAcceptRichText(False)
+        self.setReadOnly(True)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+
+        self.__pythonFileFormat = QtGui.QTextCharFormat()
+        self.__pythonFileFormat.setBackground(QtGui.QColor(204, 151, 87))
+
+    def contextMenuEvent(self, e):
+        """
+        Re-Implementation to grab the context menu and add script editor actions.
+        """
+        contextMenu = self.createStandardContextMenu()
+        openFilePath = None
+        openLine = 0
+
+        # get selected text and check if that is a valid path
+        selectedText = self.textCursor().selectedText().strip()
+        if selectedText and os.path.exists(selectedText):
+            openFilePath = selectedText
+
+        # parse file path from exception
+        if not openFilePath:
+            cursorPosition = self.cursorForPosition(e.pos())
+            lineNumber = cursorPosition.blockNumber()
+            currentLine = cursorPosition.block().text()
+            mouseCurrentChar = cursorPosition.position() - cursorPosition.block().position()
+            for match in re.finditer(self.__exceptionFilePathRegEx, currentLine):
+                filePath = match.group(1)
+                lineNumber = match.group(2)
+                if mouseCurrentChar >= match.start(1) and mouseCurrentChar <= match.end(1):
+                    openFilePath = filePath
+                    openLine = int(lineNumber)
+
+        if openFilePath:
+            openInScriptEditorAction = QtWidgets.QAction(
+                'Open "{}" in script editor'.format(os.path.basename(openFilePath)),
+                self
+            )
+            openInScriptEditorAction.triggered.connect(
+                functools.partial(self.openFilePath.emit, openFilePath, openLine)
+            )
+            contextMenu.insertSeparator(contextMenu.actions()[0])
+            contextMenu.insertAction(contextMenu.actions()[0], openInScriptEditorAction)
+        contextMenu.exec_(e.globalPos())
 
 class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     """
