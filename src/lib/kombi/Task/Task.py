@@ -2,6 +2,7 @@ import os
 import json
 import sys
 import copy
+from typing import List
 from collections import OrderedDict
 from ..Resource import Resource
 from ..Element.Fs import FsElement
@@ -67,7 +68,7 @@ class Task(object):
         self.__options = OrderedDict()
         self.__currentElement = None
 
-    def type(self):
+    def type(self) -> str:
         """
         Return the task type.
         """
@@ -129,13 +130,13 @@ class Task(object):
 
         currentLevel[levels[-1]] = safeValue
 
-    def metadataNames(self):
+    def metadataNames(self) -> List[str]:
         """
         Return a list with the names of the root levels under the metadata.
         """
         return list(self.__metadata.keys())
 
-    def hasMetadata(self, scope):
+    def hasMetadata(self, scope) -> bool:
         """
         Return a boolean telling if the input scope is under the metadata.
 
@@ -199,13 +200,13 @@ class Task(object):
         for optionName, optionValue in kwargs.items():
             self.setOption(optionName, optionValue)
 
-    def optionNames(self):
+    def optionNames(self) -> List[str]:
         """
         Return a list of the option names.
         """
         return list(self.__options.keys())
 
-    def target(self, element):
+    def target(self, element) -> str:
         """
         Return the target file path for element.
         """
@@ -216,7 +217,7 @@ class Task(object):
 
         return self.__elements[element]
 
-    def elements(self):
+    def elements(self) -> List[Element]:
         """
         Return a list of elements associated with the task.
         """
@@ -256,7 +257,7 @@ class Task(object):
         the task.
         """
 
-    def output(self):
+    def output(self) -> List[Element]:
         """
         Perform and result a list of elements created by task.
         """
@@ -317,7 +318,7 @@ class Task(object):
 
         return outputElements
 
-    def clone(self):
+    def clone(self) -> 'Task':
         """
         Clone the current task.
         """
@@ -348,7 +349,7 @@ class Task(object):
         with the message about the failure. Otherwise, in case of no failure then no result is needed.
         """
 
-    def toJson(self):
+    def toJson(self) -> str:
         """
         Serialize a task to json (it can be loaded later through createFromJson).
         """
@@ -430,7 +431,7 @@ class Task(object):
         Task.__registered[name] = taskClass
 
     @staticmethod
-    def registeredNames():
+    def registeredNames() -> List[str]:
         """
         Return a list of registered tasks.
         """
@@ -507,7 +508,7 @@ class Task(object):
 
         return task
 
-    def _processElement(self, element):
+    def _processElement(self, element) -> Element | None:
         """
         Process an individual element.
 
@@ -523,7 +524,7 @@ class Task(object):
             return FsElement.createFromPath(targetPath)
         return None
 
-    def _perform(self):
+    def _perform(self) -> List[Element]:
         """
         To be overridden: This method should implement the task computation and return a list of processed elements.
 
