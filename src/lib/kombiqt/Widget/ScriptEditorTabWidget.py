@@ -102,7 +102,7 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
                     tabIndex = i
                     if setFocus:
                         self.setCurrentIndex(tabIndex)
-                    return
+                    return tabIndex
 
         scriptEditor = ScriptEditorWidget(code, filePath)
         tabIndex = self.addTab(scriptEditor, tabName)
@@ -115,9 +115,12 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         self.displayUpdate()
         self.__updateTabStatus(tabIndex)
         scriptEditor.codeChanged.connect(functools.partial(self.__onCodeChanged, tabIndex))
+        scriptEditor.openFilePath.connect(self.__onScriptEditorOpenFilePAth)
 
         if setFocus:
             self.setCurrentIndex(tabIndex)
+
+        return tabIndex
 
     def hasScriptEditorTabs(self):
         """
@@ -146,6 +149,13 @@ class ScriptEditorTabWidget(QtWidgets.QTabWidget):
         """
         widget = self.widget(tabIndex)
         return isinstance(widget, ScriptEditorWidget)
+
+    def __onScriptEditorOpenFilePAth(self, filePath, line=0):
+        """
+        Triggered when openfilePath signal is emitted by the script editor widget.
+        """
+        tabIndex = self.addScriptEditor(filePath=filePath)
+        self.widget(tabIndex).gotoLine(line)
 
     def __setMainWidget(self, mainWidget):
         """
