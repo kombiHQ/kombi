@@ -1,6 +1,7 @@
 import os
 import json
 import traceback
+from typing import List, Iterable, Type
 from collections import OrderedDict
 from .VarExtractor import VarExtractor
 from ..KombiError import KombiError
@@ -112,7 +113,7 @@ class Element(object):
 
         self.__globCache = {}
 
-    def isLeaf(self):
+    def isLeaf(self) -> bool:
         """
         For re-implementation: Return a boolean telling if the element is leaf.
         """
@@ -134,7 +135,7 @@ class Element(object):
 
         self.__childrenCache = list(children)
 
-    def children(self):
+    def children(self) -> List['Element']:
         """
         Return a list of elements.
         """
@@ -168,13 +169,13 @@ class Element(object):
         self.__childrenCache = None
         self.__globCache = {}
 
-    def varNames(self):
+    def varNames(self) -> List[str]:
         """
         Return a list of variable names assigned to the element.
         """
         return list(self.__vars.keys())
 
-    def contextVarNames(self):
+    def contextVarNames(self) -> List[str]:
         """
         Return a list of variable names that are defined as context variables.
         """
@@ -223,7 +224,7 @@ class Element(object):
 
         return self.__vars[name]
 
-    def tagNames(self):
+    def tagNames(self) -> Iterable[str]:
         """
         Return a list of tag names assigned to the element.
         """
@@ -252,13 +253,13 @@ class Element(object):
 
         return self.__tags[name]
 
-    def clone(self):
+    def clone(self) -> 'Element':
         """
         Return a cloned instance about the current element.
         """
         return Element.createFromJson(self.toJson())
 
-    def toJson(self):
+    def toJson(self) -> str:
         """
         Serialize the element to json (it can be recovered later using fromJson).
         """
@@ -307,7 +308,7 @@ class Element(object):
         """
         return data
 
-    def glob(self, filterTypes=[], recursive=True, useCache=True):
+    def glob(self, filterTypes=[], recursive=True, useCache=True) -> List['Element']:
         """
         Return a list of all elements under this path.
 
@@ -335,7 +336,7 @@ class Element(object):
             self.var('fullPath')
         )
 
-    def _computeChildren(self):
+    def _computeChildren(self) -> List['Element']:
         """
         Returns a list of child elements.
 
@@ -344,7 +345,7 @@ class Element(object):
         raise NotImplementedError
 
     @classmethod
-    def test(cls, data, parentElement=None):
+    def test(cls, data, parentElement=None) -> bool:
         """
         Tells if element implementation, can handle it.
 
@@ -420,7 +421,7 @@ class Element(object):
         Element.__registeredTypes[name] = elementClass
 
     @staticmethod
-    def registeredType(name):
+    def registeredType(name) -> str:
         """
         Return the element class registered with the given name.
         """
@@ -428,14 +429,14 @@ class Element(object):
         return Element.__registeredTypes[name]
 
     @staticmethod
-    def registeredNames():
+    def registeredNames() -> Iterable[str]:
         """
         Return a list of registered element types.
         """
         return Element.__registeredTypes.keys()
 
     @staticmethod
-    def registeredSubclasses(baseClassOrTypeName):
+    def registeredSubclasses(baseClassOrTypeName) -> List[Type['Element']]:
         """
         Return a list of registered subClasses for the given class or class type name.
         """
@@ -447,7 +448,7 @@ class Element(object):
         return list(result)
 
     @staticmethod
-    def registeredSubTypes(baseClassOrTypeName):
+    def registeredSubTypes(baseClassOrTypeName) -> List[str]:
         """
         Return a list of registered names of all derived classes for the given class or class type name.
         """
@@ -491,7 +492,7 @@ class Element(object):
         return element
 
     @staticmethod
-    def group(elements, tag='group'):
+    def group(elements, tag='group') -> List[List['Element']]:
         """
         Return the elements grouped by the input tag.
 
@@ -520,7 +521,7 @@ class Element(object):
         return groupedSorted + uniqueElements
 
     @staticmethod
-    def sortGroup(elements, key=None, reverse=False):
+    def sortGroup(elements, key=None, reverse=False) -> List[List['Element']]:
         """
         Return a list of grouped elements sorted by the input key.
         """
@@ -530,7 +531,7 @@ class Element(object):
         return result
 
     @staticmethod
-    def __collectElements(element, recursive):
+    def __collectElements(element, recursive) -> List['Element']:
         """
         Recursively collect elements.
         """
@@ -546,7 +547,7 @@ class Element(object):
         return result
 
     @staticmethod
-    def __baseClass(baseClassOrTypeName):
+    def __baseClass(baseClassOrTypeName) -> Type['Element']:
         """
         Return a valid base class for the given class or class type name.
         """
