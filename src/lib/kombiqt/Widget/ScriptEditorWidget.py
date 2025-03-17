@@ -1055,7 +1055,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
 
             self.__documentDocstrings.append([start, end])
             if self.__currentHighlightLine >= startBlockNumber and self.__currentHighlightLine <= endBlockNumber + 1:
-                currentSignature += str(self.__currentHighlightLine) + ','
+                currentSignature += str(self.__currentHighlightLine) + '#'
 
         newHash = hash(currentSignature)
         if force or self.__documentDocstringsHash != newHash:
