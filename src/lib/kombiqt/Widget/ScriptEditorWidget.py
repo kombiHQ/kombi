@@ -46,15 +46,16 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         super().__init__(parent)
 
         self.__buildWidget()
-        self.setFilePath(filePath)
 
         # when loading the file path lets collapse the output widget
         # by default
         if filePath:
             self.setOutputDisplay(False)
 
+        self.setFilePath(filePath)
         if code:
             self.setCode(code)
+
         self.__buildConnections()
 
         # for performance optimization, code changes are
@@ -296,7 +297,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         cursor = self.__codeEditor.textCursor()
         cursor.movePosition(QtGui.QTextCursor.EndOfBlock)
         self.__codeEditor.setTextCursor(cursor)
-        self.__codeEditor.highlighter().highlightDocument()
+        self.__codeEditor.highlighter().highlightDocument(force=True)
 
     def setFilePath(self, filePath, loadCode=True):
         """
@@ -1016,6 +1017,8 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__functionFormat.setForeground(QtGui.QColor(97, 175, 238))
 
         self.__documentDocstrings = []
+        self.__documentDocstringsHash = ''
+        self.__currentHighlightLine = 0
 
     def highlightBlock(self, text):
         """
@@ -1032,39 +1035,50 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__applyHighlight(self.__strings, text, self.__stringFormat)
         self.__applyHighlight(self.__comments, text, self.__commentFormat, checkRanges=True)
 
-    def highlightDocument(self):
+    def highlightDocument(self, force=False):
         """
         Compute the highlights for the document, especially when the highlight spans multiple lines.
         """
         self.__documentDocstrings = []
         cursor = QtGui.QTextCursor(self.document())
 
-        # resetting all highlight before proceeding
-        cursor.movePosition(QtGui.QTextCursor.Start)
-        while not cursor.atEnd():
-            cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
-            cursor.movePosition(QtGui.QTextCursor.EndOfBlock, QtGui.QTextCursor.KeepAnchor)
-            cursor.setCharFormat(self.__defaultTextFormat)
-            cursor.movePosition(QtGui.QTextCursor.NextBlock)
-        cursor.beginEditBlock()
-
         # highlighting multi-line docstrings
+        currentSignature = ""
         for match in re.finditer(self.__docstrings, self.document().toPlainText()):
             start = match.start()
             end = match.end()
-            self.__documentDocstrings.append([start, end])
-
+            currentSignature += str(end - start) + ','
             cursor.setPosition(start)
-            cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
-            cursor.setCharFormat(self.__stringFormat)
+            startBlockNumber = cursor.blockNumber()
+            cursor.setPosition(end)
+            endBlockNumber = cursor.blockNumber()
 
-        cursor.endEditBlock()
+            self.__documentDocstrings.append([start, end])
+            if self.__currentHighlightLine >= startBlockNumber and self.__currentHighlightLine <= endBlockNumber + 1:
+                currentSignature += str(self.__currentHighlightLine) + ','
+
+        newHash = hash(currentSignature)
+        if force or self.__documentDocstringsHash != newHash:
+            self.__documentDocstringsHash = newHash
+
+            # resetting all highlight before proceeding
+            cursor.select(QtGui.QTextCursor.Document)
+            cursor.setCharFormat(self.__defaultTextFormat)
+
+            # applying doctstring highlight
+            cursor.beginEditBlock()
+            for start, end in self.__documentDocstrings:
+                cursor.setPosition(start)
+                cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
+                cursor.setCharFormat(self.__stringFormat)
+            cursor.endEditBlock()
 
     def __applyHighlight(self, pattern, text, textFormat, checkRanges=False, *args):
         """
         Apply the syntax highlighting using the provided regular expression pattern.
         """
         currentBlockPosition = self.currentBlock().position()
+        self.__currentHighlightLine = self.currentBlock().blockNumber()
         for match in re.finditer(pattern, text, *args):
             skip = False
             start, end = match.span()
