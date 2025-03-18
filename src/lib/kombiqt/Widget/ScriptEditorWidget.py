@@ -57,6 +57,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
             self.setCode(code)
 
         self.__buildConnections()
+        self.__modifiedCharPositions = set()
 
         # for performance optimization, code changes are
         # only computed after the user stops typing
@@ -461,6 +462,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         Update the script editor configuration when the code changes.
         """
+        self.__modifiedCharPositions.add(self.__codeEditor.textCursor().position())
         self.__codeChangedTimer.stop()
         self.__codeChangedTimer.start(self.__codeChangedWaitTime)
 
@@ -469,7 +471,8 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         Emit the code changed signal.
         """
         # in case there is a pending timer
-        self.__codeEditor.highlighter().highlightDocument()
+        self.__codeEditor.highlighter().highlightDocument(modifiedCharPositions=self.__modifiedCharPositions)
+        self.__modifiedCharPositions = set()
         if self.__codeChangedTimer.isActive():
             self.__codeChangedTimer.stop()
 
@@ -1018,7 +1021,6 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
 
         self.__documentDocstrings = []
         self.__documentDocstringsHash = ''
-        self.__currentHighlightLine = 0
 
     def highlightBlock(self, text):
         """
@@ -1035,7 +1037,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__applyHighlight(self.__strings, text, self.__stringFormat)
         self.__applyHighlight(self.__comments, text, self.__commentFormat, checkRanges=True)
 
-    def highlightDocument(self, force=False):
+    def highlightDocument(self, force=False, modifiedCharPositions=None):
         """
         Compute the highlights for the document, especially when the highlight spans multiple lines.
         """
@@ -1043,19 +1045,19 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         cursor = QtGui.QTextCursor(self.document())
 
         # highlighting multi-line docstrings
-        currentSignature = ""
+        currentSignature = ''
         for match in re.finditer(self.__docstrings, self.document().toPlainText()):
             start = match.start()
             end = match.end()
             currentSignature += str(end - start) + ','
-            cursor.setPosition(start)
-            startBlockNumber = cursor.blockNumber()
-            cursor.setPosition(end)
-            endBlockNumber = cursor.blockNumber()
-
             self.__documentDocstrings.append([start, end])
-            if self.__currentHighlightLine >= startBlockNumber and self.__currentHighlightLine <= endBlockNumber + 1:
-                currentSignature += str(self.__currentHighlightLine) + '#'
+            if not modifiedCharPositions or force is True:
+                continue
+
+            for charPos in modifiedCharPositions:
+                if charPos >= start - 5 and charPos <= end + 5:
+                    force = True
+                    break
 
         newHash = hash(currentSignature)
         if force or self.__documentDocstringsHash != newHash:
@@ -1078,7 +1080,6 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         Apply the syntax highlighting using the provided regular expression pattern.
         """
         currentBlockPosition = self.currentBlock().position()
-        self.__currentHighlightLine = self.currentBlock().blockNumber()
         for match in re.finditer(pattern, text, *args):
             skip = False
             start, end = match.span()
