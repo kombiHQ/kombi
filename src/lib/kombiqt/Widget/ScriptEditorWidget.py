@@ -1068,12 +1068,10 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
             cursor.setCharFormat(self.__defaultTextFormat)
 
             # applying doctstring highlight
-            cursor.beginEditBlock()
             for start, end in self.__documentDocstrings:
                 cursor.setPosition(start)
                 cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
                 cursor.setCharFormat(self.__stringFormat)
-            cursor.endEditBlock()
 
     def __applyHighlight(self, pattern, text, textFormat, checkRanges=False, *args):
         """
