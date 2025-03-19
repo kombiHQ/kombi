@@ -643,10 +643,11 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             self.setTextCursor(cursor)
         # Backspace: Remove indentation if the line is empty
         elif event.key() == QtCore.Qt.Key_Backspace:
+            currentPosition = cursor.positionInBlock()
             cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
             currentLine = cursor.block().text()
-            if currentLine.strip() == "":
-                indentLength = len(currentLine)
+            if currentLine[:currentPosition].strip() == "":
+                indentLength = len(currentLine[:currentPosition])
                 if indentLength >= 4:
                     cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
                     cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, 4)
