@@ -995,6 +995,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     __functions = r"\b(?<=def)\s+[A-Za-z_][A-Za-z0-9_]*\b[\s]*?(?=\()"
     __classes = r"\b(?<=class)\s+[A-Za-z_][A-Za-z0-9_]*\b[\s]*?(?=:|\()"
     __docstrings = r'"""([\s\S]*?)"""|\'\'\'([\s\S]*?)\'\'\''
+    __docstringsEnclosure = r'(""")|(\'\'\')'
 
     def __init__(self, parent=None):
         """
@@ -1035,6 +1036,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__applyHighlight(self.__classes, text, self.__functionFormat)
         self.__applyHighlight(self.__decorators, text, self.__functionFormat)
         self.__applyHighlight(self.__strings, text, self.__stringFormat)
+        self.__applyHighlight(self.__docstringsEnclosure, text, self.__stringFormat)
         self.__applyHighlight(self.__comments, text, self.__commentFormat, checkRanges=True)
 
     def highlightDocument(self, force=False, modifiedCharPositions=None):
@@ -1055,7 +1057,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
                 continue
 
             for charPos in modifiedCharPositions:
-                if charPos >= start - 5 and charPos <= end + 5:
+                if charPos >= start - 4 and charPos <= end:
                     force = True
                     break
 
@@ -1069,8 +1071,8 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
 
             # applying doctstring highlight
             for start, end in self.__documentDocstrings:
-                cursor.setPosition(start)
-                cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
+                cursor.setPosition(start + 2)
+                cursor.setPosition(end - 3, QtGui.QTextCursor.KeepAnchor)
                 cursor.setCharFormat(self.__stringFormat)
 
     def __applyHighlight(self, pattern, text, textFormat, checkRanges=False, *args):
