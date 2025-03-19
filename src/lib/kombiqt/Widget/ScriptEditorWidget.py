@@ -57,7 +57,6 @@ class ScriptEditorWidget(QtWidgets.QWidget):
             self.setCode(code)
 
         self.__buildConnections()
-        self.__modifiedCharPositions = set()
 
         # for performance optimization, code changes are
         # only computed after the user stops typing
@@ -462,7 +461,6 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         """
         Update the script editor configuration when the code changes.
         """
-        self.__modifiedCharPositions.add(self.__codeEditor.textCursor().position())
         self.__codeChangedTimer.stop()
         self.__codeChangedTimer.start(self.__codeChangedWaitTime)
 
@@ -471,8 +469,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         Emit the code changed signal.
         """
         # in case there is a pending timer
-        self.__codeEditor.highlighter().highlightDocument(modifiedCharPositions=self.__modifiedCharPositions)
-        self.__modifiedCharPositions = set()
+        self.__codeEditor.highlighter().highlightDocument()
         if self.__codeChangedTimer.isActive():
             self.__codeChangedTimer.stop()
 
@@ -1039,7 +1036,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__applyHighlight(self.__docstringsEnclosure, text, self.__stringFormat)
         self.__applyHighlight(self.__comments, text, self.__commentFormat, checkRanges=True)
 
-    def highlightDocument(self, force=False, modifiedCharPositions=None):
+    def highlightDocument(self, force=False):
         """
         Compute the highlights for the document, especially when the highlight spans multiple lines.
         """
@@ -1048,18 +1045,13 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
 
         # highlighting multi-line docstrings
         currentSignature = ''
-        for match in re.finditer(self.__docstrings, self.document().toPlainText()):
+        text = self.document().toPlainText()
+        for match in re.finditer(self.__docstrings, text):
             start = match.start()
             end = match.end()
-            currentSignature += str(end - start) + ','
+            line = text[text[:start].rfind('\n'): start]
+            currentSignature += str(end - start) + '-' + line + ','
             self.__documentDocstrings.append([start, end])
-            if not modifiedCharPositions or force is True:
-                continue
-
-            for charPos in modifiedCharPositions:
-                if charPos >= start - 4 and charPos <= end:
-                    force = True
-                    break
 
         newHash = hash(currentSignature)
         if force or self.__documentDocstringsHash != newHash:
