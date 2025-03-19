@@ -1049,7 +1049,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         for match in re.finditer(self.__docstrings, text):
             start = match.start()
             end = match.end()
-            line = text[text[:start].rfind('\n'): start]
+            line = text[max(text[:start].rfind('\n'), 0): start]
             currentSignature += str(end - start) + '-' + line + ','
             self.__documentDocstrings.append([start, end])
 
