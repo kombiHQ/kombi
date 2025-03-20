@@ -700,11 +700,13 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
                 cursor.setPosition(selectionStart + len('\n'.join(newLines)), QtGui.QTextCursor.KeepAnchor)  # End of the selection
                 self.setTextCursor(cursor)
             else:
+                position = cursor.position()
                 cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
                 text = cursor.block().text()
                 if text.startswith('    '):
                     cursor.movePosition(QtGui.QTextCursor.EndOfBlock, QtGui.QTextCursor.KeepAnchor)
                     cursor.insertText(text[4:])
+                    cursor.setPosition(position - 4)
                     self.setTextCursor(cursor)
 
         # Default behavior for other keys
