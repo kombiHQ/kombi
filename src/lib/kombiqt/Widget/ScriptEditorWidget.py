@@ -638,6 +638,14 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             cursor.movePosition(QtGui.QTextCursor.EndOfBlock)
             currentLine = cursor.block().text()
             indentation = len(currentLine) - len(currentLine.lstrip())
+
+            # if the current line is empty, containing only indentation,
+            # we remove the indentation before adding a new indented line
+            if len(currentLine.strip()) == 0:
+                cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+                cursor.movePosition(QtGui.QTextCursor.EndOfBlock, QtGui.QTextCursor.KeepAnchor)
+                cursor.insertText('')
+
             cursor.insertBlock()
             cursor.insertText(' ' * indentation + ('    ' if currentLine and currentLine[-1] == ':' else ''))
             self.setTextCursor(cursor)
