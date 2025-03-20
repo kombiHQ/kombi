@@ -651,19 +651,23 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             self.setTextCursor(cursor)
         # Backspace: Remove indentation if the line is empty
         elif event.key() == QtCore.Qt.Key_Backspace:
-            currentPosition = cursor.positionInBlock()
-            cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
-            currentLine = cursor.block().text()
-            if currentLine[:currentPosition].strip() == "":
-                indentLength = len(currentLine[:currentPosition])
-                if indentLength >= 4:
-                    cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
-                    cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, 4)
-                    cursor.removeSelectedText()
+            # in case of a selection is in place we don't look for indentation
+            if cursor.selectedText():
+                super().keyPressEvent(event)
+            else:
+                currentPosition = cursor.positionInBlock()
+                cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+                currentLine = cursor.block().text()
+                if currentLine[:currentPosition].strip() == "":
+                    indentLength = len(currentLine[:currentPosition])
+                    if indentLength >= 4:
+                        cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+                        cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, 4)
+                        cursor.removeSelectedText()
+                    else:
+                        super().keyPressEvent(event)
                 else:
                     super().keyPressEvent(event)
-            else:
-                super().keyPressEvent(event)
         # Tab: Insert 4 spaces
         elif event.key() == QtCore.Qt.Key_Tab:
             selectedText = cursor.selectedText()
