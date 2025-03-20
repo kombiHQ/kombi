@@ -1008,6 +1008,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     __classes = r"\b(?<=class)\s+[A-Za-z_][A-Za-z0-9_]*\b[\s]*?(?=:|\()"
     __docstrings = r'"""([\s\S]*?)"""|\'\'\'([\s\S]*?)\'\'\''
     __docstringsEnclosure = r'(""")|(\'\'\')'
+    __trailingWhitespace = r'\s+$'
 
     def __init__(self, parent=None):
         """
@@ -1032,6 +1033,9 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__functionFormat = QtGui.QTextCharFormat()
         self.__functionFormat.setForeground(QtGui.QColor(97, 175, 238))
 
+        self.__trailingWhitespaceFormat = QtGui.QTextCharFormat()
+        self.__trailingWhitespaceFormat.setBackground(QtGui.QColor(38, 50, 71))
+
         self.__documentDocstrings = []
         self.__documentDocstringsHash = ''
 
@@ -1050,6 +1054,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__applyHighlight(self.__strings, text, self.__stringFormat)
         self.__applyHighlight(self.__docstringsEnclosure, text, self.__stringFormat)
         self.__applyHighlight(self.__comments, text, self.__commentFormat, checkRanges=True)
+        self.__applyHighlight(self.__trailingWhitespace, text, self.__trailingWhitespaceFormat)
 
     def highlightDocument(self, force=False):
         """
