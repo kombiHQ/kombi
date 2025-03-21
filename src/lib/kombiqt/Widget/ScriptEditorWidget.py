@@ -419,12 +419,26 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         )
 
         if reply == QtWidgets.QMessageBox.Yes:
-            self.__codeEditor.setPlainText(
-                self.__codeEditor.toPlainText().replace(
-                    self.__findWidget.text(),
-                    self.__replaceWidget.text()
-                )
+            document = self.__codeEditor.document()
+            cursor = document.find(
+                self.__findWidget.text(),
+                options=QtGui.QTextDocument.FindCaseSensitively
             )
+
+            if cursor.isNull():
+                return
+
+            while not cursor.isNull():
+                cursor.beginEditBlock()
+                cursor.removeSelectedText()
+                cursor.insertText(self.__replaceWidget.text())
+                cursor.endEditBlock()
+
+                # continue searching after the replaced text
+                cursor = document.find(
+                    self.__findWidget.text(),
+                    options=QtGui.QTextDocument.FindCaseSensitively
+                )
 
     def __setReplaceDisplay(self, display):
         """
