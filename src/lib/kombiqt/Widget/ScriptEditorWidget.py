@@ -168,8 +168,6 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         self.__mainLayout.setContentsMargins(4, 4, 4, 2)
         self.__mainLayout.setSpacing(0)
         self.__codeEditor = _CodeEditorWidget()
-        self.__codeEditor.setWordWrapMode(QtGui.QTextOption.NoWrap)
-        self.__codeEditor.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.__outputWidget = _OutputTextEdit()
         self.__mainLayout.addWidget(self.__verticalSplitter, 10)
 
@@ -528,7 +526,46 @@ class _LineNumberAreaWidget(QtWidgets.QWidget):
         """
         self.__codeEditor.lineNumberAreaPaintEvent(event)
 
-class _CodeEditorWidget(QtWidgets.QTextEdit):
+
+class _BaseTextEditWidget(QtWidgets.QTextEdit):
+    """
+    Custom QTextEdit which adjusts tab width based on font size.
+    """
+
+    def __init__(self, *args, **kwargs):
+        """
+        Create a _BaseTextEditWidget object.
+        """
+        super().__init__(*args, *kwargs)
+
+        self.setObjectName('codeEditor')
+        self.setStyleSheet('font-size: {}px'.format(Resource.fontSize()))
+        self.setAcceptRichText(False)
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
+
+    def setPlainText(self, text):
+        """
+        Override the setPlainText to recalculate tabWidth on update.
+        """
+        super().setPlainText(text)
+        self.__computeTabWidth()
+
+    def setStyleSheet(self, styleSheet):
+        """
+        Override the stylesheet to recalculate tabWidth on update.
+        """
+        super().setStyleSheet(styleSheet)
+        self.__computeTabWidth()
+
+    def __computeTabWidth(self):
+        """
+        Compute the tab widget based on the current font size.
+        """
+        tabWidth = QtGui.QFontMetrics(self.font()).horizontalAdvance(' ')
+        self.setTabStopDistance(tabWidth * 4)
+
+
+class _CodeEditorWidget(_BaseTextEditWidget):
     """
     Simple code editor widget.
 
@@ -550,15 +587,13 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         Initialize the CodeEditorWidget and set up the line number area.
         """
         super(_CodeEditorWidget, self).__init__(parent)
-        self.setObjectName('codeEditor')
-        self.setStyleSheet('font-size: {}px'.format(Resource.fontSize()))
 
+        self.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.__lineNumberArea = _LineNumberAreaWidget(self)
 
         self.document().blockCountChanged.connect(self.updateLineNumberArea)
         self.verticalScrollBar().valueChanged.connect(self.updateLineNumberArea)
         self.cursorPositionChanged.connect(self.updateLineNumberArea)
-        self.setAcceptRichText(False)
 
         self.__completer = QtWidgets.QCompleter(self)
         self.__completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
@@ -759,7 +794,14 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         """
         super(_CodeEditorWidget, self).resizeEvent(event)
         contentRect = self.contentsRect()
-        self.__lineNumberArea.setGeometry(QtCore.QRect(contentRect.left(), contentRect.top(), self.lineNumberAreaWidth(), contentRect.height()))
+        self.__lineNumberArea.setGeometry(
+            QtCore.QRect(
+                contentRect.left(),
+                contentRect.top(),
+                self.lineNumberAreaWidth(),
+                contentRect.height()
+            )
+        )
 
     def firstVisibleBlockId(self):
         """
@@ -801,7 +843,14 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
         top = self.viewport().geometry().top()
         additionalMargin = 0
         if blockNumber:
-            additionalMargin = self.document().documentLayout().blockBoundingRect(prevBlock).translated(0, translateY).intersected(self.viewport().geometry()).height()
+            additionalMargin = self.document().documentLayout().blockBoundingRect(
+                prevBlock
+            ).translated(
+                0,
+                translateY
+            ).intersected(
+                self.viewport().geometry()
+            ).height()
         top += additionalMargin
         bottom = top + int(self.document().documentLayout().blockBoundingRect(block).height())
         while block.isValid() and top <= event.rect().bottom():
@@ -936,7 +985,8 @@ class _CodeEditorWidget(QtWidgets.QTextEdit):
             cursor.clearSelection()
             self.setTextCursor(cursor)
 
-class _OutputTextEdit(QtWidgets.QTextEdit):
+
+class _OutputTextEdit(_BaseTextEditWidget):
     """
     Output text edit widget.
     """
@@ -948,10 +998,7 @@ class _OutputTextEdit(QtWidgets.QTextEdit):
         Create an _OutputTextEdit object.
         """
         super().__init__(*args, **kwargs)
-        self.setObjectName('codeEditor')
-        self.setAcceptRichText(False)
         self.setReadOnly(True)
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
 
         self.__pythonFileFormat = QtGui.QTextCharFormat()
         self.__pythonFileFormat.setBackground(QtGui.QColor(204, 151, 87))
