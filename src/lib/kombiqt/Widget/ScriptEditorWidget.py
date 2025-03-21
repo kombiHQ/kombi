@@ -95,6 +95,16 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_S:
             self.saveFile(ignoreCurrentFilePath=False)
 
+        # Control+Z: undo
+        elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Z:
+            self.__codeEditor.highlighter().highlightDocument(self.__codeEditor.textCursor(), force=True)
+
+        # Control+R: redo
+        elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_R:
+            self.__codeEditor.redo()
+            self.__codeEditor.highlighter().highlightDocument(self.__codeEditor.textCursor(), force=True)
+            return
+
         # Control+F: find text
         elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_F:
             self.__findWidget.selectAll()
@@ -135,6 +145,8 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         self.__outputWidget.append("CTRL+F              Focus the \"Find\" field to search for text.")
         self.__outputWidget.append("CTRL+H              Open the \"Find and Replace\" field to search and replace text.")
         self.__outputWidget.append("CTRL+G              Go to specific line.")
+        self.__outputWidget.append("CTRL+Z              Undo changes.")
+        self.__outputWidget.append("CTRL+R              Redo changes.")
         self.__outputWidget.setTextColor(QtGui.QColor(171, 178, 191))
 
     def wheelEvent(self, event):
@@ -291,11 +303,10 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         Set the code in the code editor.
         """
         self.__codeEditor.setPlainText(code)
-
         cursor = self.__codeEditor.textCursor()
         cursor.movePosition(QtGui.QTextCursor.EndOfBlock)
         self.__codeEditor.setTextCursor(cursor)
-        self.__codeEditor.highlighter().highlightDocument(force=True)
+        self.__codeEditor.highlighter().highlightDocument(cursor, force=True)
 
         # resetting the undo stack
         self.__codeEditor.document().setUndoRedoEnabled(False)
@@ -471,7 +482,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         Emit the code changed signal.
         """
         # in case there is a pending timer
-        self.__codeEditor.highlighter().highlightDocument()
+        self.__codeEditor.highlighter().highlightDocument(self.__codeEditor.textCursor())
         if self.__codeChangedTimer.isActive():
             self.__codeChangedTimer.stop()
 
@@ -817,7 +828,9 @@ class _CodeEditorWidget(_BaseTextEditWidget):
             block = textCursor.block()
             r1 = self.viewport().geometry()
             r2 = self.document().documentLayout().blockBoundingRect(block).translated(
-                self.viewport().geometry().x(), self.viewport().geometry().y() - self.verticalScrollBar().sliderPosition()).toRect()
+                self.viewport().geometry().x(),
+                self.viewport().geometry().y() - self.verticalScrollBar().sliderPosition()
+            ).toRect()
             if r1.contains(r2, True):
                 return i
             textCursor.movePosition(QtGui.QTextCursor.NextBlock)
@@ -1118,12 +1131,11 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__applyHighlight(self.__trailingWhitespaces, text, self.__trailingWhitespaceFormat)
         self.__applyHighlight(self.__tabs, text, self.__tabFormat)
 
-    def highlightDocument(self, force=False):
+    def highlightDocument(self, cursor, force=False):
         """
         Compute the highlights for the document, especially when the highlight spans multiple lines.
         """
         self.__documentDocstrings = []
-        cursor = QtGui.QTextCursor(self.document())
 
         # highlighting multi-line docstrings
         currentSignature = ''
@@ -1138,6 +1150,8 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         newHash = hash(currentSignature)
         if force or self.__documentDocstringsHash != newHash:
             self.__documentDocstringsHash = newHash
+            cursor.beginEditBlock()
+            currentPosition = cursor.position()
 
             # resetting all highlight before proceeding
             cursor.select(QtGui.QTextCursor.Document)
@@ -1148,6 +1162,8 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
                 cursor.setPosition(start + 2)
                 cursor.setPosition(end - 3, QtGui.QTextCursor.KeepAnchor)
                 cursor.setCharFormat(self.__stringFormat)
+            cursor.setPosition(currentPosition)
+            cursor.endEditBlock()
 
     def __applyHighlight(self, pattern, text, textFormat, checkRanges=False, *args):
         """
