@@ -297,6 +297,10 @@ class ScriptEditorWidget(QtWidgets.QWidget):
         self.__codeEditor.setTextCursor(cursor)
         self.__codeEditor.highlighter().highlightDocument(force=True)
 
+        # resetting the undo stack
+        self.__codeEditor.document().setUndoRedoEnabled(False)
+        self.__codeEditor.document().setUndoRedoEnabled(True)
+
     def setFilePath(self, filePath, loadCode=True):
         """
         Associate a file path with the script editor.
