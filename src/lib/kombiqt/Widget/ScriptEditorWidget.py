@@ -994,12 +994,14 @@ class _OutputTextEdit(QtWidgets.QTextEdit):
             contextMenu.insertAction(contextMenu.actions()[0], openInScriptEditorAction)
         contextMenu.exec_(e.globalPos())
 
+
 class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     """
     Implement a basic python syntax highlighter.
     """
     __keywords = r"\b({})\b".format('|'.join(filter(lambda x: not hasattr(builtins, x), keyword.kwlist)))
     __builtins = r"((?<=^)|(?<=[^.]))\b({})\b".format('|'.join(dir(builtins)))
+    __builtinExceptions = r"((?<=^)|(?<=[^.]))\b({})\b".format('|'.join(filter(lambda x: isinstance(getattr(builtins, x), type) and x and issubclass(getattr(builtins, x), BaseException), dir(builtins))))
     __comments = r"#.*?(?=#|$)"
     __numeric = r"\b[0-9]*\b"
     __decorators = r"^\s*@.*$"
@@ -1030,6 +1032,9 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__stringFormat = QtGui.QTextCharFormat()
         self.__stringFormat.setForeground(QtGui.QColor(137, 192, 114))
 
+        self.__builtinExceptionsFormat = QtGui.QTextCharFormat()
+        self.__builtinExceptionsFormat.setForeground(QtGui.QColor(229, 192, 123))
+
         self.__functionFormat = QtGui.QTextCharFormat()
         self.__functionFormat.setForeground(QtGui.QColor(97, 175, 238))
 
@@ -1048,6 +1053,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__applyHighlight(self.__numeric, text, self.__numericFormat)
         self.__applyHighlight(self.__keywords, text, self.__keywordFormat)
         self.__applyHighlight(self.__builtins, text, self.__functionFormat)
+        self.__applyHighlight(self.__builtinExceptions, text, self.__builtinExceptionsFormat)
         self.__applyHighlight(self.__functions, text, self.__functionFormat)
         self.__applyHighlight(self.__classes, text, self.__functionFormat)
         self.__applyHighlight(self.__decorators, text, self.__functionFormat)
