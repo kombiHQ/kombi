@@ -1081,6 +1081,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     __builtins = r"((?<=^)|(?<=[^.]))\b({})\b".format('|'.join(dir(builtins)))
     __builtinExceptions = r"((?<=^)|(?<=[^.]))\b({})\b".format('|'.join(filter(lambda x: isinstance(getattr(builtins, x), type) and x and issubclass(getattr(builtins, x), BaseException), dir(builtins))))
     __comments = r"#.*?(?=#|$)"
+    __lineContinuation = r"\\$"
     __numeric = r"\b[0-9]*\b"
     __decorators = r"(?<=@)[A-Za-z_][A-Za-z0-9_]*\b[\s]*?"
     __strings = r"(['\"])(?:(?!\1|\\).|\\.)*?\1"
@@ -1135,6 +1136,7 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__applyHighlight(self.__numeric, text, self.__numericFormat)
         self.__applyHighlight(self.__keywords, text, self.__keywordFormat)
         self.__applyHighlight(self.__builtins, text, self.__functionFormat)
+        self.__applyHighlight(self.__lineContinuation, text, self.__functionFormat)
         self.__applyHighlight(self.__builtinExceptions, text, self.__builtinExceptionsFormat)
         self.__applyHighlight(self.__functions, text, self.__functionFormat)
         self.__applyHighlight(self.__classes, text, self.__functionFormat)
