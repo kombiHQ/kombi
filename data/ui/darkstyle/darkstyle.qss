@@ -467,9 +467,15 @@ QTabBar::close-button {
     subcontrol-position: right;
     padding: 2px;
 }
+
 QTabBar::close-button:hover {
     image: url(darkstyle/icon_close.png);
     background-color: #555555;
     border: 1px solid #333333;
     border-radius: 3px;
+}
+
+QTabBar::tab {
+    background-color: #333333;
+    border-radius: 0;
 }
