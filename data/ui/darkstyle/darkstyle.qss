@@ -339,6 +339,27 @@ QTextEdit:focus, QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus{
     border-color:rgb(42, 130, 218);
 }
 
+QPushButton {
+    border-radius: 3px;
+    border: 1px solid #333333;
+    background-color: #444547;
+    padding: 4px
+}
+
+QPushButton:flat {
+    background-color: transparent;
+    border: 1px solid transparent;
+}
+
+QPushButton:hover {
+    border: 1px solid #222222;
+    background-color: #545557;
+}
+
+QPushButton:focus {
+    border 1px solid rgb(42, 130, 218);
+}
+
 QPushButton#columnButton {
     padding: 2px;
     margin: 2px;
@@ -380,6 +401,10 @@ QFrame#elementsLevelNavigation {
     background-color:rgb(100, 100, 100);
     border: 1px solid #888;
     border-radius: 5px;
+}
+
+QFrame#elementsLevelNavigation > QPushButton:flat {
+    padding: 2px;
 }
 
 QTextEdit#codeEditor {
