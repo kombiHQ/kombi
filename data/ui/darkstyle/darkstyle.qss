@@ -461,3 +461,14 @@ QTreeView#noIcons::branch:open:has-children:has-siblings  {
     image: url(darkstyle/icon_branch_open_blue.png);
     selection-background-color: transparent;
 }
+
+QTabBar::close-button {
+    image: url(darkstyle/icon_close_unfocused.png);
+    subcontrol-position: right;
+}
+QTabBar::close-button:hover {
+    image: url(darkstyle/icon_close.png);
+    background-color: #555555;
+    border: 1px solid #333333;
+    border-radius: 3px;
+}
