@@ -7,6 +7,7 @@ import functools
 import traceback
 from kombi.Task import Task
 from kombi.Template import Template
+from kombi.Resource import Resource as kombiResource
 from kombi.Element.Fs.FsElement import FsElement
 from io import StringIO
 from contextlib import redirect_stdout
@@ -133,6 +134,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
 
         self.__outputWidget.setTextColor(QtGui.QColor(130, 130, 130))
         self.__outputWidget.setFontWeight(QtGui.QFont.Normal)
+        self.__outputWidget.append(kombiResource.asciiBanner())
         self.__outputWidget.append("Script Editor Shortcuts:")
         if additionalHelp:
             for line in additionalHelp:
