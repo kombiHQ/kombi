@@ -465,6 +465,7 @@ QTreeView#noIcons::branch:open:has-children:has-siblings  {
 QTabBar::close-button {
     image: url(darkstyle/icon_close_unfocused.png);
     subcontrol-position: right;
+    padding: 2px;
 }
 QTabBar::close-button:hover {
     image: url(darkstyle/icon_close.png);
