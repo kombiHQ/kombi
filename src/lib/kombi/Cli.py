@@ -9,6 +9,7 @@ from .Element import Element
 from .TaskHolder.Loader import Loader
 from .Dispatcher import Dispatcher
 from .KombiError import KombiError
+from .Resource import Resource
 
 class CliError(KombiError):
     """Cli Error."""
@@ -42,6 +43,11 @@ class Cli(object):
         """
         Execute the configuration.
         """
+        # printing ascii banner when help is invoked
+        if '-h' in args or '--help' in args:
+            sys.stdout.write(Resource.asciiBanner() + '\n')
+            sys.stdout.flush()
+
         parseArgs = self.__parser.parse_args(args)
 
         loader = Loader()
