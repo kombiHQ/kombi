@@ -1077,12 +1077,12 @@ class _PythonSyntaxHighlighter(QtGui.QSyntaxHighlighter):
     """
     Implement a basic python syntax highlighter.
     """
-    __keywords = r"\b({})\b".format('|'.join(filter(lambda x: not hasattr(builtins, x), keyword.kwlist)))
+    __keywords = r"\b({})\b|^\s+(@)".format('|'.join(filter(lambda x: not hasattr(builtins, x), keyword.kwlist)))
     __builtins = r"((?<=^)|(?<=[^.]))\b({})\b".format('|'.join(dir(builtins)))
     __builtinExceptions = r"((?<=^)|(?<=[^.]))\b({})\b".format('|'.join(filter(lambda x: isinstance(getattr(builtins, x), type) and x and issubclass(getattr(builtins, x), BaseException), dir(builtins))))
     __comments = r"#.*?(?=#|$)"
     __numeric = r"\b[0-9]*\b"
-    __decorators = r"^\s*@.*$"
+    __decorators = r"(?<=@)[A-Za-z_][A-Za-z0-9_]*\b[\s]*?"
     __strings = r"(['\"])(?:(?!\1|\\).|\\.)*?\1"
     __functions = r"\b(?<=def)\s+[A-Za-z_][A-Za-z0-9_]*\b[\s]*?(?=\()"
     __classes = r"\b(?<=class)\s+[A-Za-z_][A-Za-z0-9_]*\b[\s]*?(?=:|\()"
