@@ -27,16 +27,15 @@ class HexColorOptionVisual(OptionVisual):
         self.__mainWidget.textEdited.connect(self.__onValueChanged)
         self.__mainWidget.setMaximumWidth(self.uiHints().get('width', 100))
 
-        self.__currentColorFrame = QtWidgets.QWidget()
-        self.__currentColorFrame.setFixedWidth(30)
-
-        changeColorButton = QtWidgets.QPushButton("Pick Color")
-        changeColorButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        changeColorButton.clicked.connect(self.__onOpenChangeColor)
+        self.__currentColorButton = QtWidgets.QPushButton()
+        self.__currentColorButton.setFixedWidth(30)
+        self.__currentColorButton.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.__currentColorButton.setCursor(QtCore.Qt.PointingHandCursor)
+        self.__currentColorButton.clicked.connect(self.__onOpenChangeColor)
+        self.__currentColorButton.setToolTip('Click to change color')
 
         mainLayout.addWidget(self.__mainWidget)
-        mainLayout.addWidget(self.__currentColorFrame)
-        mainLayout.addWidget(changeColorButton)
+        mainLayout.addWidget(self.__currentColorButton)
         mainLayout.addStretch()
         self.__updateCurrentColorFrame()
 
@@ -66,7 +65,7 @@ class HexColorOptionVisual(OptionVisual):
         if not QtGui.QColor(currentColor).isValid():
             currentColor = "#00000000"
 
-        self.__currentColorFrame.setStyleSheet("background-color: {}; border: 1px groove #333333".format(currentColor))
+        self.__currentColorButton.setStyleSheet("background-color: {}; border: 1px groove #333333".format(currentColor))
 
     def __onValueChanged(self):
         """
