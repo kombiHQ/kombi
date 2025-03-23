@@ -339,7 +339,7 @@ QTextEdit:focus, QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus{
     border-color:rgb(42, 130, 218);
 }
 
-QPushButton {
+QPushButton, QComboBox {
     border-radius: 3px;
     border: 1px solid #333333;
     background-color: #444547;
@@ -351,7 +351,7 @@ QPushButton:flat {
     border: 1px solid transparent;
 }
 
-QPushButton:hover {
+QPushButton:hover, QComboBox:hover {
     border: 1px solid #222222;
     background-color: #545557;
 }
