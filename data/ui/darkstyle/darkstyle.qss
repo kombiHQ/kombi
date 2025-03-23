@@ -329,10 +329,13 @@ QSlider::sub-page:horizontal{
 }
 
 QTextEdit, QLineEdit, QSpinBox, QDoubleSpinBox{
-    border:1px solid rgb(10,10,10);
-    margin: 2px;
+    border: 1px solid #333333;
+    background-color: #444547;
     padding: 1px;
-    background-color: rgb(66,66,66);
+}
+
+QLineEdit {
+    min-height: 20px;
 }
 
 QTextEdit:focus, QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus{
