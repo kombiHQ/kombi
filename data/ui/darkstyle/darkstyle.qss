@@ -398,9 +398,9 @@ QPushButton#filterElementVar:checked{
 }
 
 QFrame#elementsLevelNavigation {
-    background-color:rgb(100, 100, 100);
-    border: 1px solid #888;
-    border-radius: 5px;
+    background-color:rgb(89, 90, 91);
+    border: 1px solid #646566;
+    border-radius: 3px;
 }
 
 QFrame#elementsLevelNavigation > QPushButton:flat {
