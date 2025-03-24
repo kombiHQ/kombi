@@ -508,6 +508,10 @@ QTabBar::tab {
     border-radius: 0;
 }
 
+QTabBar::tab:selected, QTabBar::tab:hover {
+    background-color: #3e3e3e;
+    border-bottom-color: #3e3e3e
+}
 
 QTabBar QToolButton {
     background-color: #383838;
