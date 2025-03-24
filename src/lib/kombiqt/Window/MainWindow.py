@@ -371,7 +371,7 @@ class MainWindow(ScriptEditorWindow):
         self.__sourceRefreshButton = QtWidgets.QPushButton()
         self.__sourceRefreshButton.setToolTip('Refreshes the source directory')
         self.__sourceRefreshButton.setIcon(
-            self.style().standardIcon(QtWidgets.QStyle.SP_BrowserReload)
+            Resource.icon("icons/refresh.png")
         )
 
         # view mode
