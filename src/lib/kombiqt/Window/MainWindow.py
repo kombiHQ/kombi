@@ -362,26 +362,26 @@ class MainWindow(ScriptEditorWindow):
 
         self.__elementsLevelNavigationWidget = ElementsLevelNavigationWidget()
         self.__sourceDirButton = QtWidgets.QPushButton()
-        self.__sourceDirButton.setToolTip('Selects a source directory')
+        self.__sourceDirButton.setToolTip('Select a source directory')
         self.__sourceDirButton.setIcon(
             Resource.icon("icons/folder.png")
         )
 
         # refresh
         self.__sourceRefreshButton = QtWidgets.QPushButton()
-        self.__sourceRefreshButton.setToolTip('Refreshes the source directory')
+        self.__sourceRefreshButton.setToolTip('Refresh the current listing')
         self.__sourceRefreshButton.setIcon(
             Resource.icon("icons/refresh.png")
         )
 
-        # view mode
-        self.__sourceViewModeButton = QtWidgets.QPushButton()
-        self.__sourceViewModeButton.setToolTip('Changes the view mode')
-        self.__sourceViewModeButton.setIcon(
-            Resource.icon("icons/viewMode.png")
+        # view options
+        self.__moreButton = QtWidgets.QPushButton()
+        self.__moreButton.setToolTip('Display more options')
+        self.__moreButton.setIcon(
+            Resource.icon("icons/more.png")
         )
-        self.__sourceViewModeMenu = QtWidgets.QMenu(self.__sourceViewModeButton)
-        self.__sourceViewModeButton.setMenu(self.__sourceViewModeMenu)
+        self.__sourceViewModeMenu = QtWidgets.QMenu(self.__moreButton)
+        self.__moreButton.setMenu(self.__sourceViewModeMenu)
         self.__sourceDirButton.clicked.connect(self.__onSelectSourceDir)
         self.__elementsLevelNavigationWidget.levelClicked.connect(self.setRootElement)
         self.__elementsLevelNavigationWidget.levelContextMenu.connect(self.__onContextMenu)
@@ -397,7 +397,7 @@ class MainWindow(ScriptEditorWindow):
         self.__elementViewer.setWidget(ElementViewer([], centerAlignment=False))
 
         viewerButton = QtWidgets.QPushButton()
-        viewerButton.setToolTip('Toggles the display of the preview panel')
+        viewerButton.setToolTip('Toggle the display of the preview panel')
         viewerButton.setIcon(
             Resource.icon("icons/imageViewer.png")
         )
@@ -418,7 +418,7 @@ class MainWindow(ScriptEditorWindow):
         sourceBarLayout.addWidget(self.__scriptEditorButton)
         self.__scriptEditorButton.setVisible(not self.tabWidget().hasScriptEditorTabs())
 
-        sourceBarLayout.addWidget(self.__sourceViewModeButton)
+        sourceBarLayout.addWidget(self.__moreButton)
         sourceLayout.addLayout(sourceBarLayout)
 
         self.__sourceAreaWidget = QtWidgets.QWidget()
