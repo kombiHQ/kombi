@@ -352,6 +352,10 @@ QPushButton, QComboBox {
     padding: 4px
 }
 
+QComboBox {
+    border-color: #222222;
+}
+
 QPushButton:flat {
     background-color: transparent;
     border: 1px solid transparent;
