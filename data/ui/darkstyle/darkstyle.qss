@@ -112,11 +112,12 @@ QMainWindow::separator:hover,QSplitter::handle:hover{
 }
 QDockWidget::title{
     padding:4px;
-    background-color:qlineargradient(x1:0,y1:1,x2:0,y2:0,stop:0 rgba(25,25,25,127),stop:1 rgba(53,53,53,75));
-    border:1px solid rgba(25,25,25,75);
-    border-bottom:2px solid rgba(25,25,25,75);
+    background-color: rgba(50,51,54,75);
+    border:1px solid palette(dark);
+    border-bottom:1px solid palette(dark);
 }
 QDockWidget{
+    color: #999999;
     titlebar-close-icon:url(darkstyle/icon_window_close.png);
     titlebar-normal-icon:url(darkstyle/icon_window_restore.png);
 }
@@ -241,9 +242,11 @@ QTreeView, QTableView{
     background:rgb(42, 42, 42);
 }
 QTreeView QHeaderView::section, QTableView QHeaderView::section{
-    background-color:qlineargradient(x1:0,y1:1,x2:0,y2:0,stop:0 rgba(25,25,25,127),stop:1 rgba(53,53,53,75));
     border-style:none;
+    color: #999999;
+    background-color: rgba(50,51,54,75);
     border-bottom:1px solid palette(dark);
+    padding: 2px;
     padding-left:5px;
     padding-right:5px;
 }
