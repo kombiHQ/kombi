@@ -507,3 +507,30 @@ QTabBar::tab {
     background-color: #333333;
     border-radius: 0;
 }
+
+
+QTabBar QToolButton {
+    background-color: #383838;
+    border: none;
+    margin: 2px
+}
+
+QTabBar QToolButton:hover {
+    background-color: #484848;
+}
+
+QTabBar QToolButton::right-arrow {
+    image: url(darkstyle/icon_right_arrow.png);
+}
+
+QTabBar QToolButton::left-arrow {
+    image: url(darkstyle/icon_left_arrow.png);
+}
+
+QTabBar QToolButton::right-arrow:disabled {
+    image: url(darkstyle/icon_right_arrow_disabled.png);
+}
+
+QTabBar QToolButton::left-arrow:disabled {
+    image: url(darkstyle/icon_left_arrow_disabled.png);
+}
