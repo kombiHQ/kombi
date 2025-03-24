@@ -30,9 +30,13 @@ class HexColorOptionVisual(OptionVisual):
         self.__currentColorButton = QtWidgets.QPushButton()
         self.__currentColorButton.setFixedWidth(30)
         self.__currentColorButton.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.__currentColorButton.setCursor(QtCore.Qt.PointingHandCursor)
-        self.__currentColorButton.clicked.connect(self.__onOpenChangeColor)
-        self.__currentColorButton.setToolTip('Click to change color')
+
+        if self.uiHints().get('readOnly', False):
+            self.__mainWidget.setReadOnly(True)
+        else:
+            self.__currentColorButton.clicked.connect(self.__onOpenChangeColor)
+            self.__currentColorButton.setCursor(QtCore.Qt.PointingHandCursor)
+            self.__currentColorButton.setToolTip('Click to change color')
 
         mainLayout.addWidget(self.__mainWidget)
         mainLayout.addWidget(self.__currentColorButton)
@@ -81,3 +85,4 @@ OptionVisual.register('hexcolor', HexColorOptionVisual)
 
 # registering examples
 OptionVisual.registerExample('hexcolor', 'default', '#0000FF')
+OptionVisual.registerExample('hexcolor', 'readOnly', '#00FFFF', {'readOnly': True})
