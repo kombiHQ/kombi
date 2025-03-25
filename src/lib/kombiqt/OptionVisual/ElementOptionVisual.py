@@ -1,6 +1,6 @@
 from Qt import QtWidgets
 from .OptionVisual import OptionVisual
-from ..Widget.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
+from ..Widget.ElementLevelNavigationWidget import ElementLevelNavigationWidget
 from ..Widget.ElementViewerWidget import ElementViewerWidget
 from kombi.Element import Element
 
@@ -26,7 +26,7 @@ class ElementOptionVisual(OptionVisual):
         mainLayout.setContentsMargins(2, 2, 2, 2)
         self.setLayout(mainLayout)
 
-        self.__mainWidget = ElementsLevelNavigationWidget(showBookmarks=False)
+        self.__mainWidget = ElementLevelNavigationWidget(showBookmarks=False)
         if self.optionValue():
             self.__mainWidget.setElements([self.optionValue()])
 

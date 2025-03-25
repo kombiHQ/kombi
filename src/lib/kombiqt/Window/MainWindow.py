@@ -11,7 +11,7 @@ from ..Resource import Resource
 from ..Menu.TasksMenu import TasksMenu
 from ..Widget import ElementListWidget, ElementsTreeWidgetItem
 from ..Widget.ElementViewerWidget import ElementViewerWidget
-from ..Widget.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
+from ..Widget.ElementLevelNavigationWidget import ElementLevelNavigationWidget
 from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
 from ..Window.ScriptEditorWindow import ScriptEditorWindow
@@ -360,7 +360,7 @@ class MainWindow(ScriptEditorWindow):
         sourceControlMain = QtWidgets.QMainWindow()
         sourceBarLayout = QtWidgets.QHBoxLayout()
 
-        self.__elementsLevelNavigationWidget = ElementsLevelNavigationWidget()
+        self.__elementsLevelNavigationWidget = ElementLevelNavigationWidget()
         self.__sourceDirButton = QtWidgets.QPushButton()
         self.__sourceDirButton.setToolTip('Select a source directory')
         self.__sourceDirButton.setIcon(

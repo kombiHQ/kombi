@@ -4,7 +4,7 @@ from kombi.Config import Config
 from kombi.Element import Element
 from ..Resource import Resource
 
-class ElementsLevelNavigationWidget(QtWidgets.QFrame):
+class ElementLevelNavigationWidget(QtWidgets.QFrame):
     """
     Display the elements as individual buttons side by side.
     """
@@ -13,10 +13,10 @@ class ElementsLevelNavigationWidget(QtWidgets.QFrame):
 
     def __init__(self, showBookmarks=True) -> None:
         """
-        Create a ElementsLevelNavigationWidget object.
+        Create a ElementLevelNavigationWidget object.
         """
-        super(ElementsLevelNavigationWidget, self).__init__()
-        self.setObjectName('elementsLevelNavigation')
+        super(ElementLevelNavigationWidget, self).__init__()
+        self.setObjectName('elementLevelNavigation')
         self.__elements = []
         self.setLayout(QtWidgets.QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)

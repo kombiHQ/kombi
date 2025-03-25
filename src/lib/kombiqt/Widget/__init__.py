@@ -7,5 +7,5 @@ from .ScriptEditorTabWidget import ScriptEditorTabWidget
 from .CodeTextEditWidget import CodeTextEditWidget
 from .PythonTextEditWidget import PythonTextEditWidget
 from .ElementListWidget import ElementListWidget, ElementsTreeWidgetItem
-from .ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
+from .ElementLevelNavigationWidget import ElementLevelNavigationWidget
 from .ElementViewerWidget import ElementViewerWidget
