@@ -877,7 +877,7 @@ class _ComboBoxInputDialog(QtWidgets.QDialog):
         """
         Create a combo box input dialog object.
         """
-        super(ComboBoxInputDialog, self).__init__(**kwargs)
+        super(_ComboBoxInputDialog, self).__init__(**kwargs)
 
         assert isinstance(presets, (list, tuple)), 'Invalid input list!'
         self.setWindowTitle(title)
