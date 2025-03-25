@@ -1,7 +1,5 @@
 from .ExecutionSettingsWidget import ExecutionSettingsWidget, ExecutionSettingsTreeWidgetItem, ExecutionSettingsWidgetError, ExecutionSettingsWidgetRequiredError
 from .DispatcherListWidget import DispatcherListWidget
-from .MultiInputDialog import MultiInputDialog
-from .ComboBoxInputDialog import ComboBoxInputDialog
 from .RenderfarmDispatcherPriorityWidget import RenderfarmDispatcherPriorityWidget
 from .RunTaskHoldersWidget import RunTaskHoldersWidget
 from .ScriptEditorWidget import ScriptEditorWidget
