@@ -9,9 +9,9 @@ from kombi.Element.Fs import FsElement
 from .PreferencesWindow import PreferencesWindow
 from ..Resource import Resource
 from ..Menu.TasksMenu import TasksMenu
-from ..Element import ElementListWidget, ElementsTreeWidgetItem
-from ..Element.ElementViewerWidget import ElementViewerWidget
-from ..Element.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
+from ..Widget import ElementListWidget, ElementsTreeWidgetItem
+from ..Widget.ElementViewerWidget import ElementViewerWidget
+from ..Widget.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
 from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
 from ..Window.ScriptEditorWindow import ScriptEditorWindow

@@ -6,3 +6,6 @@ from .ScriptEditorWidget import ScriptEditorWidget
 from .ScriptEditorTabWidget import ScriptEditorTabWidget
 from .CodeTextEditWidget import CodeTextEditWidget
 from .PythonTextEditWidget import PythonTextEditWidget
+from .ElementListWidget import ElementListWidget, ElementsTreeWidgetItem
+from .ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
+from .ElementViewerWidget import ElementViewerWidget

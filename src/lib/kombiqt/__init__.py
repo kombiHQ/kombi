@@ -1,6 +1,5 @@
 import sys
 from . import OptionVisual
-from . import Element
 from . import Widget
 from . import Window
 from . import Menu

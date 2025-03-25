@@ -1,7 +1,7 @@
 from Qt import QtWidgets
 from .OptionVisual import OptionVisual
-from ..Element.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
-from ..Element.ElementViewerWidget import ElementViewerWidget
+from ..Widget.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
+from ..Widget.ElementViewerWidget import ElementViewerWidget
 from kombi.Element import Element
 
 class ElementOptionVisual(OptionVisual):
