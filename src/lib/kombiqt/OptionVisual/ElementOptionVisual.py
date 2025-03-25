@@ -1,7 +1,7 @@
 from Qt import QtWidgets
 from .OptionVisual import OptionVisual
 from ..Element.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
-from ..Element.ElementViewer import ElementViewer
+from ..Element.ElementViewerWidget import ElementViewerWidget
 from kombi.Element import Element
 
 class ElementOptionVisual(OptionVisual):
@@ -33,7 +33,7 @@ class ElementOptionVisual(OptionVisual):
         # preview support
         if self.uiHints().get('preview'):
             previewTag = self.uiHints().get('previewTag', 'previewFilePath')
-            elementViewerWidget = ElementViewer([], previewTag)
+            elementViewerWidget = ElementViewerWidget([], previewTag)
 
             # by default lets it fill the whole width
             width = self.uiHints().get('previewWidth', 0)

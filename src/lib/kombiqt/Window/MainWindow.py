@@ -10,7 +10,7 @@ from .PreferencesWindow import PreferencesWindow
 from ..Resource import Resource
 from ..Menu.TasksMenu import TasksMenu
 from ..Element import ElementListWidget, ElementsTreeWidgetItem
-from ..Element.ElementViewer import ElementViewer
+from ..Element.ElementViewerWidget import ElementViewerWidget
 from ..Element.ElementsLevelNavigationWidget import ElementsLevelNavigationWidget
 from ..Widget.ExecutionSettingsWidget import ExecutionSettingsWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
@@ -394,7 +394,7 @@ class MainWindow(ScriptEditorWindow):
         self.__elementViewer.setMinimumWidth(300)
         self.__elementViewer.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
 
-        self.__elementViewer.setWidget(ElementViewer([], centerAlignment=False))
+        self.__elementViewer.setWidget(ElementViewerWidget([], centerAlignment=False))
 
         viewerButton = QtWidgets.QPushButton()
         viewerButton.setToolTip('Toggle the display of the preview panel')

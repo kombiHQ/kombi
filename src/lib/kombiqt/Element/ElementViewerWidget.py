@@ -9,125 +9,7 @@ from kombi.Task import Task
 from ..Resource import Resource
 from Qt import QtCore, QtGui, QtWidgets
 
-class LoadMediaThread(QtCore.QThread):
-    """
-    Thread to load the file in background.
-    """
-    loadedSignal = QtCore.Signal(object, QtGui.QImage)
-    __elementCache = {}
-    __ffmpegExecutable = os.environ.get('KOMBI_FFMPEG_EXECUTABLE', 'ffmpeg')
-
-    def __init__(self, element=None, previewTag='previewFilePath'):
-        """
-        Create a LoadMediaThread object.
-        """
-        super(LoadMediaThread, self).__init__()
-        self.setElement(element)
-        self.setPreviewTag(previewTag)
-        self.__abort = False
-
-    def setPreviewTag(self, tagName):
-        """
-        Sets the name of the tag that should be loaded.
-        """
-        self.__previewTag = tagName
-
-    def previewTag(self):
-        """
-        Return the name of the tag used to load the media.
-        """
-        return self.__previewTag
-
-    def setElement(self, element, width=None, height=None):
-        """
-        Set the full path that should be loaded by the thread.
-        """
-        self.__element = element
-        self.__width = width
-        self.__height = height
-
-    def run(self):
-        """
-        Implement the thread execution.
-        """
-        resultImage = QtGui.QImage()
-        if self.__element in self.__elementCache:
-            resultImage = self.__elementCache[self.__element]
-        else:
-            if isinstance(self.__element, ImageElement):
-                resultImage = QtGui.QImage(self.__element.tag(self.previewTag()))
-                if resultImage.isNull():
-                    resultImage = self.__ffmpegFetchImage()
-            elif isinstance(self.__element, (VideoElement, AudioElement)):
-                resultImage = self.__ffmpegFetchImage()
-            self.__elementCache[self.__element] = resultImage
-
-        if not resultImage.isNull() and self.__width is not None and self.__height is not None:
-            resultImage = resultImage.scaled(
-                self.__width,
-                self.__height,
-                QtCore.Qt.KeepAspectRatio
-            )
-
-        if not self.__abort:
-            self.loadedSignal.emit(self.__element, resultImage)
-
-    def __ffmpegFetchImage(self):
-        """
-        Load a frame from the video/image (raw formats) or generate a waveform from the input audio.
-        """
-        extraArgs = []
-        if isinstance(self.__element, AudioElement):
-            extraArgs += [
-                '-filter_complex',
-                'showwavespic=colors=green|yellow'
-            ]
-
-        ffmpegCommand = [
-            self.__ffmpegExecutable,
-            "-v",
-            "quiet",
-            "-i",
-            self.__element.tag(self.previewTag()),
-            *extraArgs,
-            "-vframes",
-            "1",
-            "-f",
-            "image2pipe",
-            "-vcodec",
-            "png",
-            "-"
-        ]
-
-        extraArgs = {}
-        if platform.system().lower() == 'windows':
-            extraArgs['creationflags'] = subprocess.CREATE_NO_WINDOW
-
-        process = subprocess.Popen(ffmpegCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **extraArgs)
-        stdout, _ = process.communicate()
-
-        if process.returncode == 0:
-            return QtGui.QImage.fromData(QtCore.QByteArray(stdout))
-
-        return QtGui.QImage()
-
-    def __del__(self):
-        """
-        We need to wait for the thread to be finished before destroying it.
-        """
-        self.__abort = True
-        try:
-            if self.isRunning():
-                self.quit()
-                self.wait()
-
-        # We intentionally ignore any runtime errors that may occur at this point, as
-        # they could be caused by the internal C++ object already being deleted. For example:
-        # RuntimeError: Internal C++ object (LoadMediaThread) has already been deleted.
-        except RuntimeError:
-            pass
-
-class ElementViewer(QtWidgets.QLabel):
+class ElementViewerWidget(QtWidgets.QLabel):
     """
     This widget is designed to display media element types (image, movie and audio).
 
@@ -144,9 +26,9 @@ class ElementViewer(QtWidgets.QLabel):
         centerAlignment=True
     ):
         """
-        Create an ElementViewer object.
+        Create an ElementViewerWidget object.
         """
-        super(ElementViewer, self).__init__()
+        super(ElementViewerWidget, self).__init__()
         self.setMouseTracking(True)
 
         self.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
@@ -311,6 +193,124 @@ class ElementViewer(QtWidgets.QLabel):
         Sets the name of the tag that should be used by the viewer.
         """
         self.__previewTag = tagName
+
+class LoadMediaThread(QtCore.QThread):
+    """
+    Thread to load the file in background.
+    """
+    loadedSignal = QtCore.Signal(object, QtGui.QImage)
+    __elementCache = {}
+    __ffmpegExecutable = os.environ.get('KOMBI_FFMPEG_EXECUTABLE', 'ffmpeg')
+
+    def __init__(self, element=None, previewTag='previewFilePath'):
+        """
+        Create a LoadMediaThread object.
+        """
+        super(LoadMediaThread, self).__init__()
+        self.setElement(element)
+        self.setPreviewTag(previewTag)
+        self.__abort = False
+
+    def setPreviewTag(self, tagName):
+        """
+        Sets the name of the tag that should be loaded.
+        """
+        self.__previewTag = tagName
+
+    def previewTag(self):
+        """
+        Return the name of the tag used to load the media.
+        """
+        return self.__previewTag
+
+    def setElement(self, element, width=None, height=None):
+        """
+        Set the full path that should be loaded by the thread.
+        """
+        self.__element = element
+        self.__width = width
+        self.__height = height
+
+    def run(self):
+        """
+        Implement the thread execution.
+        """
+        resultImage = QtGui.QImage()
+        if self.__element in self.__elementCache:
+            resultImage = self.__elementCache[self.__element]
+        else:
+            if isinstance(self.__element, ImageElement):
+                resultImage = QtGui.QImage(self.__element.tag(self.previewTag()))
+                if resultImage.isNull():
+                    resultImage = self.__ffmpegFetchImage()
+            elif isinstance(self.__element, (VideoElement, AudioElement)):
+                resultImage = self.__ffmpegFetchImage()
+            self.__elementCache[self.__element] = resultImage
+
+        if not resultImage.isNull() and self.__width is not None and self.__height is not None:
+            resultImage = resultImage.scaled(
+                self.__width,
+                self.__height,
+                QtCore.Qt.KeepAspectRatio
+            )
+
+        if not self.__abort:
+            self.loadedSignal.emit(self.__element, resultImage)
+
+    def __ffmpegFetchImage(self):
+        """
+        Load a frame from the video/image (raw formats) or generate a waveform from the input audio.
+        """
+        extraArgs = []
+        if isinstance(self.__element, AudioElement):
+            extraArgs += [
+                '-filter_complex',
+                'showwavespic=colors=green|yellow'
+            ]
+
+        ffmpegCommand = [
+            self.__ffmpegExecutable,
+            "-v",
+            "quiet",
+            "-i",
+            self.__element.tag(self.previewTag()),
+            *extraArgs,
+            "-vframes",
+            "1",
+            "-f",
+            "image2pipe",
+            "-vcodec",
+            "png",
+            "-"
+        ]
+
+        extraArgs = {}
+        if platform.system().lower() == 'windows':
+            extraArgs['creationflags'] = subprocess.CREATE_NO_WINDOW
+
+        process = subprocess.Popen(ffmpegCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **extraArgs)
+        stdout, _ = process.communicate()
+
+        if process.returncode == 0:
+            return QtGui.QImage.fromData(QtCore.QByteArray(stdout))
+
+        return QtGui.QImage()
+
+    def __del__(self):
+        """
+        We need to wait for the thread to be finished before destroying it.
+        """
+        self.__abort = True
+        try:
+            if self.isRunning():
+                self.quit()
+                self.wait()
+
+        # We intentionally ignore any runtime errors that may occur at this point, as
+        # they could be caused by the internal C++ object already being deleted. For example:
+        # RuntimeError: Internal C++ object (LoadMediaThread) has already been deleted.
+        except RuntimeError:
+            pass
 
 
 # This is registered as a custom task, enabling you to override it with a
