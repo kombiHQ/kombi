@@ -4,7 +4,7 @@ import sys
 import copy
 from typing import List
 from collections import OrderedDict
-from ..Resource import Resource
+from ..ResourceLoader import ResourceLoader
 from ..Element.Fs import FsElement
 from ..Element import Element
 from ..Template import Template
@@ -397,7 +397,7 @@ class Task(object):
             })
 
         # custom resources
-        loadedResources = Resource.get().loaded(ignoreFromEnvironment=True)
+        loadedResources = ResourceLoader.get().loaded(ignoreFromEnvironment=True)
 
         # only including them as result if they are not empty
         if len(metadata):
@@ -468,9 +468,9 @@ class Task(object):
 
         # loading resources
         for loadResource in loadResources:
-            if loadResource in Resource.get().loaded():
+            if loadResource in ResourceLoader.get().loaded():
                 continue
-            Resource.get().load(loadResource)
+            ResourceLoader.get().load(loadResource)
 
         # loading task
         task = Task.create(taskType)

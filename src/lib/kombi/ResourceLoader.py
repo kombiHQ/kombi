@@ -5,13 +5,13 @@ from glob import glob
 from collections import OrderedDict
 from .KombiError import KombiError
 
-class ResourceError(KombiError):
-    """Resource error."""
+class ResourceLoaderError(KombiError):
+    """Resource loader error."""
 
-class ResourceInvalidError(ResourceError):
-    """Resource invalid Error."""
+class ResourceLoaderInvalidError(ResourceLoaderError):
+    """Resource loader invalid error."""
 
-class Resource(object):
+class ResourceLoader(object):
     """
     Class used to load custom resources to kombi.
 
@@ -32,7 +32,7 @@ class Resource(object):
 
     def __init__(self):
         """
-        Create a resource class (@See Resource.get).
+        Create a resource class (@See ResourceLoader.get).
         """
         assert self.__singleton is None, "Can only have one instance!"
 
@@ -46,7 +46,7 @@ class Resource(object):
         Used to load custom elements, template procedures, task wrappers...
         """
         if not os.path.exists(filePath):
-            raise ResourceInvalidError(
+            raise ResourceLoaderInvalidError(
                 'Invalid resource "{0}"!'.format(filePath)
             )
 
@@ -69,7 +69,7 @@ class Resource(object):
         Return the singleton resource instance.
         """
         if cls.__singleton is None:
-            cls.__singleton = Resource()
+            cls.__singleton = ResourceLoader()
 
         return cls.__singleton
 

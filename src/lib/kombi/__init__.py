@@ -12,13 +12,13 @@ from . import TaskHolder
 from . import Dispatcher
 from .Cli import Cli, CliError
 
-# The Resource class needs to be imported as the last one, since it's going to
+# The ResourceLoader class needs to be imported as the last one, since it's going to
 # initialize all the resources defined through the environment variable. These
 # resources can be using the modules above (that's why it needs
 # be imported as the last one).
-from .Resource import Resource, ResourceError, ResourceInvalidError
+from .ResourceLoader import ResourceLoader, ResourceLoaderError, ResourceLoaderInvalidError
 # loading resources by triggering the singleton
-Resource.get()
+ResourceLoader.get()
 
 # initialize cli support
 def init():
