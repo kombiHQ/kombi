@@ -3,7 +3,7 @@ import glob
 from ...Task import Task
 from ...Template import Template
 from ...TaskHolder import TaskHolder
-from ...Resource import Resource
+from ...ResourceLoader import ResourceLoader
 from .Loader import Loader, LoaderError, LoaderInvalidConfigError
 
 class PythonLoaderContentError(LoaderError):
@@ -104,7 +104,7 @@ class PythonLoader(Loader):
 
                 # loading resource
                 for scriptFile in scriptFiles:
-                    Resource.get().load(scriptFile)
+                    ResourceLoader.get().load(scriptFile)
 
         # parsing root context vars
         self.__loadTaskHolder(contents, contextVars)
