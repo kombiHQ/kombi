@@ -3,7 +3,7 @@ import re
 import weakref
 import functools
 import traceback
-from kombi.Resource import Resource as kombiResource
+from kombi.Cli import Cli
 from io import StringIO
 from contextlib import redirect_stdout
 from .CodeTextEditWidget import CodeTextEditWidget
@@ -118,7 +118,7 @@ class ScriptEditorWidget(QtWidgets.QWidget):
 
         self.__outputWidget.setTextColor(QtGui.QColor(130, 130, 130))
         self.__outputWidget.setFontWeight(QtGui.QFont.Normal)
-        self.__outputWidget.append(kombiResource.asciiBanner())
+        self.__outputWidget.append(Cli.asciiBanner())
         self.__outputWidget.append("Script Editor Shortcuts:")
         if additionalHelp:
             for line in additionalHelp:

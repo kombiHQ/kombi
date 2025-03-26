@@ -73,32 +73,6 @@ class Resource(object):
 
         return cls.__singleton
 
-    @classmethod
-    def asciiBanner(cls, includeInfo=True):
-        """
-        Return the kombi ascii banner.
-        """
-        # This ASCII art is based on the original design found at
-        # (credit to the creator, you rock!):
-        # https://ascii.co.uk/art/vw
-        asciiArt = [
-            "  .---------------------------",
-            "/--| |--| |--|  |-- \\----\\----\\",
-            "|__| |__| |__|  |___ \\____\\____\\",
-            "|=====================----------\\",
-            "| === []   ._    ._   o\\      /o|",
-            "|  __           __    ()\\    /()|",
-            "| /  \\         /  \\      \\  /   |",
-            "[] ( |--------| ( |_[==0======0==]",
-            "  \\_/_/ \\_/_/  \\_/_/     \\_/_/"
-        ]
-
-        if includeInfo:
-            asciiArt[4] += '  Kombi'
-            asciiArt[5] += '  https://github.com/kombiHQ/kombi'
-
-        return '\n'.join(asciiArt)
-
     def __loadToRuntime(self, filePath, source):
         """
         Execute a python resource.

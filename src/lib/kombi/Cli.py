@@ -45,7 +45,7 @@ class Cli(object):
         """
         # printing ascii banner when help is invoked
         if '-h' in args or '--help' in args:
-            sys.stdout.write(Resource.asciiBanner() + '\n')
+            sys.stdout.write(self.asciiBanner() + '\n')
             sys.stdout.flush()
 
         parseArgs = self.__parser.parse_args(args)
@@ -81,6 +81,32 @@ class Cli(object):
                     taskHolder,
                     elementsGroup
                 )
+
+    @classmethod
+    def asciiBanner(cls, includeInfo=True):
+        """
+        Return the kombi ascii banner.
+        """
+        # This ASCII art is based on the original design found at
+        # (credit to the creator, you rock!):
+        # https://ascii.co.uk/art/vw
+        asciiArt = [
+            "  .---------------------------",
+            "/--| |--| |--|  |-- \\----\\----\\",
+            "|__| |__| |__|  |___ \\____\\____\\",
+            "|=====================----------\\",
+            "| === []   ._    ._   o\\      /o|",
+            "|  __           __    ()\\    /()|",
+            "| /  \\         /  \\      \\  /   |",
+            "[] ( |--------| ( |_[==0======0==]",
+            "  \\_/_/ \\_/_/  \\_/_/     \\_/_/"
+        ]
+
+        if includeInfo:
+            asciiArt[4] += '  Kombi'
+            asciiArt[5] += '  https://github.com/kombiHQ/kombi'
+
+        return '\n'.join(asciiArt)
 
     def __loadElements(self, sourcePaths):
         """
