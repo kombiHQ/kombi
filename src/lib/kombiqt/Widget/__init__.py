@@ -1,7 +1,7 @@
 from .TaskHolderSettingsWidget import TaskHolderSettingsWidget, TaskHolderSettingsTreeWidgetItem, TaskHolderSettingsWidgetError, TaskHolderSettingsWidgetRequiredError
 from .DispatcherListWidget import DispatcherListWidget
 from .RenderfarmDispatcherPriorityWidget import RenderfarmDispatcherPriorityWidget
-from .RunTaskHoldersWidget import RunTaskHoldersWidget
+from .TaskHolderExecutionWidget import TaskHolderExecutionWidget
 from .ScriptEditorWidget import ScriptEditorWidget
 from .ScriptEditorTabWidget import ScriptEditorTabWidget
 from .CodeTextEditWidget import CodeTextEditWidget

@@ -1,22 +1,22 @@
-from .TaskHolderSettingsWidget import TaskHolderSettingsWidget
 from kombi.TaskHolder import TaskHolder
 from kombi.Template import Template
 from kombi.Dispatcher import Dispatcher
 from Qt import QtCore, QtWidgets
+from .TaskHolderSettingsWidget import TaskHolderSettingsWidget
 from ..Resource import Resource
 from ..Widget.DispatcherListWidget import DispatcherListWidget
 
-class RunTaskHoldersWidget(QtWidgets.QWidget):
+class TaskHolderExecutionWidget(QtWidgets.QWidget):
     """
-    This widget is used to list the tasks options.
+    Widget used to execute task holders.
     """
     executionSuccess = QtCore.Signal(bool)
 
     def __init__(self, taskHolders, elements=None, defaultDispatcherName='runtime', parent=None):
         """
-        Create RunTaskHoldersWidget object.
+        Create TaskHolderExecutionWidget object.
         """
-        super(RunTaskHoldersWidget, self).__init__(parent)
+        super(TaskHolderExecutionWidget, self).__init__(parent)
 
         self.__setTaskHolders(taskHolders)
         self.__setDefaultDispatcherName(defaultDispatcherName)
@@ -31,7 +31,7 @@ class RunTaskHoldersWidget(QtWidgets.QWidget):
         """
         Refresh the widget.
         """
-        self.__executionSettingsWidget.refresh(elements or [], self.taskHolders())
+        self.__taskHolderSettingsWidget.refresh(elements or [], self.taskHolders())
 
     def taskHolders(self):
         """
@@ -52,7 +52,7 @@ class RunTaskHoldersWidget(QtWidgets.QWidget):
         """
         runTaskHoldersWidget = cls(taskHolders, elements, defaultDispatcherName)
 
-        dialog = _RunTaskHoldersDialog(parent)
+        dialog = _TaskHolderExecutionDialog(parent)
         dialog.resize(width, height)
 
         def __closeDialog(success):
@@ -96,14 +96,14 @@ class RunTaskHoldersWidget(QtWidgets.QWidget):
         """
         Build the base widgets.
         """
-        self.__executionSettingsWidget = TaskHolderSettingsWidget()
+        self.__taskHolderSettingsWidget = TaskHolderSettingsWidget()
         taskHolder = self.taskHolders()[0]
         self.__selectedDispatcher = DispatcherListWidget()
         self.__selectedDispatcher.selectDispatcher(self.defaultDispatcherName())
         if 'uiHintDispatcher' in taskHolder.tagNames():
             self.__selectedDispatcher.selectDispatcher(taskHolder.tag('uiHintDispatcher'))
 
-        self.__mainLayout.addWidget(self.__executionSettingsWidget)
+        self.__mainLayout.addWidget(self.__taskHolderSettingsWidget)
 
         runButton = QtWidgets.QPushButton('Execute')
         if 'uiHintExecuteButtonLabel' in taskHolder.tagNames():
@@ -125,7 +125,7 @@ class RunTaskHoldersWidget(QtWidgets.QWidget):
         Run the task holders.
         """
         dispatcher = Dispatcher.create(self.__selectedDispatcher.selectedDispatcher())
-        success = self.__executionSettingsWidget.execute(dispatcher, showOutput=False)
+        success = self.__taskHolderSettingsWidget.execute(dispatcher, showOutput=False)
 
         self.executionSuccess.emit(success)
 
@@ -148,14 +148,14 @@ class RunTaskHoldersWidget(QtWidgets.QWidget):
 
         self.__taskHolders = taskHolders
 
-class _RunTaskHoldersDialog(QtWidgets.QDialog):
+class _TaskHolderExecutionDialog(QtWidgets.QDialog):
     """
     Custom Dialog used to run the task holders.
     """
 
     def __init__(self, parent=None):
         """
-        Create _RunTaskHoldersDialog object.
+        Create _TaskHolderExecutionDialog object.
         """
         super().__init__(parent)
         self.setSuccess(False)
