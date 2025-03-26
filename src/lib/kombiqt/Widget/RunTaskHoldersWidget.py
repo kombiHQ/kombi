@@ -1,4 +1,4 @@
-from .ExecutionSettingsWidget import ExecutionSettingsWidget
+from .TaskHolderSettingsWidget import TaskHolderSettingsWidget
 from kombi.TaskHolder import TaskHolder
 from kombi.Template import Template
 from kombi.Dispatcher import Dispatcher
@@ -80,23 +80,23 @@ class RunTaskHoldersWidget(QtWidgets.QWidget):
         """
         Perform the task holders with the input elements.
 
-        In case the metadata showExecutionSettings is defined to False. The
+        In case the metadata showTaskHolderSettings is defined to False. The
         execution will be headless.
         """
-        showExecutionSettings = True
-        if taskHolders[0].task().hasMetadata('ui.task.showExecutionSettings'):
-            showExecutionSettings = taskHolders[0].task().metadata('ui.task.showExecutionSettings')
+        showTaskHolderSettings = True
+        if taskHolders[0].task().hasMetadata('ui.task.showTaskHolderSettings'):
+            showTaskHolderSettings = taskHolders[0].task().metadata('ui.task.showTaskHolderSettings')
 
-        if showExecutionSettings:
+        if showTaskHolderSettings:
             return cls.popup(taskHolders, elements, defaultDispatcherName, parent=parent)
         else:
-            return cls(taskHolders, elements, defaultDispatcherName).performExecutionSettings()
+            return cls(taskHolders, elements, defaultDispatcherName).performTaskHolderSettings()
 
     def __buildWidgets(self):
         """
         Build the base widgets.
         """
-        self.__executionSettingsWidget = ExecutionSettingsWidget()
+        self.__executionSettingsWidget = TaskHolderSettingsWidget()
         taskHolder = self.taskHolders()[0]
         self.__selectedDispatcher = DispatcherListWidget()
         self.__selectedDispatcher.selectDispatcher(self.defaultDispatcherName())
@@ -118,9 +118,9 @@ class RunTaskHoldersWidget(QtWidgets.QWidget):
         runLayout.addWidget(runButton)
         self.__mainLayout.addLayout(runLayout)
 
-        runButton.clicked.connect(self.performExecutionSettings)
+        runButton.clicked.connect(self.performTaskHolderSettings)
 
-    def performExecutionSettings(self):
+    def performTaskHolderSettings(self):
         """
         Run the task holders.
         """

@@ -4,9 +4,9 @@ scripts:
 vars:
   prefix: "/tmp"
 tags:
-  uiHintBottomExecutionSettingsEmptyMessage: "Select valid element"
+  uiHintBottomTaskHolderSettingsEmptyMessage: "Select valid element"
   uiHintShowDispatchedMessage: false
-  uiHintBottomExecutionSettings: true
+  uiHintBottomTaskHolderSettings: true
   uiHintCheckedByDefault: true
   uiHintColumns:
   - frame

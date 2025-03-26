@@ -22,7 +22,7 @@ class LaunchWithDefaultApplicationTask(Task):
             ]
         )
 
-        self.setMetadata('ui.task.showExecutionSettings', False)
+        self.setMetadata('ui.task.showTaskHolderSettings', False)
         self.setMetadata('ui.task.showInContextMenu', True)
         self.setMetadata('ui.task.menuIcon', 'icons/openWithDefaultApplication.png')
 
