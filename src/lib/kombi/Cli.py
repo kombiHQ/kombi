@@ -9,7 +9,6 @@ from .Element import Element
 from .TaskHolder.Loader import Loader
 from .Dispatcher import Dispatcher
 from .KombiError import KombiError
-from .Resource import Resource
 
 class CliError(KombiError):
     """Cli Error."""
