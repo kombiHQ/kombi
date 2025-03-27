@@ -5,10 +5,10 @@
 }
 
 QToolTip{
-    color:#ffffff;
-    background-color:rgb(42, 42, 42);
-    border:1px solid rgb(42, 130, 218);
-    border-radius:4px;
+    color:#000000;
+    background-color:rgb(200, 200, 200);
+    border:1px solid rgb(42, 42, 42);
+    border-radius:0;
 }
 QStatusBar{
     background-color:qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 rgba(25,25,25,127),stop:1 rgba(53,53,53,75));
