@@ -225,9 +225,20 @@ class TaskHolderListWidget(QtWidgets.QTreeWidget):
                 self.__messageBox.setIcon(QtWidgets.QMessageBox.NoIcon)
                 self.__messageBox.setText(str(err))
 
-                horizontalSpacer = QtWidgets.QSpacerItem(1000, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+                horizontalSpacer = QtWidgets.QSpacerItem(
+                    1000,
+                    0,
+                    QtWidgets.QSizePolicy.Minimum,
+                    QtWidgets.QSizePolicy.Expanding
+                )
                 layout = self.__messageBox.layout()
-                layout.addItem(horizontalSpacer, layout.rowCount(), 0, 1, layout.columnCount())
+                layout.addItem(
+                    horizontalSpacer,
+                    layout.rowCount(),
+                    0,
+                    1,
+                    layout.columnCount()
+                )
 
                 self.__messageBox.show()
                 return False
