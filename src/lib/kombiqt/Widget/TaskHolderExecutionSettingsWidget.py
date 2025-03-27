@@ -6,17 +6,17 @@ from .TaskHolderListWidget import TaskHolderListWidget
 from ..Resource import Resource
 from ..Widget.DispatcherListWidget import DispatcherListWidget
 
-class TaskHolderExecutionWidget(QtWidgets.QWidget):
+class TaskHolderExecutionSettingsWidget(QtWidgets.QWidget):
     """
-    Widget used to execute task holders.
+    Widget used to execute task holders by showing the task list, dispatcher and execution button.
     """
     executionSuccess = QtCore.Signal(bool)
 
     def __init__(self, taskHolders, elements=None, defaultDispatcherName='runtime', parent=None):
         """
-        Create TaskHolderExecutionWidget object.
+        Create TaskHolderExecutionSettingsWidget object.
         """
-        super(TaskHolderExecutionWidget, self).__init__(parent)
+        super(TaskHolderExecutionSettingsWidget, self).__init__(parent)
 
         self.__setTaskHolders(taskHolders)
         self.__setDefaultDispatcherName(defaultDispatcherName)
