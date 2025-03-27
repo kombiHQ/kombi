@@ -3,7 +3,7 @@ from Qt import QtWidgets, QtCore
 from kombi.Template import Template
 from kombi.TaskHolder import TaskHolder
 from ..Resource import Resource
-from ..Widget.TaskHolderExecutionWidget import TaskHolderExecutionWidget
+from ..Widget.TaskHolderExecutionSettingsWidget import TaskHolderExecutionSettingsWidget
 
 class TasksMenu(QtWidgets.QMenu):
     """
@@ -40,7 +40,7 @@ class TasksMenu(QtWidgets.QMenu):
                 continue
 
             taskName = Template.runProcedure('camelcasetospaced', taskHolder.task().metadata('name'))
-            if taskHolder.task().metadata('ui.task.showTaskHolderSettings', True):
+            if taskHolder.task().metadata('ui.task.showTaskHolderList', True):
                 taskName += ' ...'
 
             currentMenu = self
@@ -90,5 +90,5 @@ class TasksMenu(QtWidgets.QMenu):
         # positioned relative to the parent rather than the menu when a parent
         # widget exists
         parent = self.parent() if self.parent() else self
-        if TaskHolderExecutionWidget.run([self.__taskHolders[index]], elements, parent=parent):
+        if TaskHolderExecutionSettingsWidget.run([self.__taskHolders[index]], elements, parent=parent):
             self.executed.emit()
