@@ -8,7 +8,7 @@ from ..Widget.DispatcherListWidget import DispatcherListWidget
 
 class TaskHolderExecutionSettingsWidget(QtWidgets.QWidget):
     """
-    Widget used to execute task holders by showing the task list, dispatcher and execution button.
+    Widget used to execute task holders by showing the task holder list, dispatcher and execution button.
     """
     executionSuccess = QtCore.Signal(bool)
 
