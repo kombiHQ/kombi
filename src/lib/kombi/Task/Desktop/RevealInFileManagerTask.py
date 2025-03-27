@@ -20,7 +20,7 @@ class RevealInFileManagerTask(Task):
             ]
         )
 
-        self.setMetadata('ui.task.showTaskHolderSettings', False)
+        self.setMetadata('ui.task.showTaskHolderList', False)
         self.setMetadata('ui.task.menuIcon', 'icons/folder.png')
 
     def _perform(self):

@@ -2,7 +2,7 @@ from kombi.TaskHolder import TaskHolder
 from kombi.Template import Template
 from kombi.Dispatcher import Dispatcher
 from Qt import QtCore, QtWidgets
-from .TaskHolderSettingsWidget import TaskHolderSettingsWidget
+from .TaskHolderListWidget import TaskHolderListWidget
 from ..Resource import Resource
 from ..Widget.DispatcherListWidget import DispatcherListWidget
 
@@ -80,23 +80,23 @@ class TaskHolderExecutionWidget(QtWidgets.QWidget):
         """
         Perform the task holders with the input elements.
 
-        In case the metadata showTaskHolderSettings is defined to False. The
+        In case the metadata showTaskHolderList is defined to False. The
         execution will be headless.
         """
-        showTaskHolderSettings = True
-        if taskHolders[0].task().hasMetadata('ui.task.showTaskHolderSettings'):
-            showTaskHolderSettings = taskHolders[0].task().metadata('ui.task.showTaskHolderSettings')
+        showTaskHolderList = True
+        if taskHolders[0].task().hasMetadata('ui.task.showTaskHolderList'):
+            showTaskHolderList = taskHolders[0].task().metadata('ui.task.showTaskHolderList')
 
-        if showTaskHolderSettings:
+        if showTaskHolderList:
             return cls.popup(taskHolders, elements, defaultDispatcherName, parent=parent)
         else:
-            return cls(taskHolders, elements, defaultDispatcherName).performTaskHolderSettings()
+            return cls(taskHolders, elements, defaultDispatcherName).performTaskHolderList()
 
     def __buildWidgets(self):
         """
         Build the base widgets.
         """
-        self.__taskHolderSettingsWidget = TaskHolderSettingsWidget()
+        self.__taskHolderSettingsWidget = TaskHolderListWidget()
         taskHolder = self.taskHolders()[0]
         self.__selectedDispatcher = DispatcherListWidget()
         self.__selectedDispatcher.selectDispatcher(self.defaultDispatcherName())
@@ -118,9 +118,9 @@ class TaskHolderExecutionWidget(QtWidgets.QWidget):
         runLayout.addWidget(runButton)
         self.__mainLayout.addLayout(runLayout)
 
-        runButton.clicked.connect(self.performTaskHolderSettings)
+        runButton.clicked.connect(self.performTaskHolderList)
 
-    def performTaskHolderSettings(self):
+    def performTaskHolderList(self):
         """
         Run the task holders.
         """

@@ -12,7 +12,7 @@ from ..Menu.TasksMenu import TasksMenu
 from ..Widget import ElementListWidget, ElementsTreeWidgetItem
 from ..Widget.ElementViewerWidget import ElementViewerWidget
 from ..Widget.ElementLevelNavigationWidget import ElementLevelNavigationWidget
-from ..Widget.TaskHolderSettingsWidget import TaskHolderSettingsWidget
+from ..Widget.TaskHolderListWidget import TaskHolderListWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
 from ..Window.ScriptEditorWindow import ScriptEditorWindow
 
@@ -157,7 +157,7 @@ class MainWindow(ScriptEditorWindow):
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
 
-    def refreshTaskHolderSettings(self, elements=None):
+    def refreshTaskHolderList(self, elements=None):
         """
         Update the execution settings.
         """
@@ -172,7 +172,7 @@ class MainWindow(ScriptEditorWindow):
         self.__backButton.setVisible(self.__splitter.orientation() == QtCore.Qt.Horizontal)
         self.__executeButton.setVisible(True)
 
-        if self.__taskHolders and self.__taskHolders[0].tag('uiHintBottomTaskHolderSettings', None):
+        if self.__taskHolders and self.__taskHolders[0].tag('uiHintBottomTaskHolderList', None):
             if not checkedElements and self.__rootElements:
                 checkedElements = [self.__rootElements[-1]]
             self.__executionSettings.refresh(checkedElements, [self.__taskHolders[0]])
@@ -301,12 +301,12 @@ class MainWindow(ScriptEditorWindow):
             if 'uiHintGlobRecursively' in taskHolder.tagNames():
                 self.__uiHintGlobRecursively = taskHolder.tag('uiHintGlobRecursively')
 
-            if taskHolder.tag('uiHintBottomTaskHolderSettings', None):
+            if taskHolder.tag('uiHintBottomTaskHolderList', None):
                 self.__splitter.setOrientation(QtCore.Qt.Vertical)
                 self.__executionSettingsAreaWidget.setVisible(True)
-                if 'uiHintBottomTaskHolderSettingsEmptyMessage' in taskHolder.tagNames():
-                    self.__executionSettingsEmptyMessageLabel.setText(taskHolder.tag('uiHintBottomTaskHolderSettingsEmptyMessage'))
-                self.refreshTaskHolderSettings()
+                if 'uiHintBottomTaskHolderListEmptyMessage' in taskHolder.tagNames():
+                    self.__executionSettingsEmptyMessageLabel.setText(taskHolder.tag('uiHintBottomTaskHolderListEmptyMessage'))
+                self.refreshTaskHolderList()
 
             elif 'uiHintSkipSourceStep' in taskHolder.tagNames():
                 skipSourceStep = taskHolder.tag('uiHintSkipSourceStep')
@@ -346,7 +346,7 @@ class MainWindow(ScriptEditorWindow):
 
         # forcing kombi to start at the execution settings (next) interface
         if skipSourceStep:
-            self.refreshTaskHolderSettings()
+            self.refreshTaskHolderList()
 
     def __buildWidgets(self):
         """
@@ -431,7 +431,7 @@ class MainWindow(ScriptEditorWindow):
         self.__nextButton.setIcon(
             Resource.icon("icons/next.png")
         )
-        self.__nextButton.clicked.connect(lambda _: self.refreshTaskHolderSettings())
+        self.__nextButton.clicked.connect(lambda _: self.refreshTaskHolderList())
 
         self.__backButton = QtWidgets.QPushButton("Back")
         self.__backButton.setIcon(
@@ -456,7 +456,7 @@ class MainWindow(ScriptEditorWindow):
         self.__elementListWidget.modifed.connect(self.__onForceRefresh)
         self.__sourceRefreshButton.clicked.connect(self.__onForceRefresh)
 
-        self.__executionSettings = TaskHolderSettingsWidget()
+        self.__executionSettings = TaskHolderListWidget()
         sourceControlMain.setCentralWidget(self.__elementListWidget)
 
         sourceLayout.addWidget(sourceControlMain)
@@ -543,7 +543,7 @@ class MainWindow(ScriptEditorWindow):
         elements = self.__elementListWidget.selectedElements()
 
         if self.__splitter.orientation() == QtCore.Qt.Vertical:
-            self.refreshTaskHolderSettings(elements)
+            self.refreshTaskHolderList(elements)
 
         if not (self.__elementViewer and self.__elementViewer.isVisible()):
             return

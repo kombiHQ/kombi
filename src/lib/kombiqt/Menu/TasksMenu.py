@@ -40,7 +40,7 @@ class TasksMenu(QtWidgets.QMenu):
                 continue
 
             taskName = Template.runProcedure('camelcasetospaced', taskHolder.task().metadata('name'))
-            if taskHolder.task().metadata('ui.task.showTaskHolderSettings', True):
+            if taskHolder.task().metadata('ui.task.showTaskHolderList', True):
                 taskName += ' ...'
 
             currentMenu = self

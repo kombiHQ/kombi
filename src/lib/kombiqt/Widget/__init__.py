@@ -1,4 +1,4 @@
-from .TaskHolderSettingsWidget import TaskHolderSettingsWidget, TaskHolderSettingsTreeWidgetItem, TaskHolderSettingsWidgetError, TaskHolderSettingsWidgetRequiredError
+from .TaskHolderListWidget import TaskHolderListWidget, TaskHolderListTreeWidgetItem, TaskHolderListWidgetError, TaskHolderListWidgetRequiredError
 from .DispatcherListWidget import DispatcherListWidget
 from .RenderfarmDispatcherPriorityWidget import RenderfarmDispatcherPriorityWidget
 from .TaskHolderExecutionWidget import TaskHolderExecutionWidget

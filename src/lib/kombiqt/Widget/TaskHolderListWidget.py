@@ -11,12 +11,12 @@ from kombi.ProcessExecution import ProcessExecution
 from kombi.KombiError import KombiError
 from Qt import QtCore, QtWidgets
 
-class TaskHolderSettingsWidgetError(KombiError):
+class TaskHolderListWidgetError(KombiError):
     """
     Base exception for execution settings widget error.
     """
 
-class TaskHolderSettingsWidgetRequiredError(TaskHolderSettingsWidgetError):
+class TaskHolderListWidgetRequiredError(TaskHolderListWidgetError):
     """
     Custom exception type raised when a required option is empty.
     """
@@ -25,7 +25,7 @@ class TaskHolderSettingsWidgetRequiredError(TaskHolderSettingsWidgetError):
         """
         Create an execution settings widget required error object.
         """
-        super(TaskHolderSettingsWidgetRequiredError, self).__init__(message)
+        super(TaskHolderListWidgetRequiredError, self).__init__(message)
         assert isinstance(task, Task), "Invalid task type!"
 
         self.__task = task
@@ -36,18 +36,18 @@ class TaskHolderSettingsWidgetRequiredError(TaskHolderSettingsWidgetError):
         """
         return self.__task
 
-class TaskHolderSettingsWidget(QtWidgets.QTreeWidget):
+class TaskHolderListWidget(QtWidgets.QTreeWidget):
     """
-    This widget is used to list the tasks options.
+    This widget displays a list of task holders, enabling users to interact with the task options.
     """
 
     taskHolderOptionChangedSignal = QtCore.Signal(object, list)
 
     def __init__(self, *args, **kwargs):
         """
-        Create a TaskHolderSettingsWidget object.
+        Create a TaskHolderListWidget object.
         """
-        super(TaskHolderSettingsWidget, self).__init__(*args, **kwargs)
+        super(TaskHolderListWidget, self).__init__(*args, **kwargs)
         self.__messageBox = None
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.header().hide()
@@ -91,7 +91,7 @@ class TaskHolderSettingsWidget(QtWidgets.QTreeWidget):
                     try:
                         task.validate()
                     except TaskValidationError as err:
-                        raise TaskHolderSettingsWidgetRequiredError(
+                        raise TaskHolderListWidgetRequiredError(
                             str(err),
                             task
                         )
@@ -111,7 +111,7 @@ class TaskHolderSettingsWidget(QtWidgets.QTreeWidget):
                                 if task.hasMetadata(uiOptionMetadataName) and task.metadata(uiOptionMetadataName) and not itemValue:
                                     uiLabel = "{}.items.{}.label".format(uiOptionMainName, index)
                                     displayOptionName = task.metadata(uiLabel) if task.hasMetadata(uiLabel) else "{} at {}".format(optionName, index)
-                                    raise TaskHolderSettingsWidgetRequiredError(
+                                    raise TaskHolderListWidgetRequiredError(
                                         'Option "{}" is required (it cannot be empty)'.format(
                                             displayOptionName
                                         ),
@@ -123,7 +123,7 @@ class TaskHolderSettingsWidget(QtWidgets.QTreeWidget):
                                 if task.hasMetadata(uiOptionMetadataName) and task.metadata(uiOptionMetadataName) and not itemValue:
                                     uiLabel = "{}.items.{}.label".format(uiOptionMainName, key)
                                     displayOptionName = task.metadata(uiLabel) if task.hasMetadata(uiLabel) else "{} at {}".format(optionName, key)
-                                    raise TaskHolderSettingsWidgetRequiredError(
+                                    raise TaskHolderListWidgetRequiredError(
                                         'Option "{}" is required (it cannot be empty)'.format(
                                             displayOptionName
                                         ),
@@ -135,7 +135,7 @@ class TaskHolderSettingsWidget(QtWidgets.QTreeWidget):
                             if task.hasMetadata(uiOptionMetadataName) and task.metadata(uiOptionMetadataName) and not optionValue:
                                 uiLabel = "{}.label".format(uiOptionMainName)
                                 displayOptionName = task.metadata(uiLabel) if task.hasMetadata(uiLabel) else optionName
-                                raise TaskHolderSettingsWidgetRequiredError(
+                                raise TaskHolderListWidgetRequiredError(
                                     'Option "{}" is required (it cannot be empty)'.format(
                                         displayOptionName
                                     ),
@@ -146,7 +146,7 @@ class TaskHolderSettingsWidget(QtWidgets.QTreeWidget):
                 try:
                     item.taskHolder().task().validate(item.elements())
                 except TaskValidationError as err:
-                    raise TaskHolderSettingsWidgetRequiredError(
+                    raise TaskHolderListWidgetRequiredError(
                         str(err),
                         item.taskHolder().task()
                     )
@@ -220,7 +220,7 @@ class TaskHolderSettingsWidget(QtWidgets.QTreeWidget):
             self.__messageBox.setText('Failed during execution')
             self.__messageBox.setDetailedText(str(err))
 
-            if isinstance(err, TaskHolderSettingsWidgetRequiredError):
+            if isinstance(err, TaskHolderListWidgetRequiredError):
                 self.__messageBox.setWindowTitle('Failed on validating task: {}'.format(err.task().type()))
                 self.__messageBox.setIcon(QtWidgets.QMessageBox.NoIcon)
                 self.__messageBox.setText(str(err))
@@ -410,7 +410,7 @@ class TaskHolderSettingsWidget(QtWidgets.QTreeWidget):
         """
         Create the task widget information.
         """
-        taskChild = TaskHolderSettingsTreeWidgetItem(parentEntry, taskHolder, elements)
+        taskChild = TaskHolderListTreeWidgetItem(parentEntry, taskHolder, elements)
         taskChild.setData(0, QtCore.Qt.EditRole, Template.runProcedure('camelcasetospaced', taskHolder.task().type()) + '   ')
         taskChild.setData(1, QtCore.Qt.EditRole, suffix)
         taskChild.setExpanded(mainOptions is None)
@@ -696,13 +696,13 @@ class TaskHolderSettingsWidget(QtWidgets.QTreeWidget):
         elif template == "profile":
             taskHolder.profileTemplate().setInputString(value)
 
-class TaskHolderSettingsTreeWidgetItem(QtWidgets.QTreeWidgetItem):
+class TaskHolderListTreeWidgetItem(QtWidgets.QTreeWidgetItem):
     """
     Custom tree widget item used to represent a task holder in the execution settings tree.
     """
     def __init__(self, parent, taskHolder, elements=None):
         """
-        Create TaskHolderSettingsTreeWidgetItem object.
+        Create TaskHolderListTreeWidgetItem object.
         """
         super().__init__(parent)
         self.__elements = []
