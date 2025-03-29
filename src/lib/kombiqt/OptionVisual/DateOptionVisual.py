@@ -30,7 +30,7 @@ class DateOptionVisual(OptionVisual):
         self.__calendarWidget.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.__calendarWidget.resize(self.__calendarWidget.minimumSizeHint())
 
-        self.__calendarWidget.setGridVisible(True)
+        self.__calendarWidget.setGridVisible(False)
         self.__calendarWidget.clicked.connect(self.__onCalendarChanged)
 
         mainLayout.addWidget(self.__calendarWidget)
