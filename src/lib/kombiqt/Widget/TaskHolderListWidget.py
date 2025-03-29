@@ -192,7 +192,7 @@ class TaskHolderListWidget(QtWidgets.QTreeWidget):
                 # custom label
                 if taskHolder.task().hasMetadata('dispatch.label'):
                     label = Template(
-                        "{} [{}]".format(
+                        "!kt {} [{}]".format(
                             taskHolder.task().metadata('dispatch.label'),
                             datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         )

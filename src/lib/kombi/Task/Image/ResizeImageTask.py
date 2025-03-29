@@ -33,18 +33,12 @@ class ResizeImageTask(Task):
 
         for element in self.elements():
             width = self.option('width')
-            height = self.option('height')
-
-            # resolving template
             if isinstance(width, str):
-                width = int(Template(width).valueFromElement(
-                    element
-                ))
+                width = int(width)
 
+            height = self.option('height')
             if isinstance(height, str):
-                height = int(Template(height).valueFromElement(
-                    element
-                ))
+                height = int(height)
 
             targetFilePath = self.target(element)
 

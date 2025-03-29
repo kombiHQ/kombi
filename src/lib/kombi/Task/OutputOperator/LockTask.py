@@ -14,7 +14,6 @@ class LockTask(Task):
         super(LockTask, self).__init__(*args, **kwargs)
         self.setOption('assignLockToContextVar', 'lock')
 
-        self.setMetadata('task.options.assignLockToContextVar.template', True)
         self.setMetadata('dispatch.split', False)
         self.setMetadata('dispatch.splitSize', 1)
 

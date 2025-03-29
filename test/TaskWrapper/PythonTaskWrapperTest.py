@@ -5,7 +5,7 @@ from ..BaseTestCase import BaseTestCase
 from kombi.Task import Task
 from kombi.TaskWrapper import TaskWrapper
 from kombi.Element.Fs import FsElement
-from kombi.Resource import Resource
+from kombi.ResourceLoader import ResourceLoader
 
 class PythonTaskWrapperTest(BaseTestCase):
     """Test python subprocess."""
@@ -17,7 +17,7 @@ class PythonTaskWrapperTest(BaseTestCase):
         """
         Test that the Python subprocess works properly when launching it from another subprocess.
         """
-        resource = Resource.get()
+        resource = ResourceLoader.get()
         resource.load(self.__taskPath)
         element = FsElement.createFromPath(self.__sourcePath)
         dummyTask = Task.create('pythonTestTask')
@@ -33,7 +33,7 @@ class PythonTaskWrapperTest(BaseTestCase):
         """
         Test that the Python subprocess works properly.
         """
-        resource = Resource.get()
+        resource = ResourceLoader.get()
         resource.load(self.__taskPath)
         element = FsElement.createFromPath(self.__sourcePath)
         dummyTask = Task.create('pythonTestTask')

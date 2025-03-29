@@ -8,10 +8,10 @@
     {
       "run": "copy",
       "options": {
-        "testOption": "{temporaryDir}",
-        "testExpr": "(min 2 6)"
+        "testOption": "!kt {temporaryDir}",
+        "testExpr": "!kt (min 2 6)"
       },
-      "target": "{temporaryDir}/{baseName}",
+      "target": "!kt {temporaryDir}/{baseName}",
       "metadata": {
         "match.types": [
           "exr"
@@ -25,7 +25,7 @@
       "tasks": [
         {
           "run": "sequenceThumbnail",
-          "target": "{temporaryDir}/{name}.jpg",
+          "target": "!kt {temporaryDir}/{name}.jpg",
           "metadata": {
             "match.types": [
               "testElement"

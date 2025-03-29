@@ -5,7 +5,7 @@ from fnmatch import fnmatch
 from .BaseTestCase import BaseTestCase
 from kombi.Cli import Cli
 from kombi.TaskHolder.Loader import JsonLoader
-from kombi.Resource import Resource
+from kombi.ResourceLoader import ResourceLoader
 
 class CliTest(BaseTestCase):
     """Test for cli app."""
@@ -36,7 +36,7 @@ class CliTest(BaseTestCase):
         """
         Test the output produced by the cli app.
         """
-        resource = Resource.get()
+        resource = ResourceLoader.get()
         resource.load(self.__taskPath)
 
         taskHolderLoader = JsonLoader()

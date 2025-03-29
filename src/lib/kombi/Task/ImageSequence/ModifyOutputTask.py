@@ -15,10 +15,6 @@ class ModifyOutputTask(Task):
         self.setOption('assignContextVars', {})
         self.setOption('assignTags', {})
 
-        # template options
-        for optionName in self.optionNames():
-            self.setMetadata(f'task.options.{optionName}.template', True)
-
     def _perform(self):
         """
         Perform the task.

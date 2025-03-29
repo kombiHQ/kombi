@@ -91,10 +91,6 @@ class NukeTemplateTask(NukeTask):
         self.setOption("renderOffsetFrames", "0")
         self.setOption("group", True)
 
-        # template options
-        for optionName in ('beginExtraFrames', 'endExtraFrames', 'renderOffsetFrames', 'exportNukeScript'):
-            self.setMetadata(f'task.options.{optionName}.template', True)
-
     def _beforeRender(self):
         """
         For re-implementation: Use this method to perform extra functions before render.

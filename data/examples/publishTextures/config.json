@@ -25,7 +25,7 @@
         ],
         "wrapper.name": "python"
       },
-      "target": "{prefix}/publishTextures/{assetName}/publish/texture/{variant}/(newver <parent>)"
+      "target": "!kt {prefix}/publishTextures/{assetName}/publish/texture/{variant}/(newver <parent>)"
     }
   ]
 }

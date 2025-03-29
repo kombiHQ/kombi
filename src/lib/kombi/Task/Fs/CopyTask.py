@@ -25,10 +25,6 @@ class CopyTask(Task):
         self.setOption('copyContextVar', {})
         self.setOption('copyTag', {})
 
-        # template options
-        for optionName in ('copyVar', 'copyContextVar', 'copyTag'):
-            self.setMetadata(f'task.options.{optionName}.template', True)
-
     def _processElement(self, element):
         """
         Process an individual element.

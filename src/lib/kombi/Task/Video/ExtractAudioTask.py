@@ -4,7 +4,6 @@ from ..Task import Task
 
 class ExtractAudioTask(Task):
     """
-    TODO: needs test
     Extract audio from a video using ffmpeg.
     """
 

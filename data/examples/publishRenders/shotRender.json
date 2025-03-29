@@ -23,23 +23,23 @@
         ],
         "wrapper.name": "python"
       },
-      "target": "{prefix}/{job}/sequences/{seq}/{shot}/publish/{step}/{pass}/(newver <parent>)",
+      "target": "!kt {prefix}/{job}/sequences/{seq}/{shot}/publish/{step}/{pass}/(newver <parent>)",
       "tasks": [
         {
           "run": "nukeScene",
           "options": {
-            "topLeft": "{shot}",
-            "topRight": "(yyyy)(mm)(dd)",
+            "topLeft": "!kt {shot}",
+            "topRight": "!kt (yyyy)(mm)(dd)",
             "notes": "",
             "videocodec": "",
-            "bottomLeft": "{pass}, {versionName}",
-            "template": "{configDirectory}/templates/template.nk",
+            "bottomLeft": "!kt {pass}, {versionName}",
+            "template": "!kt {configDirectory}/templates/template.nk",
             "enableSlate": 0,
             "enableColorSpace": 0,
             "enableReformat": 0,
             "enableTimecode": 1
           },
-          "target": "{dataPath}/{name}.mov",
+          "target": "!kt {dataPath}/{name}.mov",
           "metadata": {
             "match.types": [
               "exr"

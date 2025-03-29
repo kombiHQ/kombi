@@ -23,37 +23,41 @@ class Template(object):
     """
     Creates a template object based on a string defined using template syntax.
 
+    Template strings are defined by the prefix "!kt" this signals that the string
+    contains an unresolved value which need needs to be processed by kombi.
+
     A template string can contain element variables using the syntax
     {elementVariable}. Procedures can be used through the syntax (myprocedure),
     arguments can be passed to procedures after the procedure name,
     for instance (myprocedure {elementVariable}) where the arguments must be
     separated by space:
-        "/tmp/{myVariable}/(myprocedure {myVariable} 'second arg' 3)"
+        "!kt /tmp/{myVariable}/(myprocedure {myVariable} 'second arg' 3)"
 
     It supports calling procedures from inside of procedures. For instance:
-        "/tmp/{myVariable}/(myprocedure (nestedprocedure {myVariable}) 'second arg' 3)"
+        "!kt /tmp/{myVariable}/(myprocedure (nestedprocedure {myVariable}) 'second arg' 3)"
 
     Arithmetic operations are supported like procedures using the syntax (4 + 1), for instance:
-        "/tmp/(2 + 3)/({width} + 10 as <finalwidth>)/file_<finalwidth>.exr"
+        "!kt /tmp/(2 + 3)/({width} + 10 as <finalwidth>)/file_<finalwidth>.exr"
 
     Also, template engine provides special tokens designed specially to help with
     path manipulation:
 
     /! - Means the directory must exist for instance:
-        "{prefix}/!shouldExist/{width}X{height}/{name}.(pad {frame} 10).{ext}"
+        "!kt {prefix}/!shouldExist/{width}X{height}/{name}.(pad {frame} 10).{ext}"
 
     <parent> - Passes the computed parent path to a procedure. Keep in mind this
     is only supported by template procedures.
-        "{prefix}/testing/(newver <parent>)/{name}.(pad {frame} 10).{ext}"
+        "!kt {prefix}/testing/(newver <parent>)/{name}.(pad {frame} 10).{ext}"
 
     <mytoken> - You can assign the result of a procedure to a token that can be used
     after the procedure in any part of the template by using the syntax
     "(someprocedure as <mytoken>)" in the last of the procedure:
-        "{prefix}/testing/(newver <parent> as <version>)/{name}_<version>.(pad {frame} 10).{ext}"
+        "!kt {prefix}/testing/(newver <parent> as <version>)/{name}_<version>.(pad {frame} 10).{ext}"
     """
 
     __argsGroupRegex = r"'(?:''|[^']+)'|(?:[^' ]+)"
     __arithmeticOperatorsRegex = r"^[0-9+\-*\/\.'(\)]*$"
+    __kombiTemplatePrefix = "!kt"
     __registeredProcedures = {}
 
     def __init__(self, inputString=""):
@@ -131,12 +135,20 @@ class Template(object):
 
         self.__validateTemplateVariables(templateElementVars)
 
-        # resolving variables values
-        resolvedTemplate = self.inputString()
+        # resolving template
+        resolveTemplate = self.inputString()
+
+        # if the template does not include the prefix, return the input string.
+        # This accounts for cases where the template is either unassigned (empty string)
+        # or contains regular text
+        if not self.hasTemplatePrefix(resolveTemplate):
+            return resolveTemplate
+
+        resolveTemplate = resolveTemplate[len(self.__kombiTemplatePrefix) + 1:]
 
         # resolving function values
         finalResolvedTemplate = self.__resolveTemplate(
-            resolvedTemplate,
+            resolveTemplate,
             templateElementVars
         )
 
@@ -144,6 +156,16 @@ class Template(object):
         finalResolvedTemplate = self.__processTemplateRequiredLevels(finalResolvedTemplate)
 
         return finalResolvedTemplate
+
+    @classmethod
+    def hasTemplatePrefix(cls, rawTemplate):
+        """
+        Return a boolean telling if input rawTemplate has the template prefix (!kt).
+        """
+        if not rawTemplate or not isinstance(rawTemplate, str):
+            return False
+
+        return rawTemplate.startswith(cls.__kombiTemplatePrefix + ' ')
 
     @classmethod
     def registerProcedure(cls, name, procedureCallable):

@@ -26,10 +26,6 @@ class GafferRenderTask(GafferTask):
         # the value used to switch to
         self.setOption('switchBeforeRender', {})
 
-        # template options
-        for optionName in ('scene', 'switchBeforeRender'):
-            self.setMetadata(f'task.options.{optionName}.template', True)
-
     @classmethod
     def toRenderElements(cls, gafferTask, script, startFrame=None, endFrame=None):
         """

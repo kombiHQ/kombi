@@ -74,7 +74,7 @@ class PythonTextEditWidget(CodeTextEditWidget):
 
             # when CTRL + SHIFT + ENTER is pressed profiling the execution
             if hasPyCallGraph and QtCore.Qt.ShiftModifier in event.modifiers():
-                profileOutputPng = Template('(tmp)/kombi_profile_(rand).png').value()
+                profileOutputPng = Template('!kt (tmp)/kombi_profile_(rand).png').value()
                 graphviz = pycallgraph.output.GraphvizOutput()
                 graphviz.output_file = profileOutputPng
                 graphviz.tool = self.__dotExecutable

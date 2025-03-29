@@ -75,10 +75,6 @@ class SlackOutputTask(ExternalTask):
             }
         )
 
-        # template options
-        for optionName in ('messageHeader', 'messageElements', 'addExtraLineAtTheEnd', 'slackToken', 'channel', 'users'):
-            self.setMetadata(f'task.options.{optionName}.template', True)
-
     def _perform(self):
         """
         Perform the task.

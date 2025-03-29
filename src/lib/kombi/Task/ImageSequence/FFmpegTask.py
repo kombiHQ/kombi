@@ -20,18 +20,14 @@ class FFmpegTask(Task):
         """
         super(FFmpegTask, self).__init__(*args, **kwargs)
 
-        self.setOption('width', "(even {width})")
-        self.setOption('height', "(even {height})")
+        self.setOption('width', "!kt (even {width})")
+        self.setOption('height', "!kt (even {height})")
         self.setOption('videoCodec', "libx264")
         self.setOption('pixelFormat', "yuvj420p")
         self.setOption('bitRate', 115)
         self.setOption('sourceColorSpace', "linear")
         self.setOption('targetColorSpace', "bt709")
         self.setOption('frameRate', 23.976)
-
-        # template options
-        for optionName in ('width', 'height'):
-            self.setMetadata(f'task.options.{optionName}.template', True)
 
     def _perform(self):
         """

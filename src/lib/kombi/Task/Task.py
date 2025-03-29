@@ -171,8 +171,12 @@ class Task(object):
                 )
             )
 
-        # check if a template is defined for the given option (metadata lookup)
-        if self.metadata(f'task.options.{name}.template', False):
+        # Check if a template is defined for the given option:
+        # 1. First, perform a strict metadata lookup
+        # 2. If no metadata is found, check if the option value represents a template
+        templateMetadata = f'task.options.{name}.template'
+        if self.metadata(templateMetadata, False) or \
+                not self.hasMetadata(templateMetadata) and Template.hasTemplatePrefix(self.__options[name]):
             # when element is not provided, determine the default element
             if element is None:
                 if self.__currentElement:

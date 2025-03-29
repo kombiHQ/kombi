@@ -4,7 +4,7 @@ from ..BaseTestCase import BaseTestCase
 from kombi.Task import Task
 from kombi.TaskWrapper import TaskWrapper
 from kombi.Element.Fs import FsElement
-from kombi.Resource import Resource
+from kombi.ResourceLoader import ResourceLoader
 
 class Python3TaskWrapperTest(BaseTestCase):
     """Test python 3 test subprocess."""
@@ -16,7 +16,7 @@ class Python3TaskWrapperTest(BaseTestCase):
         """
         Test that the python3 subprocess works properly.
         """
-        resource = Resource.get()
+        resource = ResourceLoader.get()
         resource.load(self.__taskPath)
         element = FsElement.createFromPath(self.__sourcePath)
         dummyTask = Task.create('pythonMajorVerTestTask')
