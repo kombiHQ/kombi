@@ -173,10 +173,10 @@ class Task(object):
 
         # Check if a template is defined for the given option:
         # 1. First, perform a strict metadata lookup
-        # 2. If no metadata is found, check if the option value represents a resolve template procedure (resolve 'foo').
+        # 2. If no metadata is found, check if the option value represents a template
         templateMetadata = f'task.options.{name}.template'
-        if self.metadata(templateMetadata, False) and \
-                not self.hasMetadata(templateMetadata) and Template.isProcedure(self.__options[name], 'resolve'):
+        if self.metadata(templateMetadata, False) or \
+                not self.hasMetadata(templateMetadata) and Template.hasTemplatePrefix(self.__options[name]):
             # when element is not provided, determine the default element
             if element is None:
                 if self.__currentElement:

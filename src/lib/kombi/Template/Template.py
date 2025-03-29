@@ -7,6 +7,9 @@ from ..KombiError import KombiError
 class TemplateError(KombiError):
     """Template error."""
 
+class TemplateInvalidPrefixError(TemplateError):
+    """Template invalid prefix error."""
+
 class TemplateVarNotFoundError(TemplateError):
     """Template variable not found error."""
 
@@ -23,37 +26,41 @@ class Template(object):
     """
     Creates a template object based on a string defined using template syntax.
 
+    Template strings are defined by the prefix "!kt" this signals that the string
+    contains an unresolved value which need needs to be processed by kombi.
+
     A template string can contain element variables using the syntax
     {elementVariable}. Procedures can be used through the syntax (myprocedure),
     arguments can be passed to procedures after the procedure name,
     for instance (myprocedure {elementVariable}) where the arguments must be
     separated by space:
-        "/tmp/{myVariable}/(myprocedure {myVariable} 'second arg' 3)"
+        "!kt /tmp/{myVariable}/(myprocedure {myVariable} 'second arg' 3)"
 
     It supports calling procedures from inside of procedures. For instance:
-        "/tmp/{myVariable}/(myprocedure (nestedprocedure {myVariable}) 'second arg' 3)"
+        "!kt /tmp/{myVariable}/(myprocedure (nestedprocedure {myVariable}) 'second arg' 3)"
 
     Arithmetic operations are supported like procedures using the syntax (4 + 1), for instance:
-        "/tmp/(2 + 3)/({width} + 10 as <finalwidth>)/file_<finalwidth>.exr"
+        "!kt /tmp/(2 + 3)/({width} + 10 as <finalwidth>)/file_<finalwidth>.exr"
 
     Also, template engine provides special tokens designed specially to help with
     path manipulation:
 
     /! - Means the directory must exist for instance:
-        "{prefix}/!shouldExist/{width}X{height}/{name}.(pad {frame} 10).{ext}"
+        "!kt {prefix}/!shouldExist/{width}X{height}/{name}.(pad {frame} 10).{ext}"
 
     <parent> - Passes the computed parent path to a procedure. Keep in mind this
     is only supported by template procedures.
-        "{prefix}/testing/(newver <parent>)/{name}.(pad {frame} 10).{ext}"
+        "!kt {prefix}/testing/(newver <parent>)/{name}.(pad {frame} 10).{ext}"
 
     <mytoken> - You can assign the result of a procedure to a token that can be used
     after the procedure in any part of the template by using the syntax
     "(someprocedure as <mytoken>)" in the last of the procedure:
-        "{prefix}/testing/(newver <parent> as <version>)/{name}_<version>.(pad {frame} 10).{ext}"
+        "!kt {prefix}/testing/(newver <parent> as <version>)/{name}_<version>.(pad {frame} 10).{ext}"
     """
 
     __argsGroupRegex = r"'(?:''|[^']+)'|(?:[^' ]+)"
     __arithmeticOperatorsRegex = r"^[0-9+\-*\/\.'(\)]*$"
+    __kombiTemplatePrefix = "!kt"
     __registeredProcedures = {}
 
     def __init__(self, inputString=""):
@@ -131,12 +138,22 @@ class Template(object):
 
         self.__validateTemplateVariables(templateElementVars)
 
-        # resolving variables values
-        resolvedTemplate = self.inputString()
+        # resolving template
+        resolveTemplate = self.inputString()
+        if len(resolveTemplate) == 0:
+            return ''
+
+        # getting rid of the prefix
+        if not self.hasTemplatePrefix(resolveTemplate):
+            raise TemplateInvalidPrefixError(
+                f'Invalid template (missing !kt prefix): {resolveTemplate}'
+            )
+
+        resolveTemplate = resolveTemplate[len(self.__kombiTemplatePrefix) + 1:]
 
         # resolving function values
         finalResolvedTemplate = self.__resolveTemplate(
-            resolvedTemplate,
+            resolveTemplate,
             templateElementVars
         )
 
@@ -146,17 +163,14 @@ class Template(object):
         return finalResolvedTemplate
 
     @classmethod
-    def isProcedure(cls, rawTemplate, procedureName=''):
+    def hasTemplatePrefix(cls, rawTemplate):
         """
-        Return a boolean telling if input rawTemplate is a procedure.
+        Return a boolean telling if input rawTemplate has the template prefix (!kt).
         """
         if not rawTemplate or not isinstance(rawTemplate, str):
             return False
 
-        processedTemplate = rawTemplate.strip()
-        return processedTemplate.startswith('(') and \
-            processedTemplate[1:].strip().startswith(procedureName) and \
-            processedTemplate.endswith(')')
+        return rawTemplate.startswith(cls.__kombiTemplatePrefix + ' ')
 
     @classmethod
     def registerProcedure(cls, name, procedureCallable):
