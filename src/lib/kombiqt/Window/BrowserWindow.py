@@ -46,34 +46,6 @@ class BrowserWindow(ScriptEditorWindow):
 
         self.__elementListWidget.setViewMode(viewMode)
 
-        # preferences
-        preferencesAction = self.__sourceViewModeMenu.addAction('Preferences')
-        preferencesAction.triggered.connect(functools.partial(PreferencesWindow.popup, self))
-        self.__sourceViewModeMenu.addSeparator()
-
-        # updating view mode
-        listingModeMenu = self.__sourceViewModeMenu.addMenu('Listing Mode')
-        self.__viewModeActionGroup = QtWidgets.QActionGroup(self)
-        for viewMode in self.__elementListWidget.viewModes:
-            viewAction = listingModeMenu.addAction(viewMode.capitalize())
-            viewAction.setCheckable(True)
-            if viewMode == self.__elementListWidget.viewMode():
-                viewAction.setChecked(True)
-            viewAction.triggered.connect(functools.partial(self.__elementListWidget.setViewMode, viewMode))
-            self.__viewModeActionGroup.addAction(viewAction)
-
-        # vars
-        showVarsAction = self.__sourceViewModeMenu.addAction('Display Vars')
-        showVarsAction.setCheckable(True)
-        showVarsAction.setChecked(self.__elementListWidget.showVars())
-        showVarsAction.triggered.connect(self.__onFilterShowVars)
-
-        # tags
-        showTagsAction = self.__sourceViewModeMenu.addAction('Display Tags')
-        showTagsAction.setCheckable(True)
-        showTagsAction.setChecked(self.__elementListWidget.showTags())
-        showTagsAction.triggered.connect(self.__onFilterShowTags)
-
         # task holders
         assert isinstance(taskHolders, (list, tuple)), "Invalid task holder list!"
 
@@ -380,8 +352,8 @@ class BrowserWindow(ScriptEditorWindow):
         self.__moreButton.setIcon(
             Resource.icon("icons/more.png")
         )
-        self.__sourceViewModeMenu = QtWidgets.QMenu(self.__moreButton)
-        self.__moreButton.setMenu(self.__sourceViewModeMenu)
+        self.__moreButton.clicked.connect(self.__onShowMoreMenu)
+
         self.__sourceDirButton.clicked.connect(self.__onSelectSourceDir)
         self.__elementsLevelNavigationWidget.levelClicked.connect(self.setRootElement)
         self.__elementsLevelNavigationWidget.levelContextMenu.connect(self.__onContextMenu)
@@ -500,6 +472,41 @@ class BrowserWindow(ScriptEditorWindow):
         buttonLayout.addWidget(self.__backButton)
         buttonLayout.addWidget(self.__nextButton)
         buttonLayout.addWidget(self.__executeButton)
+
+    def __onShowMoreMenu(self):
+        """
+        Display the more menu.
+        """
+        menu = QtWidgets.QMenu(self)
+
+        preferencesAction = menu.addAction('Preferences')
+        preferencesAction.triggered.connect(functools.partial(PreferencesWindow.popup, self))
+        menu.addSeparator()
+
+        # updating view mode
+        listingModeMenu = menu.addMenu('Listing Mode')
+        self.__viewModeActionGroup = QtWidgets.QActionGroup(self)
+        for viewMode in self.__elementListWidget.viewModes:
+            viewAction = listingModeMenu.addAction(viewMode.capitalize())
+            viewAction.setCheckable(True)
+            if viewMode == self.__elementListWidget.viewMode():
+                viewAction.setChecked(True)
+            viewAction.triggered.connect(functools.partial(self.__elementListWidget.setViewMode, viewMode))
+            self.__viewModeActionGroup.addAction(viewAction)
+
+        # vars
+        showVarsAction = menu.addAction('Display Vars')
+        showVarsAction.setCheckable(True)
+        showVarsAction.setChecked(self.__elementListWidget.showVars())
+        showVarsAction.triggered.connect(self.__onFilterShowVars)
+
+        # tags
+        showTagsAction = menu.addAction('Display Tags')
+        showTagsAction.setCheckable(True)
+        showTagsAction.setChecked(self.__elementListWidget.showTags())
+        showTagsAction.triggered.connect(self.__onFilterShowTags)
+
+        menu.exec_(QtGui.QCursor.pos())
 
     def __onForceRefresh(self):
         """
