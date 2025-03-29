@@ -10,7 +10,7 @@ def init():
     Initialize the default kombi app.
     """
     app = App(sys.argv)
-    window = Window.MainWindow.run(sys.argv)
+    window = Window.BrowserWindow.run(sys.argv)
     window.show()
     window.activateWindow()
     sys.exit(app.exec_())

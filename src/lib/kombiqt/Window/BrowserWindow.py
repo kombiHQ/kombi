@@ -16,7 +16,7 @@ from ..Widget.TaskHolderListWidget import TaskHolderListWidget
 from ..Widget.DispatcherListWidget import DispatcherListWidget
 from ..Window.ScriptEditorWindow import ScriptEditorWindow
 
-class MainWindow(ScriptEditorWindow):
+class BrowserWindow(ScriptEditorWindow):
     """
     A graphical user interface for interacting with Kombi configurations.
 
@@ -29,7 +29,7 @@ class MainWindow(ScriptEditorWindow):
 
     def __init__(self, taskHolders, rootElement=None, customHeader='', viewMode='group', **kwargs):
         """
-        Create a MainWindow object.
+        Create a BrowserWindow object.
         """
         super().__init__(mainWidget=QtWidgets.QWidget(), **kwargs)
 
@@ -236,10 +236,10 @@ class MainWindow(ScriptEditorWindow):
 
         # showing configuration directory picker
         if not configurationDirectory:
-            configurationDirectory = MainWindow.pickConfigurationDirectory(configurationDirectory)
+            configurationDirectory = BrowserWindow.pickConfigurationDirectory(configurationDirectory)
 
         # loading task holders
-        taskHolders = MainWindow.loadConfigurationTaskHolders(configurationDirectory)
+        taskHolders = BrowserWindow.loadConfigurationTaskHolders(configurationDirectory)
 
         # source element path
         rootElement = None
