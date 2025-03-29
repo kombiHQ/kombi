@@ -565,3 +565,7 @@ QTabBar QToolButton::right-arrow:disabled {
 QTabBar QToolButton::left-arrow:disabled {
     image: url(darkstyle/icon_left_arrow_disabled.png);
 }
+
+QCalendarWidget QAbstractItemView{
+    background-color: #444444
+}
