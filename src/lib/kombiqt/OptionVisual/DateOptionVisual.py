@@ -31,6 +31,8 @@ class DateOptionVisual(OptionVisual):
         self.__calendarWidget.resize(self.__calendarWidget.minimumSizeHint())
 
         self.__calendarWidget.setGridVisible(False)
+        self.__calendarWidget.setFirstDayOfWeek(QtCore.Qt.Monday)
+        self.__calendarWidget.setVerticalHeaderFormat(QtWidgets.QCalendarWidget.NoVerticalHeader)
         self.__calendarWidget.clicked.connect(self.__onCalendarChanged)
 
         mainLayout.addWidget(self.__calendarWidget)
