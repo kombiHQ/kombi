@@ -36,20 +36,21 @@ class IntOptionVisual(OptionVisual):
         if 'min' in self.uiHints() and 'max' in self.uiHints() and self.uiHints().get('slider', True):
             self.__mainWidget.setRange(self.uiHints()['min'], self.uiHints()['max'])
             self.__sliderWidget = _Slider(QtCore.Qt.Horizontal)
-            self.__sliderWidget.setTickPosition(QtWidgets.QSlider.TicksBothSides)
+            self.__sliderWidget.setTickPosition(QtWidgets.QSlider.NoTicks)
             self.__sliderWidget.setMinimum(self.uiHints()['min'])
             self.__sliderWidget.setMaximum(self.uiHints()['max'])
             self.__sliderWidget.setValue(self.optionValue())
-            self.__sliderWidget.valueChanged.connect(self.__onSliderChanged)
+            self.__sliderWidget.sliderReleased.connect(self.__onSliderChanged)
 
             mainLayout.addWidget(self.__sliderWidget)
         else:
             mainLayout.addStretch(100)
 
-    def __onSliderChanged(self, newValue):
+    def __onSliderChanged(self):
         """
         Triggered when the slider is changed.
         """
+        newValue = self.__sliderWidget.value()
         self.__mainWidget.setValue(newValue)
         self.__onValueChanged()
 
