@@ -147,7 +147,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
         self.setToolTip(os.path.basename(element.tag(self.previewTag(), '')))
         self.__currentElement = element
 
-        self.__slider.setFixedWidth(self.pixmap().width())
+        self.__slider.setFixedWidth(self.width())
 
         height = self.pixmap().height()
         if self.alignment() == QtCore.Qt.AlignCenter:
