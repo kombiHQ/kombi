@@ -1,6 +1,5 @@
 import os
 import multiprocessing
-from ...Template import Template
 from ..Task import Task
 
 class ResizeImageTask(Task):
