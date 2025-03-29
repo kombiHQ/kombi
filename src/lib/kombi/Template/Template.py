@@ -7,9 +7,6 @@ from ..KombiError import KombiError
 class TemplateError(KombiError):
     """Template error."""
 
-class TemplateInvalidPrefixError(TemplateError):
-    """Template invalid prefix error."""
-
 class TemplateVarNotFoundError(TemplateError):
     """Template variable not found error."""
 
@@ -140,14 +137,12 @@ class Template(object):
 
         # resolving template
         resolveTemplate = self.inputString()
-        if len(resolveTemplate) == 0:
-            return ''
 
-        # getting rid of the prefix
+        # if the template does not include the prefix, return the input string.
+        # This accounts for cases where the template is either unassigned (empty string)
+        # or contains regular text
         if not self.hasTemplatePrefix(resolveTemplate):
-            raise TemplateInvalidPrefixError(
-                f'Invalid template (missing !kt prefix): {resolveTemplate}'
-            )
+            return resolveTemplate
 
         resolveTemplate = resolveTemplate[len(self.__kombiTemplatePrefix) + 1:]
 

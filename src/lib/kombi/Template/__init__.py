@@ -1,2 +1,2 @@
-from .Template import Template, TemplateError, TemplateVarNotFoundError, TemplateRequiredPathNotFoundError, TemplateProcedureNotFoundError, TemplateInvalidPrefixError
+from .Template import Template, TemplateError, TemplateVarNotFoundError, TemplateRequiredPathNotFoundError, TemplateProcedureNotFoundError
 from . import procedures
