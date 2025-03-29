@@ -16,8 +16,6 @@ class ChownTask(Task):
         self.setMetadata('dispatch.split', True)
         self.setOption('user', '')
         self.setOption('group', '')
-        self.setMetadata('task.options.user.template', True)
-        self.setMetadata('task.options.group.template', True)
 
     def _perform(self):
         """

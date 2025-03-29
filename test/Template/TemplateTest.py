@@ -16,7 +16,7 @@ class TemplateTest(BaseTestCase):
         """
         element = FsElement.createFromPath(self.__file)
         value = "/a/b/c/(dirname(dirname '/d/e/f'))/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
-        result = Template(value).valueFromElement(element)
+        result = Template('!kt ' + value).valueFromElement(element)
         self.assertEqual(
             os.path.normpath(result),
             os.path.normpath('/a/b/c/d/v001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
@@ -28,7 +28,7 @@ class TemplateTest(BaseTestCase):
         """
         element = FsElement.createFromPath(self.__file)
         value = "/a/b/c/(concat '(teste(bla - blaa))' '_foo')/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
-        result = Template(value).valueFromElement(element)
+        result = Template('!kt ' + value).valueFromElement(element)
         self.assertEqual(
             os.path.normpath(result),
             os.path.normpath('/a/b/c/(teste(bla - blaa))_foo/v001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
@@ -40,7 +40,7 @@ class TemplateTest(BaseTestCase):
         """
         element = FsElement.createFromPath(self.__file)
         value = "/a/b/c/(concat (dirname(dirname (dirname '/d/e/f/g'))) '_' (dirname (dirname {var})))/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
-        result = Template(value).valueFromElement(
+        result = Template('!kt ' + value).valueFromElement(
             element,
             extraVars={
                 'var': 'h/j/l'
@@ -57,7 +57,7 @@ class TemplateTest(BaseTestCase):
         """
         element = FsElement.createFromPath(self.__file)
         value = "/a/b/c/(concat (dirname(dirname (dirname '/d/e/f/g'))) '_' (dirname (dirname {var})) as <result>)/(newver <parent>)/(concat <result> '_' 'foo')/{name}.(pad {frame} 6).{ext}"
-        result = Template(value).valueFromElement(
+        result = Template('!kt ' + value).valueFromElement(
             element,
             extraVars={
                 'var': 'h/j/l'
@@ -74,7 +74,7 @@ class TemplateTest(BaseTestCase):
         """
         element = FsElement.createFromPath(self.__file)
         value = "/a/b/c/({a} + (sum {b} 2))/(newver <parent>)/{name}.(pad {frame} 6).{ext}"
-        result = Template(value).valueFromElement(
+        result = Template('!kt ' + value).valueFromElement(
             element,
             extraVars={
                 'a': 2,
@@ -92,7 +92,7 @@ class TemplateTest(BaseTestCase):
         """
         element = FsElement.createFromPath(self.__file)
         value = '(dirname {filePath})/(newver <parent>)/{name}.(pad {frame} 6).{ext}'
-        result = Template(value).valueFromElement(element)
+        result = Template('!kt ' + value).valueFromElement(element)
         self.assertEqual(
             os.path.normpath(result),
             os.path.join(
@@ -107,7 +107,7 @@ class TemplateTest(BaseTestCase):
         Test support for arithmetic operations.
         """
         self.assertEqual(
-            Template("/({x} + 10 as <result>)/(<result> - 10)/(4.0 / {y})").value(
+            Template("!kt /({x} + 10 as <result>)/(<result> - 10)/(4.0 / {y})").value(
                 {
                     'x': 5,
                     'y': 2
@@ -126,7 +126,7 @@ class TemplateTest(BaseTestCase):
 
         inputValue = "my 'random\' value'"
         self.assertEqual(
-            Template("/(testsinglequote {foo} '2' 3)/").value({'foo': inputValue}),
+            Template("!kt /(testsinglequote {foo} '2' 3)/").value({'foo': inputValue}),
             "/{} 2 3/".format(inputValue)
         )
 
@@ -139,7 +139,7 @@ class TemplateTest(BaseTestCase):
         Template.registerProcedure('assigntokenresult', __assignTokenResult)
 
         self.assertEqual(
-            Template("/(assigntokenresult foo as <test>)/a/{someVar}/(assigntokenresult foo2 as <test2>)_<test>_x_{someVar}_x_<test2>/b/<test>/c/<test2>_{someVar}").value({'someVar': 'var'}),
+            Template("!kt /(assigntokenresult foo as <test>)/a/{someVar}/(assigntokenresult foo2 as <test2>)_<test>_x_{someVar}_x_<test2>/b/<test>/c/<test2>_{someVar}").value({'someVar': 'var'}),
             "/foo/a/var/foo2_foo_x_var_x_foo2/b/foo/c/foo2_var"
         )
 
@@ -148,9 +148,9 @@ class TemplateTest(BaseTestCase):
         Test that the required path check works.
         """
         value = '{}/!badPath/test.exr'.format(BaseTestCase.dataTestsDirectory())
-        self.assertRaises(TemplateRequiredPathNotFoundError, Template(value).value)
+        self.assertRaises(TemplateRequiredPathNotFoundError, Template('!kt ' + value).value)
         value = '{}/!glob'.format(BaseTestCase.dataTestsDirectory())
-        result = Template(value).value()
+        result = Template('!kt ' + value).value()
         self.assertEqual(result, os.path.join(BaseTestCase.dataTestsDirectory(), 'glob'))
 
     def testTemplateVariable(self):
@@ -158,9 +158,9 @@ class TemplateTest(BaseTestCase):
         Test that you can pass variables to the template properly.
         """
         variables = {'otherVar': 'value'}
-        self.assertRaises(TemplateVarNotFoundError, Template('{var}').value, variables)
+        self.assertRaises(TemplateVarNotFoundError, Template('!kt {var}').value, variables)
         variables['var'] = 'test'
-        self.assertEqual(Template('{var}').value(variables), 'test')
+        self.assertEqual(Template('!kt {var}').value(variables), 'test')
 
 
 if __name__ == "__main__":

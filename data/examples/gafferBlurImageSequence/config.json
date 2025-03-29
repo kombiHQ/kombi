@@ -22,9 +22,9 @@
         }
       },
       "options": {
-        "scene": "{configDirectory}/scene.gfr"
+        "scene": "!kt {configDirectory}/scene.gfr"
       },
-      "target": "{prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ver>.(pad {frame} 6).exr",
+      "target": "!kt {prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ver>.(pad {frame} 6).exr",
       "tasks": [
         {
           "run": "ffmpeg",
@@ -46,7 +46,7 @@
               }
             }
           },
-          "target": "(dirname {filePath})/{name}.mov",
+          "target": "!kt (dirname {filePath})/{name}.mov",
           "tasks": [
             {
                 "include": "./includes/copy.json"

@@ -174,24 +174,24 @@ tasks:
     # match.vars:
     #   imageType:
     #   - sequence
-  target: "{prefix}/jobs/{job}/seq/{seq}/shot/{shot}/plates/{plateName}/(newver <parent> as <ver>)/{width}x{height}_exr/{job}_{seq}_{shot}_<ver>.(pad {frame} 6).exr"
+  target: "!kt {prefix}/jobs/{job}/seq/{seq}/shot/{shot}/plates/{plateName}/(newver <parent> as <ver>)/{width}x{height}_exr/{job}_{seq}_{shot}_<ver>.(pad {frame} 6).exr"
   tasks:
   - run: vendorData
-    target: "(parentdirname {filePath})/vendor.json"
+    target: "!kt (parentdirname {filePath})/vendor.json"
   - run: resizeImage
     options:
-      width: "({width}/2)"
-      height: "({height}/2)"
-    target: "(parentdirname {filePath})/({width}/2)x({height}/2)_{ext}/{baseName}"
+      width: "!kt ({width}/2)"
+      height: "!kt ({height}/2)"
+    target: "!kt (parentdirname {filePath})/({width}/2)x({height}/2)_{ext}/{baseName}"
     tasks:
     - run: convertImage
-      target: "(parentdirname {filePath})/{width}x{height}_jpg/{name}.(pad {frame} 6).jpg"
+      target: "!kt (parentdirname {filePath})/{width}x{height}_jpg/{name}.(pad {frame} 6).jpg"
   - run: ffmpeg
     options:
       frameRate: 23.976
       sourceColorSpace: bt709
       targetColorSpace: smpte170m
-    target: "(parentdirname {filePath})/plate.mov"
+    target: "!kt (parentdirname {filePath})/plate.mov"
   - run: sequenceThumbnail
     metadata:
       ui:
@@ -202,5 +202,5 @@ tasks:
           height:
             main: True
             label: "height"
-    target: "(parentdirname {filePath})/thumbnail.png"
+    target: "!kt (parentdirname {filePath})/thumbnail.png"
 - run: launchWithDefaultApplication

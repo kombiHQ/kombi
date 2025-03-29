@@ -25,7 +25,6 @@ class NukeRenderTask(NukeTask):
         )
         self.setMetadata("dispatch.split", True)
         self.setOption("script", "")
-        self.setMetadata("task.options.script.template", True)
 
     @classmethod
     def toRenderElements(cls, writeNode, startFrame=None, endFrame=None):

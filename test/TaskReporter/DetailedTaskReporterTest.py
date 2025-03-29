@@ -6,7 +6,7 @@ from ..BaseTestCase import BaseTestCase
 from kombi.Element.Fs import FsElement
 from kombi.TaskHolder.Loader import JsonLoader
 from kombi.Dispatcher import Dispatcher
-from kombi.Resource import Resource
+from kombi.ResourceLoader import ResourceLoader
 
 class DetailedTaskReporterTest(BaseTestCase):
     """Test for detailed task reporter."""
@@ -41,7 +41,7 @@ class DetailedTaskReporterTest(BaseTestCase):
         """
         Test the output produced by the reporter.
         """
-        resource = Resource.get()
+        resource = ResourceLoader.get()
         resource.load(self.__taskPath)
 
         taskHolderLoader = JsonLoader()

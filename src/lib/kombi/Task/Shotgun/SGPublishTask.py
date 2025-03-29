@@ -25,9 +25,9 @@ class SGPublishTask(ExternalTask):
         self.setOption('shotgunTask', '')
         self.setOption('addForInternalReview', False)
         self.setOption('outputType', 'internal')
-        self.setOption('displayPath', '{name}')
+        self.setOption('displayPath', '!kt {name}')
         self.setOption('versionType', '')
-        self.setOption('department', '{department}')
+        self.setOption('department', '!kt {department}')
         self.setOption('comment', '')
         self.setOption('pathToFrames', '')
         self.setOption('thumbnail', '')
@@ -42,10 +42,6 @@ class SGPublishTask(ExternalTask):
 
         self.setMetadata('wrapper.name', 'python')
         self.setMetadata('wrapper.options', {})
-
-        # template options
-        for optionName in self.optionNames():
-            self.setMetadata(f'task.options.{optionName}.template', True)
 
     def _perform(self):
         """

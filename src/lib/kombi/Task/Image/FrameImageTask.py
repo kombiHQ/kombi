@@ -46,10 +46,6 @@ class FrameImageTask(Task):
         # aligned to the center.
         self.setOption('diagonalLayout', True)
 
-        # adding template support for all options
-        for optionName in self.optionNames():
-            self.setMetadata(f'task.options.{optionName}.template', True)
-
         self.setMetadata('dispatch.split', True)
 
     def _processElement(self, element):

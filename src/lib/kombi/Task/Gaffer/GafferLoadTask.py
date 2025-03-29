@@ -83,7 +83,6 @@ class GafferLoadTask(Task):
         )
 
         self.setOption('version', allVersions[0] if allVersions else '')
-        self.setMetadata('task.options.version.template', True)
 
     def validate(self, elements=None):
         """

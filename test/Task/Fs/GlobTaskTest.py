@@ -38,7 +38,7 @@ class GlobTaskTest(BaseTestCase):
         globTask = Task.create('glob')
         globTask.add(
             element,
-            Template("(dirname {filePath})/**/*.exr").valueFromElement(element)
+            Template("!kt (dirname {filePath})/**/*.exr").valueFromElement(element)
         )
         result = globTask.output()
         self.assertEqual(len(result), len(self.__globFiles['exr']))
@@ -58,7 +58,7 @@ class GlobTaskTest(BaseTestCase):
         globTask = Task.create('glob')
         globTask.add(
             element,
-            Template("(dirname {filePath})/**/*").valueFromElement(element)
+            Template("!kt (dirname {filePath})/**/*").valueFromElement(element)
         )
         result = globTask.output()
         self.assertEqual(
@@ -96,11 +96,11 @@ class GlobTaskTest(BaseTestCase):
         globTask = Task.create('glob')
         globTask.add(
             element1,
-            Template("(dirname {filePath})/**/*.exr").valueFromElement(element1)
+            Template("!kt (dirname {filePath})/**/*.exr").valueFromElement(element1)
         )
         globTask.add(
             element2,
-            Template("(dirname {filePath})/images/*.exr").valueFromElement(element2)
+            Template("!kt (dirname {filePath})/images/*.exr").valueFromElement(element2)
         )
         result = globTask.output()
         self.assertEqual(len(result), len(self.__globFiles['exr']))
@@ -126,11 +126,11 @@ class GlobTaskTest(BaseTestCase):
 
         globTask.add(
             element1,
-            Template("(dirname {filePath})/**/*.exr").valueFromElement(element1)
+            Template("!kt (dirname {filePath})/**/*.exr").valueFromElement(element1)
         )
         globTask.add(
             element2,
-            Template("(dirname {filePath})/images/*.exr").valueFromElement(element2)
+            Template("!kt (dirname {filePath})/images/*.exr").valueFromElement(element2)
         )
 
         result = globTask.output()

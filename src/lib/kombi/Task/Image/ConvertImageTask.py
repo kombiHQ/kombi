@@ -21,8 +21,8 @@ class ConvertImageTask(Task):
         # options used for resizing (the resize happens in case
         # the resize values are different from the original
         # element values)
-        self.setOption('width', '{width}')
-        self.setOption('height', '{height}')
+        self.setOption('width', '!kt {width}')
+        self.setOption('height', '!kt {height}')
         self.setOption('keepAspectRatio', False)
 
         # options used for colorspace: Linear, sRGB (etc)
@@ -41,10 +41,6 @@ class ConvertImageTask(Task):
         self.setOption('convertToRGBA', False)
 
         self.setMetadata('dispatch.split', True)
-
-        # template options
-        for optionName in ('width', 'height', 'targetColorspace', 'sourceColorspace', 'colorConfig'):
-            self.setMetadata(f'task.options.{optionName}.template', True)
 
     def _processElement(self, element):
         """

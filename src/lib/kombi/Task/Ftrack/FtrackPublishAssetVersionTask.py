@@ -20,9 +20,9 @@ class FtrackPublishAssetVersionTask(ExternalTask):
         self.setOption('user', self.__ftrackUser)
 
         self.setOption('addForInternalReview', False)
-        self.setOption('outputType', '{outputType}')
-        self.setOption('department', '{department}')
-        self.setOption('comment', '{slateDescription}')
+        self.setOption('outputType', '!kt {outputType}')
+        self.setOption('department', '!kt {department}')
+        self.setOption('comment', '!kt {slateDescription}')
 
         self.setMetadata(
             'ui.options.addForInternalReview',
@@ -40,10 +40,6 @@ class FtrackPublishAssetVersionTask(ExternalTask):
                 'mov'
             ]
         )
-
-        # template options
-        for optionName in ('user', 'department', 'outputType', 'comment'):
-            self.setMetadata(f'task.options.{optionName}.template', True)
 
     def _perform(self):
         """

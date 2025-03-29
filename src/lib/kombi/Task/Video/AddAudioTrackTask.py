@@ -7,7 +7,6 @@ from ...Element.Fs import FsElement
 
 class AddAudioTrackTask(Task):
     """
-    TODO: needs test
     Adds a audio track to a video using ffmpeg.
     """
 
@@ -25,10 +24,6 @@ class AddAudioTrackTask(Task):
         self.setOption('audioFilePath', '')
         self.setOption('audioCodec', 'aac')
         self.setOption('audioBitrate', '192k')
-
-        # template options
-        for optionName in self.optionNames():
-            self.setMetadata(f'task.options.{optionName}.template', True)
 
     def _processElement(self, element):
         """

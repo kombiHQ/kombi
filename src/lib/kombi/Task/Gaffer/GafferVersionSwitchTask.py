@@ -177,7 +177,7 @@ class GafferVersionSwitchTask(Task):
                     currentVersion = os.path.basename(currentVersionPath)
                     versionsPath = os.path.dirname(currentVersionPath)
                     latestVersion = Template(
-                        "(latestver '{}' v{})".format(
+                        "!kt (latestver '{}' v{})".format(
                             versionsPath,
                             '#' * len(currentVersion[1:])
                         )

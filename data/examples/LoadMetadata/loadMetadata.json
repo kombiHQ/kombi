@@ -33,7 +33,7 @@
       "tasks": [
         {
           "run": "copy",
-          "target": "/tmp/testing_{_testing}.{frame}.{ext}"
+          "target": "!kt /tmp/testing_{_testing}.{frame}.{ext}"
         }
       ]
     }

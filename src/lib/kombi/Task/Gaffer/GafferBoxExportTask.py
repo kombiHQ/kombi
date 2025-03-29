@@ -32,7 +32,7 @@ class GafferBoxExportTask(GafferTask):
         self.setOption('scene', '')
         self.setOption('outputDir', '')
         self.setOption('description', '')
-        self.setOption('info', '(parentdirname {fullPath})/info.json')
+        self.setOption('info', '!kt (parentdirname {fullPath})/info.json')
         self.setOption('infoData', {})
         self.setOption('outputRegexValidation', '')
         self.setOption('outputRegexValidationFailMessage', 'Invalid output location!')
@@ -64,10 +64,6 @@ class GafferBoxExportTask(GafferTask):
             }
         )
 
-        # template options
-        for optionName in ('outputRegexValidation', 'outputRegexValidationFailMessage', 'scene', 'info'):
-            self.setMetadata(f'task.options.{optionName}.template', True)
-
     def setup(self, elements):
         """
         Setting the initial value for output dir.
@@ -80,7 +76,7 @@ class GafferBoxExportTask(GafferTask):
         outputDirs = []
         currentPath = os.path.dirname(self.option('outputDir'))
         while currentPath:
-            currentPath = Template('(resolvepath {basePath} output)').value({'basePath': currentPath})
+            currentPath = Template('!kt (resolvepath {basePath} output)').value({'basePath': currentPath})
             if not currentPath:
                 break
 

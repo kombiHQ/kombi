@@ -48,7 +48,7 @@ class TaskTest(BaseTestCase):
         for filterOption in ['randomStr', '']:
             dummyTask = Task.create('checksum')
 
-            taskHolder = TaskHolder(dummyTask, Template("{filePath}"), Template('randomStr'))
+            taskHolder = TaskHolder(dummyTask, Template("!kt {filePath}"), Template('!kt randomStr'))
             result = taskHolder.run(elements)
             self.assertEqual(len(result), len(elements))
 
@@ -59,9 +59,9 @@ class TaskTest(BaseTestCase):
         dummyTask = Task.create('checksum')
         elements = [FsElement.createFromPath(self.__jsonConfig)]
 
-        taskHolder = TaskHolder(dummyTask, Template("{filePath}"))
+        taskHolder = TaskHolder(dummyTask, Template("!kt {filePath}"))
         dummyTask2 = Task.create('checksum')
-        taskHolder2 = TaskHolder(dummyTask2, Template("{filePath}"))
+        taskHolder2 = TaskHolder(dummyTask2, Template("!kt {filePath}"))
         taskHolder2.setStatus('execute')
         taskHolder.addSubTaskHolder(taskHolder2)
         self.assertEqual(len(taskHolder.run(elements)), len(elements) * 2)
@@ -85,9 +85,9 @@ class TaskTest(BaseTestCase):
         dummyTask = Task.create('dummyMultiply')
         elements = [FsElement.createFromPath(self.__jsonConfig)]
 
-        taskHolder = TaskHolder(dummyTask, Template("{filePath}"))
+        taskHolder = TaskHolder(dummyTask, Template("!kt {filePath}"))
         dummyTask2 = Task.create('dummyMultiply')
-        taskHolder2 = TaskHolder(dummyTask2, Template("{filePath}"))
+        taskHolder2 = TaskHolder(dummyTask2, Template("!kt {filePath}"))
         taskHolder.addSubTaskHolder(taskHolder2)
 
         self.assertEqual(len(taskHolder.run(elements)), len(elements) * 4)
@@ -102,11 +102,11 @@ class TaskTest(BaseTestCase):
         dummyTask = Task.create('checksum')
         elements = [FsElement.createFromPath(self.__jsonConfig)]
 
-        taskHolder = TaskHolder(dummyTask, Template("{filePath}"))
+        taskHolder = TaskHolder(dummyTask, Template("!kt {filePath}"))
         taskHolder.setStatus('ignore')
 
         dummyTask2 = Task.create('checksum')
-        taskHolder2 = TaskHolder(dummyTask2, Template("{filePath}"))
+        taskHolder2 = TaskHolder(dummyTask2, Template("!kt {filePath}"))
         taskHolder2.setStatus('execute')
         taskHolder.addSubTaskHolder(taskHolder2)
         self.assertEqual(len(taskHolder.run(elements)), 0)
@@ -176,7 +176,7 @@ class TaskTest(BaseTestCase):
         # sequence thumbnail task holder
         self.assertEqual(len(taskHolders[0].subTaskHolders()), 1)
         sequenceThumbnailTask = taskHolders[0].subTaskHolders()[0].task()
-        sequenceThumbnailTask.setOption('height', "{height}")
+        sequenceThumbnailTask.setOption('height', "!kt {height}")
         dummyElement.setVar('height', 2000)
         self.assertEqual(sequenceThumbnailTask.type(), 'sequenceThumbnail')
         self.assertEqual(sequenceThumbnailTask.option('width'), 640)

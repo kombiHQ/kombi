@@ -15,10 +15,6 @@ class SliceSequenceTask(Task):
         self.setOption('sliceTotalAtBegin', 0)
         self.setOption('sliceTotalAtEnd', 0)
 
-        # template options
-        for optionName in self.optionNames():
-            self.setMetadata(f'task.options.{optionName}.template', True)
-
     def _perform(self):
         """
         Implement the execution of the task.

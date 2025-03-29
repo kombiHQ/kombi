@@ -21,7 +21,6 @@ class UpdateImageMetadataTask(Task):
 
         # option used to specify the metadata that should be added to the image.
         self.setOption('data', {})
-        self.setMetadata('task.options.data.template', True)
 
     def _processElement(self, element):
         """

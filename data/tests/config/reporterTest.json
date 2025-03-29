@@ -5,7 +5,7 @@
   "tasks": [
     {
       "run": "echoTask",
-      "target": "(tmp)/{baseName}",
+      "target": "!kt (tmp)/{baseName}",
       "metadata": {
         "match.types": [
           "exr"
@@ -19,7 +19,7 @@
       "tasks": [
         {
           "run": "echoTask",
-          "target": "(tmp)/{name}.jpg",
+          "target": "!kt (tmp)/{name}.jpg",
           "metadata": {
             "match.types": [
               "testElement"
