@@ -53,7 +53,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
         self.__loadingIndicator.setParent(self)
 
         self.__slider.valueChanged.connect(self.__onSliderChange)
-        self.setStyleSheet('background-color: {}'.format(backgroundColor))
+        self.setStyleSheet('QLabel {{background-color: {}}}'.format(backgroundColor))
 
         self.__setPreviewTag(previewTag)
         self.setElements(elements)
