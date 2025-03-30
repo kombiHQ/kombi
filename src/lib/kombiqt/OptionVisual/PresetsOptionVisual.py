@@ -49,6 +49,9 @@ class PresetsOptionVisual(OptionVisual):
             self.__mainWidget.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
             mainLayout.addStretch()
 
+        # read only
+        self.__mainWidget.setEnabled(not self.uiHints().get('readOnly', False))
+
     def __onValueChanged(self):
         """
         Triggered when the combobox is changed.
@@ -75,3 +78,4 @@ OptionVisual.register('presets', PresetsOptionVisual)
 # registering examples
 OptionVisual.registerExample('presets', 'default', '', {'visual': 'presets', 'presets': ['A', 'B', 'C']})
 OptionVisual.registerExample('presets', 'editable', '', {'visual': 'presets', 'presets': ['A', 'B', 'C'], 'editable': True})
+OptionVisual.registerExample('presets', 'readOnly', '', {'visual': 'presets', 'presets': ['A', 'B', 'C'], 'readOnly': True})
