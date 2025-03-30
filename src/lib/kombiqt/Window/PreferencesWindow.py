@@ -34,7 +34,7 @@ class PreferencesWindow(QtWidgets.QDialog):
         mainLayout = QtWidgets.QVBoxLayout()
 
         # font setting
-        self.__fontSizeWidget = IntOptionVisual(Resource.fontSize(), {"min": 8, "max": 40})
+        self.__fontSizeWidget = IntOptionVisual(Resource.fontSize(), {"min": 8, "max": 40, "sliderUpdateOnTick": True})
         self.__fontSizeWidget.valueChanged.connect(self.__onFontSizeChanged)
         self.__fontPreviewLabelWidget = QtWidgets.QLabel('The quick brown fox jumps over the lazy dog')
         self.__fontPreviewLabelWidget.setObjectName('fontSizePreview')
@@ -44,7 +44,7 @@ class PreferencesWindow(QtWidgets.QDialog):
         mainLayout.addSpacing(20)
 
         # icon size setting
-        self.__listIconSizeWidget = IntOptionVisual(Resource.listIconSize(), {"min": 12, "max": 96})
+        self.__listIconSizeWidget = IntOptionVisual(Resource.listIconSize(), {"min": 12, "max": 96, "sliderUpdateOnTick": True})
         self.__listIconSizeWidget.valueChanged.connect(self.__onListIconSizeChanged)
         self.__listIconPreviewWidget = QtWidgets.QLabel()
         self.__listIconPreviewWidget.setObjectName('listIconSizePreview')
