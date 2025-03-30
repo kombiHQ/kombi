@@ -23,14 +23,17 @@ class DateOptionVisual(OptionVisual):
         mainLayout.setContentsMargins(2, 2, 2, 2)
         self.setLayout(mainLayout)
 
+        readOnly = self.uiHints().get('readOnly', False)
         self.__mainWidget = QtWidgets.QLineEdit(str(self.optionValue()))
         self.__mainWidget.textEdited.connect(self.__onValueChanged)
         self.__mainWidget.setMaximumWidth(self.uiHints().get('width', 100))
         self.__calendarWidget = _CalendarWidget()
         self.__calendarWidget.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.__calendarWidget.resize(self.__calendarWidget.minimumSizeHint())
+        self.__mainWidget.setReadOnly(readOnly)
 
         self.__calendarWidget.setGridVisible(False)
+        self.__calendarWidget.setEnabled(not readOnly)
         self.__calendarWidget.setFirstDayOfWeek(QtCore.Qt.Monday)
         self.__calendarWidget.setVerticalHeaderFormat(QtWidgets.QCalendarWidget.NoVerticalHeader)
         self.__calendarWidget.clicked.connect(self.__onCalendarChanged)
@@ -94,3 +97,4 @@ OptionVisual.register('date', DateOptionVisual)
 
 # registering examples
 OptionVisual.registerExample('date', 'default', '1950-01-22')
+OptionVisual.registerExample('date', 'readOnly', '1950-01-22', {'readOnly': True})
