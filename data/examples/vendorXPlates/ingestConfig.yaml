@@ -25,8 +25,10 @@ tasks:
     filePath2: ""
     boolReadOnly: True
     float: 0.1
+    floatReadOnly: 0.1
     floatNoRange: 999999999999999999999.0
     int: 1
+    intReadOnly: 1
     intNoRange: 1
     hidden: "not visible"
     separator: "separate me"
@@ -96,6 +98,12 @@ tasks:
           min: 0.0
           max: 1.0
           rebuildOnChange: True
+        floatReadOnly:
+          main: True
+          min: 0.0
+          max: 1.0
+          rebuildOnChange: True
+          readOnly: True
         floatNoRange:
           main: True
           width: 300
@@ -103,6 +111,11 @@ tasks:
           main: True
           min: -10
           max: 10
+        intReadOnly:
+          main: True
+          min: -10
+          max: 10
+          readOnly: True
         intNoRange:
           main: True
         hidden:
