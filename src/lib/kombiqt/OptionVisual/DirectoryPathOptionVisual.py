@@ -37,14 +37,18 @@ class DirectoryPathOptionVisual(OptionVisual):
 
         self.__editableWidget = _ComboBox(self) if len(presets) > 1 else QtWidgets.QLineEdit(str(self.optionValue()))
         self.__editableWidget.setFocusPolicy(QtCore.Qt.ClickFocus)
+
+        readOnly = self.uiHints().get('readOnly', False)
         if len(presets) > 1:
             self.__editableWidget.addItems(presets)
             self.__editableWidget.setEditable(True)
+        self.__editableWidget.setEnabled(not readOnly)
 
         folderPicker = QtWidgets.QPushButton(self.uiHints().get('label', 'Select Directory'))
         folderPicker.setFocusPolicy(QtCore.Qt.NoFocus)
         folderPicker.clicked.connect(self.__onPickerSelectDir)
         folderPicker.setIcon(Resource.icon('icons/folder.png'))
+        folderPicker.setEnabled(not readOnly)
 
         signal = self.__editableWidget.currentTextChanged if len(presets) > 1 else self.__editableWidget.textChanged
         signal.connect(self.__onValueChanged)
@@ -88,5 +92,6 @@ OptionVisual.register('directoryPath', DirectoryPathOptionVisual)
 
 # registering examples
 OptionVisual.registerExample('directoryPath', 'default', '/file/path')
+OptionVisual.registerExample('directoryPath', 'readOnly', '/file/path', {'readOnly': True})
 OptionVisual.registerExample('directoryPath', 'presets', '', {'presets': ['/filePathA', '/filePathB']})
 OptionVisual.registerExample('directoryPath', 'buttonLabel', '', {'label': '...'})

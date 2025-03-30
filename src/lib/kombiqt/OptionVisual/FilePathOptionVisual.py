@@ -35,16 +35,19 @@ class FilePathOptionVisual(OptionVisual):
                     continue
                 presets.append(preset)
 
+        readOnly = self.uiHints().get('readOnly', False)
         self.__editableWidget = _ComboBox(self) if len(presets) > 1 else QtWidgets.QLineEdit(str(self.optionValue()))
         self.__editableWidget.setFocusPolicy(QtCore.Qt.ClickFocus)
         if len(presets) > 1:
             self.__editableWidget.addItems(presets)
             self.__editableWidget.setEditable(True)
+        self.__editableWidget.setEnabled(not readOnly)
 
         filePicker = QtWidgets.QPushButton('Select File')
         filePicker.setFocusPolicy(QtCore.Qt.NoFocus)
         filePicker.clicked.connect(self.__onPickerSelectFile)
         filePicker.setIcon(Resource.icon('icons/elements/base.png'))
+        filePicker.setEnabled(not readOnly)
 
         signal = self.__editableWidget.currentTextChanged if len(presets) > 1 else self.__editableWidget.textChanged
         signal.connect(self.__onValueChanged)
@@ -90,4 +93,5 @@ OptionVisual.register('filePath', FilePathOptionVisual)
 
 # registering examples
 OptionVisual.registerExample('filePath', 'default', '/file/path')
+OptionVisual.registerExample('filePath', 'readOnly', '/file/path', {'readOnly': True})
 OptionVisual.registerExample('filePath', 'presets', '', {'presets': ['/filePathA/file.ext', '/filePathB/file2.ext']})
