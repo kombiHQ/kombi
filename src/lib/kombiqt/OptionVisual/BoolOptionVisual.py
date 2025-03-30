@@ -1,4 +1,4 @@
-from Qt import QtWidgets
+from Qt import QtWidgets, QtCore
 from .OptionVisual import OptionVisual
 
 
@@ -25,7 +25,12 @@ class BoolOptionVisual(OptionVisual):
 
         self.__mainWidget = QtWidgets.QCheckBox()
         self.__mainWidget.setChecked(self.optionValue())
-        self.__mainWidget.stateChanged.connect(self.__onValueChanged)
+
+        # ready only support
+        if self.uiHints().get('readOnly', False):
+            self.__mainWidget.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+        else:
+            self.__mainWidget.stateChanged.connect(self.__onValueChanged)
 
         mainLayout.addWidget(self.__mainWidget)
 
@@ -43,3 +48,4 @@ OptionVisual.registerFallbackDefaultVisual('bool', bool)
 
 # registering examples
 OptionVisual.registerExample('bool', 'default', True)
+OptionVisual.registerExample('bool', 'readOnly', True, {'readOnly': True})
