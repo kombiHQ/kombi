@@ -42,7 +42,13 @@ class FloatOptionVisual(OptionVisual):
             self.__sliderWidget.setMinimum(self.uiHints()['min'])
             self.__sliderWidget.setMaximum(self.uiHints()['max'] * 1000)
             self.__sliderWidget.setValue(self.optionValue() * 1000)
-            self.__sliderWidget.sliderReleased.connect(self.__onSliderChanged)
+            # when "sliderUpdateOnTick" is enabled, whenever the slider is moved it will
+            # update the value
+            if self.uiHints().get('sliderUpdateOnTick', False):
+                self.__sliderWidget.valueChanged.connect(self.__onSliderChanged)
+            # otherwise, only when the slider is released the value is updated
+            else:
+                self.__sliderWidget.sliderReleased.connect(self.__onSliderChanged)
 
             mainLayout.addWidget(self.__sliderWidget)
         else:
@@ -85,4 +91,5 @@ OptionVisual.registerFallbackDefaultVisual('float', float)
 # registering examples
 OptionVisual.registerExample('float', 'default', 0.1)
 OptionVisual.registerExample('float', 'minMaxRange', 5.0, {'min': 3.0, 'max': 6.0})
+OptionVisual.registerExample('float', 'minMaxRangeSliderUpdateValueOnTick', 5, {'min': 3, 'max': 6, 'sliderUpdateOnTick': True})
 OptionVisual.registerExample('float', 'minMaxRangeNoSlider', 5.0, {'min': 3.0, 'max': 6.0, 'slider': False})
