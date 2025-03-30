@@ -30,9 +30,15 @@ class IntOptionVisual(OptionVisual):
 
         self.__mainWidget.setValue(int(self.optionValue()))
         self.__mainWidget.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.__mainWidget.editingFinished.connect(self.__onValueChanged)
+
+        # read only support
+        if self.uiHints().get('readOnly', False):
+            self.__mainWidget.setEnabled(False)
+        else:
+            self.__mainWidget.editingFinished.connect(self.__onValueChanged)
 
         self.__sliderWidget = None
+
         if 'min' in self.uiHints() and 'max' in self.uiHints() and self.uiHints().get('slider', True):
             self.__mainWidget.setRange(self.uiHints()['min'], self.uiHints()['max'])
             self.__sliderWidget = _Slider(QtCore.Qt.Horizontal)
@@ -41,13 +47,17 @@ class IntOptionVisual(OptionVisual):
             self.__sliderWidget.setMaximum(self.uiHints()['max'])
             self.__sliderWidget.setValue(self.optionValue())
 
-            # when "sliderUpdateOnTick" is enabled, whenever the slider is moved it will
-            # update the value
-            if self.uiHints().get('sliderUpdateOnTick', False):
-                self.__sliderWidget.valueChanged.connect(self.__onSliderChanged)
-            # otherwise, only when the slider is released the value is updated
+            # read only
+            if not self.uiHints().get('readOnly', False):
+                # when "sliderUpdateOnTick" is enabled, whenever the slider is moved it will
+                # update the value
+                if self.uiHints().get('sliderUpdateOnTick', False):
+                    self.__sliderWidget.valueChanged.connect(self.__onSliderChanged)
+                # otherwise, only when the slider is released the value is updated
+                else:
+                    self.__sliderWidget.sliderReleased.connect(self.__onSliderChanged)
             else:
-                self.__sliderWidget.sliderReleased.connect(self.__onSliderChanged)
+                self.__sliderWidget.setEnabled(False)
 
             mainLayout.addWidget(self.__sliderWidget)
         else:
@@ -102,5 +112,6 @@ OptionVisual.registerFallbackDefaultVisual('int', int)
 # registering examples
 OptionVisual.registerExample('int', 'default', 2)
 OptionVisual.registerExample('int', 'minMaxRange', 5, {'min': 3, 'max': 6})
-OptionVisual.registerExample('int', 'minMaxRangeSliderUpdateValueOnTick', 5, {'min': 3, 'max': 6, 'sliderUpdateOnTick': True})
-OptionVisual.registerExample('int', 'minMaxRangeNoSlider', 5, {'min': 3, 'max': 6, 'slider': False})
+OptionVisual.registerExample('int', 'minMaxRangeSlider', 5, {'min': 3, 'max': 6, 'slider': True})
+OptionVisual.registerExample('int', 'minMaxRangeSliderUpdateValueOnTick', 5, {'min': 3, 'max': 6, 'slider': True, 'sliderUpdateOnTick': True})
+OptionVisual.registerExample('int', 'minMaxRangeSliderReadOnly', 5, {'min': 3, 'max': 6, 'slider': True, 'readOnly': True})
