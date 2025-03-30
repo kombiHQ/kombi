@@ -48,6 +48,7 @@ tasks:
     longText: ""
     text: ""
     preset: ""
+    presetReadOnly: ""
     preset2: ""
     preset3: ""
     bla: ""
@@ -176,6 +177,11 @@ tasks:
           presets: ['A', 'B', 'C']
           visual: "presets"
           styleSheet: "background-color: #00FF00; color: #000000"
+        presetReadOnly:
+          main: True
+          presets: ['A', 'B', 'C']
+          visual: "presets"
+          readOnly: True
         preset2:
           main: True
           presets: ['A', 'B', 'C']
