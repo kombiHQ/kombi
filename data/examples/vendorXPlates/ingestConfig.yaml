@@ -21,8 +21,10 @@ tasks:
     date: "1950-01-22"
     hexcolor: "#049f73"
     filePathPicker: ""
+    filePathPickerReadOnly: "/tmp/test"
     filePath: ""
     filePath2: ""
+    filePathReadOnly: "/tmp/test"
     boolReadOnly: True
     float: 0.1
     floatReadOnly: 0.1
@@ -78,6 +80,14 @@ tasks:
           main: True
           visual: "filePath"
           title: "Title for the picker"
+          allowedExtensions: [
+            "json"
+          ]
+        filePathPickerReadOnly:
+          main: True
+          visual: "filePath"
+          title: "Title for the picker"
+          readOnly: True
           allowedExtensions: [
             "json"
           ]
@@ -151,6 +161,11 @@ tasks:
           main: True
           visual: "directoryPath"
           presets: ["A", "B", "C"]
+        filePathReadOnly:
+          main: True
+          visual: "directoryPath"
+          presets: ["A", "B", "C"]
+          readOnly: True
         preset:
           main: True
           presets: ['A', 'B', 'C']
