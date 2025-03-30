@@ -28,7 +28,7 @@ class BoolOptionVisual(OptionVisual):
 
         # ready only support
         if self.uiHints().get('readOnly', False):
-            self.__mainWidget.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+            self.__mainWidget.setEnabled(False)
         else:
             self.__mainWidget.stateChanged.connect(self.__onValueChanged)
 
