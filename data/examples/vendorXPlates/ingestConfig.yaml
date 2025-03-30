@@ -19,6 +19,7 @@ tasks:
   options:
     preview: ""
     date: "1950-01-22"
+    dateReadOnly: "1950-01-22"
     hexcolor: "#049f73"
     filePathPicker: ""
     filePathPickerReadOnly: "/tmp/test"
@@ -94,6 +95,10 @@ tasks:
         date:
           main: True
           visual: "date"
+        dateReadOnly:
+          main: True
+          visual: "date"
+          readOnly: True
         hexcolor:
           main: True
           visual: "hexcolor"
