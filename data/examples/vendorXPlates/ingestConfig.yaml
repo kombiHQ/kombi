@@ -23,7 +23,7 @@ tasks:
     filePathPicker: ""
     filePath: ""
     filePath2: ""
-    bool: True
+    boolReadOnly: True
     float: 0.1
     floatNoRange: 999999999999999999999.0
     int: 1
@@ -88,8 +88,9 @@ tasks:
         dictOrientationTest:
           main: True
           orientation: 'horizontal'
-        bool:
+        boolReadOnly:
           main: True
+          readOnly: True
         float:
           main: True
           min: 0.0
