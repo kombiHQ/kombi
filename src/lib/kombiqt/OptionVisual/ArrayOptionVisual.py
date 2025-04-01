@@ -16,6 +16,15 @@ class ArrayOptionVisual(OptionVisual):
         self.__buildWidget()
         self.__refreshWidget()
 
+    def _addEntries(self):
+        """
+        Return a list containing the values to be added.
+
+        This method can be overridden by subclasses to implement custom behavior. If no
+        entries are added, return an empty list instead.
+        """
+        return [self.uiHints().get('editableNewItemValue', '')]
+
     def __buildWidget(self):
         """
         Implement the widget.
@@ -51,7 +60,7 @@ class ArrayOptionVisual(OptionVisual):
 
     def __refreshWidget(self):
         """
-        refresh the widget.
+        Refresh the widget.
         """
         contentLayout = self.__frameWidget.layout()
 
@@ -128,8 +137,14 @@ class ArrayOptionVisual(OptionVisual):
         Triggered when add button is pressed.
         """
         value = list(self.optionValue())
-        newValue = self.uiHints().get('editableNewItemValue', '')
-        value.append(newValue)
+        entries = self._addEntries()
+
+        if not entries:
+            return
+
+        for entryValue in entries:
+            value.append(entryValue)
+
         self.valueChanged.emit(value)
 
         self.__refreshWidget()

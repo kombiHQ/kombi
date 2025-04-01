@@ -52,6 +52,12 @@ tasks:
     arraySideBySide:
       - 1001
       - 1200
+    hashmap:
+      a: 1
+      b: 'c'
+    hashmapEdiable:
+      a: 1
+      b: 'c'
     longText: ""
     text: ""
     preset: ""
@@ -155,10 +161,9 @@ tasks:
         arrayEditable:
           main: True
           editable: True
-          defaultNewValue:
+          editableNewItemValue:
             - 10
             - 20
-          editableNewItemValue: 3.0
         arraySideBySide:
           main: True
           'label': 'Frame Range'
@@ -168,6 +173,13 @@ tasks:
               label: "Start Frame"
             '1':
               label: "End Frame"
+        hashmap:
+          main: True
+          editableNewItemValue: 0.0
+        hashmapEdiable:
+          main: True
+          editable: True
+          editableNewItemValue: 0.0
         longText:
           main: True
           visual: "longText"
