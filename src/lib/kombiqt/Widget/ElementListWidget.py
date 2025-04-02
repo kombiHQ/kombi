@@ -18,9 +18,16 @@ class ElementListWidget(QtWidgets.QTreeWidget):
     """
     viewModes = ('group', 'flat')
     modifed = QtCore.Signal()
+    checkedStateChanged = QtCore.Signal()
     parentContextMenu = QtCore.Signal()
 
-    def __init__(self, defaultIconSize=Resource.listIconSize()):
+    def __init__(
+        self,
+        checkableState=None,
+        elementVarColumnNames=None,
+        viewMode='group',
+        defaultIconSize=Resource.listIconSize()
+    ):
         """
         Create a ElementListWidget object.
         """
@@ -28,7 +35,6 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
         self.__showVars = False
         self.__showTags = False
-        self.__checkableState = None
         self.__ignoreCheckedEvents = False
         self.__overridesConfig = None
         self.__overridePreviousSelectedLocation = None
@@ -47,13 +53,15 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         self.setHeaderItem(header)
 
+        self.setCheckableState(checkableState)
+
         # the icon size can be potentially overridden by the element tag uiHintIconSize
         # assigned to the task holder
         self.setIconSize(QtCore.QSize(defaultIconSize, defaultIconSize))
         self.__taskHolders = []
+        self.__viewMode = viewMode
         self.__columns = []
-
-        self.__viewMode = 'group'
+        self.__updateColumns(elementVarColumnNames or [])
 
     def setShowVars(self, display):
         """
@@ -134,7 +142,12 @@ class ElementListWidget(QtWidgets.QTreeWidget):
                     self.__overridesConfig = Config(configSignature, 'taskOverrides')
                     self.__overridesConfig.setValue('configDirectory', configDirectory, serialize=False)
 
-        self.__updateColumns(self.__taskHolders)
+        columns = []
+        for taskHolder in filter(lambda x: 'uiHintColumns' in x.tagNames(), taskHolders):
+            for columnName in filter(lambda x: x not in columns, taskHolder.tag('uiHintColumns')):
+                columns.append(columnName)
+
+        self.__updateColumns(columns)
 
     def refresh(self):
         """
@@ -179,11 +192,11 @@ class ElementListWidget(QtWidgets.QTreeWidget):
             if not isinstance(item, ElementsTreeWidgetItem):
                 for childIndex in range(item.childCount()):
                     childItem = item.child(childIndex)
-                    if childItem.checkState(0) and isinstance(childItem, ElementsTreeWidgetItem):
+                    if childItem.checkState(0) == QtCore.Qt.Checked and isinstance(childItem, ElementsTreeWidgetItem):
                         result.extend(childItem.elements())
 
             # root items
-            elif item.checkState(0) and isinstance(item, ElementsTreeWidgetItem):
+            elif item.checkState(0) == QtCore.Qt.Checked and isinstance(item, ElementsTreeWidgetItem):
                 result.extend(item.elements())
 
         result = list(map(lambda x: x.clone(), result))
@@ -381,16 +394,10 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         """
         self.modifed.emit()
 
-    def __updateColumns(self, taskHolders):
+    def __updateColumns(self, columns):
         """
         Update the widget columns.
         """
-        # updating columns
-        columns = []
-        for taskHolder in filter(lambda x: 'uiHintColumns' in x.tagNames(), taskHolders):
-            for columnName in filter(lambda x: x not in columns, taskHolder.tag('uiHintColumns')):
-                columns.append(columnName)
-
         # fix-me: workaround necessary to avoid the bug of not showing
         # the options properly inside of the execution settings
         if not len(columns):
@@ -800,6 +807,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
             if isinstance(selectedItem, ElementsTreeWidgetItem):
                 selectedItem.setCheckState(0, currentItem.checkState(0))
 
+        self.checkedStateChanged.emit()
         self.__ignoreCheckedEvents = False
 
     def __onColumnButton(self, treeItemWeakRef, callableName):
