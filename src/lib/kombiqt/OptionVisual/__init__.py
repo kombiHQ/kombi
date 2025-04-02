@@ -14,3 +14,4 @@ from .HexColorOptionVisual import HexColorOptionVisual
 from .DateOptionVisual import DateOptionVisual
 from .FilePathOptionVisual import FilePathOptionVisual
 from .PathBrowserOptionVisual import PathBrowserOptionVisual
+from .ElementArrayOptionVisual import ElementArrayOptionVisual
