@@ -25,6 +25,15 @@ class ArrayOptionVisual(OptionVisual):
         """
         return [self.uiHints().get('editableNewItemValue', '')]
 
+    def _removeEntry(self, index):
+        """
+        Return a boolean telling if the index can be deleted.
+
+        This method can be overridden by subclasses to implement custom behavior (like
+        a confirmation).
+        """
+        return True
+
     def __buildWidget(self):
         """
         Implement the widget.
@@ -126,7 +135,11 @@ class ArrayOptionVisual(OptionVisual):
         """
         Triggered when remove button is pressed.
         """
+        if not self._removeEntry(index):
+            return
+
         value = list(self.optionValue())
+
         del value[index]
         self.valueChanged.emit(value)
 

@@ -37,6 +37,15 @@ class HashmapOptionVisual(OptionVisual):
 
         return {newItemName: newValue}
 
+    def _removeEntry(self, key):
+        """
+        Return a boolean telling if the key can be deleted.
+
+        This method can be overridden by subclasses to implement custom behavior (like
+        a confirmation).
+        """
+        return True
+
     def __buildWidget(self):
         """
         Implement the widget.
@@ -140,12 +149,15 @@ class HashmapOptionVisual(OptionVisual):
             else:
                 self.__deleteItemsOfLayout(item.layout())
 
-    def __onRemove(self, optionName):
+    def __onRemove(self, key):
         """
         Triggered when remove button is pressed.
         """
+        if not self._removeEntry(key):
+            return
+
         value = dict(self.optionValue())
-        del value[optionName]
+        del value[key]
         self.valueChanged.emit(value)
 
         self.__refreshWidget()
