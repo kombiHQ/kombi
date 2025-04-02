@@ -244,6 +244,12 @@ tasks:
   tasks:
   - run: vendorData
     target: "!kt (parentdirname {filePath})/vendor.json"
+    metadata:
+      ui:
+        options:
+          elementArray:
+            main: True
+            visual: "elementArray"
   - run: resizeImage
     options:
       width: "!kt ({width}/2)"
