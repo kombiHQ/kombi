@@ -38,7 +38,7 @@ class ElementArrayOptionVisual(OptionVisual):
         )
 
         # setting the minimumHeight ui hint when defined
-        minimumHeight = self.uiHints().get('minimumHeight', 600)
+        minimumHeight = self.uiHints().get('minimumHeight', None)
         if minimumHeight:
             self.__mainWidget.setMinimumHeight(minimumHeight)
 
