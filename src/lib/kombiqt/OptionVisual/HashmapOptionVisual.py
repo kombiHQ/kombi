@@ -1,4 +1,5 @@
 import functools
+from fnmatch import fnmatch
 from Qt import QtWidgets, QtCore
 from .OptionVisual import OptionVisual
 from ..Resource import Resource
@@ -92,7 +93,17 @@ class HashmapOptionVisual(OptionVisual):
         editable = self.uiHints().get('editable', False)
         i = 0
         for optionName, optionValue in self.optionValue().items():
-            uiHints = itemsUiHints.get(optionName, {})
+            uiHints = {}
+            # when there is a UI hint specifically defined
+            # for the item option name
+            if optionName in itemsUiHints:
+                uiHints = itemsUiHints[optionName]
+            else:
+                # try to look for the UI Hint using fnmatch
+                for itemName, itemUiHints in itemsUiHints.items():
+                    if fnmatch(optionName, itemName):
+                        uiHints = itemUiHints
+                        break
 
             # in case the hidden metadata is defined we don't render it
             if uiHints.get('hidden', False):
