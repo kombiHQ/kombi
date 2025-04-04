@@ -1,4 +1,5 @@
 import functools
+from fnmatch import fnmatch
 from Qt import QtWidgets, QtCore
 from .OptionVisual import OptionVisual
 from ..Resource import Resource
@@ -80,7 +81,18 @@ class ArrayOptionVisual(OptionVisual):
         editable = self.uiHints().get('editable', False)
         for i, optionValue in enumerate(self.optionValue()):
             optionName = str(i)
-            uiHints = itemsUiHints.get(optionName, {})
+            uiHints = {}
+            # when there is a UI hint specifically defined
+            # for the item index
+            if optionName in itemsUiHints:
+                uiHints = itemsUiHints[optionName]
+            else:
+                # try to look for the UI Hint using fnmatch
+                for itemName, itemUiHints in itemsUiHints.items():
+                    if fnmatch(optionName, itemName):
+                        uiHints = itemUiHints
+                        break
+
             itemWidget = OptionVisual.create(optionValue, uiHints)
             itemWidget.valueChanged.connect(functools.partial(self.__onItemValueChanged, i))
 

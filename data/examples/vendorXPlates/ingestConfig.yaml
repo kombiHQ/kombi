@@ -49,6 +49,13 @@ tasks:
       - True
       - False
       - null
+    arrayFnmatch:
+      - 1
+      - 2
+      - 3
+      - True
+      - False
+      - null
     arraySideBySide:
       - 1001
       - 1200
@@ -58,6 +65,10 @@ tasks:
     hashmapEdiable:
       a: 1
       b: 'c'
+    hashmapFnmatch:
+      a: 1
+      b: 'c'
+      c: 'd'
     longText: ""
     text: ""
     preset: ""
@@ -164,6 +175,13 @@ tasks:
           editableNewItemValue:
             - 10
             - 20
+        arrayFnmatch:
+          main: True
+          items:
+            1:
+              visual: "longText"
+            "*":
+              visual: "view"
         arraySideBySide:
           main: True
           'label': 'Frame Range'
@@ -180,6 +198,13 @@ tasks:
           main: True
           editable: True
           editableNewItemValue: 0.0
+        hashmapFnmatch:
+          main: True
+          items:
+            "b":
+              visual: "longText"
+            "*":
+              visual: "view"
         longText:
           main: True
           visual: "longText"
