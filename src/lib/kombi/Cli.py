@@ -38,6 +38,12 @@ class Cli(object):
             help='path for a file or directory. If empty it uses stdin.'
         )
 
+        self.__parser.add_argument(
+            '--recursive',
+            action='store_true',
+            help='recursively process subdirectories when directories are specified.'
+        )
+
     def run(self, args, outStream=sys.stdout, errStream=subprocess.STDOUT):
         """
         Execute the configuration.
@@ -64,7 +70,7 @@ class Cli(object):
             )
 
         # collecting elements
-        elements = self.__loadElements(parseArgs.source)
+        elements = self.__loadElements(parseArgs.source, recursive=parseArgs.recursive)
 
         # creating dispatcher
         dispatcher = Dispatcher.create('local')
@@ -107,7 +113,7 @@ class Cli(object):
 
         return '\n'.join(asciiArt)
 
-    def __loadElements(self, sourcePaths):
+    def __loadElements(self, sourcePaths, recursive):
         """
         Return the source elements.
         """
@@ -152,6 +158,6 @@ class Cli(object):
         if globDirectoryElements:
             for element in list(elements):
                 if isinstance(element, DirectoryElement):
-                    elements += element.glob()
+                    elements += element.glob(recursive=recursive)
 
         return elements
