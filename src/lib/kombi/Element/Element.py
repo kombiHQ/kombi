@@ -415,10 +415,18 @@ class Element(object):
         assert issubclass(elementClass, Element), \
             "Invalid element class!"
 
-        if overrideAsLatest and name in Element.__registeredTypes:
-            del Element.__registeredTypes[name]
+        if overrideAsLatest:
+            Element.unregister(name)
 
         Element.__registeredTypes[name] = elementClass
+
+    @staticmethod
+    def unregister(name):
+        """
+        Remove a registered element name.
+        """
+        if name in Element.__registeredTypes:
+            del Element.__registeredTypes[name]
 
     @staticmethod
     def registeredType(name) -> str:
