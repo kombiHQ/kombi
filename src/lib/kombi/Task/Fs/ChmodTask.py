@@ -1,4 +1,5 @@
 import os
+from ...Element.Fs.FsElement import FsElement
 from ..Task import Task
 
 class ChmodTask(Task):
@@ -24,6 +25,7 @@ class ChmodTask(Task):
         alreadyDone = set()
         directoryMode = int(str(self.option('directoryMode')), 8)
         fileMode = int(str(self.option('fileMode')), 8)
+        result = []
 
         for element in self.elements():
             filePath = element.var('filePath')
@@ -46,8 +48,9 @@ class ChmodTask(Task):
                 else:
                     os.chmod(collectedFile, fileMode)
 
-        # default result based on the target filePath
-        return super(ChmodTask, self)._perform()
+                result.append(FsElement.createFromPath(collectedFile))
+
+        return result
 
     @classmethod
     def __collectAllFiles(cls, path):
