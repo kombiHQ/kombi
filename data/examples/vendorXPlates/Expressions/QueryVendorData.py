@@ -7,7 +7,7 @@ def queryVendorVersion(dataFilePath):
     Return the vendor version stored under the vendor data.
     """
     data = ""
-    with open(os.path.join(os.path.dirname(os.path.dirname(dataFilePath)), "vendor.json")) as f:
+    with open(os.path.join(os.path.dirname(os.path.dirname(dataFilePath)), "vendorConfig.json")) as f:
         data = json.load(f)
 
     return str(data['vendorVersion']).zfill(3)
@@ -18,7 +18,7 @@ def queryVendorPlateName(dataFilePath):
     Return the vendor plate name stored under the vendor data.
     """
     data = ""
-    with open(os.path.join(os.path.dirname(os.path.dirname(dataFilePath)), "vendor.json")) as f:
+    with open(os.path.join(os.path.dirname(os.path.dirname(dataFilePath)), "vendorConfig.json")) as f:
         data = json.load(f)
 
     return data['plateName']

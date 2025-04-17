@@ -7,7 +7,7 @@ class VendorXPngPlate(PngElement):
     """
 
     # name example: "foo_def_abc_foo_001.0001.png"
-    namePattern = "{job:3}_{shot:3}_{seq:3}_{plateName}_{vendorVersion:3i}.####.png"
+    namePattern = "{job:3}_{seq:3}_{shot:3}_{plateName}_{vendorVersion:3i}.####.png"
 
     def __init__(self, *args, **kwargs):
         """

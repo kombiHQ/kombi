@@ -18,7 +18,7 @@
       "run": "convertImage",
       "metadata": {
         "match.types": [
-          "plateExr"
+          "vendorXPngPlate"
         ],
         "match.vars": {
           "imageType": [
@@ -26,7 +26,7 @@
           ]
         }
       },
-      "target": "!kt {prefix}/jobs/{job}/seq/{seq}/shot/{shot}/delivery/(yyyy)(mm)(dd)/{name}/{width}x{height}_{ext}/{job}_{shot}_{seq}_(queryplatename {filePath})_(queryvendorver {filePath}).(pad {frame} 4).png"
+      "target": "!kt {prefix}/jobs/{job}/seq/{seq}/shot/{shot}/delivery/(yyyy)(mm)(dd)/{name}/{width}x{height}_{ext}/{job}_{seq}_{shot}_(queryplatename {filePath})_(queryvendorver {filePath}).(pad {frame} 4).png"
     }
   ]
 }
