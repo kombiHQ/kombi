@@ -1,10 +1,10 @@
 import os
-import shutil
 import unittest
 from ..BaseTestCase import BaseTestCase
 from kombi.TaskHolder.Loader import Loader
 from kombi.Element import Element
 from kombi.Element.Fs.FsElement import FsElement
+
 
 class PublishTexturesTest(BaseTestCase):
     """Test for example publish textures."""
@@ -12,16 +12,16 @@ class PublishTexturesTest(BaseTestCase):
     __exampleDirectory = os.path.join(BaseTestCase.dataDirectory(), 'examples', 'publishTextures')
     __exampleTargetPrefixDirectory = os.path.join(BaseTestCase.tempDirectory(), 'publishTextures')
     __generatedData = """
-        publishTextures/test/publish/texture/default/v001/data.json
-        publishTextures/test/publish/texture/default/v001/env.json
-        publishTextures/test/publish/texture/default/v001/info.json
-        publishTextures/test/publish/texture/default/v001/data/exr
-        publishTextures/test/publish/texture/default/v001/data/exr/DIFF_1001.exr
-        publishTextures/test/publish/texture/default/v001/data/tif
-        publishTextures/test/publish/texture/default/v001/data/tif/BUMP_1002.tif
-        publishTextures/test/publish/texture/default/v001/data/tx
-        publishTextures/test/publish/texture/default/v001/data/tx/BUMP_1002.tx
-        publishTextures/test/publish/texture/default/v001/data/tx/DIFF_1001.tx
+        publishTextures/test/publish/texture/default/v0001/data.json
+        publishTextures/test/publish/texture/default/v0001/env.json
+        publishTextures/test/publish/texture/default/v0001/info.json
+        publishTextures/test/publish/texture/default/v0001/data/exr
+        publishTextures/test/publish/texture/default/v0001/data/exr/DIFF_1001.exr
+        publishTextures/test/publish/texture/default/v0001/data/tif
+        publishTextures/test/publish/texture/default/v0001/data/tif/BUMP_1002.tif
+        publishTextures/test/publish/texture/default/v0001/data/tx
+        publishTextures/test/publish/texture/default/v0001/data/tx/BUMP_1002.tx
+        publishTextures/test/publish/texture/default/v0001/data/tx/DIFF_1001.tx
     """
 
     def testLoadConfiguration(self):
@@ -65,20 +65,21 @@ class PublishTexturesTest(BaseTestCase):
 
         resultElements = []
         for group in elementGroups:
-            if isinstance(group[0], Element.registeredType('texture')):
+            if isinstance(group[0], Element.registeredType('internalTexture')):
                 resultElements += taskHolder.run(group)
 
         targetFilePaths = list(sorted(filter(lambda x: len(x), map(lambda x: x.strip(), self.__generatedData.split('\n')))))
-        createdFilePaths = list(sorted(map(lambda x: x.var('fullPath')[len(self.__exampleTargetPrefixDirectory) + 1:].replace('\\', '/'), resultElements)))
+        createdFilePaths = list(sorted(set(map(lambda x: x.var('fullPath')[len(self.__exampleTargetPrefixDirectory) + 1:].replace('\\', '/'), resultElements))))
 
         self.assertListEqual(targetFilePaths, createdFilePaths)
 
     @classmethod
     def tearDownClass(cls):
         """
-        Remove temporary files.
+        Remove temporary files and remove temporary registrations.
         """
-        shutil.rmtree(cls.__exampleTargetPrefixDirectory, ignore_errors=True)
+        Element.unregister('internalTexture')
+        super().tearDownClass()
 
 
 if __name__ == "__main__":
