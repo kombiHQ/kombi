@@ -1,5 +1,4 @@
 import os
-import shutil
 import unittest
 from ..BaseTestCase import BaseTestCase
 from kombi.TaskHolder.Loader import Loader
@@ -12,20 +11,20 @@ class GafferBlurImageSequenceTest(BaseTestCase):
     __exampleDirectory = os.path.join(BaseTestCase.dataDirectory(), 'examples', 'gafferBlurImageSequence')
     __exampleTargetPrefixDirectory = os.path.join(BaseTestCase.tempDirectory(), 'gafferBlurImageSequence')
     __generatedData = """
-        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.000001.exr
-        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.000002.exr
-        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.000003.exr
-        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.000004.exr
-        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.000005.exr
-        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.000006.exr
-        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.000007.exr
-        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.000008.exr
-        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.000009.exr
-        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.000010.exr
-        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.000011.exr
-        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.000012.exr
-        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001.mov
-        gafferBlurImageSequence/v001/foo_def_abc_bla_001_v001_copy.mov
+        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000001.exr
+        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000002.exr
+        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000003.exr
+        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000004.exr
+        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000005.exr
+        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000006.exr
+        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000007.exr
+        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000008.exr
+        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000009.exr
+        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000010.exr
+        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000011.exr
+        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000012.exr
+        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.mov
+        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001_copy.mov
     """
 
     def testLoadConfiguration(self):
@@ -76,13 +75,6 @@ class GafferBlurImageSequenceTest(BaseTestCase):
         createdFilePaths = list(sorted(map(lambda x: x.var('fullPath')[len(self.__exampleTargetPrefixDirectory) + 1:].replace('\\', '/'), resultElements)))
 
         self.assertListEqual(targetFilePaths, createdFilePaths)
-
-    @classmethod
-    def tearDownClass(cls):
-        """
-        Remove temporary files.
-        """
-        shutil.rmtree(cls.__exampleTargetPrefixDirectory, ignore_errors=True)
 
 
 if __name__ == "__main__":

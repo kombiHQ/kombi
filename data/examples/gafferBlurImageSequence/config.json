@@ -2,9 +2,6 @@
   "scripts": [
     "*/*.py"
   ],
-  "vars": {
-    "prefix": "/tmp"
-  },
   "tags": {
     "uiHintColumns": ["frame"]
   },
@@ -24,7 +21,7 @@
       "options": {
         "scene": "!kt {configDirectory}/scene.gfr"
       },
-      "target": "!kt {prefix}/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ver>.(pad {frame} 6).exr",
+      "target": "!kt (tmp)/gafferBlurImageSequence/(newver <parent> as <ver>)/{name}_<ver>.(pad {frame} 6).exr",
       "tasks": [
         {
           "run": "ffmpeg",
