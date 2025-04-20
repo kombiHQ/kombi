@@ -59,7 +59,7 @@ class VersionProceduresTest(BaseTestCase):
         Test that label procedure works properly.
         """
         result = Template.runProcedure('labelver', 3)
-        self.assertEqual(result, 'v003')
+        self.assertEqual(result, 'v0003')
 
     def testLabelVersionCustomPattern(self):
         """
@@ -98,7 +98,7 @@ class VersionProceduresTest(BaseTestCase):
         Test that the new procedure works properly.
         """
         result = Template.runProcedure('newver', BaseTestCase.dataTestsDirectory())
-        self.assertEqual(result, 'v003')
+        self.assertEqual(result, 'v0003')
 
     def testNewVersionCustomPattern(self):
         """
@@ -113,9 +113,9 @@ class VersionProceduresTest(BaseTestCase):
         Test that the latest version is found properly.
         """
         result = Template.runProcedure('latestver', BaseTestCase.dataTestsDirectory())
-        self.assertEqual(result, 'v002')
+        self.assertEqual(result, 'v0002')
         result = Template.runProcedure('latestver', os.path.join(BaseTestCase.dataTestsDirectory(), 'glob'))
-        self.assertEqual(result, 'v000')
+        self.assertEqual(result, 'v0000')
 
     def testLatestVersionCustomPattern(self):
         """
