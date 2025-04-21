@@ -12,8 +12,15 @@ class SystemProceduresTest(BaseTestCase):
         """
         Test that the tmp procedure works properly.
         """
-        result = Template.runProcedure("tmp")
-        self.assertEqual(result, tempfile.gettempdir())
+        currentValue = os.environ.get('KOMBI_TEMP_REMOTE_DIR', None)
+        os.environ.pop('KOMBI_TEMP_REMOTE_DIR')
+
+        try:
+            result = Template.runProcedure("tmp")
+            self.assertEqual(result, tempfile.gettempdir())
+        finally:
+            if currentValue:
+                os.environ['KOMBI_TEMP_REMOTE_DIR'] = currentValue
 
     def testTmpdir(self):
         """
