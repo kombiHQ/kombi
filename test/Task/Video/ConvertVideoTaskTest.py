@@ -27,13 +27,6 @@ class ConvertVideoTaskTest(BaseTestCase):
         self.assertGreaterEqual(convertedSize, 1450000)
         self.assertLessEqual(convertedSize, 1600000)
 
-    @classmethod
-    def tearDownClass(cls):
-        """
-        Remove the file that was converted.
-        """
-        os.remove(cls.__targetPath)
-
 
 if __name__ == "__main__":
     unittest.main()
