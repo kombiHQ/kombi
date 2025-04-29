@@ -183,32 +183,6 @@ class PackTaskTest(BaseTestCase):
         packTask.add(element, os.path.join(BaseTestCase.tempDirectory(), "testZipArchive.invalid"))
         self.assertRaises(PackTaskUnsupportedTypeError, packTask.output)
 
-    @classmethod
-    def tearDownClass(cls):
-        """
-        Remove temporary files.
-        """
-        if os.path.exists(cls.__targetZipDirectoryArchivePath):
-            os.remove(cls.__targetZipDirectoryArchivePath)
-
-        if os.path.exists(cls.__targetZipMultipleArchive1Path):
-            os.remove(cls.__targetZipMultipleArchive1Path)
-
-        if os.path.exists(cls.__targetZipMultipleArchive2Path):
-            os.remove(cls.__targetZipMultipleArchive2Path)
-
-        if os.path.exists(cls.__targetTgzArchivePath):
-            os.remove(cls.__targetTgzArchivePath)
-
-        if os.path.exists(cls.__targetGzArchivePath):
-            os.remove(cls.__targetGzArchivePath)
-
-        if os.path.exists(cls.__targetTarArchivePath):
-            os.remove(cls.__targetTarArchivePath)
-
-        if os.path.exists(cls.__targetTarGzArchivePath):
-            os.remove(cls.__targetTarGzArchivePath)
-
 
 if __name__ == "__main__":
     unittest.main()
