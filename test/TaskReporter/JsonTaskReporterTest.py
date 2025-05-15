@@ -6,13 +6,11 @@ from ..BaseTestCase import BaseTestCase
 from kombi.Element.Fs import FsElement
 from kombi.TaskHolder.Loader import JsonLoader
 from kombi.Dispatcher import Dispatcher
-from kombi.ResourceLoader import ResourceLoader
 
 class JsonTaskReporterTest(BaseTestCase):
     """Test for json task reporter."""
 
     __jsonConfig = os.path.join(BaseTestCase.dataTestsDirectory(), 'config', 'reporterTest.json')
-    __taskPath = os.path.join(BaseTestCase.dataTestsDirectory(), 'tasks', 'EchoTask.py')
     __output = """
         {
             "elements": [
@@ -82,17 +80,61 @@ class JsonTaskReporterTest(BaseTestCase):
                 }
             ],
             "execution": *,
-            "task": "echoTask"
+            "task": "convertImage"
         }
         {
             "elements": [
                 {
                     "elementType": "jpg",
-                    "fullPath": "*/testSeq.jpg"
+                    "fullPath": "*/testSeq.0001.jpg"
+                },
+                {
+                    "elementType": "jpg",
+                    "fullPath": "*/testSeq.0002.jpg"
+                },
+                {
+                    "elementType": "jpg",
+                    "fullPath": "*/testSeq.0003.jpg"
+                },
+                {
+                    "elementType": "jpg",
+                    "fullPath": "*/testSeq.0004.jpg"
+                },
+                {
+                    "elementType": "jpg",
+                    "fullPath": "*/testSeq.0005.jpg"
+                },
+                {
+                    "elementType": "jpg",
+                    "fullPath": "*/testSeq.0006.jpg"
+                },
+                {
+                    "elementType": "jpg",
+                    "fullPath": "*/testSeq.0007.jpg"
+                },
+                {
+                    "elementType": "jpg",
+                    "fullPath": "*/testSeq.0008.jpg"
+                },
+                {
+                    "elementType": "jpg",
+                    "fullPath": "*/testSeq.0009.jpg"
+                },
+                {
+                    "elementType": "jpg",
+                    "fullPath": "*/testSeq.0010.jpg"
+                },
+                {
+                    "elementType": "jpg",
+                    "fullPath": "*/testSeq.0011.jpg"
+                },
+                {
+                    "elementType": "jpg",
+                    "fullPath": "*/testSeq.0012.jpg"
                 }
             ],
             "execution": *,
-            "task": "echoTask"
+            "task": "convertImage"
         }
     """
 
@@ -100,13 +142,9 @@ class JsonTaskReporterTest(BaseTestCase):
         """
         Test the output produced by the reporter.
         """
-        resource = ResourceLoader.get()
-        resource.load(self.__taskPath)
-
         taskHolderLoader = JsonLoader()
         taskHolderLoader.loadFromFile(self.__jsonConfig)
-        elements = FsElement.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
-
+        elements = FsElement.createFromPath(BaseTestCase.dataTestsDirectory()).children()
         dispacher = Dispatcher.create('local')
         dispacher.setOption('defaultReporter', 'json')
         outputStream = io.StringIO()
