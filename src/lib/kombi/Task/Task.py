@@ -539,11 +539,18 @@ class Task(object):
         Derived classes should override _processElement to provide specific processing logic tailored to their needs.
         """
         result = []
+        alreadyAdded = set()
+
         for element in self.elements():
             self.__currentElement = element
+            targetPath = self.target(element)
             resultElement = self._processElement(element)
-            if resultElement:
+            # in case the target path is defined and it's the same, don't include the element
+            # again to the result...
+            if resultElement and targetPath not in alreadyAdded:
                 result.append(resultElement)
+                if targetPath:
+                    alreadyAdded.add(targetPath)
 
         return result
 
