@@ -108,7 +108,7 @@ class VendorXPlatesTest(BaseTestCase):
                 resultElements += taskHolder.run(group)
 
         targetFilePaths = list(sorted(filter(lambda x: len(x), map(lambda x: x.strip(), self.__ingestedGeneratedData.split('\n')))))
-        createdFilePaths = list(sorted(set(map(lambda x: x.var('fullPath')[len(self.__exampleIngestionPrefixDirectory) + 1:].replace('\\', '/'), resultElements))))
+        createdFilePaths = list(sorted(map(lambda x: x.var('fullPath')[len(self.__exampleIngestionPrefixDirectory) + 1:].replace('\\', '/'), resultElements)))
 
         self.assertListEqual(targetFilePaths, createdFilePaths)
 
