@@ -5,5 +5,5 @@
             "mov"
         ]
     },
-    "target": "(dirname {fullPath})/{name}_copy.{ext}"
+    "target": "!kt (dirname {fullPath})/(basenamewithoutext {name})_copy.{ext}"
 }
