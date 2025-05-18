@@ -11,20 +11,20 @@ class GafferBlurImageSequenceTest(BaseTestCase):
     __exampleDirectory = os.path.join(BaseTestCase.dataDirectory(), 'examples', 'gafferBlurImageSequence')
     __exampleTargetPrefixDirectory = os.path.join(BaseTestCase.tempDirectory(), 'gafferBlurImageSequence')
     __generatedData = """
-        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000001.exr
-        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000002.exr
-        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000003.exr
-        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000004.exr
-        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000005.exr
-        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000006.exr
-        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000007.exr
-        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000008.exr
-        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000009.exr
-        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000010.exr
-        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000011.exr
-        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.000012.exr
-        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001.mov
-        gafferBlurImageSequence/v0001/foo_def_abc_bla_001_v0001_copy.mov
+        v0001/foo_def_abc_bla_001_v0001.000001.exr
+        v0001/foo_def_abc_bla_001_v0001.000002.exr
+        v0001/foo_def_abc_bla_001_v0001.000003.exr
+        v0001/foo_def_abc_bla_001_v0001.000004.exr
+        v0001/foo_def_abc_bla_001_v0001.000005.exr
+        v0001/foo_def_abc_bla_001_v0001.000006.exr
+        v0001/foo_def_abc_bla_001_v0001.000007.exr
+        v0001/foo_def_abc_bla_001_v0001.000008.exr
+        v0001/foo_def_abc_bla_001_v0001.000009.exr
+        v0001/foo_def_abc_bla_001_v0001.000010.exr
+        v0001/foo_def_abc_bla_001_v0001.000011.exr
+        v0001/foo_def_abc_bla_001_v0001.000012.exr
+        v0001/foo_def_abc_bla_001_v0001.mov
+        v0001/foo_def_abc_bla_001_v0001_copy.mov
     """
 
     def testLoadConfiguration(self):
@@ -63,7 +63,7 @@ class GafferBlurImageSequenceTest(BaseTestCase):
         elementGroups = Element.group(
             FsElement.createFromPath(
                 os.path.join(self.__exampleDirectory, 'imageSequence')
-            ).globFromParent()
+            ).children()
         )
 
         resultElements = []
