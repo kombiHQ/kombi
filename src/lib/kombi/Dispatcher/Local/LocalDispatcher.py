@@ -107,6 +107,7 @@ class LocalDispatcher(Dispatcher):
             'python'
         )
 
+        taskHolderJsonFilePath = self.__bakeTaskHolderToJson(taskHolder)
         processExecution = ProcessExecution(
             [
                 pythonExec,
@@ -117,7 +118,7 @@ class LocalDispatcher(Dispatcher):
                     "auxiliary",
                     "execute-local.py"
                 ),
-                self.__bakeTaskHolderToJson(taskHolder)
+                taskHolderJsonFilePath
             ],
             self.option('env'),
             shell=True,
@@ -127,7 +128,10 @@ class LocalDispatcher(Dispatcher):
 
         # executing process
         if self.option('awaitExecution'):
-            processExecution.execute()
+            try:
+                processExecution.execute()
+            finally:
+                os.remove(taskHolderJsonFilePath)
             if processExecution.exitStatus():
                 raise LocalDispatcherExecutionError(
                     processExecution.stdoutContent()

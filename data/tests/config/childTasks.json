@@ -2,7 +2,7 @@
   "tasks": [
     {
       "run": "copy",
-      "target": "!kt (tmpdir)/{baseName}",
+      "target": "!kt (tmp)/{baseName}",
       "metadata": {
         "match.types": [
           "exr"
@@ -11,7 +11,7 @@
       "tasks": [
         {
           "run": "sequenceThumbnail",
-          "target": "!kt (tmpdir)/{name}.jpg",
+          "target": "!kt (tmp)/{name}.jpg",
           "metadata": {
             "wrapper.name": "python",
             "wrapper.options": {

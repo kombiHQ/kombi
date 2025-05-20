@@ -19,7 +19,7 @@ class TemplateTest(BaseTestCase):
         result = Template('!kt ' + value).valueFromElement(element)
         self.assertEqual(
             os.path.normpath(result),
-            os.path.normpath('/a/b/c/d/v001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
+            os.path.normpath('/a/b/c/d/v0001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
         )
 
     def testNestProcedureTemplateSimpleWithQuote(self):
@@ -31,7 +31,7 @@ class TemplateTest(BaseTestCase):
         result = Template('!kt ' + value).valueFromElement(element)
         self.assertEqual(
             os.path.normpath(result),
-            os.path.normpath('/a/b/c/(teste(bla - blaa))_foo/v001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
+            os.path.normpath('/a/b/c/(teste(bla - blaa))_foo/v0001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
         )
 
     def testNestProcedureTemplateMultiple(self):
@@ -48,7 +48,7 @@ class TemplateTest(BaseTestCase):
         )
         self.assertEqual(
             os.path.normpath(result),
-            os.path.normpath('/a/b/c/d_h/v001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
+            os.path.normpath('/a/b/c/d_h/v0001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
         )
 
     def testNestProcedureTemplateMultipleAssignToken(self):
@@ -65,7 +65,7 @@ class TemplateTest(BaseTestCase):
         )
         self.assertEqual(
             os.path.normpath(result),
-            os.path.normpath('/a/b/c/d_h/v001/d_h_foo/RND-TST-SHT_lighting_beauty_sr.001001.exr')
+            os.path.normpath('/a/b/c/d_h/v0001/d_h_foo/RND-TST-SHT_lighting_beauty_sr.001001.exr')
         )
 
     def testNestProcedureTemplateArithmetic(self):
@@ -83,7 +83,7 @@ class TemplateTest(BaseTestCase):
         )
         self.assertEqual(
             os.path.normpath(result),
-            os.path.normpath('/a/b/c/7/v001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
+            os.path.normpath('/a/b/c/7/v0001/RND-TST-SHT_lighting_beauty_sr.001001.exr')
         )
 
     def testTemplate(self):
@@ -97,7 +97,7 @@ class TemplateTest(BaseTestCase):
             os.path.normpath(result),
             os.path.join(
                 BaseTestCase.dataTestsDirectory(),
-                'v003',
+                'v0003',
                 'RND-TST-SHT_lighting_beauty_sr.001001.exr'
             )
         )

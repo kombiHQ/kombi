@@ -10,8 +10,6 @@ class UpdateImageMetadataTask(Task):
         Each metadata should be defined inside of the data option.
     """
 
-    __maketxExecutable = os.environ.get('KOMBI_MAKETX_EXECUTABLE', 'maketx')
-
     def __init__(self, *args, **kwargs):
         """
         Create a UpdateImageMetadata task.

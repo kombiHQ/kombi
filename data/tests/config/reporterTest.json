@@ -4,7 +4,7 @@
   ],
   "tasks": [
     {
-      "run": "echoTask",
+      "run": "convertImage",
       "target": "!kt (tmp)/{baseName}",
       "metadata": {
         "match.types": [
@@ -18,8 +18,8 @@
       },
       "tasks": [
         {
-          "run": "echoTask",
-          "target": "!kt (tmp)/{name}.jpg",
+          "run": "convertImage",
+          "target": "!kt (tmp)/{name}.(pad {frame} 4).jpg",
           "metadata": {
             "match.types": [
               "testElement"

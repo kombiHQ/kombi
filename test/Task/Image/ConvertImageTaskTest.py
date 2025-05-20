@@ -26,13 +26,6 @@ class ConvertImageTaskTest(BaseTestCase):
         self.assertEqual(len(result), 1)
         self.assertTrue(os.path.exists(result[0].var('filePath')))
 
-    @classmethod
-    def tearDownClass(cls):
-        """
-        Remove the file that was copied.
-        """
-        os.remove(cls.__targetPath)
-
 
 if __name__ == "__main__":
     unittest.main()

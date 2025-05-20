@@ -6,15 +6,13 @@ from ..BaseTestCase import BaseTestCase
 from kombi.Element.Fs import FsElement
 from kombi.TaskHolder.Loader import JsonLoader
 from kombi.Dispatcher import Dispatcher
-from kombi.ResourceLoader import ResourceLoader
 
 class DetailedTaskReporterTest(BaseTestCase):
     """Test for detailed task reporter."""
 
     __jsonConfig = os.path.join(BaseTestCase.dataTestsDirectory(), 'config', 'reporterTest.json')
-    __taskPath = os.path.join(BaseTestCase.dataTestsDirectory(), 'tasks', 'EchoTask.py')
     __output = """
-        echoTask output (execution * seconds):
+        convertImage output (execution * seconds):
           - nukeRender(*/RND-TST-SHT_comp_compName_output_v010_tk.1001.exr)
           - shotRender(*/RND-TST-SHT_lighting_beauty_sr.1001.exr)
           - turntable(*/RND_ass_lookdev_default_beauty_tt.1001.exr)
@@ -32,8 +30,19 @@ class DetailedTaskReporterTest(BaseTestCase):
           - testElement(*/testSeq.0012.exr)
           - testElement(*/test_0001.exr)
         done
-        echoTask output (execution * seconds):
-          - jpg(*/testSeq.jpg)
+        convertImage output (execution * seconds):
+          - jpg(*/testSeq.0001.jpg)
+          - jpg(*/testSeq.0002.jpg)
+          - jpg(*/testSeq.0003.jpg)
+          - jpg(*/testSeq.0004.jpg)
+          - jpg(*/testSeq.0005.jpg)
+          - jpg(*/testSeq.0006.jpg)
+          - jpg(*/testSeq.0007.jpg)
+          - jpg(*/testSeq.0008.jpg)
+          - jpg(*/testSeq.0009.jpg)
+          - jpg(*/testSeq.0010.jpg)
+          - jpg(*/testSeq.0011.jpg)
+          - jpg(*/testSeq.0012.jpg)
         done
     """
 
@@ -41,12 +50,9 @@ class DetailedTaskReporterTest(BaseTestCase):
         """
         Test the output produced by the reporter.
         """
-        resource = ResourceLoader.get()
-        resource.load(self.__taskPath)
-
         taskHolderLoader = JsonLoader()
         taskHolderLoader.loadFromFile(self.__jsonConfig)
-        elements = FsElement.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
+        elements = FsElement.createFromPath(BaseTestCase.dataTestsDirectory()).children()
 
         dispacher = Dispatcher.create('local')
         dispacher.setOption('defaultReporter', 'detailed')

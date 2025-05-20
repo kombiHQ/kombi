@@ -26,13 +26,6 @@ class ConvertTextureTaskTest(BaseTestCase):
         self.assertEqual(result[0].var('filePath'), self.__targetPath)
         self.assertTrue(os.path.exists(self.__targetPath))
 
-    @classmethod
-    def tearDownClass(cls):
-        """
-        Remove the file that was copied.
-        """
-        os.remove(cls.__targetPath)
-
 
 if __name__ == "__main__":
     unittest.main()

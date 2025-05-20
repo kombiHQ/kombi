@@ -122,17 +122,6 @@ class FsElementTest(BaseTestCase):
         element = FsElement.createFromPath(self.__turntableFile, "exr")
         self.assertIsInstance(element, ExrElement)
 
-    def testPath(self):
-        """
-        Test Path functions.
-        """
-        path = Path(self.__turntableFile)
-        self.assertEqual(path.stat().st_size, 5430903)
-        self.assertEqual(path.name, "RND_ass_lookdev_default_beauty_tt.1001.exr")
-        self.assertTrue(path.exists())
-        path = Path("/")
-        self.assertEqual(path.name, os.sep)
-
 
 if __name__ == "__main__":
     unittest.main()

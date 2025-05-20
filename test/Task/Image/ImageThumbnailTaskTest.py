@@ -23,13 +23,6 @@ class ImageThumbnailTaskTest(BaseTestCase):
         self.assertEqual(element.var("width"), 640)
         self.assertEqual(element.var("height"), 360)
 
-    @classmethod
-    def tearDownClass(cls):
-        """
-        Remove the file that was copied.
-        """
-        os.remove(cls.__targetPath)
-
 
 if __name__ == "__main__":
     unittest.main()

@@ -6,8 +6,8 @@ class PlateExr(ExrElement):
     Implements an internal exr plate.
     """
 
-    # name example: "foo_abc_def.v0001.000001.exr"
-    namePattern = "{job:3}_{seq:3}_{shot:3}_v{version:3i}.######.exr"
+    # name example: "foo_abc_def.v00001.000001.exr"
+    namePattern = "{job:3}_{seq:3}_{shot:3}_v{version:4i}.######.exr"
 
     def __init__(self, *args, **kwargs):
         """

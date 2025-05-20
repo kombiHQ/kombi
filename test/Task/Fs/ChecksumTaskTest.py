@@ -18,6 +18,7 @@ class ChecksumTaskTest(BaseTestCase):
         """
         Create copy of the source file.
         """
+        super().setUpClass()
         shutil.copy2(
             cls.__sourcePath,
             cls.__targetPath
@@ -35,13 +36,6 @@ class ChecksumTaskTest(BaseTestCase):
         checksumTask = Task.create('checksum')
         checksumTask.add(element, self.__otherPath)
         self.assertRaises(ChecksumTaskMatchError, checksumTask.output)
-
-    @classmethod
-    def tearDownClass(cls):
-        """
-        Remove the file that was copied.
-        """
-        os.remove(cls.__targetPath)
 
 
 if __name__ == "__main__":

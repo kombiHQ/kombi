@@ -14,6 +14,7 @@ class RemoveTaskTest(BaseTestCase):
         """
         Create a file to remove in the test.
         """
+        super().setUpClass()
         open(cls.__path, 'w').close()
 
     def testRemove(self):

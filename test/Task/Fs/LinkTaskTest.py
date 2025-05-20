@@ -8,8 +8,9 @@ from kombi.Task import Task
 from kombi.Element.Fs import FsElement
 
 class LinkTaskTest(BaseTestCase):
-    """Test link task."""
-
+    """
+    Test link task.
+    """
     __sourcePath = os.path.join(BaseTestCase.dataTestsDirectory(), "test.exr")
     __targetPath = os.path.join(BaseTestCase.tempDirectory(), "test.exr")
     __targetSymlinkPath = os.path.join(BaseTestCase.tempDirectory(), "test_symlink.exr")
@@ -20,6 +21,8 @@ class LinkTaskTest(BaseTestCase):
         """
         Create copy of the source file.
         """
+        super().setUpClass()
+
         shutil.copy2(
             cls.__sourcePath,
             cls.__targetPath
@@ -64,19 +67,6 @@ class LinkTaskTest(BaseTestCase):
         self.assertEqual(len(result), 1)
         self.assertTrue(os.path.exists(result[0].var('filePath')))
         self.assertFalse(os.path.islink(result[0].var('filePath')))
-
-    @classmethod
-    def tearDownClass(cls):
-        """
-        Remove the temporary files.
-        """
-        if os.path.exists(cls.__targetSymlinkPath):
-            os.remove(cls.__targetSymlinkPath)
-
-        if os.path.exists(cls.__targetHardlinkPath):
-            os.remove(cls.__targetHardlinkPath)
-
-        os.remove(cls.__targetPath)
 
 
 if __name__ == "__main__":

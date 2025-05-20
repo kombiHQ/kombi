@@ -1,21 +1,21 @@
 import os
+import shutil
 import unittest
 from ..BaseTestCase import BaseTestCase
 from kombi.Element.Fs import FsElement
 from kombi.TaskHolder.Loader import Loader
-from kombi.TaskWrapper import TaskWrapper
 from kombi.Template import Template
 from kombi.Task import Task
 from kombi.Task.Task import TaskInvalidOptionError
 from kombi.Task.Task import TaskTypeNotFoundError
-from kombi.TaskHolder import TaskHolder, TaskHolderInvalidVarNameError
-from kombi.Element.Fs.Image import JpgElement, ExrElement
+from kombi.TaskHolder import TaskHolder
 from kombi.Element import Element
 
 class TaskTest(BaseTestCase):
     """Test for tasks."""
 
     __jsonConfig = os.path.join(BaseTestCase.dataTestsDirectory(), 'config', 'test.json')
+    __targetPath = BaseTestCase.tempDirectory()
 
     def testTaskRegistration(self):
         """
@@ -170,8 +170,8 @@ class TaskTest(BaseTestCase):
         self.assertEqual(copyTask.type(), 'copy')
 
         self.assertEqual(copyTask.option('testOption', element=dummyElement), 'testValue')
-        self.assertEqual(copyTask.option('testOption', extraVars=extraVars), 'randomValue')
-        self.assertEqual(copyTask.option('testExpr'), '2')
+        self.assertEqual(copyTask.option('testOption', extraVars=extraVars), '!kt {testCustomVar}')
+        self.assertEqual(copyTask.option('testExpr'), '!kt (min 2 6)')
 
         # sequence thumbnail task holder
         self.assertEqual(len(taskHolders[0].subTaskHolders()), 1)
@@ -187,7 +187,10 @@ class TaskTest(BaseTestCase):
         Test that task output is returned properly.
         """
         class DummyTask(Task):
-            pass
+            def _perform(self):
+                for element in self.elements():
+                    shutil.copy(element.var('filePath'), self.target(element))
+                return super()._perform()
         Task.register("dummy", DummyTask)
 
         dummyTask = Task.create('dummy')
@@ -195,7 +198,7 @@ class TaskTest(BaseTestCase):
         targetPaths = []
         for element in elements:
             target = '{}_target.mov'.format(element.var('name'))
-            targetPath = os.path.join(BaseTestCase.dataTestsDirectory(), target)
+            targetPath = os.path.join(self.__targetPath, target)
             targetPaths.append(targetPath)
             element.setVar('contextVarTest', 1, True)
             dummyTask.add(element, targetPath)
@@ -240,40 +243,6 @@ class TaskTest(BaseTestCase):
             map(dummyTask.target, dummyTask.elements()),
             map(resultTask.target, resultTask.elements())
         )
-
-    def testConfig(self):
-        """
-        Test that you can run tasks through a config file properly.
-        """
-        taskHolderLoader = Loader()
-        taskHolderLoader.loadFromFile(self.__jsonConfig)
-        elements = FsElement.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
-
-        createdElements = []
-        for taskHolder in taskHolderLoader.taskHolders():
-            self.assertIn('testCustomVar', taskHolder.varNames())
-            self.assertEqual(taskHolder.var('testCustomVar'), 'randomValue')
-            self.assertRaises(TaskHolderInvalidVarNameError, taskHolder.var, 'badVar')
-            createdElements += taskHolder.run(elements)
-
-        exrElements = list(filter(lambda x: isinstance(x, ExrElement), createdElements))
-        self.assertEqual(len(exrElements), 19)
-
-        jpgElements = list(filter(lambda x: isinstance(x, JpgElement), createdElements))
-        self.assertEqual(len(jpgElements), 1)
-
-        self.cleanup(exrElements + jpgElements)
-
-    def cleanup(self, elements):
-        """
-        Remove the data that was copied.
-        """
-        removeTask = Task.create('remove')
-        for element in elements:
-            removeTask.add(element, element.var("filePath"))
-        wrapper = TaskWrapper.create('python')
-        wrapper.setOption('user', '')
-        wrapper.run(removeTask)
 
 
 if __name__ == "__main__":

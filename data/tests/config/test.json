@@ -12,7 +12,7 @@
         "testOption": "!kt {testCustomVar}",
         "testExpr": "!kt (min 2 6)"
       },
-      "target": "!kt (tmpdir)/{baseName}",
+      "target": "!kt (tmp)/{baseName}",
       "metadata": {
         "match.types": [
           "exr"
@@ -26,7 +26,7 @@
       "tasks": [
         {
           "run": "sequenceThumbnail",
-          "target": "!kt (tmpdir)/{name}.jpg",
+          "target": "!kt (tmp)/{name}.jpg",
           "metadata": {
             "match.types": [
               "testElement"

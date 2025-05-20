@@ -90,7 +90,7 @@ class GlobTaskTest(BaseTestCase):
         )
 
         element2 = FsElement.createFromPath(
-            os.path.join(BaseTestCase.dataTestsDirectory(), "glob", "text.txt")
+            os.path.join(BaseTestCase.dataTestsDirectory(), "glob", "test.txt")
         )
 
         globTask = Task.create('glob')
@@ -118,7 +118,7 @@ class GlobTaskTest(BaseTestCase):
         )
 
         element2 = FsElement.createFromPath(
-            os.path.join(BaseTestCase.dataTestsDirectory(), "glob", "text.txt")
+            os.path.join(BaseTestCase.dataTestsDirectory(), "glob", "test.txt")
         )
 
         globTask = Task.create('glob')

@@ -180,7 +180,6 @@ class ProcessExecution(object):
         executableArgs = ' '.join(self.__sanitizeShellArgs(self.args())) if self.isShell() else self.args()
         self.__process = subprocess.Popen(
             executableArgs,
-            bufsize=1,
             close_fds='posix' in sys.builtin_module_names,
             stdout=subprocess.PIPE,
             stderr=stderrStream,

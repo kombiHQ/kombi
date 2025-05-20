@@ -1,13 +1,10 @@
 import os
 import io
 import unittest
-import tempfile
 from fnmatch import fnmatch
 from ....BaseTestCase import BaseTestCase
 from kombi.Element.Fs import FsElement
 from kombi.TaskHolder.Loader import JsonLoader
-from kombi.TaskWrapper import TaskWrapper
-from kombi.Task import Task
 from kombi.Element.Fs.Image import JpgElement, ExrElement
 from kombi.Dispatcher import Dispatcher
 
@@ -45,8 +42,8 @@ class LocalDispatcherTest(BaseTestCase):
         """
         taskHolderLoader = JsonLoader()
         taskHolderLoader.loadFromFile(self.__jsonConfig)
-        elements = FsElement.createFromPath(BaseTestCase.dataTestsDirectory()).glob()
-        temporaryDir = tempfile.mkdtemp()
+        elements = FsElement.createFromPath(BaseTestCase.dataTestsDirectory()).children()
+        temporaryDir = self.tempDirectory()
 
         dispacher = Dispatcher.create("local")
         outputStream = io.StringIO()
@@ -86,19 +83,6 @@ class LocalDispatcherTest(BaseTestCase):
             outputLine = output[index].replace('\\', '/')
             if not fnmatch(outputLine, line):
                 self.assertEqual(outputLine, line)
-
-        self.cleanup(exrElements + jpgElements)
-
-    def cleanup(self, elements):
-        """
-        Remove the data that was copied.
-        """
-        removeTask = Task.create('remove')
-        for element in elements:
-            removeTask.add(element, element.var("filePath"))
-        wrapper = TaskWrapper.create('python')
-        wrapper.setOption('user', '')
-        wrapper.run(removeTask)
 
 
 if __name__ == "__main__":

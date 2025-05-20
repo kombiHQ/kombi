@@ -27,13 +27,6 @@ class CopyTaskTest(BaseTestCase):
         self.assertEqual(element.var("width"), element.var("width"))
         self.assertEqual(element.var("height"), element.var("height"))
 
-    @classmethod
-    def tearDownClass(cls):
-        """
-        Remove the file that was copied.
-        """
-        os.remove(cls.__targetPath)
-
 
 if __name__ == "__main__":
     unittest.main()
