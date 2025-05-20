@@ -399,6 +399,12 @@ Name | Version
 --- | --- 
 Pylama | 7+
 Setuptools | 75+
+Coverage | 7.8+
+
+Install requirements:
+```
+pip install pylama setuptools coverage
+```
 
 #### Running tests
 ```bash
@@ -407,14 +413,16 @@ cd <SRC_LOCATION>
 ```
 
 #### Running linters
-Install requirements:
-```
-pip install pylama setuptools coverage
-```
 Run linter:
 ```bash
 cd <SRC_LOCATION>
 ./runlint
+```
+
+#### Running coverage
+```bash
+cd <SRC_LOCATION>
+./runcoverage
 ```
 
 #### Creating deployment package
