@@ -413,7 +413,6 @@ cd <SRC_LOCATION>
 ```
 
 #### Running linters
-Run linter:
 ```bash
 cd <SRC_LOCATION>
 ./runlint
