@@ -12,6 +12,7 @@ class ConvertTextureTaskTest(BaseTestCase):
     __sourcePath = os.path.join(BaseTestCase.dataTestsDirectory(), "test.png")
     __targetPath = os.path.join(BaseTestCase.tempDirectory(), "testToDelete.tx")
 
+    @unittest.skipIf(not BaseTestCase.hasBin(os.environ.get('KOMBI_MAKETX_EXECUTABLE', 'maketx')), 'maketx not found in the search path')
     def testConvertTexture(self):
         """
         Test that the ConvertTexture task works properly.
