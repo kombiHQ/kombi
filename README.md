@@ -371,6 +371,7 @@ pip install oiio-static-python
 ```bash
 apt-get install ffmpeg
 apt-get install graphviz
+apt-get install openimageio-tools
 ```
 
 In recent versions of Ubuntu, you may also need to install `libxcb-cursor0` in order to use the `xcb` plugin for Qt:
