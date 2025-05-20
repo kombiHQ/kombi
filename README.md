@@ -409,7 +409,7 @@ cd <SRC_LOCATION>
 #### Running linters
 Install requirements:
 ```
-pip install pylama setuptools
+pip install pylama setuptools coverage
 ```
 Run linter:
 ```bash
