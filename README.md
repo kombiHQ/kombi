@@ -108,6 +108,11 @@ pip install pylama setuptools coverage
 ```
 
 #### Running tests
+Depending on the version of OpenImageIO you're using, you may need to specify an OCIO configuration. Kombi includes a basic config that can be used if needed:
+```bash
+export OCIO="<SRC_LOCATION>/data/thirdparty/opencolorio/config.ocio"
+```
+
 ```bash
 cd <SRC_LOCATION>
 ./runtest
