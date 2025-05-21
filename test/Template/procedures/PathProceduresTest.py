@@ -1,5 +1,4 @@
 import unittest
-import os
 from ...BaseTestCase import BaseTestCase
 from kombi.Template import Template
 from kombi.Template import TemplateProcedureNotFoundError
@@ -8,7 +7,6 @@ class PathProceduresTest(BaseTestCase):
     """Test Path template procedures."""
 
     __path = "/test/path/example.ext"
-    __testRFindPath = os.path.join(BaseTestCase.dataTestsDirectory(), 'config', 'test.json')
 
     def testDirname(self):
         """
@@ -39,7 +37,7 @@ class PathProceduresTest(BaseTestCase):
             return '{}-{}'.format(a, b)
 
         with self.assertRaises(TemplateProcedureNotFoundError):
-            Template.runProcedure("dummyRegistration")
+            Template.runProcedure("dummyRegistration", 1, 2)
 
         Template.registerProcedure("dummyRegistration", myDummyTemplate)
         self.assertIn("dummyRegistration", Template.registeredProcedureNames())
