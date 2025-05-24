@@ -130,19 +130,5 @@ cd <SRC_LOCATION>
 ./runcoverage
 ```
 
-#### Creating deployment package
-
-```bash
-cd <SRC_LOCATION>
-python3 package.py
-```
-
-For advanced options please use the flag `--help`:
-```bash
-cd <SRC_LOCATION>
-python3 package.py --help
-```
-</details>
-
 ## Licensing
 Kombi is free software; you can redistribute it and/or modify it under the terms of the MIT License
