@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/kombiHQ/kombi.svg?branch=master)](https://travis-ci.org/kombiHQ/kombi)
 
 <p align="center">
-    <img src="data/ui/icons/kombi.png?v=2" with="512" height="512"/>
+    <img src="src/kombiqt/resources/icons/kombi.png?v=2" with="512" height="512"/>
 </p>
 
 Kombi is a library designed to simplify the process of describing and executing tasks. It enables you to wrap from executables to custom Python implementations, providing an API that facilitates:
