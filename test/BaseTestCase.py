@@ -9,9 +9,9 @@ import unittest
 root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 # Add kombi source code to python path for tests
-sourceFolder = os.path.join(root, "src", "lib")
+sourceFolder = os.path.join(root, "src")
 if not os.path.exists(sourceFolder):  # pragma: no cover
-    raise Exception("Can't resolve lib location!")
+    raise Exception("Can't resolve src location!")
 
 sys.path.insert(1, sourceFolder)
 
