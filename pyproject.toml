@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kombi"
+dynamic = ["version"]
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+  "PyYAML",
+  "python-call-graph",
+  "jedi",
+  "oiio-static-python",
+]
+authors = [
+  {name = "Paulo Nogueira", email = "paulondc+kombi@gmail.com"}
+]
+
+[tool.setuptools]
+package-dir = {"" = "."}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = [
+  "src",
+  ".",
+]
+include = [
+  "kombi",
+  "kombiqt",
+  "kombiqt/resources",
+]
+
+[project.optional-dependencies]
+gui = [
+   "Qt.Py",
+   "PySide6"
+]
+gui-legacy = [
+   "Qt.Py",
+   "PySide2"
+]
+dev = [
+  "pylama",
+  "setuptools",
+  "coverage"
+]
+
+[project.scripts]
+kombi = "kombi:init"
+
+[project.gui-scripts]
+kombi-gui = "kombiqt:init"
+kombi-script-editor = "kombiqt:initScriptEditor"
+
+[project.urls]
+HomePage = "https://github.com/kombiHQ/kombi"
+Documentation = "https://github.com/kombiHQ/kombi/wiki"
+Repository = "https://github.com/kombiHQ/kombi.git"
