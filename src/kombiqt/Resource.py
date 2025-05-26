@@ -197,12 +197,12 @@ class Resource(object):
         Return the main stylesheet.
         """
         if "stylesheet" not in cls.__cache:
-            styleSheetFile = os.path.join(cls.__resourcesLocation, "darkstyle", "darkstyle.qss")
+            styleSheetFile = os.path.join(cls.__resourcesLocation, "styles", "main.qss")
 
             styleSheetContents = None
             with open(styleSheetFile, "r") as f:
                 styleSheetContents = f.read().replace(
-                    "darkstyle/",
+                    "styles/",
                     '{0}/'.format(
                         os.path.dirname(styleSheetFile).replace('\\', '/')
                     )
