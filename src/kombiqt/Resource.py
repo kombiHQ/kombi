@@ -8,14 +8,7 @@ def _resolveResoucesLocation():
     """
     Utility to resolve the resources location.
     """
-    dataUI = ("data", "ui")
-    rootLocation = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    deployedLocation = os.path.join(rootLocation, *dataUI)
-    if os.path.exists(deployedLocation):
-        return deployedLocation
-
-    # dev location
-    return os.path.join(os.path.dirname(rootLocation), *dataUI)
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources")
 
 class Resource(object):
     """
