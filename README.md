@@ -127,5 +127,7 @@ cd <SRC_LOCATION>
 ./runcoverage
 ```
 
+</details>
+
 ## Licensing
-Kombi is free software; you can redistribute it and/or modify it under the terms of the MIT License
+Kombi is free software; you can redistribute it and/or modify it under the terms of the [MIT License](LICENSE)
