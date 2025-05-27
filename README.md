@@ -1,5 +1,5 @@
 # Kombi
-[![Build Status](https://travis-ci.org/kombiHQ/kombi.svg?branch=master)](https://travis-ci.org/kombiHQ/kombi)
+[![CI](https://github.com/kombiHQ/kombi/actions/workflows/python-package.yml/badge.svg)](https://github.com/kombiHQ/kombi/actions/workflows/python-package.yml)
 
 <p align="center">
     <img src="src/kombiqt/resources/icons/kombi.png?v=2" with="512" height="512"/>
