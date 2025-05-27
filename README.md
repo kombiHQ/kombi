@@ -99,15 +99,9 @@ apt install libxcb-cursor0
 <p>
 
 #### Dependencies
-Name | Version 
---- | --- 
-Pylama | 7+
-Setuptools | 75+
-Coverage | 7.8+
-
 Install requirements:
-```
-pip install pylama setuptools coverage
+```bash
+pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[dev]"
 ```
 
 #### Running tests
