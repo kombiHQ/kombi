@@ -35,6 +35,7 @@ jobs:
         ./runlint
     - name: Test
       run: |
+        echo "Default umask: $(umask)"
         umask 0000
         ./runtest
       env:
