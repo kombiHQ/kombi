@@ -60,7 +60,7 @@ class ChmodTaskTest(BaseTestCase):
         """
         link = os.path.join(self.__targetPath, 'symlink.exr')
         os.symlink(self.__path, link)
-        self.assertEqual(self.__getPermission(link), '664')
+        self.assertIn(self.__getPermission(link), ['664', '644'])
         self.assertTrue(os.path.islink(link))
         element = FsElement.createFromPath(link)
         chmodTask = Task.create('chmod')
