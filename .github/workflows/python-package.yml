@@ -35,6 +35,7 @@ jobs:
         ./runlint
     - name: Test
       run: |
+        umask 0022
         ./runtest
       env:
         "OCIO": "./data/thirdparty/opencolorio/config.ocio"
