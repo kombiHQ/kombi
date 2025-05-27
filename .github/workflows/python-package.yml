@@ -36,7 +36,6 @@ jobs:
     - name: Test
       run: |
         echo "Default umask: $(umask)"
-        umask 0000
         ./runtest
       env:
         "OCIO": "./data/thirdparty/opencolorio/config.ocio"
