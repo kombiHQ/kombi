@@ -95,6 +95,8 @@ apt install libxcb-cursor0
 
 ## Kombi Development
 
+[Development guidelines](CONTRIBUTING.md).
+
 <details><summary>Details</summary>
 <p>
 
