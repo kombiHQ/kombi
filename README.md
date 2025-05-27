@@ -66,7 +66,7 @@ Basic install (No UI support):
 pip install "https://github.com/kombiHQ/kombi/archive/master.zip"
 ```
 
-### Install dependencies
+### Install system dependencies
 
 <details><summary>Linux</summary>
 <p>
