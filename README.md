@@ -51,19 +51,22 @@ graphviz | 12.1+
 
 In case you are building the dependencies manually skip the step below:
 
-### Install dependencies
-
-#### Python:
-
-Note: Kombi is compatible with both `PySide2` and `PySide6`. Please use the version that best suits your requirements.
+Full install (UI Support based on Pyside6):
 ```bash
-pip install PySide6 PyYAML Qt.Py python-call-graph jedi
+pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[dev,gui]"
 ```
 
-Additionally, if you want to support the image processing tasks, you will need to install OpenImageIO. Otherwise, feel free to skip this step:
+Full install legacy (UI Support based on Pyside2):
+```bash
+pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[dev,gui-legacy]"
 ```
-pip install oiio-static-python
+
+Basic install (No UI support):
+```bash
+pip install "https://github.com/kombiHQ/kombi/archive/master.zip"
 ```
+
+### Install dependencies
 
 <details><summary>Linux</summary>
 <p>
