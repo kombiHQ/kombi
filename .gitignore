@@ -27,6 +27,7 @@ env/
 develop-eggs/
 dist/
 downloads/
+*.egg-info
 eggs/
 kombi.zip
 archive.zip
