@@ -51,17 +51,17 @@ graphviz | 12.1+
 
 In case you are building the dependencies manually skip the step below:
 
-Full install (UI Support based on Pyside6):
+GUI install (Based on PySide6):
 ```bash
 pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[gui]"
 ```
 
-Full install legacy (UI Support based on Pyside2):
+GUI legacy install (Based on PySide2):
 ```bash
 pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[gui-legacy]"
 ```
 
-Basic install (No UI support):
+Basic install (No GUI support):
 ```bash
 pip install "https://github.com/kombiHQ/kombi/archive/master.zip"
 ```
