@@ -100,10 +100,11 @@ apt install libxcb-cursor0
 <details><summary>Details</summary>
 <p>
 
-#### Dependencies
-Install requirements:
+#### Clone and install locally
 ```bash
-pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[dev]"
+git clone https://github.com/kombiHQ/kombi.git
+cd kombi
+pip install -e ".[gui,dev]"
 ```
 
 #### Running tests
