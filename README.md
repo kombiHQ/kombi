@@ -106,6 +106,7 @@ git clone https://github.com/kombiHQ/kombi.git
 cd kombi
 pip install -e ".[gui,dev]"
 ```
+**Note:** For PySide2 specify `gui-legacy` instead of `gui` (PySide6)
 
 #### Running tests
 Depending on the version of OpenImageIO you're using, you may need to specify an OCIO configuration. Kombi includes a basic config that can be used if needed:
