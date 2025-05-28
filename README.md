@@ -53,12 +53,12 @@ In case you are building the dependencies manually skip the step below:
 
 Full install (UI Support based on Pyside6):
 ```bash
-pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[dev,gui]"
+pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[gui]"
 ```
 
 Full install legacy (UI Support based on Pyside2):
 ```bash
-pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[dev,gui-legacy]"
+pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[gui-legacy]"
 ```
 
 Basic install (No UI support):
