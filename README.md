@@ -66,6 +66,8 @@ Basic install (No GUI support):
 pip install "https://github.com/kombiHQ/kombi/archive/master.zip"
 ```
 
+> **Alternatively**, if you prefer to manage dependencies manually, you can either add the src folder to your `PYTHONPATH` or copy the necessary modules from src into a directory that is already part of your `PYTHONPATH`.
+
 ### Install system dependencies
 
 <details><summary>Linux</summary>
