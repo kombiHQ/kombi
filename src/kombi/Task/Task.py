@@ -2,7 +2,7 @@ import os
 import json
 import sys
 import copy
-from typing import List
+from typing import List, Optional
 from collections import OrderedDict
 from ..ResourceLoader import ResourceLoader
 from ..Element.Fs import FsElement
@@ -512,7 +512,7 @@ class Task(object):
 
         return task
 
-    def _processElement(self, element) -> Element | None:
+    def _processElement(self, element) -> Optional[Element]:
         """
         Process an individual element.
 
