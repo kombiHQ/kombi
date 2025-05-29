@@ -51,22 +51,24 @@ graphviz | 12.1+
 
 In case you are building the dependencies manually skip the step below:
 
-GUI install (Based on PySide6):
+UI Support (Based on PySide6):
 ```bash
-pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[gui]"
+pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[gui,extra]"
 ```
 
-GUI legacy install (Based on PySide2):
+UI Legacy Support (Based on PySide2):
 ```bash
-pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[gui-legacy]"
+pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[gui-legacy,extra]"
 ```
 
-Basic install (No GUI support):
+Basic install (No UI support):
 ```bash
-pip install "https://github.com/kombiHQ/kombi/archive/master.zip"
+pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[extra]"
 ```
 
-> **Alternatively**, if you prefer to manage dependencies manually, you can either add the src folder to your `PYTHONPATH` or copy the necessary modules from src into a directory that is already part of your `PYTHONPATH`.
+> **Extra packages:** If you dont want to include extra packages, such as support for OpenImageIO, please remove `extra` from the query.
+
+> **Manual installation:** Copy the modules under `src` (`kombi`, `kombiqt`) into a directory that is part of your `PYTHONPATH`.
 
 ### Install system dependencies
 
@@ -106,7 +108,7 @@ apt install libxcb-cursor0
 ```bash
 git clone https://github.com/kombiHQ/kombi.git
 cd kombi
-pip install -e ".[gui,dev]"
+pip install -e ".[gui,dev,extra]"
 ```
 > **Note:** For PySide2 specify `gui-legacy` instead of `gui` (PySide6)
 
