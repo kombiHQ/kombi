@@ -53,20 +53,28 @@ In case you are building the dependencies manually skip the step below:
 
 UI Support (Based on PySide6):
 ```bash
-pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[gui,extra]"
+pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[gui]"
 ```
 
 UI Legacy Support (Based on PySide2):
 ```bash
-pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[gui-legacy,extra]"
+pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[gui-legacy]"
 ```
 
 Basic install (No UI support):
 ```bash
-pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[extra]"
+pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[]"
 ```
 
-> **Extra packages:** If you dont want to include extra packages, such as support for OpenImageIO, please remove `extra` from the query.
+> **Extra packages:** If want to include extra packages, such as support for OpenImageIO, please add `extra` to the query, for instance:
+<details><summary>Extra packages</summary>
+
+```bash
+pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[gui,extra]"
+pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[gui-legacy,extra]"
+pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[extra]"
+```
+</details>
 
 > **Manual installation:** Copy the modules under `src` (`kombi`, `kombiqt`) into a directory that is part of your `PYTHONPATH`.
 
