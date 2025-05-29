@@ -74,14 +74,14 @@ def match(text, pattern):
     """
     return int(fnmatch(text, pattern))
 
-def length(text):
+def length(text=''):
     """
     Return the length of the text.
     \todo: needs test
     """
     return len(text)
 
-def undefined(text):
+def undefined(text=''):
     """
     Return if the text is empty.
     \todo: needs test
