@@ -67,7 +67,7 @@ pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[]"
 ```
 
 <details><summary>Extra packages</summary>
-If want to include extra packages, such as support for OpenImageIO, please add `extra` to the query, for instance:
+If want to include extra packages, such as support for OpenImageIO, please add extra to the query, for instance:
 
 ```bash
 pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[gui,extra]"
