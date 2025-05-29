@@ -64,7 +64,7 @@ class PythonTextEditWidget(CodeTextEditWidget):
         elif event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_G:
             self.__gotoLinePopup()
         # Control+Enter: Execute code
-        elif QtCore.Qt.ControlModifier in event.modifiers() and event.key() == QtCore.Qt.Key_Return:
+        elif event.modifiers() & QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Return:
             code = cursor.selectedText()
             if not code:
                 code = self.toPlainText()
