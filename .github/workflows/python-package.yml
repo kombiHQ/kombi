@@ -29,7 +29,7 @@ jobs:
         sudo apt-get update && sudo apt-get install -f ffmpeg graphviz openimageio-tools libxcb-cursor0
     - name: Install dependencies
       run: |
-        pip install -e ".[gui,dev]"
+        pip install -e ".[gui,dev,extra]"
     - name: Lint
       run: |
         ./runlint
