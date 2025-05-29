@@ -535,6 +535,8 @@ class _OutputTextEdit(CodeTextEditWidget):
         Re-Implementation to grab the context menu and add script editor actions.
         """
         contextMenu = self.createStandardContextMenu()
+        cursorPosition = self.cursorForPosition(e.pos())
+        currentLine = cursorPosition.block().text()
         openFilePath = None
         openLine = 0
 
@@ -542,12 +544,12 @@ class _OutputTextEdit(CodeTextEditWidget):
         selectedText = self.textCursor().selectedText().strip()
         if selectedText and os.path.exists(selectedText):
             openFilePath = selectedText
+        elif not selectedText and currentLine and os.path.exists(currentLine):
+            openFilePath = currentLine
 
         # parse file path from exception
         if not openFilePath:
-            cursorPosition = self.cursorForPosition(e.pos())
             lineNumber = cursorPosition.blockNumber()
-            currentLine = cursorPosition.block().text()
             mouseCurrentChar = cursorPosition.position() - cursorPosition.block().position()
             for match in re.finditer(self.__exceptionFilePathRegEx, currentLine):
                 filePath = match.group(1)
@@ -556,7 +558,7 @@ class _OutputTextEdit(CodeTextEditWidget):
                     openFilePath = filePath
                     openLine = int(lineNumber)
 
-        if openFilePath:
+        if openFilePath and os.path.exists(openFilePath) and os.path.isfile(openFilePath):
             openInScriptEditorAction = QtWidgets.QAction(
                 'Open "{}" in script editor'.format(os.path.basename(openFilePath)),
                 self
