@@ -23,49 +23,50 @@ class ImageThumbnailTask(Task):
         self.setOption("convertToRGBA", self.__defaultConvertToRGBA)
         self.setMetadata('dispatch.split', True)
 
-    def _perform(self):
+    def _processElement(self, element):
         """
-        Perform the task.
+        Process an individual element.
         """
-        width = self.option('width')
-        height = self.option('height')
+        width = self.option('width', element)
+        if isinstance(width, str):
+            width = int(width)
 
-        result = []
-        for element in self.elements():
-            targetFilePath = self.target(element)
+        height = self.option('height', element)
+        if isinstance(height, str):
+            height = int(height)
 
-            # creating a task to resize the thumbnail
-            resizeImageTask = Task.create('resizeImage')
-            resizeImageTask.setOption('convertToRGBA', self.option('convertToRGBA'))
-            resizeImageTask.add(element, targetFilePath)
+        targetFilePath = self.target(element)
 
-            # Calculate resize ratios for resizing
-            currentWidth = element.var('width')
-            currentHeigth = element.var('height')
+        # creating a task to resize the thumbnail
+        resizeImageTask = Task.create('resizeImage')
+        resizeImageTask.setOption('convertToRGBA', self.option('convertToRGBA'))
+        resizeImageTask.add(element, targetFilePath)
 
-            ratioWidth = width / float(currentWidth)
-            ratioHeight = height / float(currentHeigth)
+        # Calculate resize ratios for resizing
+        currentWidth = element.var('width')
+        currentHeigth = element.var('height')
 
-            # smaller ratio will ensure that the image fits in the view
-            ratio = ratioWidth if ratioWidth < ratioHeight else ratioHeight
+        ratioWidth = width / float(currentWidth)
+        ratioHeight = height / float(currentHeigth)
 
-            newWidth = int(currentWidth * ratio)
-            newHeight = int(currentHeigth * ratio)
+        # smaller ratio will ensure that the image fits in the view
+        ratio = ratioWidth if ratioWidth < ratioHeight else ratioHeight
 
-            resizeImageTask.setOption(
-                'width',
-                newWidth
-            )
+        newWidth = int(currentWidth * ratio)
+        newHeight = int(currentHeigth * ratio)
 
-            resizeImageTask.setOption(
-                'height',
-                newHeight
-            )
+        resizeImageTask.setOption(
+            'width',
+            newWidth
+        )
 
-            # running task
-            result += resizeImageTask.output()
+        resizeImageTask.setOption(
+            'height',
+            newHeight
+        )
 
-        return result
+        # running task
+        return resizeImageTask.output()[0]
 
 
 # registering task
