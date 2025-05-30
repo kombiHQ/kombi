@@ -672,8 +672,20 @@ class TaskHolderListWidget(QtWidgets.QTreeWidget):
 
         if not refreshWidgets:
             return False
+        
+        # querying elements assigned to the root task holder
+        elements = []
+        for index in range(self.topLevelItemCount()):
+            rootItem = self.topLevelItem(index)
+            if taskHolder == rootItem.taskHolder():
+                elements = rootItem.elements()
+                break
 
         try:
+            # triggering setup
+            taskHolder.task().setup(elements)
+            
+            # refreshing task holder widget
             self.__updateRootItem(taskHolder)
         except Exception:
             traceback.print_exc()
