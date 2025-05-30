@@ -73,7 +73,7 @@ class PythonTextEditWidget(CodeTextEditWidget):
             code = code.replace('\u2029', '\n')
 
             # when CTRL + SHIFT + ENTER is pressed profiling the execution
-            if hasPyCallGraph and QtCore.Qt.ShiftModifier in event.modifiers():
+            if hasPyCallGraph and event.modifiers() & QtCore.Qt.ShiftModifier:
                 profileOutputPng = Template('!kt (tmp)/kombi_profile_(rand).png').value()
                 graphviz = pycallgraph.output.GraphvizOutput()
                 graphviz.output_file = profileOutputPng
