@@ -76,7 +76,7 @@ pip install "https://github.com/kombiHQ/kombi/archive/master.zip#egg=kombi[extra
 ```
 </details>
 
-> **Manual installation:** Copy the modules under `src` (`kombi`, `kombiqt`) into a directory that is part of your `PYTHONPATH`.
+> **Manual installation:** Copy the modules under `src` (kombi, kombiqt) into a directory that is part of the `PYTHONPATH`.
 
 ### Install system dependencies
 
