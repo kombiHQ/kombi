@@ -477,6 +477,25 @@ QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
     margin: 0;
 }
 
+QSpinBox::up-button, QDoubleSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+
+    padding: 2px;
+    width: 16px;
+    border-width: 1px;
+}
+
+QSpinBox::down-button, QDoubleSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+
+    padding: 2px;
+    width: 16px;
+    border-width: 1px;
+    border-top-width: 0;
+}
+
 QLabel#fontSizePreview, QLabel#listIconSizePreview {
     background-color: #1a1a1a;
     border: 1px solid #808080;
