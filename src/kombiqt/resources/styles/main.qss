@@ -376,6 +376,13 @@ QComboBox {
     border-color: #222222;
 }
 
+QComboBox::drop-down {
+    border: none;
+    image:url(styles/icon_minus.png);
+    subcontrol-position: center right;
+    padding-right: 4px;
+}
+
 QPushButton:flat {
     background-color: transparent;
     border: 1px solid transparent;
