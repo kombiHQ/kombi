@@ -26,17 +26,18 @@ class PresetsOptionVisual(OptionVisual):
         self.__mainWidget = _ComboBox(self)
         self.__mainWidget.setFocusPolicy(QtCore.Qt.ClickFocus)
 
-        presets = [
-            str(self.optionValue())
-        ]
+        currentValue = str(self.optionValue())
+        presets = list(map(str, self.uiHints().get('presets', [])))
 
         # preset list
-        for preset in self.uiHints().get('presets', []):
-            if preset in presets:
-                continue
-            presets.append(preset)
+        if currentValue not in presets:
+            presets.insert(0, currentValue)
 
-        self.__mainWidget.addItems(presets)
+        for index, preset in enumerate(presets):
+            self.__mainWidget.addItem(preset)
+            if preset == currentValue:
+                self.__mainWidget.setCurrentIndex(index)
+
         self.__mainWidget.currentTextChanged.connect(self.__onValueChanged)
 
         mainLayout.addWidget(self.__mainWidget)
