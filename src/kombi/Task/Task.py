@@ -136,6 +136,20 @@ class Task(object):
         """
         return list(self.__metadata.keys())
 
+    def removeMetadata(self, scope):
+        """
+        Remove the input metadata.
+        """
+        if not self.hasMetadata(scope):
+            return
+
+        levels = scope.split('.')
+        currentLevel = self.__metadata
+        for level in levels[:-1]:
+            currentLevel = currentLevel[level]
+
+        del currentLevel[levels[-1]]
+
     def hasMetadata(self, scope) -> bool:
         """
         Return a boolean telling if the input scope is under the metadata.
