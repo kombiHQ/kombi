@@ -136,6 +136,32 @@ class TaskTest(BaseTestCase):
             map(lambda x: x.var('filePath'), clone.elements())
         )
 
+    def testTaskSetMetadata(self):
+        """
+        Test setting metadata to the task.
+        """
+        dummyTask = Task.create('copy')
+        dummyTask.setMetadata('a.b.c', 'valueA')
+
+        self.assertIn('a', dummyTask.metadataNames())
+        self.assertTrue(dummyTask.hasMetadata('a.b.c'))
+        self.assertEqual(dummyTask.metadata('a.b.c'), 'valueA')
+
+    def testTaskRemoveMetadata(self):
+        """
+        Test removing metadata to the task.
+        """
+        dummyTask = Task.create('copy')
+        dummyTask.setMetadata('a.b.c', 'valueA')
+
+        dummyTask.removeMetadata('a.b.c')
+        self.assertFalse(dummyTask.hasMetadata('a.b.c'))
+
+        dummyTask.setMetadata('a.b.c', 'valueA')
+        dummyTask.removeMetadata('a')
+
+        self.assertNotIn('a', dummyTask.metadataNames())
+
     def testTaskOptions(self):
         """
         Test that task options are working properly.
