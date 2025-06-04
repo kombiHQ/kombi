@@ -289,19 +289,19 @@ class TaskHolder(object):
 
         return result
 
-    def fromTaskToTaskHolders(self, task):
+    def fromTaskToTaskHolder(self, task):
         """
         Return the task holder for the input task.
         """
-        result = []
-
         if task is self.task():
-            result.append(self)
+            return self
 
         for subTaskHolder in self.subTaskHolders():
-            result += subTaskHolder.fromTaskToTaskHolders(task)
+            result = subTaskHolder.fromTaskToTaskHolder(task)
+            if result:
+                return result
 
-        return result
+        return None
 
     def addImportTemplate(self, template):
         """
