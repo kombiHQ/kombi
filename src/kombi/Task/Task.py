@@ -136,7 +136,7 @@ class Task(object):
         """
         return list(self.__metadata.keys())
 
-    def removeMetadata(self, scope):
+    def unsetMetadata(self, scope):
         """
         Remove the input metadata.
         """
@@ -203,6 +203,12 @@ class Task(object):
 
         return self.__options[name]
 
+    def hasOption(self, name):
+        """
+        Return a boolean telling if the input option name exists.
+        """
+        return name in self.__options
+
     def setOption(self, name, value):
         """
         Set an option to the task.
@@ -213,10 +219,17 @@ class Task(object):
         """
         Helper to set multiple options at once to the task.
 
-        The options are expected to te passed as keyword parameters.
+        The options are expected to be passed as keyword parameters.
         """
         for optionName, optionValue in kwargs.items():
             self.setOption(optionName, optionValue)
+
+    def unsetOption(self, name):
+        """
+        Remove the input option name.
+        """
+        if self.hasOption(name):
+            del self.__options[name]
 
     def optionNames(self) -> List[str]:
         """
