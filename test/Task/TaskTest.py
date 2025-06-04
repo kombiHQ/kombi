@@ -147,33 +147,99 @@ class TaskTest(BaseTestCase):
         self.assertTrue(dummyTask.hasMetadata('a.b.c'))
         self.assertEqual(dummyTask.metadata('a.b.c'), 'valueA')
 
-    def testTaskRemoveMetadata(self):
+    def testTaskUnsetMetadata(self):
         """
         Test removing metadata to the task.
         """
         dummyTask = Task.create('copy')
         dummyTask.setMetadata('a.b.c', 'valueA')
 
-        dummyTask.removeMetadata('a.b.c')
+        dummyTask.unsetMetadata('a.b.c')
         self.assertFalse(dummyTask.hasMetadata('a.b.c'))
 
         dummyTask.setMetadata('a.b.c', 'valueA')
-        dummyTask.removeMetadata('a')
+        dummyTask.unsetMetadata('a')
 
         self.assertNotIn('a', dummyTask.metadataNames())
 
-    def testTaskOptions(self):
+    def testTaskSetOption(self):
         """
-        Test that task options are working properly.
+        Test setting a task option.
         """
         dummyTask = Task.create('copy')
+
+        # boolean option
+        self.assertFalse(dummyTask.hasOption('boolOption'))
         dummyTask.setOption('boolOption', True)
+        self.assertTrue(dummyTask.hasOption('boolOption'))
         self.assertEqual(dummyTask.option('boolOption'), True)
+
+        # float option
+        self.assertFalse(dummyTask.hasOption('floatOption'))
         dummyTask.setOption('floatOption', 1.0)
+        self.assertTrue(dummyTask.hasOption('floatOption'))
         self.assertEqual(dummyTask.option('floatOption'), 1.0)
+
+        # int option
+        self.assertFalse(dummyTask.hasOption('intOption'))
         dummyTask.setOption('intOption', 1)
         self.assertEqual(dummyTask.option('intOption'), 1)
+        self.assertTrue(dummyTask.hasOption('intOption'))
         self.assertRaises(TaskInvalidOptionError, dummyTask.option, 'badOption')
+
+    def testTaskSetMultipleOption(self):
+        """
+        Test setting multiple task options.
+        """
+        dummyTask = Task.create('copy')
+
+        # boolean option
+        dummyTask.setOption('boolOption', True)
+
+        # float, int option
+        dummyTask.setOptions(floatOption=1.0, intOption=1)
+
+        # checking results
+        self.assertTrue(dummyTask.hasOption('boolOption'))
+        self.assertEqual(dummyTask.option('boolOption'), True)
+
+        self.assertTrue(dummyTask.hasOption('floatOption'))
+        self.assertEqual(dummyTask.option('floatOption'), 1.0)
+
+        self.assertEqual(dummyTask.option('intOption'), 1)
+        self.assertTrue(dummyTask.hasOption('intOption'))
+        self.assertRaises(TaskInvalidOptionError, dummyTask.option, 'badOption')
+
+    def testTaskUnsetOption(self):
+        """
+        Test removing a task option.
+        """
+        dummyTask = Task.create('copy')
+
+        dummyTask.setOption('boolOption', True)
+        dummyTask.setOption('floatOption', 1.0)
+        dummyTask.setOption('intOption', 1)
+
+        # removing option
+        dummyTask.unsetOption('floatOption')
+
+        self.assertTrue(dummyTask.hasOption('boolOption'))
+        self.assertFalse(dummyTask.hasOption('floatOption'))
+        self.assertTrue(dummyTask.hasOption('intOption'))
+
+    def testTaskOptionNames(self):
+        """
+        Test retrieving all option names.
+        """
+        dummyTask = Task.create('copy')
+
+        dummyTask.setOption('boolOption', True)
+        dummyTask.setOption('floatOption', 1.0)
+        dummyTask.setOption('intOption', 1)
+
+        self.assertIn('boolOption', dummyTask.optionNames())
+        self.assertIn('floatOption', dummyTask.optionNames())
+        self.assertIn('intOption', dummyTask.optionNames())
 
     def testTaskTemplateOption(self):
         """
