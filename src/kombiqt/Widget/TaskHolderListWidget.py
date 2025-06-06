@@ -9,7 +9,7 @@ from kombi.Task import Task, TaskValidationError
 from kombi.Template import Template
 from kombi.ProcessExecution import ProcessExecution
 from kombi.KombiError import KombiError
-from Qt import QtCore, QtWidgets
+from Qt import QtCore, QtGui, QtWidgets
 
 class TaskHolderListWidgetError(KombiError):
     """
@@ -50,6 +50,7 @@ class TaskHolderListWidget(QtWidgets.QTreeWidget):
         super(TaskHolderListWidget, self).__init__(*args, **kwargs)
         self.__messageBox = None
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.__onContextMenu)
         self.header().hide()
 
         header = QtWidgets.QTreeWidgetItem(['Target'])
@@ -273,6 +274,195 @@ class TaskHolderListWidget(QtWidgets.QTreeWidget):
         """
         pass
 
+    def __onContextMenu(self, pos):
+        """
+        Display custom context menu.
+        """
+        treeItem = self.itemAt(pos)
+        currentWidget = treeItem
+        if not isinstance(currentWidget, TaskHolderOptionWidgetItem):
+            return
+
+        taskHolderItemWidget = None
+        while currentWidget is not None:
+            if isinstance(currentWidget, TaskHolderListTreeWidgetItem):
+                taskHolderItemWidget = currentWidget
+                break
+            currentWidget = currentWidget.parent()
+
+        if not taskHolderItemWidget:
+            return
+
+        optionName = treeItem.optionName()
+        taskHolder = taskHolderItemWidget.taskHolder()
+        menu = QtWidgets.QMenu()
+        action = menu.addAction("Add expression")
+        action.triggered.connect(
+            functools.partial(
+                self.__addExpression,
+                taskHolder,
+                optionName
+            )
+        )
+
+        action = menu.addAction("New option...")
+        action.triggered.connect(
+            functools.partial(
+                self.__addExpression,
+                taskHolder,
+                optionName
+            )
+        )
+
+        action = menu.addAction("Edit...")  # edit value and metadata
+        action.triggered.connect(
+            functools.partial(
+                self.__addExpression,
+                taskHolder,
+                optionName
+            )
+        )
+
+        action = menu.addAction("Remove option...")
+        action.triggered.connect(
+            functools.partial(
+                self.__addExpression,
+                taskHolder,
+                optionName
+            )
+        )
+
+        action = menu.addAction("Hide option")
+        action.triggered.connect(
+            functools.partial(
+                self.__displayOption,
+                taskHolder,
+                optionName,
+                False
+            )
+        )
+
+        if not taskHolder.task().metadata(f'ui.options.{optionName}.label', ''):
+            action = menu.addAction("Add custom label")
+            action.triggered.connect(
+                functools.partial(
+                    self.__addCustomLabel,
+                    taskHolder,
+                    optionName,
+                    True
+                )
+            )
+        else:
+            action = menu.addAction("Remove custom label")
+            action.triggered.connect(
+                functools.partial(
+                    self.__addCustomLabel,
+                    taskHolder,
+                    optionName,
+                    False
+                )
+            )
+
+        if not taskHolder.task().metadata(f'ui.options.{optionName}.separator', False):
+            action = menu.addAction("Add separator")
+            action.triggered.connect(
+                functools.partial(
+                    self.__addSeparator,
+                    taskHolder,
+                    optionName,
+                    True
+                )
+            )
+        else:
+            action = menu.addAction("Remove separator")
+            action.triggered.connect(
+                functools.partial(
+                    self.__addSeparator,
+                    taskHolder,
+                    optionName,
+                    False
+                )
+            )
+
+        if not taskHolder.task().metadata(f'ui.options.{optionName}.main', False):
+            action = menu.addAction("Promote as main")
+            action.triggered.connect(
+                functools.partial(
+                    self.__promoteAsMain,
+                    taskHolder,
+                    optionName,
+                    True
+                )
+            )
+
+        else:
+            action = menu.addAction("Demote from main")
+            action.triggered.connect(
+                functools.partial(
+                    self.__promoteAsMain,
+                    taskHolder,
+                    optionName,
+                    False
+                )
+            )
+
+        overrideMenu = menu.addMenu("Override value")
+        for optionVisualName in OptionVisual.registeredNames():
+            exampleMenu = None
+            for exampleName in OptionVisual.registeredExampleNames(optionVisualName):
+                if exampleMenu is None:
+                    exampleMenu = overrideMenu.addMenu(optionVisualName)
+                action = exampleMenu.addAction(exampleName)
+                action.triggered.connect(
+                    functools.partial(
+                        self.__loadExample,
+                        taskHolder,
+                        optionName,
+                        optionVisualName,
+                        exampleName
+                    )
+                )
+
+        menu.exec_(QtGui.QCursor.pos())
+
+    def __displayOption(self, taskHolder, optionName, visible):
+        taskHolder.task().setMetadata(f'ui.options.{optionName}.hidden', not visible)
+        self.__redrawTaskHolderWidget(taskHolder)
+
+    def __addCustomLabel(self, taskHolder, optionName, enable):
+        if enable:
+            taskHolder.task().setMetadata(f'ui.options.{optionName}.label', 'Custom Label')
+        else:
+            taskHolder.task().unsetMetadata(f'ui.options.{optionName}.label')
+
+        self.__redrawTaskHolderWidget(taskHolder)
+
+    def __loadExample(self, taskHolder, optionName, optionVisualName, exampleName):
+        optionVisual = OptionVisual.createExample(optionVisualName, exampleName)
+        taskHolder.task().setOption(optionName, optionVisual.optionValue())
+
+        value = taskHolder.task().metadata(f'ui.options.{optionName}.main', False)
+        taskHolder.task().setMetadata(f'ui.options.{optionName}', optionVisual.uiHints())
+        taskHolder.task().setMetadata(f'ui.options.{optionName}.main', value)
+
+        self.__redrawTaskHolderWidget(taskHolder)
+
+    def __addSeparator(self, taskHolder, optionName, value):
+        taskHolder.task().setMetadata(f'ui.options.{optionName}.separator', value)
+        self.__redrawTaskHolderWidget(taskHolder)
+
+    def __promoteAsMain(self, taskHolder, optionName, value):
+        taskHolder.task().setMetadata(f'ui.options.{optionName}.main', value)
+        self.__redrawTaskHolderWidget(taskHolder)
+
+    def __addExpression(self, taskHolder, optionName):
+        taskHolder.task().setOption(
+            optionName,
+            '!kt (about)'
+        )
+
+        self.__redrawTaskHolderWidget(taskHolder)
+
     def __updateRootItem(self, taskHolder):
         """
         This method is used to update the root item based on the input task holder.
@@ -488,7 +678,7 @@ class TaskHolderListWidget(QtWidgets.QTreeWidget):
             uiOptionLabelName = '{}.label'.format(uiOptionMetadataName)
             customLabel = taskHolder.task().metadata(uiOptionLabelName) if taskHolder.task().hasMetadata(uiOptionLabelName) else optionDisplayName
 
-            optionEntry = QtWidgets.QTreeWidgetItem(parentEntry)
+            optionEntry = TaskHolderOptionWidgetItem(parentEntry, optionName)
             optionEntry.setData(0, QtCore.Qt.EditRole, customLabel)
             optionEntry.setTextAlignment(0, QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
 
@@ -673,14 +863,25 @@ class TaskHolderListWidget(QtWidgets.QTreeWidget):
         if not refreshWidgets:
             return False
 
-        # querying elements assigned to the root task holder
+        return self.__redrawTaskHolderWidget(taskHolder)
+
+    def __redrawTaskHolderWidget(self, taskHolder):
+        """
+        Redraw the task holder widget passing associated elements.
+        """
+        # if the input task holder is a root-level task holder,
+        # retrieve and pass the elements assigned to it for setup.
+        # For child task holders, no elements are passed to setup.
         elements = []
         for index in range(self.topLevelItemCount()):
             rootItem = self.topLevelItem(index)
+
             if taskHolder == rootItem.taskHolder():
                 elements = rootItem.elements()
                 break
 
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        success = True
         try:
             # triggering setup
             taskHolder.task().setup(elements)
@@ -689,8 +890,11 @@ class TaskHolderListWidget(QtWidgets.QTreeWidget):
             self.__updateRootItem(taskHolder)
         except Exception:
             traceback.print_exc()
+            success = True
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
 
-        return True
+        return success
 
     def __editStatus(self, widget, taskHolder, *_args):
         """
@@ -718,6 +922,23 @@ class TaskHolderListWidget(QtWidgets.QTreeWidget):
 
         elif template == "profile":
             taskHolder.profileTemplate().setInputString(value)
+
+class TaskHolderOptionWidgetItem(QtWidgets.QTreeWidgetItem):
+    def __init__(self, parent, optionName):
+        """
+        """
+        super().__init__(parent)
+        self.__setOptionName(optionName)
+
+    def optionName(self):
+        """
+        """
+        return self.__optionName
+
+    def __setOptionName(self, name):
+        """
+        """
+        self.__optionName = name
 
 class TaskHolderListTreeWidgetItem(QtWidgets.QTreeWidgetItem):
     """
