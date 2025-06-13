@@ -1,10 +1,13 @@
 import os
+import traceback
 import platform
 import subprocess
+from pathlib import Path
 from kombi.Element.Fs.Image import ImageElement
 from kombi.Element.Fs.Video import VideoElement
 from kombi.Element.Fs.Audio import AudioElement
 from kombi.Task.Desktop.LaunchWithDefaultApplicationTask import LaunchWithDefaultApplicationTask
+from kombi.Element import Element
 from kombi.Task import Task
 from ..Resource import Resource
 from Qt import QtCore, QtGui, QtWidgets
@@ -98,13 +101,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
         Set the elements that should be loaded.
         """
         self.__reset()
-
-        validElements = []
-        for element in sorted(elements, key=lambda x: x.var('fullPath')):
-            if element.tag('previewFilePath', None):
-                validElements.append(element)
-
-        self.__elements = validElements
+        self.__elements = list(sorted(elements, key=lambda x: x.var('fullPath')))
         self.__update()
 
     def __update(self):
@@ -236,16 +233,24 @@ class LoadMediaThread(QtCore.QThread):
         Implement the thread execution.
         """
         resultImage = QtGui.QImage()
-        if self.__element in self.__elementCache:
-            resultImage = self.__elementCache[self.__element]
+
+        loadElement = self.__element
+        if self.__element.tag(self.previewTag(), None):
+            try:
+                loadElement = Element.create(Path(self.__element.tag(self.previewTag())))
+            except Exception:
+                traceback.print_exc()
+
+        if loadElement.var('filePath') in self.__elementCache:
+            resultImage = self.__elementCache[loadElement.var('filePath')]
         else:
-            if isinstance(self.__element, ImageElement):
-                resultImage = QtGui.QImage(self.__element.tag(self.previewTag()))
+            if isinstance(loadElement, ImageElement):
+                resultImage = QtGui.QImage(loadElement.var('filePath'))
                 if resultImage.isNull():
-                    resultImage = self.__ffmpegFetchImage()
-            elif isinstance(self.__element, (VideoElement, AudioElement)):
-                resultImage = self.__ffmpegFetchImage()
-            self.__elementCache[self.__element] = resultImage
+                    resultImage = self.__ffmpegFetchImage(loadElement.var('filePath'))
+            elif isinstance(loadElement, (VideoElement, AudioElement)):
+                resultImage = self.__ffmpegFetchImage(loadElement.var('filePath'))
+            self.__elementCache[loadElement.var('filePath')] = resultImage
 
         if not resultImage.isNull() and self.__width is not None and self.__height is not None:
             resultImage = resultImage.scaled(
@@ -257,7 +262,7 @@ class LoadMediaThread(QtCore.QThread):
         if not self.__abort:
             self.loadedSignal.emit(self.__element, resultImage)
 
-    def __ffmpegFetchImage(self):
+    def __ffmpegFetchImage(self, filePath):
         """
         Load a frame from the video/image (raw formats) or generate a waveform from the input audio.
         """
@@ -273,7 +278,7 @@ class LoadMediaThread(QtCore.QThread):
             "-v",
             "quiet",
             "-i",
-            self.__element.tag(self.previewTag()),
+            filePath,
             *extraArgs,
             "-vframes",
             "1",
