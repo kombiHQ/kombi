@@ -235,9 +235,10 @@ class LoadMediaThread(QtCore.QThread):
         resultImage = QtGui.QImage()
 
         loadElement = self.__element
-        if self.__element.tag(self.previewTag(), None):
+        previewTagValue = self.__element.tag(self.previewTag(), None)
+        if previewTagValue and os.path.exists(previewTagValue):
             try:
-                loadElement = Element.create(Path(self.__element.tag(self.previewTag())))
+                loadElement = Element.create(Path(previewTagValue))
             except Exception:
                 traceback.print_exc()
 
