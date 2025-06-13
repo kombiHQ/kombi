@@ -126,6 +126,9 @@ class BrowserWindow(ScriptEditorWindow):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
             self.__updateElementList(rootElement)
+
+            if self.__elementViewer and self.__elementViewer.isVisible():
+                self.__elementViewer.widget().setElements([rootElement])
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
 
