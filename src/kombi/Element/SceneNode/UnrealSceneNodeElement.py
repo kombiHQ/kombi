@@ -30,7 +30,7 @@ class UnrealSceneNodeElement(SceneNodeElement):
         """
         return self.__node
 
-    def select(self):
+    def select(self, *_):
         """
         Select the asset in the content browser.
         """
