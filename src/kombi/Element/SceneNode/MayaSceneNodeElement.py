@@ -39,7 +39,7 @@ class MayaSceneNodeElement(SceneNodeElement):
         if groupedElements:
             elements = groupedElements
 
-        pm.select(list(map(lambda x: x.node(), elements)))  
+        pm.select(list(map(lambda x: x.node(), elements)))
 
     def serializeInitializationData(self):
         """
