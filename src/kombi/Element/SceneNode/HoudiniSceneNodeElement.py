@@ -30,11 +30,17 @@ class HoudiniSceneNodeElement(SceneNodeElement):
         """
         return self.__node
 
-    def select(self. *_):
+    def select(self, groupedElements=None):
         """
-        Select the node.
+        Select nodes in houdini.
         """
-        self.node().setSelected(True)
+        elements = [self]
+        if groupedElements:
+            elements = groupedElements
+
+        hou.clearAllSelected()
+        for element in elements:
+            element.node().setSelected(True)
 
     def serializeInitializationData(self):
         """
