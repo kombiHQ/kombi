@@ -30,7 +30,7 @@ class MayaSceneNodeElement(SceneNodeElement):
         """
         return self.__node
 
-    def select(self):
+    def select(self, *_):
         """
         Select the node.
         """
