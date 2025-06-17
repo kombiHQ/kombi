@@ -18,7 +18,8 @@ class UnrealSceneNodeElement(SceneNodeElement):
         Create a UnrealSceneNodeElement object.
         """
         super().__init__(*args, **kwargs)
-        self.setVar('name', assetData.package_name)
+        self.setVar('name', str(assetData.package_name))
+        self.setTag('label', self.var('name'))
         self.setVar('fullPath', self.var('name'))
         self.setVar('nodeType', assetData.get_class().get_name())
 
@@ -30,11 +31,15 @@ class UnrealSceneNodeElement(SceneNodeElement):
         """
         return self.__node
 
-    def select(self, *_):
+    def select(self, groupedElements=None):
         """
-        Select the asset in the content browser.
+        Select in the content browser.
         """
-        unreal.EditorAssetLibrary.sync_browser_to_objects([self.node().package_name])
+        elements = [self]
+        if groupedElements:
+            elements = groupedElements
+
+        unreal.EditorAssetLibrary.sync_browser_to_objects(list(map(lambda x: x.node().package_name, elements)))
 
     def serializeInitializationData(self):
         """
