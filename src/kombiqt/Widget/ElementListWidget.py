@@ -502,7 +502,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
                     break
                 value = currentValue
 
-            columnLabel = ('mixed' if mixedValues else str(value)) + '   '
+            columnLabel = ('...' if mixedValues else str(value)) + '   '
 
             # creating custom widget to show the presets
             if '{}.button'.format(column) in element.tagNames() or '{}.icon'.format(column) in element.tagNames():
@@ -818,32 +818,21 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
         # executing callable
         refresh = False
-        for index, element in enumerate(elements):
-            if hasattr(element, callableName):
-                try:
-                    if getattr(elements[0], callableName)(index, len(elements)):
-                        refresh = True
-                except Exception as err:
-                    traceback.print_exc()
 
-                    QtWidgets.QMessageBox.critical(
-                        None,
-                        "Kombi",
-                        "Error during the execution {}:\n\n{}".format(str(element), str(err)),
-                        QtWidgets.QMessageBox.Ok
-                    )
+        try:
+            if getattr(elements[0], callableName)(elements):
+                refresh = True
+        except Exception as err:
+            traceback.print_exc()
 
-                    raise err
-            else:
-                QtWidgets.QMessageBox.critical(
-                    None,
-                    "Kombi",
-                    'Could not find callable "{0}" in element "{1}"'.format(
-                        callableName,
-                        str(elements[0].var('type'))
-                    ),
-                    QtWidgets.QMessageBox.Ok
-                )
+            QtWidgets.QMessageBox.critical(
+                None,
+                "Kombi",
+                "Error during the execution {}:\n\n{}".format(str(elements[0]), str(err)),
+                QtWidgets.QMessageBox.Ok
+            )
+
+            raise err
 
         if refresh:
             self.modifed.emit()
