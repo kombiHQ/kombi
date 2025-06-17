@@ -19,6 +19,7 @@ class MayaSceneNodeElement(SceneNodeElement):
         """
         super().__init__(*args, **kwargs)
         self.setVar('name', pymelObject.name(long=True))
+        self.setTag('label', self.var('name'))
         self.setVar('fullPath', self.var('name'))
         self.setVar('nodeType', pymelObject.type())
 
@@ -30,11 +31,15 @@ class MayaSceneNodeElement(SceneNodeElement):
         """
         return self.__node
 
-    def select(self, *_):
+    def select(self, groupedElements=None):
         """
-        Select the node.
+        Select in maya.
         """
-        pm.select(self.node())
+        elements = [self]
+        if groupedElements:
+            elements = groupedElements
+
+        pm.select(list(map(lambda x: x.node(), elements)))  
 
     def serializeInitializationData(self):
         """
