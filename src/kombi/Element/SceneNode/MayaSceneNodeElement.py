@@ -17,9 +17,7 @@ class MayaSceneNodeElement(SceneNodeElement):
         """
         Create a MayaSceneNodeElement object.
         """
-        super().__init__(*args, **kwargs)
-        self.setVar('name', pymelObject.name(long=True))
-        self.setTag('label', self.var('name'))
+        super().__init__(pymelObject.name(long=True), *args, **kwargs)
         self.setVar('fullPath', self.var('name'))
         self.setVar('nodeType', pymelObject.type())
 
