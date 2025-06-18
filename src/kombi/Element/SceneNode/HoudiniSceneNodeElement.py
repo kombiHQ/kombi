@@ -17,9 +17,7 @@ class HoudiniSceneNodeElement(SceneNodeElement):
         """
         Create a HoudiniSceneNodeElement object.
         """
-        super().__init__(*args, **kwargs)
-        self.setVar('name', houNode.path())
-        self.setTag('label', self.var('name'))
+        super().__init__(houNode.path(), *args, **kwargs)
         self.setVar('fullPath', self.var('name'))
         self.setVar('nodeType', houNode.type().name())
 
