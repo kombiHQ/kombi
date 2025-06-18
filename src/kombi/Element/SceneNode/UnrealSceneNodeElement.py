@@ -17,11 +17,9 @@ class UnrealSceneNodeElement(SceneNodeElement):
         """
         Create a UnrealSceneNodeElement object.
         """
-        super().__init__(*args, **kwargs)
-        self.setVar('name', str(assetData.package_name))
-        self.setTag('label', self.var('name'))
+        super().__init__(str(assetData.package_name), *args, **kwargs)
         self.setVar('fullPath', self.var('name'))
-        self.setVar('nodeType', assetData.get_class().get_name())
+        self.setVar('nodeType', str(assetData.get_class().get_name()))
 
         self.__node = assetData
 
@@ -33,7 +31,7 @@ class UnrealSceneNodeElement(SceneNodeElement):
 
     def select(self, groupedElements=None):
         """
-        Select in the content browser.
+        Select the asset in the content browser.
         """
         elements = [self]
         if groupedElements:
@@ -45,7 +43,7 @@ class UnrealSceneNodeElement(SceneNodeElement):
         """
         Define the data passed during the initialization of the element.
         """
-        return self.node().package_name
+        return str(self.node().package_name)
 
     @classmethod
     def createFromName(cls, packageName):
