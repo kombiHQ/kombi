@@ -1,3 +1,4 @@
+import pathlib
 from ..Element import Element
 from .SceneNodeElement import SceneNodeElement
 
