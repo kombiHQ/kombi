@@ -29,6 +29,17 @@ class UnrealSceneNodeElement(SceneNodeElement):
         """
         return self.__node
 
+    def uassetPath(self):
+        """
+        Utility method used to return uasset file path.
+        """
+        contentPath = unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_content_dir())
+        packageName = str(self.node().package_name)
+        if packageName.startswith('/Game/'):
+            packageName = packageName[6:]
+
+        return pathlib.Path(contentPath).joinpath(f"{packageName}.uasset").as_posix()
+
     def select(self, groupedElements=None):
         """
         Select the asset in the content browser.
