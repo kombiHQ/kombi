@@ -286,6 +286,9 @@ class BrowserWindow(ScriptEditorWindow):
             if 'uiHintGlobRecursively' in taskHolder.tagNames():
                 self.__uiHintGlobRecursively = taskHolder.tag('uiHintGlobRecursively')
 
+            if taskHolder.tag('uiHintEmptyElementsMessage', None):
+                self.__elementListWidget.setEmptyMessage(taskHolder.tag('uiHintEmptyElementsMessage'))
+
             if taskHolder.tag('uiHintBottomTaskHolderList', None):
                 self.__splitter.setOrientation(QtCore.Qt.Vertical)
                 self.__executionSettingsAreaWidget.setVisible(True)
