@@ -160,6 +160,16 @@ class BrowserWindow(ScriptEditorWindow):
         else:
             self.__executionSettingsEmptyMessageLabel.setFixedSize(0, 0)
 
+        if self.__taskHolders[0].tag('uiHintExecuteImmediately', None):
+            try:
+                self.__executionSettingsAreaWidget.setVisible(False)
+                self.__executeButton.setVisible(False)
+                self.__backButton.setVisible(False)
+                self.__sourceAreaWidget.setVisible(True)
+                self.__executeButton.click()
+            finally:
+                self.__backButton.click()
+
     def dispatcherWidget(self):
         """
         Return the dispatcher widget.
@@ -288,6 +298,9 @@ class BrowserWindow(ScriptEditorWindow):
 
             if 'uiHintExecuteButtonLabel' in taskHolder.tagNames():
                 self.__executeButton.setText(taskHolder.tag('uiHintExecuteButtonLabel'))
+                if 'uiHintExecuteImmediately':
+                    self.__nextButton.setText(self.__executeButton.text())
+                    self.__nextButton.setIcon(QtGui.QIcon())
 
             # if there is a task holder that does not have any type specified to it, then we display all elements by
             # passing an empty list to the filter
