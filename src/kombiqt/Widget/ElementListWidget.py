@@ -804,7 +804,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         for selectedIndex in self.selectionModel().selectedIndexes():
             selectedItem = self.itemFromIndex(selectedIndex)
 
-            if isinstance(selectedItem, ElementsTreeWidgetItem):
+            if isinstance(selectedItem, ElementsTreeWidgetItem) and bool(selectedItem.flags() & QtCore.Qt.ItemIsUserCheckable):
                 selectedItem.setCheckState(0, currentItem.checkState(0))
 
         self.checkedStateChanged.emit()
@@ -852,6 +852,7 @@ class ElementsTreeWidgetItem(QtWidgets.QTreeWidgetItem):
         Create an ElementsTreeWidgetItem object.
         """
         super().__init__(*args, **kwargs)
+        self.setFlags(self.flags() & ~QtCore.Qt.ItemIsUserCheckable)
         self.setElements([])
 
     def setElements(self, elements):
