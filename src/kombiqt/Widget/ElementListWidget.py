@@ -26,7 +26,8 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         checkableState=None,
         elementVarColumnNames=None,
         viewMode='group',
-        defaultIconSize=Resource.listIconSize()
+        defaultIconSize=Resource.listIconSize(),
+        emptyMessage=''
     ):
         """
         Create a ElementListWidget object.
@@ -53,6 +54,11 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         self.setHeaderItem(header)
 
+        self.__emptyMessageLabel = QtWidgets.QLabel('', self)
+        self.__emptyMessageLabel.move(10, 10 + self.header().height())
+        self.__emptyMessageLabel.setVisible(False)
+        self.setEmptyMessage(emptyMessage)
+
         self.setCheckableState(checkableState)
 
         # the icon size can be potentially overridden by the element tag uiHintIconSize
@@ -62,6 +68,19 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         self.__viewMode = viewMode
         self.__columns = []
         self.__updateColumns(elementVarColumnNames or [])
+
+    def setEmptyMessage(self, text):
+        """
+        Set the empty message text.
+        """
+        self.__emptyMessageLabel.setText(text)
+        self.__computeEmptyMessageVisibility()
+
+    def emptyMessage(self):
+        """
+        Return the empty message text.
+        """
+        return self.__emptyMessageLabel.text()
 
     def setShowVars(self, display):
         """
@@ -330,7 +349,19 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         # restoring the visibility of the widget
         self.setVisible(True)
 
+        self.__computeEmptyMessageVisibility()
         self.resizeColumnToContents(0)
+
+    def __computeEmptyMessageVisibility(self):
+        """
+        Control the display of the custom empty messsage.
+        """
+        if self.topLevelItemCount() == 0:
+            self.__emptyMessageLabel.setVisible(True)
+            self.__emptyMessageLabel.setFixedSize(self.__emptyMessageLabel.minimumSizeHint())
+        else:
+            self.__emptyMessageLabel.setFixedSize(0, 0)
+            self.__emptyMessageLabel.setVisible(False)
 
     def __applySourceOverrides(self, elements):
         """
