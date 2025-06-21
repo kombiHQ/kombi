@@ -23,6 +23,7 @@ class UnrealSceneNodeElement(SceneNodeElement):
         self.setVar('assetName', str(assetData.asset_name))
         self.setVar('assetPath', str(assetData.package_path))
         self.setVar('nodeType', str(assetData.get_class().get_name()))
+        self.setTag('label', self.var('assetName'))
 
         self.__node = assetData
 
