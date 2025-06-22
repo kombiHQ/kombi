@@ -33,7 +33,7 @@ class UnrealSceneNodeElement(SceneNodeElement):
         Return the unreal object.
         """
         return self.__node
-    
+
     def importedPath(self):
         """
         Return the path used to import the asset.
