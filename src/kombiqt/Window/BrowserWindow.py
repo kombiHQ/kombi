@@ -464,7 +464,7 @@ class BrowserWindow(ScriptEditorWindow):
         if self.__customHeader:
             self.__logo.setTextFormat(QtCore.Qt.RichText)
             self.__logo.setText(self.__customHeader)
-        elif len(self.__taskHolders[0]):
+        elif len(self.__taskHolders):
             logoFilePath = "icons/header.png"
             if self.__taskHolders[0].tag('uiHintLogo', None):
                 logoFilePath = self.__taskHolders[0].tag('uiHintLogo')
