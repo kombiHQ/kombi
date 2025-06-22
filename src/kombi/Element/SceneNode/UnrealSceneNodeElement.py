@@ -1,3 +1,4 @@
+import json
 import pathlib
 from ..Element import Element
 from .SceneNodeElement import SceneNodeElement
@@ -21,7 +22,7 @@ class UnrealSceneNodeElement(SceneNodeElement):
         super().__init__(str(assetData.package_name), *args, **kwargs)
         self.setVar('fullPath', self.var('name'))
         self.setVar('assetName', str(assetData.asset_name))
-        self.setVar('assetPath', str(assetData.package_path))
+        self.setVar('packagePath', str(assetData.package_path))
         self.setVar('nodeType', str(assetData.get_class().get_name()))
         self.setTag('label', self.var('assetName'))
 
@@ -32,6 +33,23 @@ class UnrealSceneNodeElement(SceneNodeElement):
         Return the unreal object.
         """
         return self.__node
+    
+    def importedPath(self):
+        """
+        Return the path used to import the asset.
+        """
+        importData = self.node().get_tag_value('AssetImportData')
+        result = None
+        if importData:
+            try:
+                jsonData = json.loads(importData)
+                importedPath = jsonData[0]['RelativeFilename']
+            except Exception:
+                pass
+            else:
+                result = unreal.Paths.convert_relative_path_to_full(importedPath)
+
+        return result
 
     def uassetPath(self):
         """
