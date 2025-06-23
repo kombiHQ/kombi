@@ -66,8 +66,9 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         self.setIconSize(QtCore.QSize(defaultIconSize, defaultIconSize))
         self.__taskHolders = []
         self.__viewMode = viewMode
-        self.__columns = []
-        self.__updateColumns(elementVarColumnNames or [])
+        self.__visibleColumns = []
+        self.__columns = elementVarColumnNames or []
+        self.__updateColumns(self.__columns)
 
     def setEmptyMessage(self, text):
         """
@@ -161,12 +162,12 @@ class ElementListWidget(QtWidgets.QTreeWidget):
                     self.__overridesConfig = Config(configSignature, 'taskOverrides')
                     self.__overridesConfig.setValue('configDirectory', configDirectory, serialize=False)
 
-        columns = []
+        self.__columns = []
         for taskHolder in filter(lambda x: 'uiHintColumns' in x.tagNames(), taskHolders):
-            for columnName in filter(lambda x: x not in columns, taskHolder.tag('uiHintColumns')):
-                columns.append(columnName)
+            for columnName in filter(lambda x: x not in self.__columns, taskHolder.tag('uiHintColumns')):
+                self.__columns.append(columnName)
 
-        self.__updateColumns(columns)
+        self.__updateColumns(self.__columns)
 
     def refresh(self):
         """
@@ -282,6 +283,14 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         # workaround necessary to improve the rendering speed
         self.setVisible(False)
 
+        # update visible columns
+        self.__visibleColumns = []
+        for columnName in self.__columns:
+            for element in elementList:
+                if columnName in element.varNames():
+                    self.__visibleColumns.append(columnName)
+                    break
+
         # group
         if self.__viewMode == "group":
             groupedElements = self.__groupElements(elementList)
@@ -348,6 +357,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         # workaround to improve the performance of the rendering:
         # restoring the visibility of the widget
         self.setVisible(True)
+        self.__updateColumns(self.__visibleColumns)
 
         self.__computeEmptyMessageVisibility()
         self.resizeColumnToContents(0)
@@ -429,20 +439,11 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         """
         Update the widget columns.
         """
-        # fix-me: workaround necessary to avoid the bug of not showing
-        # the options properly inside of the execution settings
-        if not len(columns):
-            columns.append(' ')
+        header = QtWidgets.QTreeWidgetItem(
+            [''] + list(map(lambda x: Template.runProcedure('camelcasetospaced', x), columns))
+        )
 
-        if columns != self.__columns:
-            self.__columns = columns
-            header = QtWidgets.QTreeWidgetItem(
-                [''] + list(map(lambda x: Template.runProcedure('camelcasetospaced', x), self.__columns))
-            )
-
-            self.setHeaderItem(
-                header
-            )
+        self.setHeaderItem(header)
 
     def __createSourceTreeChildItem(self, element, parent, elementTypes, elementTags):
         """
@@ -512,7 +513,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
             overrides = self.__overridesConfig.value('overrides')
 
         # adding column information
-        for index, column in enumerate(self.__columns):
+        for index, column in enumerate(self.__visibleColumns):
 
             hasOverride = False
             value = ''
@@ -656,7 +657,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
                 continue
 
             selectedColumn = selectedIndex.column()
-            columnName = self.__columns[selectedColumn - 1]
+            columnName = self.__visibleColumns[selectedColumn - 1]
 
             selectedElements.update(elements)
             columnNames.add(columnName)
@@ -695,7 +696,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
                 continue
 
             selectedColumn = selectedIndex.column()
-            columnName = self.__columns[selectedColumn - 1]
+            columnName = self.__visibleColumns[selectedColumn - 1]
 
             hintValue = ""
             fileChooserName = '{}.fileChooserOnOverride'.format(columnName)
