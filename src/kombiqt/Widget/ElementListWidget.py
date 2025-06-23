@@ -537,6 +537,11 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
             # creating custom widget to show the presets
             if '{}.button'.format(column) in element.tagNames() or '{}.icon'.format(column) in element.tagNames():
+                currentWidget = self.itemWidget(treeItem, index + 1)
+                if currentWidget:
+                    currentWidget.setVisible(False)
+                    currentWidget.setParent(None)
+
                 columnButton = QtWidgets.QPushButton(self)
                 if '{}.icon'.format(column) in element.tagNames():
                     columnButton.setIcon(Resource.icon(element.tag('{}.icon'.format(column))))
@@ -550,6 +555,11 @@ class ElementListWidget(QtWidgets.QTreeWidget):
 
             # creating custom widget to show the presets
             elif '{}.presets'.format(column) in element.tagNames() or value is not None and isinstance(value, bool):
+                currentWidget = self.itemWidget(treeItem, index + 1)
+                if currentWidget:
+                    currentWidget.setVisible(False)
+                    currentWidget.setParent(None)
+
                 columnLabel += "          "
                 presetsHolderWidget = QtWidgets.QWidget(self)
                 presetsHolderWidget.setObjectName('presetTreeHolder')
