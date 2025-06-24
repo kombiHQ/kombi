@@ -68,6 +68,8 @@ class FilePathOptionVisual(OptionVisual):
         Callback triggered when select directory button is pressed.
         """
         currentPath = self.__editableWidget.text() if isinstance(self.__editableWidget, QtWidgets.QLineEdit) else self.__editableWidget.currentText()
+        if not currentPath:
+            currentPath = self.uiHints().get('initialPath', currentPath)
         initialPath = currentPath if os.path.exists(currentPath) else ""
 
         extensions = self.uiHints().get('allowedExtensions', [])
@@ -98,5 +100,6 @@ OptionVisual.register('filePath', FilePathOptionVisual)
 # registering examples
 OptionVisual.registerExample('filePath', 'default', '/file/path')
 OptionVisual.registerExample('filePath', 'readOnly', '/file/path', {'readOnly': True})
+OptionVisual.registerExample('filePath', 'initialPath', '/file/path', {'initialPath': '/customDir'})
 OptionVisual.registerExample('filePath', 'allowedExtensions', '/file/path', {'allowedExtensions': ['jpg', 'png', 'exr']})
 OptionVisual.registerExample('filePath', 'presets', '', {'presets': ['/filePathA/file.ext', '/filePathB/file2.ext']})
