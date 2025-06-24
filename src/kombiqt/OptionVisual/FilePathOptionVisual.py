@@ -71,11 +71,15 @@ class FilePathOptionVisual(OptionVisual):
         initialPath = currentPath if os.path.exists(currentPath) else ""
 
         extensions = self.uiHints().get('allowedExtensions', [])
+        extensionsFilter = ''
+        if extensions:
+            extensionsFilter = 'Allowed extensions (' + ' '.join(map(lambda x: "*.{ext}".format(ext=x), extensions)) + ');;'
+            extensionsFilter += ';;'.join(map(lambda x: "{ext} (*.{ext})".format(ext=x), extensions))
         selectedFile = QtWidgets.QFileDialog.getOpenFileName(
             self,
             self.uiHints().get("title", "Select file"),
             initialPath,
-            ';;'.join(map(lambda x: "{ext} (*.{ext})".format(ext=x), extensions))
+            extensionsFilter
         )
 
         if not selectedFile:
