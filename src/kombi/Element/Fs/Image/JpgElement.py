@@ -13,7 +13,7 @@ class JpgElement(OiioElement):
         if not super(JpgElement, cls).test(path, parentElement):
             return False
 
-        return path.suffix[1:] == 'jpg'
+        return path.suffix[1:] in ['jpg', 'jpeg']
 
 
 # registration
