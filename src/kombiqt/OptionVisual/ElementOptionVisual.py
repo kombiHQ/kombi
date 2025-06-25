@@ -3,6 +3,7 @@ from .OptionVisual import OptionVisual
 from ..Widget.ElementLevelNavigationWidget import ElementLevelNavigationWidget
 from ..Widget.ElementViewerWidget import ElementViewerWidget
 from kombi.Element import Element
+from kombi.Element.Fs.Image import ImageElement
 
 class ElementOptionVisual(OptionVisual):
     """
@@ -43,7 +44,11 @@ class ElementOptionVisual(OptionVisual):
             height = self.uiHints().get('previewHeight', self.__defaultPreviewHeight)
             elementViewerWidget.setFixedHeight(height)
             if self.optionValue():
-                elementViewerWidget.setElements([self.optionValue()])
+                previewElements = [self.optionValue()]
+                # preview image sequence support
+                if self.uiHints().get('previewSequence', False) and isinstance(self.optionValue(), ImageElement):
+                    previewElements = self.optionValue().sequenceElements()
+                elementViewerWidget.setElements(previewElements)
             mainLayout.addWidget(elementViewerWidget, 100)
         mainLayout.addWidget(self.__mainWidget)
 
@@ -51,3 +56,4 @@ class ElementOptionVisual(OptionVisual):
 OptionVisual.register('element', ElementOptionVisual)
 OptionVisual.registerFallbackDefaultVisual('element', Element)
 OptionVisual.registerExample('element', 'preview', None, {'preview': True, 'previewHeight': 180})
+OptionVisual.registerExample('element', 'previewSequence', None, {'preview': True, 'previewSequence': True, 'previewHeight': 180})
