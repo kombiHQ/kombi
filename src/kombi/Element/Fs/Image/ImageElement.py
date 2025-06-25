@@ -1,3 +1,7 @@
+import re
+import pathlib
+from glob import glob
+from ...Element import Element
 from ..FileElement import FileElement
 
 class ImageElement(FileElement):
@@ -34,6 +38,24 @@ class ImageElement(FileElement):
             isImageSeq = self.__isAmbiguousSequence()
 
         return isImageSeq
+    
+    def sequenceElements(self):
+        """
+        Returns all elements that are part of a sequence, sorted by frame number.
+        """
+        if not self.isSequence():
+            return [self]
+
+        groupFullPath = pathlib.Path(
+            self.var('filePath')
+        ).parent.joinpath(
+            re.sub(r"#+", "*", self.tag('group'))
+        ).as_posix()
+
+        return sorted(
+            map(lambda x: Element.create(pathlib.Path(x)), glob(groupFullPath)),
+            key=lambda x: x.var('frame', 0)
+        )
 
     def __computeImageSequence(self):
         """
