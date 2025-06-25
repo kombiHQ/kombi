@@ -52,8 +52,12 @@ class ElementOptionVisual(OptionVisual):
             mainLayout.addWidget(elementViewerWidget, 100)
         mainLayout.addWidget(self.__mainWidget)
 
+        if not self.uiHints().get('displayValue', True):
+            self.__mainWidget.setVisible(False)
+
 
 OptionVisual.register('element', ElementOptionVisual)
 OptionVisual.registerFallbackDefaultVisual('element', Element)
 OptionVisual.registerExample('element', 'preview', None, {'preview': True, 'previewHeight': 180})
+OptionVisual.registerExample('element', 'displayValue', None, {'displayValue': False})
 OptionVisual.registerExample('element', 'previewSequence', None, {'preview': True, 'previewSequence': True, 'previewHeight': 180})
