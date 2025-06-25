@@ -38,7 +38,7 @@ class ImageElement(FileElement):
             isImageSeq = self.__isAmbiguousSequence()
 
         return isImageSeq
-    
+
     def sequenceElements(self):
         """
         Returns all elements that are part of a sequence, sorted by frame number.
