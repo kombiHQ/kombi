@@ -257,7 +257,8 @@ class LoadMediaThread(QtCore.QThread):
             resultImage = resultImage.scaled(
                 self.__width,
                 self.__height,
-                QtCore.Qt.KeepAspectRatio
+                QtCore.Qt.KeepAspectRatio,
+                QtCore.Qt.SmoothTransformation
             )
 
         if not self.__abort:
