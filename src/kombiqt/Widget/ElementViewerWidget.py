@@ -133,7 +133,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
         """
         pixmap = Resource.pixmap("icons/noPreviewAvailable.png")
         pixmap = pixmap.scaled(
-            pixmap.width(),
+            min(self.width(), pixmap.width()),
             min(self.height(), pixmap.height()),
             QtCore.Qt.KeepAspectRatio,
             QtCore.Qt.SmoothTransformation
