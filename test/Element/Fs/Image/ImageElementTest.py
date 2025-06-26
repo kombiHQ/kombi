@@ -25,6 +25,17 @@ class ImageElementTest(BaseTestCase):
         element = Element.create(Path(self.__sequenceFile))
         self.assertIsInstance(element, ImageElement)
 
+    def testSequenceElements(self):
+        """
+        Test collecting all frames of the sequence.
+        """
+        element = Element.create(Path(self.__sequenceFile))
+        sequenceElements = element.sequenceElements()
+        self.assertEqual(len(sequenceElements), 12)
+        for index, sequenceElement in enumerate(sequenceElements):
+            self.assertIsInstance(sequenceElement, ImageElement)
+            self.assertEqual(sequenceElement.var('frame'), index + 1)
+
     def testGroupTagSequence(self):
         """
         Test that the tag group has been assigned to the image sequence element.
