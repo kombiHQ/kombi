@@ -33,7 +33,7 @@ class IntOptionVisual(OptionVisual):
 
         # read only support
         if self.uiHints().get('readOnly', False):
-            self.__mainWidget.setEnabled(False)
+            self.__mainWidget.setReadOnly(True)
         else:
             self.__mainWidget.editingFinished.connect(self.__onValueChanged)
 
