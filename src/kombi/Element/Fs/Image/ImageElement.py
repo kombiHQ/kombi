@@ -46,9 +46,7 @@ class ImageElement(FileElement):
         if not self.isSequence():
             return [self]
 
-        groupFullPath = pathlib.Path(
-            self.var('filePath')
-        ).parent.joinpath(
+        groupFullPath = self.path().parent.joinpath(
             re.sub(r"#+", "*", self.tag('group'))
         ).as_posix()
 
