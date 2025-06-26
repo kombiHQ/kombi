@@ -125,7 +125,20 @@ class ElementViewerWidget(QtWidgets.QLabel):
         self.__loadingMovie.stop()
         self.__slider.setVisible(False)
         self.setToolTip('')
-        self.setPixmap(Resource.pixmap("icons/noPreviewAvailable.png"))
+        self.setPixmap(self.__noPreviewAvaialblePixmap())
+
+    def __noPreviewAvaialblePixmap(self):
+        """
+        Return the 'no preview available' pixmap, properly scalled. 
+        """
+        pixmap = Resource.pixmap("icons/noPreviewAvailable.png")
+        pixmap = pixmap.scaled(
+            pixmap.width(),
+            min(self.height(), pixmap.height()),
+            QtCore.Qt.KeepAspectRatio,
+            QtCore.Qt.SmoothTransformation
+        )
+        return pixmap
 
     def __finishedLoad(self, element, qimage):
         """
@@ -138,7 +151,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
         if not qimage.isNull():
             pixmap = QtGui.QPixmap.fromImage(qimage)
         else:
-            pixmap = Resource.pixmap("icons/noPreviewAvailable.png")
+            pixmap = self.__noPreviewAvaialblePixmap()
 
         self.setPixmap(pixmap)
         self.setToolTip(os.path.basename(element.tag(self.previewTag(), '')))
