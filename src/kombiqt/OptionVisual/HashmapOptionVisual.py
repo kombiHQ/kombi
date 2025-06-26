@@ -56,7 +56,10 @@ class HashmapOptionVisual(OptionVisual):
         self.setLayout(mainLayout)
 
         self.__frameWidget = QtWidgets.QFrame()
-        self.__frameWidget.setObjectName('optionVisualContainer')
+        if self.uiHints().get('frame', False):
+            self.__frameWidget.setObjectName('optionVisualContainer')
+        else:
+            self.__frameWidget.setFrameShape(QtWidgets.QFrame.NoFrame)
 
         editable = self.uiHints().get('editable', False)
         if editable:
@@ -97,17 +100,25 @@ class HashmapOptionVisual(OptionVisual):
             # when there is a UI hint specifically defined
             # for the item option name
             if optionName in itemsUiHints:
-                uiHints = itemsUiHints[optionName]
+                uiHints = dict(itemsUiHints[optionName])
             else:
                 # try to look for the UI Hint using fnmatch
                 for itemName, itemUiHints in itemsUiHints.items():
                     if fnmatch(optionName, itemName):
-                        uiHints = itemUiHints
+                        uiHints = dict(itemUiHints)
                         break
 
             # in case the hidden metadata is defined we don't render it
             if uiHints.get('hidden', False):
                 continue
+
+            # propagating read-only when defined at the root level
+            if self.uiHints().get('readOnly', False):
+                uiHints['readOnly'] = True
+
+            # propagating hide frame when defined at the root level
+            if not self.uiHints().get('frame', False):
+                uiHints['frame'] = False
 
             itemWidget = OptionVisual.create(optionValue, uiHints)
             itemWidget.valueChanged.connect(functools.partial(self.__onItemValueChanged, optionName))
@@ -206,6 +217,8 @@ OptionVisual.registerFallbackDefaultVisual('hashmap', dict)
 
 # registering examples
 OptionVisual.registerExample('hashmap', 'default', {'a': 'a', 'b': 1, 'c': True, 'd': 'd'})
+OptionVisual.registerExample('hashmap', 'readOnly', {'a': 'a', 'b': 1, 'c': True, 'd': 'd'}, {'readOnly': True})
+OptionVisual.registerExample('hashmap', 'hideFrame', {'a': 'a', 'b': 1, 'c': True, 'd': 'd'}, {'frame': False})
 OptionVisual.registerExample('hashmap', 'editable', {'a': 1, 'b': 'd'}, {'editable': True})
 OptionVisual.registerExample('hashmap', 'editableNewItemValue', {'a': 1, 'b': 'd'}, {'editable': True, 'editableNewItemValue': 0.0})
 OptionVisual.registerExample('hashmap', 'horizontal', {'a': 'a', 'b': 1, 'c': True, 'd': 'd'}, {'orientation': 'horizontal'})
