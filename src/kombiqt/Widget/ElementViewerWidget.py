@@ -129,7 +129,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
 
     def __noPreviewAvaialblePixmap(self):
         """
-        Return the 'no preview available' pixmap, properly scalled. 
+        Return the 'no preview available' pixmap, properly scalled.
         """
         pixmap = Resource.pixmap("icons/noPreviewAvailable.png")
         pixmap = pixmap.scaled(
