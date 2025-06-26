@@ -93,7 +93,6 @@ class ElementViewerWidget(QtWidgets.QLabel):
         """
         Reset the current display.
         """
-        self.__reset()
         self.__onSliderChange(self.__slider.value())
 
     def setElements(self, elements):
