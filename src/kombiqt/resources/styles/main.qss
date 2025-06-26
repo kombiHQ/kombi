@@ -237,7 +237,7 @@ QRadioButton::indicator:unchecked:pressed{
 QRadioButton::indicator:unchecked:disabled{
     image:url(styles/icon_radiobutton_unchecked_disabled.png);
 }
-QTreeView, QTableView{
+QTreeView, QTableView, QListWidget{
     alternate-background-color: rgb(53, 53, 54);
     background:rgb(42, 42, 42);
 }
