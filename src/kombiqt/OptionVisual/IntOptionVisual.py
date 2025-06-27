@@ -34,6 +34,7 @@ class IntOptionVisual(OptionVisual):
         # read only support
         if self.uiHints().get('readOnly', False):
             self.__mainWidget.setReadOnly(True)
+            self.__mainWidget.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.NoButtons)
         else:
             self.__mainWidget.editingFinished.connect(self.__onValueChanged)
 
