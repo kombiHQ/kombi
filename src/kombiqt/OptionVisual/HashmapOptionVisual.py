@@ -56,7 +56,7 @@ class HashmapOptionVisual(OptionVisual):
         self.setLayout(mainLayout)
 
         self.__frameWidget = QtWidgets.QFrame()
-        if self.uiHints().get('frame', False):
+        if self.uiHints().get('frame', True):
             self.__frameWidget.setObjectName('optionVisualContainer')
         else:
             self.__frameWidget.setFrameShape(QtWidgets.QFrame.NoFrame)
