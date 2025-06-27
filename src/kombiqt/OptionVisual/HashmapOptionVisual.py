@@ -3,6 +3,7 @@ from fnmatch import fnmatch
 from Qt import QtWidgets, QtCore
 from .OptionVisual import OptionVisual
 from ..Resource import Resource
+from kombi.Template import Template
 
 
 class HashmapOptionVisual(OptionVisual):
@@ -137,7 +138,9 @@ class HashmapOptionVisual(OptionVisual):
                 itemWidget = QtWidgets.QWidget()
                 itemWidget.setLayout(rowLayout)
 
-            label = uiHints.get('label', optionName)
+            label = uiHints.get('label', None)
+            if label is None:
+                label = Template.runProcedure('camelcasetospaced', optionName)
             if isinstance(contentLayout, QtWidgets.QFormLayout):
                 contentLayout.addRow(label, itemWidget)
             else:
