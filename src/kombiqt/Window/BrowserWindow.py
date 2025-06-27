@@ -128,7 +128,7 @@ class BrowserWindow(ScriptEditorWindow):
         try:
             self.__updateElementList(rootElement)
 
-            if self.__infoViewer and self.__infoViewer.isVisible():
+            if self.__infoPanel and self.__infoPanel.isVisible():
                 self.__elementViewer.setElements([rootElement])
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
@@ -271,8 +271,8 @@ class BrowserWindow(ScriptEditorWindow):
             if 'uiHintCloseAfterExecution' in taskHolder.tagNames():
                 self.__closeAfterExecution = taskHolder.tag('uiHintCloseAfterExecution')
 
-            if taskHolder.hasTag('uiHintShowPreview'):
-                self.__infoViewer.setVisible(taskHolder.tag('uiHintShowPreview'))
+            if taskHolder.hasTag('uiHintShowInfoPanel'):
+                self.__infoPanel.setVisible(taskHolder.tag('uiHintShowInfoPanel'))
 
             if 'uiHintTitle' in taskHolder.tagNames():
                 self.__logo.setTextFormat(QtCore.Qt.RichText)
@@ -381,10 +381,10 @@ class BrowserWindow(ScriptEditorWindow):
         sourceBarLayout.addWidget(self.__elementsLevelNavigationWidget)
         sourceBarLayout.addWidget(self.__sourceRefreshButton)
 
-        # info viewer
-        self.__infoViewer = QtWidgets.QDockWidget("Info")
-        self.__infoViewer.setMinimumWidth(300)
-        self.__infoViewer.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
+        # info panel
+        self.__infoPanel = QtWidgets.QDockWidget("Info")
+        self.__infoPanel.setMinimumWidth(300)
+        self.__infoPanel.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
         self.__elementViewer = ElementViewerWidget([], centerAlignment=False)
         infoSplitter = QtWidgets.QSplitter()
         infoSplitter.setOrientation(QtCore.Qt.Vertical)
@@ -396,7 +396,7 @@ class BrowserWindow(ScriptEditorWindow):
 
         infoSplitter.addWidget(self.__detailsContainer)
         infoSplitter.setSizes([200, 400])
-        self.__infoViewer.setWidget(infoSplitter)
+        self.__infoPanel.setWidget(infoSplitter)
 
         viewerButton = QtWidgets.QPushButton()
         viewerButton.setToolTip('Toggle the display of the info panel')
@@ -404,11 +404,11 @@ class BrowserWindow(ScriptEditorWindow):
             Resource.icon("icons/imageViewer.png")
         )
 
-        sourceControlMain.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.__infoViewer)
-        self.__infoViewer.setVisible(Resource.userConfig().value('showPreview', True))
+        sourceControlMain.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.__infoPanel)
+        self.__infoPanel.setVisible(Resource.userConfig().value('showInfoPanel', True))
         sourceBarLayout.addWidget(viewerButton)
 
-        viewerButton.clicked.connect(self.__onToggleViewer)
+        viewerButton.clicked.connect(self.__onToggleInfoPanel)
 
         self.__scriptEditorButton = QtWidgets.QPushButton()
         self.__scriptEditorButton.setToolTip('Adds a new script editor tab')
@@ -582,7 +582,7 @@ class BrowserWindow(ScriptEditorWindow):
         if self.__splitter.orientation() == QtCore.Qt.Vertical:
             self.refreshTaskHolderList(elements)
 
-        if not (self.__infoViewer and self.__infoViewer.isVisible()):
+        if not (self.__infoPanel and self.__infoPanel.isVisible()):
             return
 
         self.__elementViewer.setElements(elements)
@@ -593,26 +593,26 @@ class BrowserWindow(ScriptEditorWindow):
         # computing details value
         value = getattr(elements[0], elements[0].tag('details'))()
 
-        # in case of a non-QWidget result creating a widget based on OptionVisual 
-        if not isinstance(value , QtWidgets.QWidget):
+        # in case of a non-QWidget result creating a widget based on OptionVisual
+        if not isinstance(value, QtWidgets.QWidget):
             value = OptionVisual.create(value, {'readOnly': True, 'frame': False})
 
         self.__detailsContainer.setWidget(value)
         self.__detailsContainer.setVisible(True)
 
-    def __onToggleViewer(self):
+    def __onToggleInfoPanel(self):
         """
-        Slot triggered when the viewer button is pressed.
+        Slot triggered when the info button is pressed.
         """
-        self.__infoViewer.setVisible(not self.__infoViewer.isVisible())
+        self.__infoPanel.setVisible(not self.__infoPanel.isVisible())
 
-        if self.__infoViewer.isVisible():
+        if self.__infoPanel.isVisible():
             self.__onSourceTreeSelectionChanged()
 
-        if self.__infoViewer.isVisible() == Resource.userConfig().value('showPreview', None):
+        if self.__infoPanel.isVisible() == Resource.userConfig().value('showInfoPanel', None):
             return
 
-        Resource.userConfig().setValue('showPreview', self.__infoViewer.isVisible())
+        Resource.userConfig().setValue('showInfoPanel', self.__infoPanel.isVisible())
 
     def __onBack(self):
         """
