@@ -592,6 +592,8 @@ class BrowserWindow(ScriptEditorWindow):
 
         # computing details value
         value = getattr(elements[0], elements[0].tag('details'))()
+        if value is None:
+            return
 
         # in case of a non-QWidget result creating a widget based on OptionVisual
         if not isinstance(value, QtWidgets.QWidget):
