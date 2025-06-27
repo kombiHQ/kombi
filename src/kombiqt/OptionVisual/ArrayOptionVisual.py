@@ -44,7 +44,10 @@ class ArrayOptionVisual(OptionVisual):
         self.setLayout(mainLayout)
 
         self.__frameWidget = QtWidgets.QFrame()
-        self.__frameWidget.setObjectName('optionVisualContainer')
+        if self.uiHints().get('frame', True):
+            self.__frameWidget.setObjectName('optionVisualContainer')
+        else:
+            self.__frameWidget.setFrameShape(QtWidgets.QFrame.NoFrame)
 
         editable = self.uiHints().get('editable', False)
         if editable:
@@ -85,13 +88,21 @@ class ArrayOptionVisual(OptionVisual):
             # when there is a UI hint specifically defined
             # for the item index
             if optionName in itemsUiHints:
-                uiHints = itemsUiHints[optionName]
+                uiHints = dict(itemsUiHints[optionName])
             else:
                 # try to look for the UI Hint using fnmatch
                 for itemName, itemUiHints in itemsUiHints.items():
                     if fnmatch(optionName, itemName):
-                        uiHints = itemUiHints
+                        uiHints = dict(itemUiHints)
                         break
+
+            # propagating read-only when defined at the root level
+            if self.uiHints().get('readOnly', False):
+                uiHints['readOnly'] = True
+
+            # propagating hide frame when defined at the root level
+            if not self.uiHints().get('frame', False):
+                uiHints['frame'] = False
 
             itemWidget = OptionVisual.create(optionValue, uiHints)
             itemWidget.valueChanged.connect(functools.partial(self.__onItemValueChanged, i))
@@ -192,6 +203,8 @@ OptionVisual.registerFallbackDefaultVisual('array', tuple)
 # registering examples
 OptionVisual.registerExample('array', 'default', ['a', 1, True, 'd'])
 OptionVisual.registerExample('array', 'editable', ['a', 1, True, 'd'], {'editable': True})
+OptionVisual.registerExample('array', 'readOnly', ['a', 2, 3], {'readOnly': True})
+OptionVisual.registerExample('array', 'hideFrame', ['a', 2], {'frame': False})
 OptionVisual.registerExample('array', 'editableNewItemValue', ['a', 1, True, 'd'], {'editable': True, 'editableNewItemValue': 0.0})
 OptionVisual.registerExample('array', 'horizontal', ['a', 1, True, 'd'], {'orientation': 'horizontal'})
 OptionVisual.registerExample(
