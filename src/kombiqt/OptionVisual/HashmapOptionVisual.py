@@ -118,8 +118,8 @@ class HashmapOptionVisual(OptionVisual):
                 uiHints['readOnly'] = True
 
             # propagating hide frame when defined at the root level
-            if not self.uiHints().get('frame', False):
-                uiHints['frame'] = False
+            if 'frame' in self.uiHints():
+                uiHints['frame'] = self.uiHints().get('frame')
 
             itemWidget = OptionVisual.create(optionValue, uiHints)
             itemWidget.valueChanged.connect(functools.partial(self.__onItemValueChanged, optionName))
