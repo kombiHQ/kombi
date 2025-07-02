@@ -67,6 +67,11 @@ class FileElement(FsElement):
         # posix
         owner = pwd.getpwuid(stat.st_uid).pw_name
         group = grp.getgrgid(stat.st_gid).gr_name
+
+        # ignore group if it's the same as the owner (typical for primary group)
+        if owner == group:
+            group = None
+
         return f'{group}/{owner}' if group else owner
 
     def __computeOwnerWindows(self):
