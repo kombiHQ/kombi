@@ -53,7 +53,8 @@ class ElementViewerWidget(QtWidgets.QLabel):
 
         self.__launchButton = QtWidgets.QPushButton(self)
         self.__launchButton.setToolTip('Launch externally')
-        self.__launchButton.setIcon(Resource.icon('icons/next.png'))
+        self.__launchButton.setObjectName('elementViewerLaunch')
+        self.__launchButton.setIcon(Resource.icon('icons/openWithDefaultApplication.png'))
         self.__launchButton.setFixedSize(self.__controlsHeight - 2, self.__controlsHeight - 2)
         self.__launchButton.clicked.connect(self.__onLaunch)
 
