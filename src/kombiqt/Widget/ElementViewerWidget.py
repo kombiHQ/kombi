@@ -52,6 +52,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
         self.__loadingIndicator.setVisible(False)
 
         self.__launchButton = QtWidgets.QPushButton(self)
+        self.__launchButton.setToolTip('Launch externally')
         self.__launchButton.setIcon(Resource.icon('icons/next.png'))
         self.__launchButton.setFixedSize(self.__controlsHeight - 2, self.__controlsHeight - 2)
         self.__launchButton.clicked.connect(self.__onLaunch)
@@ -96,6 +97,10 @@ class ElementViewerWidget(QtWidgets.QLabel):
             )
         )
 
+        if self.__allowControls and self.pixmap().height() > self.__controlsHeight:
+            self.__slider.setVisible(len(self.__elements) > 1)
+            self.__launchButton.setVisible(True)
+
     def resizeEvent(self, event):
         """
         Reset the current display.
@@ -107,7 +112,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
         Event filter to handle the controls visibility.
         """
         if event.type() == QtCore.QEvent.Enter and self.__allowControls and self.pixmap().height() > self.__controlsHeight:
-            self.__slider.setVisible(True)
+            self.__slider.setVisible(len(self.__elements) > 1)
             self.__launchButton.setVisible(True)
         elif event.type() == QtCore.QEvent.Leave:
             self.__slider.setVisible(False)
