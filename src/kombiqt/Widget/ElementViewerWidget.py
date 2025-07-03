@@ -49,6 +49,11 @@ class ElementViewerWidget(QtWidgets.QLabel):
         self.__loadingIndicator.resize(loadingSize)
         self.__loadingIndicator.setVisible(False)
 
+        self.__launchButton = QtWidgets.QPushButton(self)
+        self.__launchButton.setIcon(Resource.icon('icons/next.png'))
+        self.__launchButton.setFixedSize(18, 18)
+        self.__launchButton.clicked.connect(self.__onLaunch)
+
         self.__slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
         self.__slider.setObjectName('viewer')
         self.__slider.setParent(self)
@@ -80,15 +85,6 @@ class ElementViewerWidget(QtWidgets.QLabel):
             )
         )
 
-    def mouseReleaseEvent(self, ev):
-        """
-        Triggered when the user has clicked on the viewer.
-        """
-        if self.__elements and ev.button() == QtCore.Qt.LeftButton:
-            task = Task.create('elementViewerLaunch')
-            task.add(self.__currentElement)
-            task.output()
-
     def resizeEvent(self, event):
         """
         Reset the current display.
@@ -103,6 +99,16 @@ class ElementViewerWidget(QtWidgets.QLabel):
         self.__elements = list(sorted(elements, key=lambda x: x.var('fullPath')))
         self.__update()
 
+    def __onLaunch(self):
+        """
+        Triggered when the launch button is pressed.
+        """
+        if not self.__elements:
+            return
+        task = Task.create('elementViewerLaunch')
+        task.add(self.__currentElement)
+        task.output()
+
     def __update(self):
         """
         Update the slider information.
@@ -112,13 +118,13 @@ class ElementViewerWidget(QtWidgets.QLabel):
             self.__slider.setMaximum(len(self.__elements) - 1)
             self.__slider.setValue(0)
             self.__onSliderChange(0)
-            self.setCursor(QtCore.Qt.PointingHandCursor)
 
     def __reset(self):
         """
         Reset the display.
         """
         self.setPixmap(QtGui.QPixmap())
+        self.__launchButton.setVisible(False)
         self.__currentElement = None
         self.__loadingIndicator.setVisible(False)
         self.__loadingMovie.stop()
@@ -156,15 +162,17 @@ class ElementViewerWidget(QtWidgets.QLabel):
         self.setToolTip(os.path.basename(element.tag(self.previewTag(), '')))
         self.__currentElement = element
 
-        self.__slider.setFixedWidth(self.width())
+        self.__slider.setFixedWidth(self.width() - self.__launchButton.width() - 6)
 
         height = self.pixmap().height()
         if self.alignment() == QtCore.Qt.AlignCenter:
             height /= 2
             height += self.height() / 2
 
-        self.__slider.move(0, int(height) - 10)
+        self.__launchButton.move(2, int(height))
+        self.__slider.move(self.__launchButton.width() + 4, int(height) + 2)
         self.__slider.setVisible(len(self.__elements) > 1)
+        self.__launchButton.setVisible(self.__slider.isVisible())
 
     def __showLoadingIndicator(self):
         """
@@ -184,7 +192,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
             return
 
         element = self.__elements[value]
-        self.__loadMediaThread.setElement(element, self.width(), self.height())
+        self.__loadMediaThread.setElement(element, self.width(), self.height() - 20)
         self.__loadingIndicator.move(
             int((self.width() - self.__loadingSize) / 2),
             int((self.height() - self.__loadingSize) / 2)
