@@ -434,6 +434,11 @@ QPushButton#filterElementVar:checked{
     border: 1px solid rgb(200, 99, 38);
 }
 
+QPushButton#elementViewerLaunch{
+    background-color: #333333;
+    border-radius: 3px;
+}
+
 QFrame#elementLevelNavigation {
     background-color:rgb(89, 90, 91);
     border: 1px solid #646566;
