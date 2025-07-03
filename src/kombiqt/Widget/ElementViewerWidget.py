@@ -20,7 +20,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
     loading the corresponding content into the viewer for display.
     """
     __loadingSize = 80
-    __controlsHeight = 20
+    __controlsHeight = 30
 
     def __init__(
         self,
@@ -205,7 +205,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
             height += self.height() / 2
 
         self.__launchButton.move(2, int(height) - self.__controlsHeight)
-        self.__slider.move(self.__launchButton.width() + 4, int(height) - self.__controlsHeight + 2)
+        self.__slider.move(self.__launchButton.width() + 4, int(height) - self.__controlsHeight + (self.__slider.height() / 2))
         self.__allowControls = bool(self.__elements)
 
     def __showLoadingIndicator(self):
