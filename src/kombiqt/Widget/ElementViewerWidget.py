@@ -26,6 +26,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
         self,
         elements,
         previewTag='previewFilePath',
+        launchTag='previewLaunchFilePath',
         backgroundColor='#000000',
         centerAlignment=True
     ):
@@ -42,7 +43,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
         self.__loading = False
         self.__currentElement = None
         self.__loadMediaThread.loadedSignal.connect(self.__finishedLoad)
-        self.__loadingMovie = Resource.qmovie("icons/loading.gif")
+        self.__loadingMovie = Resource.qmovie('icons/loading.gif')
         loadingSize = QtCore.QSize(self.__loadingSize, self.__loadingSize)
         self.__loadingMovie.setScaledSize(loadingSize)
         self.__loadingIndicator = QtWidgets.QLabel()
@@ -67,13 +68,20 @@ class ElementViewerWidget(QtWidgets.QLabel):
         self.installEventFilter(self)
 
         self.__setPreviewTag(previewTag)
+        self.__setLaunchTag(launchTag)
         self.setElements(elements)
 
     def previewTag(self):
         """
-        Return the name of the tag used for preview.
+        Return the name of the tag used to load in the viewer.
         """
         return self.__previewTag
+
+    def launchTag(self):
+        """
+        Return the name of the tag used to launch the element.
+        """
+        return self.__launchTag
 
     def mouseMoveEvent(self, ev):
         """
@@ -121,7 +129,12 @@ class ElementViewerWidget(QtWidgets.QLabel):
         if not self.__elements:
             return
         task = Task.create('elementViewerLaunch')
-        task.add(self.__currentElement)
+
+        launchElement = self.__currentElement
+        if self.launchTag() in self.__currentElement.tagNames():
+            launchElement = Element.create(Path(self.__currentElement.tag(self.launchTag())))
+
+        task.add(launchElement)
         task.output()
 
     def __update(self):
@@ -222,9 +235,15 @@ class ElementViewerWidget(QtWidgets.QLabel):
 
     def __setPreviewTag(self, tagName):
         """
-        Sets the name of the tag that should be used by the viewer.
+        Set the name of the tag that should be used to load in the viewer.
         """
         self.__previewTag = tagName
+
+    def __setLaunchTag(self, tagName):
+        """
+        Set the name of the tag that should be used when launching (play) the element.
+        """
+        self.__launchTag = tagName
 
 class LoadMediaThread(QtCore.QThread):
     """
