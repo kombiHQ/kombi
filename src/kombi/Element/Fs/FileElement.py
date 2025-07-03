@@ -25,14 +25,16 @@ class FileElement(FsElement):
 
     def var(self, name, *args, **kwargs):
         """
-        Return var value using lazy loading implementation for owner, byteSize and modificationDate.
+        Return var value using lazy loading implementation for ownerUser, ownerGroup, byteSize and modificationDate.
         """
-        if name in ('owner', 'byteSize', 'modificationDate') and name not in self.varNames():
+        if name in ('ownerUser', 'ownerGroup', 'byteSize', 'modificationDate') and name not in self.varNames():
             stat = self.path().stat()
             modificationDate = datetime.fromtimestamp(stat.st_mtime)
             self.setVar('byteSize', stat.st_size)
             self.setVar('modificationDate', modificationDate.strftime('%Y-%m-%d %H:%M:%S'))
-            self.setVar('owner', self.__computeOwner(stat))
+            user, group = self.__computeOwner(stat)
+            self.setVar('ownerUser', user)
+            self.setVar('ownerGroup', group)
 
         return super().var(name, *args, **kwargs)
 
@@ -40,10 +42,16 @@ class FileElement(FsElement):
         """
         Return the information displayed in the Details panel when requested.
         """
+        # adding the group (or domain in case of windows) info when it's different from the user
+        owner = self.var('ownerUser')
+        group = self.var('ownerGroup')
+        if group and owner != group:
+            owner = f"{owner}/{group}"
+
         return {
             "sizeMb": self.var('byteSize') / (1024 ** 2),
             "modificationDate": self.var('modificationDate'),
-            "owner": self.var('owner')
+            "owner": owner
         }
 
     @classmethod
@@ -57,28 +65,20 @@ class FileElement(FsElement):
 
     def __computeOwner(self, stat):
         """
-        Return the file owner.
-
-        If the user is part of a group|domain, the result is in the format <group|domain>/<user>.
+        Return the file owner (user and group).
         """
         if platform.system() == 'Windows':
             return self.__computeOwnerWindows()
 
         # posix
-        owner = pwd.getpwuid(stat.st_uid).pw_name
+        user = pwd.getpwuid(stat.st_uid).pw_name
         group = grp.getgrgid(stat.st_gid).gr_name
 
-        # ignore group if it's the same as the owner (typical for primary group)
-        if owner == group:
-            group = None
-
-        return f'{group}/{owner}' if group else owner
+        return (user, group)
 
     def __computeOwnerWindows(self):
         """
         Return the file owner on Windows.
-
-        If the user is part of a domain, the result is in the format <domain>/<user>.
         """
         lengthNeeded = wintypes.DWORD(0)
         ctypes.windll.advapi32.GetFileSecurityW(
@@ -120,7 +120,7 @@ class FileElement(FsElement):
         ):
             raise ctypes.WinError()
 
-        return f'{domain.value}/{name.value}' if domain.value else name.value
+        return (name.value, domain.value)
 
 
 Element.register(
