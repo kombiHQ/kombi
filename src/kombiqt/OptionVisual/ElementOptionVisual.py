@@ -34,7 +34,8 @@ class ElementOptionVisual(OptionVisual):
         # preview support
         if self.uiHints().get('preview'):
             previewTag = self.uiHints().get('previewTag', 'previewFilePath')
-            elementViewerWidget = ElementViewerWidget([], previewTag)
+            launchTag = self.uiHints().get('launchTag', 'previewLaunchFilePath')
+            elementViewerWidget = ElementViewerWidget([], previewTag, launchTag)
 
             # by default lets it fill the whole width
             width = self.uiHints().get('previewWidth', 0)
