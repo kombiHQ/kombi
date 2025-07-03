@@ -20,6 +20,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
     loading the corresponding content into the viewer for display.
     """
     __loadingSize = 80
+    __controlsHeight = 20
 
     def __init__(
         self,
@@ -51,7 +52,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
 
         self.__launchButton = QtWidgets.QPushButton(self)
         self.__launchButton.setIcon(Resource.icon('icons/next.png'))
-        self.__launchButton.setFixedSize(18, 18)
+        self.__launchButton.setFixedSize(self.__controlsHeight - 2, self.__controlsHeight - 2)
         self.__launchButton.clicked.connect(self.__onLaunch)
 
         self.__slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
@@ -59,9 +60,11 @@ class ElementViewerWidget(QtWidgets.QLabel):
         self.__slider.setParent(self)
         self.__slider.setTickInterval(1)
         self.__loadingIndicator.setParent(self)
+        self.__allowControls = False
 
         self.__slider.valueChanged.connect(self.__onSliderChange)
         self.setStyleSheet('QLabel {{background-color: {}}}'.format(backgroundColor))
+        self.installEventFilter(self)
 
         self.__setPreviewTag(previewTag)
         self.setElements(elements)
@@ -90,6 +93,18 @@ class ElementViewerWidget(QtWidgets.QLabel):
         Reset the current display.
         """
         self.__onSliderChange(self.__slider.value())
+
+    def eventFilter(self, source, event):
+        """
+        Event filter to handle the controls visibility.
+        """
+        if event.type() == QtCore.QEvent.Enter and self.__allowControls and self.pixmap().height() > self.__controlsHeight:
+            self.__slider.setVisible(True)
+            self.__launchButton.setVisible(True)
+        elif event.type() == QtCore.QEvent.Leave:
+            self.__slider.setVisible(False)
+            self.__launchButton.setVisible(False)
+        return super().eventFilter(source, event)
 
     def setElements(self, elements):
         """
@@ -129,6 +144,8 @@ class ElementViewerWidget(QtWidgets.QLabel):
         self.__loadingIndicator.setVisible(False)
         self.__loadingMovie.stop()
         self.__slider.setVisible(False)
+
+        self.__allowControls = False
         self.setToolTip('')
         self.setPixmap(self.__noPreviewAvaialblePixmap())
 
@@ -163,16 +180,14 @@ class ElementViewerWidget(QtWidgets.QLabel):
         self.__currentElement = element
 
         self.__slider.setFixedWidth(self.width() - self.__launchButton.width() - 6)
-
         height = self.pixmap().height()
         if self.alignment() == QtCore.Qt.AlignCenter:
             height /= 2
             height += self.height() / 2
 
-        self.__launchButton.move(2, int(height))
-        self.__slider.move(self.__launchButton.width() + 4, int(height) + 2)
-        self.__slider.setVisible(len(self.__elements) > 1)
-        self.__launchButton.setVisible(self.__slider.isVisible())
+        self.__launchButton.move(2, int(height) - self.__controlsHeight)
+        self.__slider.move(self.__launchButton.width() + 4, int(height) - self.__controlsHeight + 2)
+        self.__allowControls = bool(self.__elements)
 
     def __showLoadingIndicator(self):
         """
@@ -192,7 +207,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
             return
 
         element = self.__elements[value]
-        self.__loadMediaThread.setElement(element, self.width(), self.height() - 20)
+        self.__loadMediaThread.setElement(element, self.width(), self.height())
         self.__loadingIndicator.move(
             int((self.width() - self.__loadingSize) / 2),
             int((self.height() - self.__loadingSize) / 2)
