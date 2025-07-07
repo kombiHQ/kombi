@@ -49,7 +49,7 @@ class FileElement(FsElement):
             owner = f"{owner}/{group}"
 
         return {
-            "sizeMb": self.var('byteSize') / (1024 ** 2),
+            "size(mb)": self.var('byteSize') / (1024 ** 2),
             "modificationDate": self.var('modificationDate'),
             "owner": owner
         }
