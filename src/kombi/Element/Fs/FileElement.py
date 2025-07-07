@@ -51,7 +51,7 @@ class FileElement(FsElement):
         return {
             "size(mb)": self.var('byteSize') / (1024 ** 2),
             "modificationDate": self.var('modificationDate'),
-            "owner": owner
+            "user": owner
         }
 
     @classmethod
