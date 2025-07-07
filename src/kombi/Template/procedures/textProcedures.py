@@ -123,7 +123,7 @@ def camelCaseToSpaced(text):
     """
     Return the input camelCase string to spaced.
     """
-    return text[0].upper() + re.sub(r"([a-z])([A-Z])", r"\g<1> \g<2>", text[1:])
+    return text[0].upper() + re.sub(r"([a-z])([A-Z\(\{\<])", r"\g<1> \g<2>", text[1:])
 
 
 # slice
