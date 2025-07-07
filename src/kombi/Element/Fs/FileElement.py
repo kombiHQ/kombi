@@ -46,7 +46,7 @@ class FileElement(FsElement):
         owner = self.var('ownerUser')
         group = self.var('ownerGroup')
         if group and owner != group:
-            owner = f"{owner}/{group}"
+            owner = f"{group}/{owner}"
 
         return {
             "size(mb)": self.var('byteSize') / (1024 ** 2),
