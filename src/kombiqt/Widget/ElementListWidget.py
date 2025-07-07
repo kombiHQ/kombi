@@ -42,6 +42,7 @@ class ElementListWidget(QtWidgets.QTreeWidget):
         self.__verticalSourceScrollBarLatestPos = 0
 
         self.setAlternatingRowColors(True)
+        self.setUniformRowHeights(True)
 
         self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.setSelectionBehavior(QtWidgets.QTreeWidget.SelectItems)
