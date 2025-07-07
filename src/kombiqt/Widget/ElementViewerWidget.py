@@ -52,6 +52,7 @@ class ElementViewerWidget(QtWidgets.QLabel):
         self.__loadingIndicator.setVisible(False)
 
         self.__launchButton = QtWidgets.QPushButton(self)
+        self.__launchButton.setCursor(QtCore.Qt.PointingHandCursor)
         self.__launchButton.setToolTip('Launch externally')
         self.__launchButton.setObjectName('elementViewerLaunch')
         self.__launchButton.setIcon(Resource.icon('icons/openWithDefaultApplication.png'))
@@ -147,7 +148,6 @@ class ElementViewerWidget(QtWidgets.QLabel):
         """
         Update the slider information.
         """
-        self.setCursor(QtCore.Qt.ArrowCursor)
         if self.__elements:
             self.__slider.setMaximum(len(self.__elements) - 1)
             self.__slider.setValue(0)
