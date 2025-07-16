@@ -34,9 +34,9 @@ class UnrealSceneNodeElement(SceneNodeElement):
         """
         return self.__node
 
-    def importedPath(self):
+    def filePath(self):
         """
-        Return the path used to import the asset.
+        Return the file path associated with the asset.
         """
         importData = self.node().get_tag_value('AssetImportData')
         result = None
