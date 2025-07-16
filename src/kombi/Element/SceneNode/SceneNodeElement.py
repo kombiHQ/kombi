@@ -31,6 +31,12 @@ class SceneNodeElement(Element):
         """
         raise NotImplementedError
 
+    def filePath(self):
+        """
+        For re-implementation: should return the file path associated with the node (or empty string in case of none).
+        """
+        return ''
+
     @classmethod
     def createFromName(cls, name):
         """
