@@ -48,6 +48,14 @@ class MayaSceneNodeElement(SceneNodeElement):
 
         pm.select(nodes)
 
+    def filePath(self):
+        """
+        Return the file path associated with the asset.
+        """
+        if self.node().type() == 'reference':
+            return pm.referenceQuery(self.node(), filename=True)
+        return ''
+
     def serializeInitializationData(self):
         """
         Define the data passed during the initialization of the element.
