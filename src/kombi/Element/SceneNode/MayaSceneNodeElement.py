@@ -37,7 +37,16 @@ class MayaSceneNodeElement(SceneNodeElement):
         if groupedElements:
             elements = groupedElements
 
-        pm.select(list(map(lambda x: x.node(), elements)))
+        # in case of a reference node, select all nodes from the reference instead
+        # of the reference node itself
+        nodes = []
+        for element in elements:
+            if element.node().type() == 'reference':
+                nodes.extend(pm.referenceQuery(element.node(), nodes=True))
+            else:
+                nodes.append(element.node())
+
+        pm.select(nodes)
 
     def serializeInitializationData(self):
         """
