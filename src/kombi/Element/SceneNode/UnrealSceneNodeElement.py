@@ -39,7 +39,7 @@ class UnrealSceneNodeElement(SceneNodeElement):
         Return the file path associated with the asset.
         """
         importData = self.node().get_tag_value('AssetImportData')
-        result = None
+        result = ''
         if importData:
             try:
                 jsonData = json.loads(importData)
