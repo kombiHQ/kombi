@@ -19,6 +19,14 @@ class SceneNodeElement(Element):
         # setting icon
         self.setTag('icon', 'icons/elements/sceneNode.png')
 
+    def var(self, name, *args, **kwargs):
+        """
+        Return var value using lazy loading implementation for "filePath".
+        """
+        if name == 'filePath' and name not in self.varNames():
+            self.setVar('filePath', self.filePath())
+        return super().var(name, *args, **kwargs)
+
     def node(self):
         """
         For re-implementation: should return the real runtime object passed during construction.
