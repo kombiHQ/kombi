@@ -21,6 +21,10 @@ class MayaSceneNodeElement(SceneNodeElement):
         self.setVar('fullPath', self.var('name'))
         self.setVar('nodeType', pymelObject.type())
 
+        # this flag controls selection behavior for certain types,
+        # it selects related objects instead of the node itself
+        self.setVar('extendSelection', True)
+
         self.__node = pymelObject
 
     def node(self):
@@ -41,7 +45,7 @@ class MayaSceneNodeElement(SceneNodeElement):
         # of the reference node itself
         nodes = []
         for element in elements:
-            if element.node().type() == 'reference':
+            if element.var('extendSelection', False) and element.node().type() == 'reference':
                 nodes.extend(pm.referenceQuery(element.node(), nodes=True))
             else:
                 nodes.append(element.node())
