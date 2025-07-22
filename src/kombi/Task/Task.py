@@ -462,6 +462,16 @@ class Task(object):
         Task.__registered[name] = taskClass
 
     @staticmethod
+    def registeredType(name):
+        """
+        Return the registered task class.
+        """
+        assert name in Task.registeredNames(), \
+            f"Invalid registered task name: {name}"
+
+        return Task.__registered[name]
+
+    @staticmethod
     def registeredNames() -> List[str]:
         """
         Return a list of registered tasks.
