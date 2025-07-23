@@ -63,7 +63,7 @@ class DirectoryElement(FsElement):
         if not super(DirectoryElement, cls).test(path, parentElement):
             return False
         return cls.cachedPathQuery(path, 'is_dir')
-    
+
     @classmethod
     def createFromPath(cls, fullPath, elementType=None, parentElement=None):
         """
