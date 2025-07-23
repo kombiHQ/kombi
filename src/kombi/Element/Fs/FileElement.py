@@ -1,4 +1,5 @@
 import platform
+import pathlib
 from datetime import datetime
 from .FsElement import FsElement
 from ..Element import Element
@@ -53,6 +54,21 @@ class FileElement(FsElement):
             "modificationDate": self.var('modificationDate'),
             "user": owner
         }
+    
+    @classmethod
+    def createFromPath(cls, fullPath, elementType=None, parentElement=None):
+        """
+        Create a file element based on the full file system path string.
+
+        This method bypasses querying the file system by pre-caching the expected path properties,
+        which significantly improves performance when constructing elements.
+        """
+        filePath = pathlib.Path(fullPath)
+        cls.setCachedPathQuery(filePath, 'exists', True)
+        cls.setCachedPathQuery(filePath, 'is_file', True)
+        cls.setCachedPathQuery(filePath, 'is_dir', False)
+
+        return super().createFromPath(fullPath, elementType, parentElement)
 
     @classmethod
     def test(cls, path, parentElement):
