@@ -54,7 +54,7 @@ class FileElement(FsElement):
             "modificationDate": self.var('modificationDate'),
             "user": owner
         }
-    
+
     @classmethod
     def createFromPath(cls, fullPath, elementType=None, parentElement=None):
         """
