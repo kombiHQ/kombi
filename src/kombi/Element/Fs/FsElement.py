@@ -73,13 +73,13 @@ class FsElement(Element):
                 sys.stderr.flush()
         return False
 
-    @staticmethod
-    def createFromPath(fullPath, elementType=None, parentElement=None):
+    @classmethod
+    def createFromPath(cls, fullPath, elementType=None, parentElement=None):
         """
         Create a element directly from a path string.
         """
         if elementType:
-            elementClass = FsElement.registeredType(elementType)
+            elementClass = cls.registeredType(elementType)
             assert elementClass, "Invalid element type {} for {}".format(elementType, fullPath)
 
             result = elementClass(Path(fullPath), parentElement)
@@ -87,7 +87,7 @@ class FsElement(Element):
 
             return result
         else:
-            return FsElement.create(Path(fullPath), parentElement)
+            return cls.create(Path(fullPath), parentElement)
 
     @staticmethod
     def cachedPathQuery(path, attr, *args, **kwargs):
