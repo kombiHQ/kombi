@@ -63,6 +63,21 @@ class DirectoryElement(FsElement):
         if not super(DirectoryElement, cls).test(path, parentElement):
             return False
         return cls.cachedPathQuery(path, 'is_dir')
+    
+    @classmethod
+    def createFromPath(cls, fullPath, elementType=None, parentElement=None):
+        """
+        Create a directory element based on the full directory system path string.
+
+        This method bypasses querying the file system by pre-caching the expected path properties,
+        which significantly improves performance when constructing elements.
+        """
+        directoryPath = pathlib.Path(fullPath)
+        cls.setCachedPathQuery(directoryPath, 'exists', True)
+        cls.setCachedPathQuery(directoryPath, 'is_file', False)
+        cls.setCachedPathQuery(directoryPath, 'is_dir', True)
+
+        return super().createFromPath(fullPath, elementType, parentElement)
 
     def _computeChildren(self):
         """
